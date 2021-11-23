@@ -35,7 +35,7 @@ Each memory segment lives in a 16-bit address space, and so can hold a maximum o
 The following restrictions apply to any memory access (either to `CS` or `DS`) from any register:
 
 * The address of the access must be aligned to a word (ie. to a 16-bit boundary). If this is not the case, a fault will be raised.
-* The address of the access must be within the size of the segment. Although 64KB of memory from each segment is addressable, the entire memory space may not be used, and so will not be allocated by the supervisor. If access is attempted to a memory address outside of either segment, a fault will be raised.
+* The address of the access must be within the size of the segment. Although 64KB of memory from each segment is addressable, the entire memory space might not be used if the program is not that large, and so will not be allocated by the supervisor. If access is attempted to a memory address outside of either segment, a fault will be raised.
 
 The V2MP memory model does not support dynamic memory allocation: all memory must be statically allocated. Since stack space is not provided automatically by the memory model, it is up to the program in question to allocate its own stack in `DS` and to ensure that it is used appropriately.
 
@@ -244,3 +244,5 @@ Start with simplest instructions possible, ignoring as many operand bits as poss
 * IDR: inter-device response. Value in R0 indicates port, and the result of the call is written back to R0.
 
 TODO: Status register, plus not incrementing PC if it was modified by the previous instruction.
+
+TODO: Tachi recommendation - raise faults on unrecognised bits of instructions instead of ignoring them. That way, in future the instruction set can be refined without breaking existing software (as you know that the reserved bits are definitely 0 for working software).
