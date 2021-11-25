@@ -7,7 +7,7 @@ The specification for the virtual processor is outlined in this file.
 
 ## CPU
 
-The CPU is 16-bit. It contains the following registers:
+The CPU is 16-bit and little-endian. It contains the following registers:
 
 * A program counter (`PC`)
 * A status register (`SR`)
@@ -273,6 +273,7 @@ Decided whether or not to modify the value of the program counter `PC`, dependin
  CBX
 |0111|AB..CCCCCCCC|
 ```
+
 * Bit `[11] (A)` specifies how the value of `PC` should be modified:
   * If `A` is `1`, the value in `LR` is treated as the address to jump to, and is assigned to `PC`. In this case, bits `[7 0] (C)` must be set to `0`; if they are not, a `RES` fault will be raised.
   * If `A` is `0`, the value of bits `[7 0] (C)` is treated as a signed 8-bit offset **in words** from the current `PC` address. `PC` is incremented (or decremented, depending on the sign) by this value.
@@ -282,26 +283,58 @@ Decided whether or not to modify the value of the program counter `PC`, dependin
 
 Bits `[9 8]` are reserved for future use, and must be set to `0`. If this is not the case, a `RES` fault will be raised.
 
+### 0x8 Device Port Query (`DPQ`)
+
+Queries the state of a device communications port, and sets the status register `SR` appropriately.
+
+```
+ DPQ
+|1000|AB.........|
+```
+
+The number of the port to be queried is held in `R0`. Additionally, the operand bits of the instruction word specify the type of query to perform:
+
+* Bit `[11] (A)` specifies whether to query the _readable_ state of the port's mailbox - ie. whether there is a message (or a portion of a message) available to be read from the mailbox. If bit `[11] (A)` is set to `1` then the readable state is queried, and if it is set to `0` then the readable state is not queried.
+* Bit `[10] (B)` specifies whether to query the _writable_ state of the port's mailbox - ie. whether it is empty and whether the device in question is ready for data to be transferred into the mailbox. If bit `[10] (B)` is set to `1` then the writable state is queried, and if it is set to `0` then the writable state is not queried.
+
+Note that one or more of `A` and `B` in the instruction word must be set. Specifying neither `A` nor `B` is a reserved combination of these two operands, and will cause a `RES` fault to be raised.
+
+After the instruction is executed, the `Z` bit of the status register `SR` will be set based on the query type:
+
+* If bit `[11] (A)` was set and bit `[10] (B)` was not set, `SR[Z]` will be set if the port's mailbox was _not_ readable, and will be cleared if the mailbox _was_ readable.
+* If bit `[10] (B)` was set and bit `[11] (A)` was not set, `SR[Z]` will be set if the port's mailbox was _not_ writable, and will be cleared if the mailbox _was_ writable.
+* If both bits `[11] (A)` and `[10] (B)` were set, `SR[Z]` will be set if the port's mailbox was _neither_ readable _nor_ writable, and will be cleared if the mailbox was _either_ readable _or_ writable. This is useful after fully committing a write to a port: the port may remain busy until the device has processed the message and passed back a response, which will then cause it to become readable. In this intermediate busy time, the port will be neither readable nor writable.
+
+After a device port query instruction, the convention followed is to set `SR[Z]`, as the "zero" status bit, to indicate the _absence_ of the state being queried for. Therefore, conditionally branching on the presence of `SR[Z]` implies "branch on failure" - that the `PC` jump will occur if the state queried for was _not_ present.
+
+Bits `[9 0]` in the instruction word are reserved, and must be set to `0`. If this is not the case, a `RES` fault will be raised.
+
+### 0x9 Device Port Operation (`DPO`)
+
+Performs an operation on a device communications port.
+
+```
+ DPO
+|1001|.........AA|
+```
+
+The number of the port to be queried is held in `R0`. Additionally, the operand bits of the instruction word specify the type of operation to perform:
+
+TODO
+
 ## Todo Notes
 
-### Inter-Device Communications
+### Device Port Communications
 
-Need to decide on how inter-device messages work. The previous IDC/IDR instructions seemed clunky.
+This is an incomplete draft and probably doesn't make sense.
 
-We could have a half-duplex message-passing model, where a status bit is used to specify which out of the device and the program has control of communications. If the bit is cleared then the program has control, and if the bit is set then the device has control.
-
-For convenience, we can support two types of messages: single-word and multi-word. Single word messages involve passing a single word to a device port from a known register; multi-word messages involve passing a pointer to program memory, where the contents of the message live. The format of the memory is completely dependent on what the device function expects.
-
-A device get instruction can store the value of the device's return word in a register, if the device has finished with the communications channel. This can be used to obtain the return of the last message whenever the program wants it, provided it has not toggled the communication channel bit back at any point.
-
-If the device has control of the channel when a get happens, what do we do?
-
-* Return 0?
-* Return undefined?
-* Don't return anything?
-* Block the processor until the device relinquishes control of the communications channel?
-  * This would essentially turn the comms into a more conventional function call - could be useful for certain things. However, could also be dangerous! A rogue device could lock up the processor!
-  * Having said that, removing this behaviour doesn't actually remove the potential for locking up the processor - it's basically a single instruction that acts like a loop which continually checks the state of the communications channel, and only breaks out of the loop once the channel is available. This loop could easily be written in code, and subsequently taken advantage of by a bad device. Not including the instruction would discourage blocking device calls, though, which may be a good thing overall.
+* For read operations:
+  * A register (`LR`) to hold either the single-word response for a simple data transfer, or the address that the supervisor should write to for a complex data transfer.
+  * Some bits in `R1` to specify how many bytes are available as a buffer pointed to by `LR` for a complex data transfer. The read operation will transfer up to the specified number of bytes, but will not read more bytes than there are bytes left in the remainder of the message. If the value of `R1` is `0`, a simple data transfer is performed and `LR` holds the single-word result.
+* For write operations:
+  * A register (`R1`) to hold the maximum number of bytes available in the memory buffer pointed to by `LR`, if complex data transfer is to be used. If `R1` is 0, this implies that simple data transfer should be used; in this case, one word of the message is transferred into `LR`, and the total length of the remaining message in the port is decremented by 2 bytes. If there is only 1 byte left in the message, the trailing byte is transferred as 0.
+  * A register (`LR`) that provides either the single-word for a simple message, or the address of the message content for a complex message, when writing to the mailbox.
+  * A register (`R1`) to hold the length of the message to be written. If the length is 0, the message is assumed to be simple, and the value of `LR` forms the message. Otherwise, the message is assumed to be complex, and the value of `LR` is interpreted as the memory address to begin reading from.
 
 ### Stack
 
