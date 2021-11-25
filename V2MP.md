@@ -26,6 +26,8 @@ The program counter is automatically incremented after the execution of each ins
 
 The status register holds flags relating to the result of the execution of the previous instruction. It cannot be accessed directly by instructions, but its state is used to affect the operation of certain instructions (eg. for conditional branching).
 
+Before each instruction, all register bits are set to `0`. After the instruction, one or more bits may be set to `1` based on the result of the instruction.
+
 ```
 |..............CZ|
 ```
@@ -121,6 +123,8 @@ The memory location for the load or store is always specified by the value of `L
 
 Bits `[8 0]` of the instruction are reserved for future use. If any of these bits is not `0`, a `RES` fault will be raised.
 
+If the values that is loaded into the destination register is zero, the `Z` bit will be set in the status register `SR`.
+
 ### 0x2: Assign (`ASGN`)
 
 Assigns a value to a register. Assigning to `PC` (`b11`) is equivalent to an unconditional jump.
@@ -137,6 +141,8 @@ If the source `A` and destination `B` register identifiers are different, the so
 
 If assigning to the program counter (`PC`), beware not to assign a value that is not aligned to a word boundary. If an assignment like this is performed, an `ALGN` fault will be raised upon fetching the next instruction.
 
+The `Z` bit in the status register `SR` will be set if the value assigned to the destination register is zero.
+
 If instead the source `A` and destination `B` register identifiers are the same, bits `[7 0] (C)` of the instruction are interpreted as an 8-bit literal to assign to the destination register. The behaviour of the assignment depends on the destination register.
 
 If the destination register is:
@@ -145,7 +151,7 @@ If the destination register is:
 * `R1` (`b01`), or
 * `LR` (`b10`),
 
-bits `[7 0] (C)` of the instruction are assigned to the destination register's bits `[7 0]`. Bits `[15 8]` in the destination register are assigned to `0`.
+bits `[7 0] (C)` of the instruction are assigned to the destination register's bits `[7 0]`. Bits `[15 8]` in the destination register are assigned to `0`. The `Z` bit in the status register `SR` will be set if the value assigned was zero.
 
 ```
  R0, R1, or LR
@@ -162,6 +168,8 @@ If instead the destination register is `PC` (`b11`), bits `[7 0] (C)` of the ins
                        |0000010000001000|
 
 ```
+
+If the increment or decrement respectively overflows or underflows `PC`, the `C` bit will be set in the status register `SR`.
 
 ### 0x3: Add (`ADD`)
 
@@ -181,6 +189,8 @@ If instead the source `A` and destination `B` register identifiers are the same,
 
 It should be noted that, contrary to the `ASGN` instruction which may increment or decrement the program counter by a certain number of _words,_ the `ADD` instruction will always increment the destination register's absolute value, regardless of which register it is. This means that it is possible to increment the program counter by an odd number of byes, causing it to no longer be aligned to a word boundary. This type of operation should be avoided, or an `ALGN` fault will be raised upon fetching the next instruction.
 
+If the add operation overflows the destination register, the `C` bit is set in the status register `SR`.
+
 ### 0x4: Subtract (`SUB`)
 
 Decrements the value in a register.
@@ -198,6 +208,8 @@ If the source `A` and destination `B` register identifiers are different, the so
 If instead the source `A` and destination `B` register identifiers are the same, bits `[7 0] (C)` of the instruction are interpreted as an unsigned 8-bit literal, which is used to decrement destination register. This behaviour is the same regardless of the destination register.
 
 It should be noted that, contrary to the `ASGN` instruction which may increment or decrement the program counter by a certain number of _words,_ the `SUB` instruction will always decrement the destination register's absolute value, regardless of which register it is. This means that it is possible to decrement the program counter by an odd number of byes, causing it to no longer be aligned to a word boundary. This type of operation should be avoided, or an `ALGN` fault will be raised upon fetching the next instruction.
+
+If the add operation underflows the destination register, the `C` bit is set in the status register `SR`.
 
 ### 0x5: Bit Shift (`SHFT`)
 
@@ -219,6 +231,8 @@ Regardless of whether the shift magnitude is taken from a register or from the i
 
 Bits that are shifted off either end of the register are discarded, and bits that are inserted into the register due to the shift are always `0`. A shift of -16 is equivalent to clearing the register to all `0` bits.
 
+If after the operation the remaining value in the register is zero, the `Z` bit is set in the status register `SR`. Additionally, if any `1` bits were shifted off the end of the register during the operation, the `C` bit is set in SR.
+
 ### 0x6: Bitwise Operation (`BITW`)
 
 Performs a bitwise operation between two register values.
@@ -236,7 +250,7 @@ Performs a bitwise operation between two register values.
   * `b10` performs a bitwise `XOR`.
   * `b11` performs a bitwise `NOT` (ie. flips all bits).
 
-If the source `A` and destination `B` register identifiers are different, the source register's value is used as the bit mask that is imposed on the destination register. In the case of a bitwise `NOT` operation (which does not require a bit mask), only the destination register is considered, and the identifier for the source register is ignored.
+If the source `A` and destination `B` register identifiers are different, the source register's value is used as the bit mask that is used to manipulate the bits in the destination register. In the case of a bitwise `NOT` operation (which does not require a bit mask), the identifier for the source register is ignored.
 
 In the above case, bits `[5] (D)` and `[3 0] (E)` of the instruction are reserved for future use, and must be set to `0`. If they are not, a `RES` fault will be raised.
 
@@ -245,49 +259,19 @@ If instead the source `A` and destination `B` register identifiers are the same,
 * Bits `[3 0] (E)` specify the magnitude of the left shift of the mask value, in the range [0 15]. For example, if bits `[3 0] (E)` were set to `b0101` (a shift of 5), this would create the mask `b0000000000100000`.
 * Bit `[5] (D)` specifies if the resulting mask should be inverted. If bit `[5] (D)` is `0` then the mask is not inverted; if it is `1` then the mask is inverted. The above example would be `b1111111111011111` if bit `[5] (D)` was `1`.
 
-Similarly to the earlier case where register identifiers `A` and `B` were different, if the bitwise operation is `NOT` then the generated bit mask is redundant and not used.
+Similarly to the earlier case where register identifiers `A` and `B` were different, if the bitwise operation is `NOT` then the generated bit mask is redundant. In this case, bits `[3 0] (E)` of the instruction are ignored.
 
 In all cases, bit `[4]` is reserved for future use, and must be set to `0`. If this is not the case, a `RES` fault will be raised.
 
-### 0x7: Inter-Device Call (`IDC`)
+If the resulting value in the destination register is zero, the `Z` bit is set in `SR`.
 
-Initiates an inter-device call.
-
-```
- IDC
-|0111|............|
-```
-
-To make the call, the port is specfied by the value in `R0`, and the ordinal by the value in `R1`. The arguments to the call live in the memory address specified by the value in `LR`. It is assumed that there is enough memory available at the address for the call to read the arguments; if there is not, a `SEG` fault will be raised when the IDC attempts to read off the end of the segment.
-
-If the port specified by `R0` is out of range, a `IDPE` (inter-device port error) fault will be raised. If the ordinal specified by `R1` is not recognised, the `zero` bit of the status register `SR` will be set.
-
-All operand bits of this instruction are reserved for future use, must be set to `0`. If this is not the case, a `RES` fault will be raised.
-
-### 0x8 Inter-Device Response (`IDR`)
-
-Checks for the response from a previous inter-device call.
-
-```
- IDR
-|1000|............|
-```
-
-The port is specified by the value in `R0`. After the call, the `zero` bit of the status register `SR` will be set if the last inter-device call made on this port is still in progress, or cleared if the last call made on this port has completed.
-
-If the `SR` zero bit is cleared, `R1` will hold the result returned from the inter-device call. Otherwise, the contents of `R1` will not be modified.
-
-If the port specified by `R0` is out of range, a `IDPE` (inter-device port error) fault will be raised.
-
-All operand bits of this instruction are reserved for future use, must be set to `0`. If this is not the case, a `RES` fault will be raised.
-
-### 0x9 Conditional Branch (`CBX`)
+### 0x7 Conditional Branch (`CBX`)
 
 Decided whether or not to modify the value of the program counter `PC`, depending on the current state of the status register `SR`.
 
 ```
  CBX
-|1001|AB..CCCCCCCC|
+|0111|AB..CCCCCCCC|
 ```
 * Bit `[11] (A)` specifies how the value of `PC` should be modified:
   * If `A` is `1`, the value in `LR` is treated as the address to jump to, and is assigned to `PC`. In this case, bits `[7 0] (C)` must be set to `0`; if they are not, a `RES` fault will be raised.
@@ -297,3 +281,28 @@ Decided whether or not to modify the value of the program counter `PC`, dependin
   * If `B` is `1`, the `C` bit of `SR` is considered. If `SR[C]` is set (ie. the last instruction that was executed overflowed or underflowed its register), `PC` is modified according to the rules above. If `SR[C]` is not set, `PC` is not modified and will be incremented as normal once the `CBX` instruction is complete.
 
 Bits `[9 8]` are reserved for future use, and must be set to `0`. If this is not the case, a `RES` fault will be raised.
+
+## Todo Notes
+
+### Inter-Device Communications
+
+Need to decide on how inter-device messages work. The previous IDC/IDR instructions seemed clunky.
+
+We could have a half-duplex message-passing model, where a status bit is used to specify which out of the device and the program has control of communications. If the bit is cleared then the program has control, and if the bit is set then the device has control.
+
+For convenience, we can support two types of messages: single-word and multi-word. Single word messages involve passing a single word to a device port from a known register; multi-word messages involve passing a pointer to program memory, where the contents of the message live. The format of the memory is completely dependent on what the device function expects.
+
+A device get instruction can store the value of the device's return word in a register, if the device has finished with the communications channel. This can be used to obtain the return of the last message whenever the program wants it, provided it has not toggled the communication channel bit back at any point.
+
+If the device has control of the channel when a get happens, what do we do?
+
+* Return 0?
+* Return undefined?
+* Don't return anything?
+* Block the processor until the device relinquishes control of the communications channel?
+  * This would essentially turn the comms into a more conventional function call - could be useful for certain things. However, could also be dangerous! A rogue device could lock up the processor!
+  * Having said that, removing this behaviour doesn't actually remove the potential for locking up the processor - it's basically a single instruction that acts like a loop which continually checks the state of the communications channel, and only breaks out of the loop once the channel is available. This loop could easily be written in code, and subsequently taken advantage of by a bad device. Not including the instruction would discourage blocking device calls, though, which may be a good thing overall.
+
+### Stack
+
+Do we have enough remaining instructions to implement stack support?
