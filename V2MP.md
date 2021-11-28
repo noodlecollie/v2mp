@@ -1,10 +1,29 @@
 
+
+
 V2MP
 ====
 
-V2MP is an acronym for the Vesper Virtual Micro Processor. This virtual processor is designed to be very simple, with a small set of instructions, and to live within a virtual environment managed by a host machine (referred to as the _supervisor_).
+V2MP is an acronym for the Vesper Virtual Micro Processor. This virtual processor is designed to be very simple, with a small set of instructions, and to live within a virtual environment managed by a host machine (referred to as the "supervisor").
 
 The specification for the virtual processor is outlined in this file.
+
+* [Documentation Conventions](#documentation-conventions)
+* [CPU](#cpu)
+* [Memory Model](#memory-model)
+* [Device Ports](#device-ports)
+* [Instruction Set](#instruction-set)
+  * [0h HCF: Halt](#h-halt-hcf)
+  * [1h LDST: Load/Store](#h-loadstore-ldst)
+  * [2h ASGN: Assign](#h-assign-asgn)
+  * [3h ADD: Add](#h-add-add)
+  * [4h SUB: Subtract](#h-subtract-sub)
+  * [5h SHFT: Bit Shift](#h-bit-shift-shft)
+  * [6h BITW: Bitwise Operation](#h-bitwise-operation-bitw)
+  * [7h CBX: Conditional Branch](#h-conditional-branch-cbx)
+  * [8h DPQ: Device Port Query](#h-device-port-query-dpq)
+  * [9h DPO: Device Port Operation](#h-device-port-operation-dpo)
+* [Faults](#faults)
 
 ## Documentation Conventions
 
@@ -25,7 +44,7 @@ Instruction and register bits are numbered starting from `0` and proceeding righ
 
 For example, `[0]` indicates bit `0` in some unspecified register or instruction. `R0[5 2]` indicates a range of bits in register `R0`, beginning at bit `5` on the left, and ending at bit `2` on the right (both bits `5` and `2` are included in this range).
 
-In certain cases (such as for the status register), specific bits are named. In this case, the letter used to identify that specific bit may be enclosed in square brackets. For example, `SR[C]` specifies the `CARRY` status bit in the status register.
+In certain cases (such as for the status register `SR`), specific bits are named. In this case, the letter used to identify that specific bit may be enclosed in square brackets. For example, `SR[C]` specifies the `CARRY` status bit in the status register.
 
 ### Bit Layout
 
@@ -61,7 +80,7 @@ The processor also contains an "instruction register" (`IR`) which holds the cur
 
 ### Program Counter (`PC`)
 
-The program counter points to the next instruction in code memory. Its value must always be aligned to a word boundary (ie. `PC[0]` must be `0`), or an `ALGN` (alignment) fault will be raised when the instruction it points to is fetched.
+The program counter points to the next instruction in code memory. Its value must always be aligned to a word boundary (ie. `PC[0]` must be `0`), or an [`ALGN`](#faults) fault will be raised when the instruction it points to is fetched.
 
 The program counter is automatically incremented after the execution of each instruction, unless the instruction wrote to the program counter. In this case, the value of the program counter is assumed to point to the next instruction, so no increment takes place.
 
@@ -97,7 +116,7 @@ The general-purpose registers do not have any special significance for most inst
 
 ## Memory Model
 
-The CPU addresses two separate memory segments: the read-only code segment (`CS`) and the read-write data segment (`DS`). The program counter's address **always** refers to the code segment, and instructions to read from or write to memory **always** refer to the data segment. This means that under this memory model, code cannot be executed from RAM, and data used for computation (other than literal operands packed into instructions) cannot be loaded from the code segment.
+The CPU addresses two separate memory segments: the read-only code segment (`CS`) and the read-write data segment (`DS`). The program counter's address **always** refers to the code segment, and instructions to read from or write to memory **always** refer to the data segment. This means that under this memory model, code cannot be executed from RAM, and data for use in general-purpose registers cannot be directly loaded from the code segment. Some instructions, however, do support packing numerical literals into their operand bits, and these can affect the values in general-purpose registers.
 
 ```
         CS                                          DS
@@ -109,20 +128,20 @@ The CPU addresses two separate memory segments: the read-only code segment (`CS`
 +----------------+                          +----------------+
 ```
 
-Each memory segment lives in a 16-bit address space, and so can hold a maximum of 65536 bytes (64KB). A program that runs on the V2MP CPU consists of the `CS` and `DS` segments, where the `CS` segment holds all code for the program, and the `DS` segment holds any pre-compiled data that the program may wish to use. It is completely up to the progam in question how the `DS` data is managed - any data originally supplied within `DS` may be modified.
+Each memory segment lives in a 16-bit address space, and so can hold a maximum of 65536 bytes (64KB). A program that runs on the V2MP CPU consists of the `CS` and `DS` segments, where the `CS` segment holds all code for the program, and the `DS` segment holds any pre-compiled data that the program may wish to use. It is completely up to the program in question how the `DS` data is managed - any data originally supplied within `DS` may be modified.
 
-The following restrictions apply to any memory access (either to `CS` or `DS`) from any register:
+The following restrictions apply to any memory access (either in `CS` or `DS`), via any register (`PC` or general-purpose):
 
-* The address of the access must be aligned to a word (ie. to a 16-bit boundary). If this is not the case, an `ALGN` (alignment) fault will be raised.
-* The address of the access must be within the size of the segment. Although 64KB of memory from each segment is addressable, the entire memory space might not be used if the program is not that large, and so will not be allocated by the supervisor. If access is attempted to a memory address outside of either segment, a `SEG` (segmentation) fault will be raised.
+* The address of the access must be aligned to a word (ie. to a 16-bit boundary). If this is not the case, an [`ALGN`](#faults) fault will be raised.
+* The address of the access must be within the size of the segment. Although 64KB of memory from each segment is addressable, the entire memory space might not be used if the program is not that large, and so will not be allocated by the supervisor. If access is attempted to a memory address outside of either segment, a [`SEG`](#faults) fault will be raised.
 
 The V2MP memory model does not support dynamic memory allocation: all memory must be statically allocated. However, supervisor calls may be used to manipulate memory pages themselves at runtime, eg. to swap one page out for another.
 
 ### Relevant Instructions
 
-The `LDST` instruction loads or stores single words from or to `DS`. The `DPO` instruction can transfer data between a device port and an address in `DS`.
+The [`LDST`](#h-loadstore-ldst) instruction loads or stores single words from or to `DS`. The [`DPO`](#h-device-port-operation-dpo) instruction can transfer data between a device port and an address in `DS`.
 
-The `CBX` instruction makes reference to an address in `CS` which the program counter `PC` should be set to if the branch condition is met. Other arithmetic instructions may directly modify the contents of `PC` to point to different addresses in `CS`.
+The [`CBX`](#h-conditional-branch-cbx) instruction makes reference to an address in `CS` which the program counter `PC` should be set to if the branch condition is met. Other arithmetic instructions may directly modify the contents of `PC` to point to different addresses in `CS`.
 
 ## Device Ports
 
@@ -136,7 +155,7 @@ The program can query the number of bytes currently available in a device's mail
 
 When performing a write to a port's mailbox, the program may indicate that the write does not yet result in a complete message. This is referred to as an "uncommitted" write, and usually occurs if the program needs to write the complete message over the course of multiple processor instructions.
 
-The program may conversely indicate that it has finished writing a complete message, which is referred to as a "committed" write. Immediately after a committed write, the device's mailbox is no longer considered writeable, and the program must query the state of the port to determine when it is writeable again. After a committed write, the point at which the port's mailbox becomes readable or writeable again is contolled by the attached device.
+The program may conversely indicate that it has finished writing a complete message, which is referred to as a "committed" write. Immediately after a committed write, the device's mailbox is no longer considered writeable, and the program must query the state of the port to determine when it is writeable again. After a committed write, the point at which the port's mailbox becomes readable or writeable again is controlled by the attached device.
 
 ### State
 
@@ -151,7 +170,7 @@ One common convention is for a device port to rotate between writeable and reada
 
 ### Relevant Instructions
 
-The `DPQ` and `DPO` instructions are used to respectively query a device port's state and to perform an operation on a device port.
+The [`DPQ`](#h-device-port-query-dpq) and [`DPO`](#h-device-port-operation-dpo) instructions are used to respectively query a device port's state, and to perform an operation on a device port.
 
 ## Instruction Set
 
@@ -165,7 +184,7 @@ High |CCCC|DDDDDDDDDDDD| Low
            Bits [11 0] represent the operands (instruction-specific)
 ```
 
-Operand bits in register diagrams are assigned letters based on which operands they correspond to. Operand bits represented by `.` are not used by the instruction, and **must** be set to `0`. If this is not the case, a `RES` (reserved bits set) fault will be raised.
+Operand bits in register diagrams are assigned letters based on which operands they correspond to. Operand bits represented by `.` are not used by the instruction, and **must** be set to `0`. If this is not the case, a `RES` (reserved bits set) fault is raised.
 
 Some instructions make reference to a register in the CPU using a 2-bit identifier as an operand. Whenever one of these identifiers is used, it refers to the following register unless otherwise stated:
 
@@ -176,9 +195,9 @@ Some instructions make reference to a register in the CPU using a 2-bit identifi
 
 ### `0h`: Halt (`HCF`)
 
-Also known as "halt and catch fire". This instruction stops the processor, leaves all registers as they are, and raises an `HCF` fault.
+Also known as "halt and catch fire". This instruction stops the processor, leaves all registers as they are, and raises an [`HCF`](#faults) fault.
 
-All operand bits are reserved for future use, and must be set to `0`. If this is not the case, the fault raised will instead be a `RES` fault.
+All operand bits are reserved for future use, and must be set to `0`. If this is not the case, the fault raised will instead be a [`RES`](#faults) fault.
 
 ```
  HCF
@@ -201,9 +220,9 @@ Depending on the operands, either loads a value from a location in memory, or st
 
 The memory location for the load or store is always specified by the value of `LR`. This always refers to the data segment `DS`.
 
-Operand bits `[8 0]` of the instruction are reserved for future use. If any of these bits is not `0`, a `RES` fault will be raised.
+Operand bits `[8 0]` of the instruction are reserved for future use. If any of these bits is not `0`, a [`RES`](#fault) fault will be raised.
 
-If the memory address specified by `LR` is not aligned to a word boundary, an `ALGN` fault will be raised. If the address is not within the boundaries of `DS`, a `SEG` fault will be raised.
+If the memory address specified by `LR` is not aligned to a word boundary, an [`ALGN`](#faults) fault will be raised. If the address is not within the boundaries of `DS`, a [`SEG`](#faults) fault will be raised.
 
 If the value that is loaded into the destination register is zero, `SR[Z]` is set; otherwise, it is cleared. All other bits in `SR` are always cleared.
 
@@ -219,9 +238,9 @@ Assigns a value to a register.
 * Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
 * Operand bits `[9 8] (B)` specify the two-bit identifier of the register to use as the destination.
 
-If the source `A` and destination `B` register identifiers are different, the source register's value is copied to the destination register, and the source register remains unchanged. This behaviour is the same regardless of the destination register. Operand bits `[7 0] (C)` of the instruction must be set to `0` in this case, or a `RES` faut will be raised.
+If the source `A` and destination `B` register identifiers are different, the source register's value is copied to the destination register, and the source register remains unchanged. This behaviour is the same regardless of the destination register. Operand bits `[7 0] (C)` of the instruction must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
 
-Assigning to the program counter `PC` (`11b`) is equivalent to performing an unconditional jump. Beware not to assign a value that is not aligned to a word boundary. If an assignment like this is performed, an `ALGN` fault will be raised upon fetching the next instruction.
+Assigning to the program counter `PC` (`11b`) is equivalent to performing an unconditional jump. Beware not to assign a value that is not aligned to a word boundary. If an assignment like this is performed, an [`ALGN`](#faults) fault will be raised upon fetching the next instruction.
 
 If instead the source `A` and destination `B` register identifiers are the same, operand bits `[7 0] (C)` of the instruction are interpreted as a signed 8-bit literal to assign to the destination register. The behaviour of the assignment depends on the destination register.
 
@@ -238,7 +257,7 @@ If `A` and `B` are the same and the destination register is `R0`, `R1` or `LR`, 
 |1111111110000010|
 ```
 
-If instead `A` and `B` are the same and the destination register is `PC` (`11b`), operand bits `[7 0] (C)` are treated as a **signed offset in words** from `PC`'s current value. This means that `PC` can be incremented by up to 127 words (254 bytes), or decremented by up to 128 words (256 bytes).
+If instead `A` and `B` are the same and the destination register is `PC` (`11b`), operand bits `[7 0] (C)` are treated as a **signed offset in words** from `PC`'s current value. This means that `PC` can be incremented by up to `127` words (`254` bytes), or decremented by up to `128` words (`256` bytes).
 
 ```
  ASGN  PC     += 4W      PC - 400h (1024)
@@ -255,11 +274,9 @@ If instead `A` and `B` are the same and the destination register is `PC` (`11b`)
                         |0000001111111000|
 ```
 
-In all scenarios for the `ASGN` instruction, `SR[Z]` is set if the resulting value in the destination register is zero; otherwise, it is cleared.
-
 If `PC` is incremented or decremented, and the increment or decrement respectively overflows or underflows `PC`, `SR[C]` is set; otherwise, it is cleared. In all other cases, where a value is simply assigned verbatim to a register, `SR[C]` is cleared.
 
-In all cases, all other bits in `SR` are cleared.
+In all cases described for this instruction, `SR[Z]` is set if the eventual value in the destination register is zero; otherwise, it is cleared. All other bits in `SR` are cleared.
 
 ### `3h`: Add (`ADD`)
 
@@ -273,15 +290,15 @@ Increments the value in a register.
 * Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
 * Operand bits `[9 8] (B)` specify the two-bit identifier of the register to use as the destination.
 
-If the source `A` and destination `B` register identifiers are different, the source register's value is used to increment the destination register, and the source register remains unchanged. Operand bits `[7 0] (C)` must be set to `0` in this case, or a `RES` faut will be raised.
+If the source `A` and destination `B` register identifiers are different, the source register's value is used to increment the destination register, and the source register remains unchanged. Operand bits `[7 0] (C)` must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
 
 If instead the source `A` and destination `B` register identifiers are the same, operand bits `[7 0] (C)` are interpreted as an unsigned 8-bit literal, which is used to increment destination register. This behaviour is the same regardless of the destination register.
 
-It should be noted that, contrary to the `ASGN` instruction which may increment or decrement the program counter `PC` by a certain number of _words,_ the `ADD` instruction will always increment the destination register's absolute value, regardless of which register it is. This means that it is possible to increment `PC` by an odd number of byes, causing it to no longer be aligned to a word boundary. This type of operation should be avoided, or an `ALGN` fault will be raised upon fetching the next instruction.
+It should be noted that, contrary to the [`ASGN`](#h-assign-asgn) instruction which may increment or decrement the program counter `PC` by a certain number of _words,_ the [`ADD`](#h-add-add) instruction will always increment the destination register's absolute value, regardless of which register it is. This means that it is possible to increment `PC` by an odd number of byes, causing it to no longer be aligned to a word boundary. This type of operation should be avoided, or an [`ALGN`](#faults) fault will be raised upon fetching the next instruction.
 
 If the add operation overflows the destination register, `SR[C]` is set; otherwise, it is cleared.
 
-If the add operation results in a value of `0` in the destination register (ie. an arithmetic overflow occurs), `SR[Z]` is set; otherwise, it is cleared.
+If the add operation results in a value of `0` in the destination register (ie. a 1-bit arithmetic overflow occurs), `SR[Z]` is set; otherwise, it is cleared.
 
 All other bits in `SR` are always cleared.
 
@@ -297,13 +314,17 @@ Decrements the value in a register.
 * Bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
 * Bits `[9 8] (B)` specify the two-bit identifier of the register to use as the destination.
 
-If the source `A` and destination `B` register identifiers are different, the source register's value is used to decrement the destination register, and the source register remains unchanged. Bits `[7 0] (C)` of the instruction must be set to `0` in this case, or a `RES` faut will be raised.
+If the source `A` and destination `B` register identifiers are different, the source register's value is used to decrement the destination register, and the source register remains unchanged. Bits `[7 0] (C)` of the instruction must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
 
 If instead the source `A` and destination `B` register identifiers are the same, bits `[7 0] (C)` of the instruction are interpreted as an unsigned 8-bit literal, which is used to decrement destination register. This behaviour is the same regardless of the destination register.
 
-It should be noted that, contrary to the `ASGN` instruction which may increment or decrement the program counter by a certain number of _words,_ the `SUB` instruction will always decrement the destination register's absolute value, regardless of which register it is. This means that it is possible to decrement the program counter by an odd number of byes, causing it to no longer be aligned to a word boundary. This type of operation should be avoided, or an `ALGN` fault will be raised upon fetching the next instruction.
+It should be noted that, contrary to the [`ASGN`](#h-assign-asgn) instruction which may increment or decrement the program counter by a certain number of _words,_ the [`SUB`](#h-subtract-sub) instruction will always decrement the destination register's absolute value, regardless of which register it is. This means that it is possible to decrement the program counter by an odd number of byes, causing it to no longer be aligned to a word boundary. This type of operation should be avoided, or an [`ALGN`](#faults) fault will be raised upon fetching the next instruction.
 
-If the add operation underflows the destination register, the `C` bit is set in the status register `SR`.
+If the subtraction operation underflows the destination register, `SR[C]` is set; otherwise, it is cleared.
+
+If the subtraction operation results in a value of `0` in the destination register (ie. a 1-bit arithmetic underflow occurs), `SR[Z]` is set; otherwise, it is cleared.
+
+All other bits in `SR` are always cleared.
 
 ### `5h`: Bit Shift (`SHFT`)
 
@@ -317,15 +338,15 @@ Shifts the bits in a register left or right.
 * Bits `[11 10] (A)` specify the two-bit identifier of the register whose value determines the magnitude of the shift. Only bits `[4 0]` of the value are used to determine the magnitude; the rest of the bits are ignored.
 * Bits `[9 8] (B)` specify the two-bit identifier of the register whose value will be shifted.
 
-If both register identifiers `A` and `B` are the same, bits `[4 0] (C)` of the instruction are used to determine the magnitude of the shift. If register identifiers `A` and `B` are different, bits `[4 0] (C)` must be set to `0`, or a `RES` fault will be raised.
+If both register identifiers `A` and `B` are the same, bits `[4 0] (C)` of the instruction are used to determine the magnitude of the shift. If register identifiers `A` and `B` are different, bits `[4 0] (C)` must be set to `0`, or a [`RES`](#faults) fault will be raised.
 
-In all cases, bits `[7 5]` of the instruction are reserved for future use, and must be set to `0`. If this is not the case, a `RES` fault will be raised.
+In all cases, bits `[7 5]` of the instruction are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
-Regardless of whether the shift magnitude is taken from a register or from the instruction, the magnitude is treated as a signed 5-bit number, ranging from -16 to 15. A negative magnitude implies a right shift (dividing the value by 2), and a positive magnitude implies a left shift (multiplying the value by 2).
+Regardless of whether the shift magnitude is taken from a register or from the instruction, the magnitude is treated as a signed 5-bit number, ranging from `-16` to `15`. A negative magnitude implies a right shift (dividing the value by 2), and a positive magnitude implies a left shift (multiplying the value by 2).
 
-Bits that are shifted off either end of the register are discarded, and bits that are inserted into the register due to the shift are always `0`. A shift of -16 is equivalent to clearing the register to all `0` bits.
+Bits that are shifted off either end of the register are discarded, and bits that are inserted into the register due to the shift are always `0`. A shift of `-16` is equivalent to clearing the register to all `0` bits.
 
-If after the operation the remaining value in the register is zero, the `Z` bit is set in the status register `SR`. Additionally, if any `1` bits were shifted off the end of the register during the operation, the `C` bit is set in SR.
+If after the operation the remaining value in the register is zero, `SR[Z]` is set to `1`; otherwise, it is set to `0`. Additionally, if any `1` bits were shifted off the end of the register during the operation, `SR[C]` is set to `1`; otherwise, it is set to `0`. All other bits in `SR` are set to `0`.
 
 ### `6h`: Bitwise Operation (`BITW`)
 
@@ -346,7 +367,7 @@ Performs a bitwise operation between two register values.
 
 If the source `A` and destination `B` register identifiers are different, the source register's value is used as the bit mask that is used to manipulate the bits in the destination register. In the case of a bitwise `NOT` operation (which does not require a bit mask), the identifier for the source register is ignored.
 
-In the above case, bits `[5] (D)` and `[3 0] (E)` of the instruction are reserved for future use, and must be set to `0`. If they are not, a `RES` fault will be raised.
+In the above case, bits `[5] (D)` and `[3 0] (E)` of the instruction are reserved for future use, and must be set to `0`. If they are not, a [`RES`](#faults) fault will be raised.
 
 If instead the source `A` and destination `B` register identifiers are the same, the bit mask is not based on the value in a register. Instead, it is created based on a mask value of `0000000000000001b` which is manipulated by bits `[5] (D)` and `[3 0] (E)`:
 
@@ -355,9 +376,9 @@ If instead the source `A` and destination `B` register identifiers are the same,
 
 Similarly to the earlier case where register identifiers `A` and `B` were different, if the bitwise operation is `NOT` then the generated bit mask is redundant. In this case, bits `[3 0] (E)` of the instruction are ignored.
 
-In all cases, bit `[4]` is reserved for future use, and must be set to `0`. If this is not the case, a `RES` fault will be raised.
+In all cases, bit `[4]` is reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
-If the resulting value in the destination register is zero, the `Z` bit is set in `SR`.
+If the resulting value in the destination register is zero, `SR[Z]` is set to `1`; otherwise, it is set to `0`. All other bits in `SR` are set to `0`.
 
 ### `7h` Conditional Branch (`CBX`)
 
@@ -369,13 +390,15 @@ Decided whether or not to modify the value of the program counter `PC`, dependin
 ```
 
 * Bit `[11] (A)` specifies how the value of `PC` should be modified:
-  * If `A` is `1`, the value in `LR` is treated as the address to jump to, and is assigned to `PC`. In this case, bits `[7 0] (C)` must be set to `0`; if they are not, a `RES` fault will be raised.
+  * If `A` is `1`, the value in `LR` is treated as the address to jump to, and is assigned to `PC`. In this case, bits `[7 0] (C)` must be set to `0`; if they are not, a [`RES`](#faults) fault will be raised.
   * If `A` is `0`, the value of bits `[7 0] (C)` is treated as a signed 8-bit offset **in words** from the current `PC` address. `PC` is incremented (or decremented, depending on the sign) by this value.
 * Bit `[10] (B)` specifies what aspect of `SR` is considered when deciding whether to branch.
-  * If `B` is `0`, the `Z` bit of `SR` is considered. If `SR[Z]` is set (ie. the last instruction that was executed produced a result of zero), `PC` is modified according to the rules above. If `SR[Z]` is not set, `PC` is not modified and will be incremented as normal once the `CBX` instruction is complete.
-  * If `B` is `1`, the `C` bit of `SR` is considered. If `SR[C]` is set (ie. the last instruction that was executed overflowed or underflowed its register), `PC` is modified according to the rules above. If `SR[C]` is not set, `PC` is not modified and will be incremented as normal once the `CBX` instruction is complete.
+  * If `B` is `0`, `SR[Z]` is considered. If `SR[Z]` is set (ie. the last instruction that was executed produced a result of zero), `PC` is modified according to the rules above. If `SR[Z]` is not set, `PC` is not modified and will be incremented as normal once the `CBX` instruction is complete.
+  * If `B` is `1`, `SR[C]` is considered. If `SR[C]` is set (ie. the last instruction that was executed overflowed or underflowed its register), `PC` is modified according to the rules above. If `SR[C]` is not set, `PC` is not modified and will be incremented as normal once the `CBX` instruction is complete.
 
-Bits `[9 8]` are reserved for future use, and must be set to `0`. If this is not the case, a `RES` fault will be raised.
+Bits `[9 8]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
+
+After this instruction, `SR[Z]` will be set to `1` if the condition was not met. If the condition was met, and `PC` was set, `SR[Z]` will be set to `0`. All other bits in `SR` will be set to `0`.
 
 ### `8h` Device Port Query (`DPQ`)
 
@@ -394,16 +417,16 @@ The number of the port to be queried is held in `R0`. Additionally, the operand 
   * `10b` queries the writeable state of the port's mailbox - ie. whether it is empty and whether the device in question is ready for data to be transferred into the mailbox.
   * `11b` queries the readable and writeable state of the port's mailbox at the same time - ie. whether there is either a message ready to read, or mailbox space ready to be written to. This is essentially equivalent to a query asking whether the port is "not busy", and is useful after fully committing a write to a port. After committing a write, the port may remain busy until the device has processed the message and passed back a response, which will then cause it to become readable. In this intermediate busy time, the port will be neither readable nor writeable.
 
-Note that one or more of `A` and `B` in the instruction word must be set. Specifying neither `A` nor `B` is a reserved combination of these two operands, and will cause a `RES` fault to be raised.
+Bits `[11 2]` in the instruction word are reserved, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
-After the instruction is executed, the `Z` bit of the status register `SR` will be set based on the query type. The convention followed is to set `SR[Z]`, as the "zero" status bit, to indicate the _absence_ of the state being queried for. Therefore, conditionally branching on the presence of `SR[Z]` implies "branch on failure" - that the `PC` jump will occur if the state queried for was _not_ present.
+After the instruction is executed, `SR[Z]` will be set based on the query type. The convention followed is to set `SR[Z]`, as the "zero" status bit, to indicate the _absence_ of the state being queried for. Therefore, conditionally branching on the presence of `SR[Z]` implies "branch on failure" - that the `PC` jump will occur if the state queried for was _not_ present.
 
 * If `A` was `00b`, `SR[Z]` will be set if there _is not_ a device attached to the port, and will be cleared if there _is_ a device attached.
 * If `A` was `01b`, `SR[Z]` will be set if the port's mailbox was _not_ readable, and will be cleared if the mailbox _was_ readable.
 * If `A` was `10b`, `SR[Z]` will be set if the port's mailbox was _not_ writeable, and will be cleared if the mailbox _was_ writeable.
 * If `A` was `11b`, `SR[Z]` will be set if the port's mailbox was _neither_ readable _nor_ writeable (ie. the port was busy), and will be cleared if the mailbox was _either_ readable _or_ writeable (ie. the port was not busy).
 
-Bits `[11 2]` in the instruction word are reserved, and must be set to `0`. If this is not the case, a `RES` fault will be raised.
+All other bits in `SR` will be set to `0`.
 
 ### `9h` Device Port Operation (`DPO`)
 
@@ -419,6 +442,17 @@ The number of the port to use is held in `R0`. Additionally, the operand bits of
 TODO: We need a write operation, a read operation, and a "how many bytes are left to read" operation.
 
 TODO: Based on endianness, in what order are bytes read from/written to a register?
+
+## Faults
+
+The possible faults raised by the processor are described below.
+
+| Index | Code | Name | Description | Triggered By |
+| ----- | ---- | ---- | ----------- | ------------ |
+| `00h` | `HCF` | Halt and Catch Fire | Raised by the `HCF` instruction to indicate that the processor has halted. | `HCF` |
+| `01h` | `RES` | Reserved Bits Set | Raised if any reserved instruction bits are set. | Execution of any instruction |
+| `02h` | `ALGN` | Alignment Violation | Raised if a memory address in `CS` or `DS` is dereferenced and is not aligned to a word boundary. | `LDST`, `DPO`, or upon fetching the next instruction using `PC`. |
+| `03h` | `SEG` | Segment Access Violation | Raised if an address outside `DS` or `CS` is dereferenced. | `LDST`, `DPO`, or upon fetching the next instruction using `PC` |
 
 ## Todo Notes
 
