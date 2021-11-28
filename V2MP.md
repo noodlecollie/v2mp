@@ -162,9 +162,17 @@ The program may conversely indicate that it has finished writing a complete mess
 The following states are applicable to any device port and its associated mailbox:
 
 * Available: the port is attached to a device. If a port is not attached to a device, it is considered unavailable, and no reads or writes may take place to or from its mailbox (ie. the port is never in a readable or writeable state).
-* Readable: the port's mailbox contains at least one unconsumed message byte, ready for the program to read. A port may not be in a readable and a writeable state at the same time.
-* Writeable: the port's mailbox contains at least one byte of free space, ready for the program to write to. A port may not be in a writeable and a readable state at the same time.
+* Readable: the port's mailbox contains at least one unconsumed message byte, ready for the program to read.
+* Writeable: the port's mailbox contains at least one byte of free space, ready for the program to write to.
 * Busy: if the port is _neither_ readable _nor_ writeable, it is considered busy. An unavailable port is always busy; an available port may be busy if the attached device is not currently ready to exchange messages.
+
+The following rules govern readable and writeable states:
+
+* A port may not be in a readable and a writeable state at the same time.
+* A device port may only be readable if it contains at least one message byte that can be read by the program. Once a device port becomes readable, it may not cease being readable until all bytes have been read by the program.
+* A device port may only be writeable if it has at least one byte of space that can be written to by the program. Once a device port becomes writeable, it may not cease being writeable until the program has committed a write.
+* Every time a program reads from a port, it must read at least one byte.
+* Every time a program writes to a port, it must write at least one byte.
 
 One common convention is for a device port to rotate between writeable and readable states (possibly with busy periods between these states), to correspond to function calls and responses. However, there is no rule that this convention must be followed. For example, a port may go from writeable to busy, and then back to writeable, without ever becoming readable. Which state transition convention is followed is up to the device that is attached to the port.
 
@@ -184,7 +192,7 @@ High |CCCC|DDDDDDDDDDDD| Low
            Bits [11 0] represent the operands (instruction-specific)
 ```
 
-Operand bits in register diagrams are assigned letters based on which operands they correspond to. Operand bits represented by `.` are not used by the instruction, and **must** be set to `0`. If this is not the case, a `RES` (reserved bits set) fault is raised.
+Operand bits in register diagrams are assigned letters based on which operands they correspond to. Operand bits represented by `.` are not used by the instruction, and **must** be set to `0`. If this is not the case, a [`RES`](#fault) fault is raised.
 
 Some instructions make reference to a register in the CPU using a 2-bit identifier as an operand. Whenever one of these identifiers is used, it refers to the following register unless otherwise stated:
 
@@ -311,12 +319,12 @@ Decrements the value in a register.
 |0100|AABBCCCCCCCC|
 ```
 
-* Bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
-* Bits `[9 8] (B)` specify the two-bit identifier of the register to use as the destination.
+* Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
+* Operand bits `[9 8] (B)` specify the two-bit identifier of the register to use as the destination.
 
-If the source `A` and destination `B` register identifiers are different, the source register's value is used to decrement the destination register, and the source register remains unchanged. Bits `[7 0] (C)` of the instruction must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
+If the source `A` and destination `B` register identifiers are different, the source register's value is used to decrement the destination register, and the source register remains unchanged. Operand bits `[7 0] (C)` must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
 
-If instead the source `A` and destination `B` register identifiers are the same, bits `[7 0] (C)` of the instruction are interpreted as an unsigned 8-bit literal, which is used to decrement destination register. This behaviour is the same regardless of the destination register.
+If instead the source `A` and destination `B` register identifiers are the same, operand bits `[7 0] (C)` are interpreted as an unsigned 8-bit literal, which is used to decrement destination register. This behaviour is the same regardless of the destination register.
 
 It should be noted that, contrary to the [`ASGN`](#h-assign-asgn) instruction which may increment or decrement the program counter by a certain number of _words,_ the [`SUB`](#h-subtract-sub) instruction will always decrement the destination register's absolute value, regardless of which register it is. This means that it is possible to decrement the program counter by an odd number of byes, causing it to no longer be aligned to a word boundary. This type of operation should be avoided, or an [`ALGN`](#faults) fault will be raised upon fetching the next instruction.
 
@@ -335,12 +343,12 @@ Shifts the bits in a register left or right.
 |0101|AABB...CCCCC|
 ```
 
-* Bits `[11 10] (A)` specify the two-bit identifier of the register whose value determines the magnitude of the shift. Only bits `[4 0]` of the value are used to determine the magnitude; the rest of the bits are ignored.
-* Bits `[9 8] (B)` specify the two-bit identifier of the register whose value will be shifted.
+* Operand bits `[11 10] (A)` specify the two-bit identifier of the register whose value determines the magnitude of the shift. Only bits `[4 0]` of the register are used to determine the magnitude; the rest of the bits are ignored.
+* Operand bits `[9 8] (B)` specify the two-bit identifier of the register whose value will be shifted.
 
-If both register identifiers `A` and `B` are the same, bits `[4 0] (C)` of the instruction are used to determine the magnitude of the shift. If register identifiers `A` and `B` are different, bits `[4 0] (C)` must be set to `0`, or a [`RES`](#faults) fault will be raised.
+If both register identifiers `A` and `B` are the same, operand bits `[4 0] (C)` are used to determine the magnitude of the shift. If register identifiers `A` and `B` are different, operand bits `[4 0] (C)` must be set to `0`, or a [`RES`](#faults) fault will be raised.
 
-In all cases, bits `[7 5]` of the instruction are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
+In all cases, operand bits `[7 5]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
 Regardless of whether the shift magnitude is taken from a register or from the instruction, the magnitude is treated as a signed 5-bit number, ranging from `-16` to `15`. A negative magnitude implies a right shift (dividing the value by 2), and a positive magnitude implies a left shift (multiplying the value by 2).
 
@@ -357,9 +365,9 @@ Performs a bitwise operation between two register values.
 |0110|AABBCCD.EEEE|
 ```
 
-* Bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source of the bit mask.
-* Bits `[9 8] (B)` specify the two-bit identifier of the register to use as the destination.
-* Bits `[7 6] (C)` specify the type of bitwise operation to perform:
+* Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source of the bit mask.
+* Operand bits `[9 8] (B)` specify the two-bit identifier of the register to use as the destination.
+* Operand bits `[7 6] (C)` specify the type of bitwise operation to perform:
   * `00b` performs a bitwise `AND`.
   * `01b` performs a bitwise `OR`.
   * `10b` performs a bitwise `XOR`.
@@ -367,16 +375,16 @@ Performs a bitwise operation between two register values.
 
 If the source `A` and destination `B` register identifiers are different, the source register's value is used as the bit mask that is used to manipulate the bits in the destination register. In the case of a bitwise `NOT` operation (which does not require a bit mask), the identifier for the source register is ignored.
 
-In the above case, bits `[5] (D)` and `[3 0] (E)` of the instruction are reserved for future use, and must be set to `0`. If they are not, a [`RES`](#faults) fault will be raised.
+If the source `A` and destination `B` register identifiers are different, operand bits `[5] (D)` and `[3 0] (E)` are reserved for future use, and must be set to `0`. If they are not, a [`RES`](#faults) fault will be raised.
 
-If instead the source `A` and destination `B` register identifiers are the same, the bit mask is not based on the value in a register. Instead, it is created based on a mask value of `0000000000000001b` which is manipulated by bits `[5] (D)` and `[3 0] (E)`:
+If instead the source `A` and destination `B` register identifiers are the same, the bit mask is not based on the value in a register. Instead, it is created based on a mask value of `0000000000000001b` which is manipulated by operand bits `[5] (D)` and `[3 0] (E)`:
 
-* Bits `[3 0] (E)` specify the magnitude of the left shift of the mask value, in the range [0 15]. For example, if bits `[3 0] (E)` were set to `0101b` (a shift of 5), this would create the mask `0000000000100000b`.
-* Bit `[5] (D)` specifies if the resulting mask should be inverted. If bit `[5] (D)` is `0` then the mask is not inverted; if it is `1` then the mask is inverted. The above example would be `1111111111011111b` if bit `[5] (D)` was `1`.
+* Operand bits `[3 0] (E)` specify the magnitude of the left shift of the mask value, in the range `0` to `15` inclusive. For example, if the operand bits `[3 0] (E)` are set to `0101b` (a shift of `5`), this creates the mask `0000000000100000b`.
+* Operand bit `[5] (D)` specifies if the resulting mask should be inverted. If operand bit `[5] (D)` is `0` then the mask is not inverted; if it is `1` then the mask is inverted. The above example would be `1111111111011111b` if operand bit `[5] (D)` was `1`.
 
-Similarly to the earlier case where register identifiers `A` and `B` were different, if the bitwise operation is `NOT` then the generated bit mask is redundant. In this case, bits `[3 0] (E)` of the instruction are ignored.
+Similarly to the earlier case where register identifiers `A` and `B` were different, if the bitwise operation is `NOT` then the generated bit mask is redundant. In this case, operand bits `[3 0] (E)` must be set to `0`, or a [`RES`](#faults) fault will be raised.
 
-In all cases, bit `[4]` is reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
+In all cases, operand bit `[4]` is reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
 If the resulting value in the destination register is zero, `SR[Z]` is set to `1`; otherwise, it is set to `0`. All other bits in `SR` are set to `0`.
 
@@ -389,14 +397,14 @@ Decided whether or not to modify the value of the program counter `PC`, dependin
 |0111|AB..CCCCCCCC|
 ```
 
-* Bit `[11] (A)` specifies how the value of `PC` should be modified:
-  * If `A` is `1`, the value in `LR` is treated as the address to jump to, and is assigned to `PC`. In this case, bits `[7 0] (C)` must be set to `0`; if they are not, a [`RES`](#faults) fault will be raised.
-  * If `A` is `0`, the value of bits `[7 0] (C)` is treated as a signed 8-bit offset **in words** from the current `PC` address. `PC` is incremented (or decremented, depending on the sign) by this value.
-* Bit `[10] (B)` specifies what aspect of `SR` is considered when deciding whether to branch.
+* Operand bit `[11] (A)` specifies how the value of `PC` should be modified:
+  * If `A` is `1`, the value in `LR` is treated as the address to jump to, and is assigned to `PC`. In this case, operand bits `[7 0] (C)` must be set to `0`; if they are not, a [`RES`](#faults) fault will be raised.
+  * If `A` is `0`, the value of operand bits `[7 0] (C)` is treated as a signed 8-bit offset **in words** from the current `PC` address. `PC` is incremented (or decremented, depending on the sign) by this value.
+* Operand bit `[10] (B)` specifies what aspect of `SR` is considered when deciding whether to branch.
   * If `B` is `0`, `SR[Z]` is considered. If `SR[Z]` is set (ie. the last instruction that was executed produced a result of zero), `PC` is modified according to the rules above. If `SR[Z]` is not set, `PC` is not modified and will be incremented as normal once the `CBX` instruction is complete.
   * If `B` is `1`, `SR[C]` is considered. If `SR[C]` is set (ie. the last instruction that was executed overflowed or underflowed its register), `PC` is modified according to the rules above. If `SR[C]` is not set, `PC` is not modified and will be incremented as normal once the `CBX` instruction is complete.
 
-Bits `[9 8]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
+Operand bits `[9 8]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
 After this instruction, `SR[Z]` will be set to `1` if the condition was not met. If the condition was met, and `PC` was set, `SR[Z]` will be set to `0`. All other bits in `SR` will be set to `0`.
 
@@ -409,15 +417,14 @@ Queries the state of a device communications port, and sets the status register 
 |1000|.........AA|
 ```
 
-The number of the port to be queried is held in `R0`. Additionally, the operand bits of the instruction word specify the type of query to perform:
+The number of the port to be queried is held in `R0`. Additionally, operand bits `[1 0] (A)` specify the type of query to perform:
 
-* The value of bits `[1 0] (A)` specifies what state to query.
-  * `00b` queries the availability of the port - ie. whether there is a device currently attached to the port.
-  * `01b` queries the readable state of the port's mailbox - ie. whether there is a message (or a portion of a message) available to be read from the mailbox.
-  * `10b` queries the writeable state of the port's mailbox - ie. whether it is empty and whether the device in question is ready for data to be transferred into the mailbox.
-  * `11b` queries the readable and writeable state of the port's mailbox at the same time - ie. whether there is either a message ready to read, or mailbox space ready to be written to. This is essentially equivalent to a query asking whether the port is "not busy", and is useful after fully committing a write to a port. After committing a write, the port may remain busy until the device has processed the message and passed back a response, which will then cause it to become readable. In this intermediate busy time, the port will be neither readable nor writeable.
+* If operand bits `[1 0] (A)` are set to `00b`, the instruction queries the availability of the port - ie. whether there is a device currently attached to the port.
+* If operand bits `[1 0] (A)` are set to `01b`, the instruction queries the readable state of the port's mailbox - ie. whether there is a message (or a portion of a message) available to be read from the mailbox.
+* If operand bits `[1 0] (A)` are set to `10b`, the instruction queries the writeable state of the port's mailbox - ie. whether it is empty and whether the device in question is ready for data to be transferred into the mailbox.
+* If operand bits `[1 0] (A)` are set to `11b`, the instruction queries the readable and writeable state of the port's mailbox at the same time - ie. whether there is either a message ready to read, or mailbox space ready to be written to. This is essentially equivalent to a query asking whether the port is "not busy", and is useful after fully committing a write to a port. After committing a write, the port may remain busy until the device has processed the message and passed back a response, which will then cause it to become readable. In this intermediate busy time, the port will be neither readable nor writeable.
 
-Bits `[11 2]` in the instruction word are reserved, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
+Operand bits `[11 2]` in the instruction word are reserved, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
 After the instruction is executed, `SR[Z]` will be set based on the query type. The convention followed is to set `SR[Z]`, as the "zero" status bit, to indicate the _absence_ of the state being queried for. Therefore, conditionally branching on the presence of `SR[Z]` implies "branch on failure" - that the `PC` jump will occur if the state queried for was _not_ present.
 
@@ -434,14 +441,12 @@ Performs an operation on a device communications port.
 
 ```
  DPO
-|1001|...........|
+|1001|.........AA|
 ```
 
 The number of the port to use is held in `R0`. Additionally, the operand bits of the instruction word specify the type of operation to perform:
 
-TODO: We need a write operation, a read operation, and a "how many bytes are left to read" operation.
-
-TODO: Based on endianness, in what order are bytes read from/written to a register?
+TODO
 
 ## Faults
 
@@ -450,9 +455,10 @@ The possible faults raised by the processor are described below.
 | Index | Code | Name | Description | Triggered By |
 | ----- | ---- | ---- | ----------- | ------------ |
 | `00h` | `HCF` | Halt and Catch Fire | Raised by the `HCF` instruction to indicate that the processor has halted. | `HCF` |
-| `01h` | `RES` | Reserved Bits Set | Raised if any reserved instruction bits are set. | Execution of any instruction |
-| `02h` | `ALGN` | Alignment Violation | Raised if a memory address in `CS` or `DS` is dereferenced and is not aligned to a word boundary. | `LDST`, `DPO`, or upon fetching the next instruction using `PC`. |
-| `03h` | `SEG` | Segment Access Violation | Raised if an address outside `DS` or `CS` is dereferenced. | `LDST`, `DPO`, or upon fetching the next instruction using `PC` |
+| `01h` | `RES` | Reserved Bits Set | Raised when an instruction is decoded and one or more reserved bits are set to `1`. | Execution of any instruction |
+| `02h` | `ALGN` | Alignment Violation | Raised when an unaligned memory address is dereferenced in `CS` or `DS`. | `LDST`, `DPO`, or upon fetching the next instruction using `PC`. |
+| `03h` | `SEG` | Segment Access Violation | Raised when an address outside `CS` or `DS` is dereferenced. | `LDST`, `DPO`, or upon fetching the next instruction using `PC` |
+| `04h` | `IDO` | Invalid Device Operation | Raised when a read is attempted from a device port that is not readable, or a write is attempted to a device port that is not writeable. | `DPO` |
 
 ## Todo Notes
 
@@ -468,23 +474,25 @@ The port is never both readable and writeable at the same time.
 
 **READ**
 
-The read operation should specify the maximum number of bytes to read in `R1`.
+A readable mailbox always has at least 1 byte waiting to be read. The read operation should specify the maximum number of bytes to read in `R1`.
 
 * If the number of bytes to read is non-zero, this implies complex data transfer. `LR` holds the address to read into (it is assumed that there is a buffer at this address which holds at least the specified max number of bytes).
-* If the number bytes to read is zero, this implies simple data transfer. A word is read and the value is stored in `LR`. If there was only one byte to read, the second byte is always `00h`.
+* If the number bytes to read is zero, this implies simple data transfer. A little-endian word is read and the value is stored in `LR`. If there was only one byte to read, the second, higher byte in `LR` is always `00h`.
 
-If the max number of bytes to read is less than the remaining number of bytes in the mailbox, the mailbox retains the remaining bytes and remains in a readable state. Otherwise, all the bytes are consumed from the mailbox, and afterwards it is no longer readable (and becomes writeable instead).
+If the max number of bytes to read is less than the remaining number of bytes in the mailbox, the mailbox retains the remaining bytes and remains in a readable state. Otherwise, all the bytes are consumed from the mailbox, and afterwards it is no longer readable.
 
 After the read, `R1` is set to indicate how many bytes were actually read. In the case of a simple data transfer, this will be either `1` or `2`, depending on how many bytes were left in the mailbox.
+
+If the mailbox was not readable, an `IDO` fault will be raised. If complex data transfer occurs and `LR` points to an address that is not aligned, an `ALGN` fault will be raised. If complex data transfer occurs and any part of the transferred data is written off the end of `DS`, a `SEG` fault will be raised.
 
 `SR[Z]` is set if the mailbox content has been read in its entirety, and otherwise is cleared.
 
 **WRITE**
 
-The write operation should specify the number of bytes to write in `R1`. The instruction should also specify a flag to say whether the write constitutes a complete message, or whether there is more data to come later.
+A writeable mailbox always has at least 1 byte space to be written to. The write operation should specify the number of bytes to write in `R1`. The instruction should also specify a flag to say whether the write constitutes a complete message, or whether there is more data to come later.
 
 * If the number of bytes to write is non-zero, this implies complex data transfer. `LR` holds the address of the data to be written (it is assumed that there is a buffer at this address which holds at least the specified number of bytes to write).
-* If the number of bytes to write is zero, this implies simple data transfer. `LR` holds the word to write.
+* If the number of bytes to write is zero, this implies simple data transfer of a 2-byte word. `LR` holds the little-endian word to write.
 
 After the write, `R1` is set to indicate how many bytes were actually written. For a simple data transfer this should usually be `2`, but may be `1` if there was only 1 byte of space left in the mailbox. If there is more data to come in subsequent writes, and the mailbox still has space, then the port remains writeable. Otherwise, it switches to not being writeable. A query should be used to determine when the port has become readable again.
 
@@ -493,6 +501,8 @@ After the write, `R1` is set to indicate how many bytes were actually written. F
 **REMAINING**
 
 The "remaining" operation requests how many bytes are waiting to be read (if the port is readable), or how many bytes of space are available to be written to (if the port is writeable). The result of the instruction is placed in `R1`.
+
+If the mailbox is neither readable nor writeable, `0` is placed in `R1`.
 
 If the result placed in `R1` is zero, `SR[Z]` is set.
 
