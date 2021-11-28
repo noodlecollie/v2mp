@@ -157,41 +157,48 @@ When performing a write to a port's mailbox, the program may indicate that the w
 
 The program may conversely indicate that it has finished writing a complete message, which is referred to as a "committed" write. Immediately after a committed write, the device's mailbox is no longer considered writeable, and the program must query the state of the port to determine when it is writeable again. After a committed write, the point at which the port's mailbox becomes readable or writeable again is controlled by the attached device.
 
-### State
-
-The following states are applicable to any device port and its associated mailbox:
-
-* Available: the port is attached to a device. If a port is not attached to a device, it is considered unavailable, and no reads or writes may take place to or from its mailbox (ie. the port is never in a readable or writeable state).
-* Readable: the port's mailbox contains at least one unconsumed message byte, ready for the program to read.
-* Writeable: the port's mailbox contains at least one byte of free space, ready for the program to write to.
-* Busy: if the port is _neither_ readable _nor_ writeable, it is considered busy. An unavailable port is always busy; an available port may be busy if the attached device is not currently ready to exchange messages.
-
-A port may not be in a readable and a writeable state at the same time.
-
-The following rules govern the readable state of a device port:
-
-* A device port may only be readable if it contains at least one message byte that can be read by the program.
-* Once a device port becomes readable, it may not cease being readable until all bytes have been read by the program.
-* Every time a program reads from a port, it must read at least one byte.
-* Once all bytes are read from the mailbox by the program, the mailbox must cease being readable until more bytes arrive into the mailbox from the device.
-
-The following rules govern the writeable state of a device port:
-
-* A device port may only be writeable if it has at least one byte of space that can be written to by the program.
-* Once a device port becomes writeable, it may not cease being writeable until either the mailbox has no more space available, or the program has committed a write.
-* Every time a program writes to a port, it must write at least one byte.
-* Once all available space in the mailbox has been written to by the program, the mailbox must cease being writeable until the device consumes one or more bytes from the mailbox, thereby creating more space for future writes.
-
-One common convention is for a device port to rotate between writeable and readable states (possibly with busy periods between these states), to correspond to function calls and responses. However, there is no rule that this convention must be followed. For example, a port may go from writeable to busy, and then back to writeable, without ever becoming readable. Which state transition convention is followed is up to the device that is attached to the port.
-
 ### Data Transfer
 
 Two methods of data transfer are supported when reading from or writing to a device port mailbox:
 
-* **Direct data transfer**: a single word from a CPU register is written to the mailbox, or a single word from the mailbox is read into a CPU register.
-* **Indirect data transfer**: given a memory address and a maximum number of bytes, both of which are held in CPU registers, one or more bytes are either read from the mailbox into the specified `DS` address, or written from the specified `DS` address into the mailbox.
+* **Direct data transfer**: a single word from a CPU register is written to the mailbox, or a single word from the mailbox is read into a CPU register. This data transfer always completes in one clock cycle.
+* **Indirect data transfer**: given a memory address and a maximum number of bytes, both of which are held in CPU registers, one or more bytes are either read from the mailbox into the specified `DS` address, or written from the specified `DS` address into the mailbox. The data transfer is performed by the supervisor, and may take more than one clock cycle.
 
-When passing a message using indirect data transfer, it is assumed that a buffer of at least the specified size is present in `DS` at the given address.
+When passing a message using indirect data transfer, it is assumed that a buffer of at least the specified size is present in `DS` at the given address. Until the indirect data transfer has completed, accessing this buffer in any way may cause undefined behaviour.
+
+If an indirect data transfer is currently in progress to or from a port's mailbox, no new data transfers can be initiated in either direction. Attempting to initiate a transfer in this state will raise an [`IDO`](#faults) fault.
+
+Note that although more than one data transfer may not occur at the same time on the same port, concurrent data transfers may be performed on independent ports.
+
+### State
+
+The following states are applicable to any device port and its associated mailbox:
+
+* **Available**: the port is attached to a device.
+  * If a port is not attached to a device, it is considered unavailable, and no reads or writes may take place to or from its mailbox (ie. the port is never in a readable or writeable state).
+* **Readable**: the port's mailbox contains at least one unconsumed message byte, and the mailbox is not currently in use by the device itself. A port may not be in a readable and a writeable state at the same time.
+* **Writeable**: the port's mailbox contains at least one byte of free space, and the mailbox is not currently in use by the device itself. A port may not be in a readable and a writeable state at the same time.
+* **Busy**: a read or write cannot currently be initiated on the port.
+  * A port that is neither readable nor writeable is considered busy.
+  * A port that is readable or writeable, but which has an ongoing indirect data transfer which has not yet completed, is also considered busy.
+
+The following rules govern the readable state of a device port and its mailbox:
+
+* A device port may only be readable if the mailbox contains at least one message byte that can be read by the program, and the mailbox is no longer being accessed by the device on the port.
+* Once a device port becomes readable, it may not cease being readable until all bytes have been read by the program.
+  * If bytes are being read via an indirect data transfer, the program is not classed as having "read" all the bytes until the transfer completes.
+* Every time a program reads from a port, it must read at least one byte.
+* Once all bytes are read from the mailbox by the program, the mailbox must cease being readable until more bytes arrive into the mailbox from the device.
+
+The following rules govern the writeable state of a device port and its mailbox:
+
+* A device port may only be writeable if the mailbox has at least one byte of space that can be written to by the program, and the mailbox is no longer being accessed by the device on the port.
+* Once a device port becomes writeable, it may not cease being writeable until either the mailbox has no more space available, or the program has committed a write.
+  * If bytes are being written via an indirect data transfer, the program is not classed as having "written" all the bytes until the transfer completes.
+* Every time a program writes to a port, it must write at least one byte.
+* Once all available space in the mailbox has been written to by the program, the mailbox must cease being writeable until the device consumes one or more bytes from the mailbox, thereby creating more space for future writes.
+
+One common convention is for a device port to rotate between writeable and readable states (possibly with busy periods between these states), to correspond to function calls and responses. However, there is no rule that this convention must be followed. For example, a port may go from writeable to busy, and then back to writeable, without ever becoming readable. Which state transition convention is followed is up to the device that is attached to the port.
 
 ### Relevant Instructions
 
@@ -443,12 +450,12 @@ The number of the port to be queried is held in `R0`. Additionally, operand bits
 
 Operand bits `[11 2]` in the instruction word are reserved, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
-After the instruction is executed, `SR[Z]` will be set based on the query type. The convention followed is to set `SR[Z]`, as the "zero" status bit, to indicate the _absence_ of the state being queried for. Therefore, conditionally branching on the presence of `SR[Z]` implies "branch on failure" - that the `PC` jump will occur if the state queried for was _not_ present.
+After the instruction is executed, `SR[Z]` is set based on the query type. The convention followed is to set `SR[Z]`, as the "zero" status bit, to indicate the _absence_ of the state being queried for. Therefore, conditionally branching on the presence of `SR[Z]` implies "branch on failure" - that the `PC` jump occurs if the state queried for was _not_ present.
 
-* If `A` was `00b`, `SR[Z]` will be set if there _is not_ a device attached to the port, and will be cleared if there _is_ a device attached.
-* If `A` was `01b`, `SR[Z]` will be set if the port's mailbox was _not_ readable, and will be cleared if the mailbox _was_ readable.
-* If `A` was `10b`, `SR[Z]` will be set if the port's mailbox was _not_ writeable, and will be cleared if the mailbox _was_ writeable.
-* If `A` was `11b`, `SR[Z]` will be set if the port's mailbox was _neither_ readable _nor_ writeable (ie. the port was busy), and will be cleared if the mailbox was _either_ readable _or_ writeable (ie. the port was not busy).
+* If `A` is `00b`, `SR[Z]` will be set if there _is not_ a device attached to the port, and will be cleared if there _is_ a device attached.
+* If `A` is `01b`, `SR[Z]` will be set if the port's mailbox was _not_ readable, and will be cleared if the mailbox _was_ readable.
+* If `A` is `10b`, `SR[Z]` will be set if the port's mailbox was _not_ writeable, and will be cleared if the mailbox _was_ writeable.
+* If `A` is `11b`, `SR[Z]` will be set if the port's mailbox was _neither_ readable _nor_ writeable (ie. the port was busy), and will be cleared if the mailbox was _either_ readable _or_ writeable (ie. the port was not busy).
 
 All other bits in `SR` will be set to `0`.
 
@@ -458,12 +465,50 @@ Performs an operation on a device communications port.
 
 ```
  DPO
-|1001|.........AA|
+|1001|A........BB|
 ```
 
-The number of the port to use is held in `R0`. Additionally, the operand bits of the instruction word specify the type of operation to perform:
+The number of the port to use is held in `R0`. Operand bit `[11] (A)` is used to specify the type of data transfer used for a read or a write:
 
-TODO
+* If operand bit `[11] (A)` is `0`, this means that a read or write will be performed using **direct data transfer**.
+* If operand bit `[11] (A)` is `1`, this means that a read or write will be performed using **indirect data transfer**.
+
+Additionally, operand bits `[1 0] (B)` are used to specify the type of operation that will take place:
+
+* If operand bits `[1 0] (B)` are set to `00b`, a **usable bytes query** is performed.
+* If operand bits `[1 0] (B)` are set to `01b`, a **read** is performed.
+* If operand bits `[1 0] (B)` are set to `10b`, an **uncommitted write** is performed.
+* If operand bits `[1 0] (B)` are set to `11b`, a **committed write** is performed.
+
+For any operation, operand bits `[10 2]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
+
+The different supported operations are explained below.
+
+#### Usable Bytes Query (`00b`)
+
+If operand bits `[1 0] (B)` are set to `00b`, the operation fetches the number of usable bytes in the device port's mailbox, and places the value into `LR`.
+
+The purpose of the usable bytes depends on whether the mailbox is in a readable or writeable state (remember that a mailbox cannot be both readable and writeable at the same time).
+
+* If the mailbox is in a readable state, the number of usable bytes corresponds to the number of bytes left to read from the mailbox.
+* If the mailbox is in a writeable state, the number of useable bytes corresponds to the number of bytes left that can be written to in the mailbox.
+
+When the instruction is executed, operand bit `[11] (A)` must be set to `0`. If it is not, a [`RES`](#faults) fault will be raised.
+
+If the operation is attempted when the mailbox is neither readable nor writeable, a [`IDO`](#faults) fault will be raised.
+
+After the instruction has been executed, `SR[Z]` is set or cleared depending on the number of usable bytes returned. If the number of usable bytes was `0`, `SR[Z]` is set to `1`; otherwise, `SR[Z]` is set to `0`. All other bits in `SR` are set to `0`.
+
+#### Read (`01b`)
+
+If operand bits `[1 0] (B)` are set to `01b`, the operation performs a read from the device port's mailbox. The type of data transfer is specified by operand `A`.
+
+* If operand bit `[11] (A)` is set to `0`, a **direct data transfer** takes place.
+  * `2` bytes are read from the mailbox, and are placed into `LR` in little-endian format (ie. the first message byte is placed in `LR[7 0]`, and the second message byte in `LR[11 8]`). If only `1` message byte is available in the mailbox, the second message byte is always `00h`.
+  * The number of bytes that were read from the mailbox (either `1` or `2`) is placed in `R1`.
+* If operand bit `[11] (A)` is set to `1`, an **indirect data transfer** takes place.
+  * The value in `LR` is interpreted as the address of a memory buffer in `DS`, and the value in `R1` is interpreted as the maximum number of message bytes to read from the mailbox. The memory buffer in `DS` is assumed to be large enough to hold at least this number of bytes.
+  * Message bytes are consumed from the device port's mailbox and are copied into the memory buffer specified by `LR`. The supervisor performs the copy, potentially over multiple clock cycles.
 
 ## Faults
 
@@ -511,7 +556,7 @@ A writeable mailbox always has at least 1 byte space to be written to. The write
 * If the number of bytes to write is non-zero, this implies indirect data transfer. `LR` holds the address of the data to be written (it is assumed that there is a buffer at this address which holds at least the specified number of bytes to write).
 * If the number of bytes to write is zero, this implies direct data transfer of a 2-byte word. `LR` holds the little-endian word to write.
 
-After the write, `R1` is set to indicate how many bytes were actually written. For a direct data transfer this should usually be `2`, but may be `1` if there was only 1 byte of space left in the mailbox. If there is more data to come in subsequent writes, and the mailbox still has space, then the port remains writeable. Otherwise, it switches to not being writeable. A query should be used to determine when the port has become readable again.
+After the write, `R1` is set to indicate how many bytes were actually written. For a direct data transfer this should usually be `2`, but may be `1` if there was only 1 byte of space left in the mailbox. If there is more data to come in subsequent writes, and the mailbox still has space, then the port remains writeable. Otherwise, it switches to not being writeable. A query should be used to determine when the port has become writeable again.
 
 `SR[Z]` is set if the mailbox has been completely filled, and otherwise is cleared.
 
@@ -522,6 +567,25 @@ The "remaining" operation requests how many bytes are waiting to be read (if the
 If the mailbox is neither readable nor writeable, `0` is placed in `R1`.
 
 If the result placed in `R1` is zero, `SR[Z]` is set.
+
+### Device Port Communications (Again)
+
+Oops - we need to keep track of more state. We need to be able to check whether an indirect data transfer is currently in progress, as we should not modify the data buffer while the transfer is taking place.
+
+If we add another status bit to the port, we can then check the following:
+
+* If a device is attached to the port (ie. whether we can use the port)
+* If the port is readable, and no indirect data transfer is ongoing (ie. if we can initiate a new read)
+* If the port is writeable, and no indirect data transfer is ongoing (ie. if we can initiate a new write)
+* If the port is readable or writeable, and no indirect data transfer is ongoing (ie. if we can initiate a new data transfer of any kind)
+* If an indirect data transfer is currently ongoing (ie. if we are still banned from accessing an indirect data transfer buffer)
+
+This will probably be OK, but we also need to clarify device port state regarding when the device is accessing the mailbox, and when indirect data transfers are in progress. Specifically, we want the following:
+
+* The device cannot read any bytes from the mailbox until the program has committed all the required message bytes to the mailbox.
+* The program cannot read any bytes from the mailbox until the device has committed all the required message bytes to the mailbox.
+* If a program commits bytes to the mailbox using indirect data transfer, the bytes are not committed until the transfer is complete.
+* If a program consumes bytes from the mailbox using indirect data transfer, the bytes are not consumed until the transfer is complete.
 
 ### Stack
 
