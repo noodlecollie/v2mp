@@ -166,15 +166,32 @@ The following states are applicable to any device port and its associated mailbo
 * Writeable: the port's mailbox contains at least one byte of free space, ready for the program to write to.
 * Busy: if the port is _neither_ readable _nor_ writeable, it is considered busy. An unavailable port is always busy; an available port may be busy if the attached device is not currently ready to exchange messages.
 
-The following rules govern readable and writeable states:
+A port may not be in a readable and a writeable state at the same time.
 
-* A port may not be in a readable and a writeable state at the same time.
-* A device port may only be readable if it contains at least one message byte that can be read by the program. Once a device port becomes readable, it may not cease being readable until all bytes have been read by the program.
-* A device port may only be writeable if it has at least one byte of space that can be written to by the program. Once a device port becomes writeable, it may not cease being writeable until the program has committed a write.
+The following rules govern the readable state of a device port:
+
+* A device port may only be readable if it contains at least one message byte that can be read by the program.
+* Once a device port becomes readable, it may not cease being readable until all bytes have been read by the program.
 * Every time a program reads from a port, it must read at least one byte.
+* Once all bytes are read from the mailbox by the program, the mailbox must cease being readable until more bytes arrive into the mailbox from the device.
+
+The following rules govern the writeable state of a device port:
+
+* A device port may only be writeable if it has at least one byte of space that can be written to by the program.
+* Once a device port becomes writeable, it may not cease being writeable until either the mailbox has no more space available, or the program has committed a write.
 * Every time a program writes to a port, it must write at least one byte.
+* Once all available space in the mailbox has been written to by the program, the mailbox must cease being writeable until the device consumes one or more bytes from the mailbox, thereby creating more space for future writes.
 
 One common convention is for a device port to rotate between writeable and readable states (possibly with busy periods between these states), to correspond to function calls and responses. However, there is no rule that this convention must be followed. For example, a port may go from writeable to busy, and then back to writeable, without ever becoming readable. Which state transition convention is followed is up to the device that is attached to the port.
+
+### Data Transfer
+
+Two methods of data transfer are supported when reading from or writing to a device port mailbox:
+
+* **Direct data transfer**: a single word from a CPU register is written to the mailbox, or a single word from the mailbox is read into a CPU register.
+* **Indirect data transfer**: given a memory address and a maximum number of bytes, both of which are held in CPU registers, one or more bytes are either read from the mailbox into the specified `DS` address, or written from the specified `DS` address into the mailbox.
+
+When passing a message using indirect data transfer, it is assumed that a buffer of at least the specified size is present in `DS` at the given address.
 
 ### Relevant Instructions
 
@@ -476,14 +493,14 @@ The port is never both readable and writeable at the same time.
 
 A readable mailbox always has at least 1 byte waiting to be read. The read operation should specify the maximum number of bytes to read in `R1`.
 
-* If the number of bytes to read is non-zero, this implies complex data transfer. `LR` holds the address to read into (it is assumed that there is a buffer at this address which holds at least the specified max number of bytes).
-* If the number bytes to read is zero, this implies simple data transfer. A little-endian word is read and the value is stored in `LR`. If there was only one byte to read, the second, higher byte in `LR` is always `00h`.
+* If the number of bytes to read is non-zero, this implies indirect data transfer. `LR` holds the address to read into (it is assumed that there is a buffer at this address which holds at least the specified max number of bytes).
+* If the number bytes to read is zero, this implies direct data transfer. A little-endian word is read and the value is stored in `LR`. If there was only one byte to read, the second, higher byte in `LR` is always `00h`.
 
 If the max number of bytes to read is less than the remaining number of bytes in the mailbox, the mailbox retains the remaining bytes and remains in a readable state. Otherwise, all the bytes are consumed from the mailbox, and afterwards it is no longer readable.
 
-After the read, `R1` is set to indicate how many bytes were actually read. In the case of a simple data transfer, this will be either `1` or `2`, depending on how many bytes were left in the mailbox.
+After the read, `R1` is set to indicate how many bytes were actually read. In the case of a direct data transfer, this will be either `1` or `2`, depending on how many bytes were left in the mailbox.
 
-If the mailbox was not readable, an `IDO` fault will be raised. If complex data transfer occurs and `LR` points to an address that is not aligned, an `ALGN` fault will be raised. If complex data transfer occurs and any part of the transferred data is written off the end of `DS`, a `SEG` fault will be raised.
+If the mailbox was not readable, an `IDO` fault will be raised. If indirect data transfer occurs and `LR` points to an address that is not aligned, an `ALGN` fault will be raised. If indirect data transfer occurs and any part of the transferred data is written off the end of `DS`, a `SEG` fault will be raised.
 
 `SR[Z]` is set if the mailbox content has been read in its entirety, and otherwise is cleared.
 
@@ -491,10 +508,10 @@ If the mailbox was not readable, an `IDO` fault will be raised. If complex data 
 
 A writeable mailbox always has at least 1 byte space to be written to. The write operation should specify the number of bytes to write in `R1`. The instruction should also specify a flag to say whether the write constitutes a complete message, or whether there is more data to come later.
 
-* If the number of bytes to write is non-zero, this implies complex data transfer. `LR` holds the address of the data to be written (it is assumed that there is a buffer at this address which holds at least the specified number of bytes to write).
-* If the number of bytes to write is zero, this implies simple data transfer of a 2-byte word. `LR` holds the little-endian word to write.
+* If the number of bytes to write is non-zero, this implies indirect data transfer. `LR` holds the address of the data to be written (it is assumed that there is a buffer at this address which holds at least the specified number of bytes to write).
+* If the number of bytes to write is zero, this implies direct data transfer of a 2-byte word. `LR` holds the little-endian word to write.
 
-After the write, `R1` is set to indicate how many bytes were actually written. For a simple data transfer this should usually be `2`, but may be `1` if there was only 1 byte of space left in the mailbox. If there is more data to come in subsequent writes, and the mailbox still has space, then the port remains writeable. Otherwise, it switches to not being writeable. A query should be used to determine when the port has become readable again.
+After the write, `R1` is set to indicate how many bytes were actually written. For a direct data transfer this should usually be `2`, but may be `1` if there was only 1 byte of space left in the mailbox. If there is more data to come in subsequent writes, and the mailbox still has space, then the port remains writeable. Otherwise, it switches to not being writeable. A query should be used to determine when the port has become readable again.
 
 `SR[Z]` is set if the mailbox has been completely filled, and otherwise is cleared.
 
