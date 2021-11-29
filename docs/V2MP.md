@@ -184,6 +184,18 @@ If a port's mailbox is readable or writeable, it may at the same time be either 
 
 It should be noted that the mailbox for any disconnected port is implicitly unavailable. If a port's mailbox is unavailable, the mailbox is also implicitly busy.
 
+### State Diagram
+
+The following diagram describes the state transitions allowed for a port's mailbox when the port is connected to a device.
+
+![Device port state diagram](img/device-port-state-diagram.png)
+
+### Connected State Diagram
+
+The following diagram describes the state transitions allowed when a device is connected to or disconnected from a port. If a device is disconnected from a port while the mailbox is busy, the data transfer in progress is immediately terminated. This will likely corrupt the message that was being read or written, so should be avoided.
+
+![Device port connected state diagram](img/device-port-connected-state-diagram.png)
+
 ### Relevant Instructions
 
 The [`DPQ`](#h-device-port-query-dpq) and [`DPO`](#h-device-port-operation-dpo) instructions are used to respectively query a device port's state, and to perform an operation on a device port.
