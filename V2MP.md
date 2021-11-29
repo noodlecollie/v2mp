@@ -166,39 +166,27 @@ Two methods of data transfer are supported when reading from or writing to a dev
 
 When passing a message using indirect data transfer, it is assumed that a buffer of at least the specified size is present in `DS` at the given address. Until the indirect data transfer has completed, accessing this buffer in any way may cause undefined behaviour.
 
-If an indirect data transfer is currently in progress to or from a port's mailbox, no new data transfers can be initiated in either direction. Attempting to initiate a transfer in this state will raise an [`IDO`](#faults) fault.
+### State
+
+If a device port has no device attached to it, it is considered "disconnected". A disconnected port cannot be operated on using a [`DPO`](#h-device-port-operation-dpo) instruction; if this occurs, an [`IDO`](#faults) fault will be raised.
+
+If a port does have a device attached to it, it is considered "connected". Depending on the state of the port's mailbox, a connected port may be read from or written to by the program using [`DPO`](#h-device-port-operation-dpo) instructions.
+
+A port's mailbox may be "readable", "writeable", or "unavailable". It may not be in more than one of these states at the same time.
+
+* If a mailbox is readable, this means that there is at least one byte of message data ready to be consumed by the program.
+* If a mailbox is writeable, this means that there is at least one byte of free space available to be written to by the program.
+* If a mailbox is unavailable, this means that it is neither readable nor writeable.
+
+In addition to being either readable or writeable, a port's mailbox may at the same time be "busy". If the mailbox is busy, this means that an indirect data transfer is taking place, either writing bytes to the mailbox, or reading bytes from it. A mailbox may not change state between being readable, writeable, or unavailable while it is busy - any existing data transfer must first be completed.
+
+If a port's mailbox is busy, no new data transfers of any kind may be initiated by the program. If a data transfer is attempted to or from a port while its mailbox is busy, an [`IDO`](#faults) fault will be raised.
 
 Note that although more than one data transfer may not occur at the same time on the same port, concurrent data transfers may be performed on independent ports.
 
-### State
+### Relevant Instructions
 
-The following states are applicable to any device port and its associated mailbox:
-
-* **Available**: the port is attached to a device.
-  * If a port is not attached to a device, it is considered unavailable, and no reads or writes may take place to or from its mailbox (ie. the port is never in a readable or writeable state).
-* **Readable**: the port's mailbox contains at least one unconsumed message byte, and the mailbox is not currently in use by the device itself. A port may not be in a readable and a writeable state at the same time.
-* **Writeable**: the port's mailbox contains at least one byte of free space, and the mailbox is not currently in use by the device itself. A port may not be in a readable and a writeable state at the same time.
-* **Busy**: a read or write cannot currently be initiated on the port.
-  * A port that is neither readable nor writeable is considered busy.
-  * A port that is readable or writeable, but which has an ongoing indirect data transfer which has not yet completed, is also considered busy.
-
-The following rules govern the readable state of a device port and its mailbox:
-
-* A device port may only be readable if the mailbox contains at least one message byte that can be read by the program, and the mailbox is no longer being accessed by the device on the port.
-* Once a device port becomes readable, it may not cease being readable until all bytes have been read by the program.
-  * If bytes are being read via an indirect data transfer, the program is not classed as having "read" all the bytes until the transfer completes.
-* Every time a program reads from a port, it must read at least one byte.
-* Once all bytes are read from the mailbox by the program, the mailbox must cease being readable until more bytes arrive into the mailbox from the device.
-
-The following rules govern the writeable state of a device port and its mailbox:
-
-* A device port may only be writeable if the mailbox has at least one byte of space that can be written to by the program, and the mailbox is no longer being accessed by the device on the port.
-* Once a device port becomes writeable, it may not cease being writeable until either the mailbox has no more space available, or the program has committed a write.
-  * If bytes are being written via an indirect data transfer, the program is not classed as having "written" all the bytes until the transfer completes.
-* Every time a program writes to a port, it must write at least one byte.
-* Once all available space in the mailbox has been written to by the program, the mailbox must cease being writeable until the device consumes one or more bytes from the mailbox, thereby creating more space for future writes.
-
-One common convention is for a device port to rotate between writeable and readable states (possibly with busy periods between these states), to correspond to function calls and responses. However, there is no rule that this convention must be followed. For example, a port may go from writeable to busy, and then back to writeable, without ever becoming readable. Which state transition convention is followed is up to the device that is attached to the port.
+The [`DPQ`](#h-device-port-query-dpq) and [`DPO`](#h-device-port-operation-dpo) instructions are used to respectively query a device port's state, and to perform an operation on a device port.
 
 ### Relevant Instructions
 
@@ -520,7 +508,7 @@ The possible faults raised by the processor are described below.
 | `01h` | `RES` | Reserved Bits Set | Raised when an instruction is decoded and one or more reserved bits are set to `1`. | Execution of any instruction |
 | `02h` | `ALGN` | Alignment Violation | Raised when an unaligned memory address is dereferenced in `CS` or `DS`. | `LDST`, `DPO`, or upon fetching the next instruction using `PC`. |
 | `03h` | `SEG` | Segment Access Violation | Raised when an address outside `CS` or `DS` is dereferenced. | `LDST`, `DPO`, or upon fetching the next instruction using `PC` |
-| `04h` | `IDO` | Invalid Device Operation | Raised when a read is attempted from a device port that is not readable, or a write is attempted to a device port that is not writeable. | `DPO` |
+| `04h` | `IDO` | Invalid Device Operation | Raised when an operation is attempted on a port which is not in the correct state for the operation. | `DPO` |
 
 ## Todo Notes
 
