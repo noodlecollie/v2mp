@@ -192,7 +192,9 @@ The following diagram describes the state transitions allowed for a port's mailb
 
 ### Connected State Diagram
 
-The following diagram describes the state transitions allowed when a device is connected to or disconnected from a port. If a device is disconnected from a port while the mailbox is busy, the data transfer in progress is immediately terminated. This will likely corrupt the message that was being read or written, so should be avoided.
+The following diagram describes the state transitions allowed when a device is connected to or disconnected from a port.
+
+A transition to a disconnected state may only happen if the port's mailbox is not busy. If the device is disconnected from a port while the mailbox is busy, the data transfer in progress is completed, and the device port state is transitioned according to the topology of the diagram above, before the state falls back to disconnected.
 
 ![Device port connected state diagram](img/device-port-connected-state-diagram.png)
 
