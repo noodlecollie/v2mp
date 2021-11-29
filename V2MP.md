@@ -1,6 +1,3 @@
-
-
-
 V2MP
 ====
 
@@ -151,11 +148,13 @@ V2MP programs can communicate with other devices in the system using device port
 
 Each port contains a mailbox. The mailbox has space for a certain number of bytes, and is used to perform half-duplex communications with the device on the port. The format of the messages between the program and the device depends entirely on what the device expects.
 
-The program can query the number of bytes currently available in a device's mailbox, either for reading or for writing. If required, a device may change the size of its mailbox dynamically at runtime, though this is not recommended without the device first informing the program via a message.
+The program can query the number of bytes currently available in a device's mailbox, either for reading or for writing. If required, a device may change the size of its mailbox dynamically at runtime, though this is not recommended without the device first informing the program via a message. The mailbox is at all times expected to be large enough to accommodate any single, complete message - messages whose sizes are larger than the maximum space in the mailbox are not supported.
 
 When performing a write to a port's mailbox, the program may indicate that the write does not yet result in a complete message. This is referred to as an "uncommitted" write, and usually occurs if the program needs to write the complete message over the course of multiple processor instructions.
 
 The program may conversely indicate that it has finished writing a complete message, which is referred to as a "committed" write. Immediately after a committed write, the device's mailbox is no longer considered writeable, and the program must query the state of the port to determine when it is writeable again. After a committed write, the point at which the port's mailbox becomes readable or writeable again is controlled by the attached device.
+
+It should be noted that, if the program performs an uncommitted write to the mailbox which fills up all the remaining space, the write is treated as if it were a committed write.
 
 ### Data Transfer
 
@@ -176,17 +175,14 @@ A port's mailbox may be "readable", "writeable", or "unavailable". It may not be
 
 * If a mailbox is readable, this means that there is at least one byte of message data ready to be consumed by the program.
 * If a mailbox is writeable, this means that there is at least one byte of free space available to be written to by the program.
-* If a mailbox is unavailable, this means that it is neither readable nor writeable.
+* If a mailbox is unavailable, this means that it is neither readable nor writeable. An unavailable mailbox may not be read from or written to by a program, or an [`IDO`](#faults) fault will be raised.
 
-In addition to being either readable or writeable, a port's mailbox may at the same time be "busy". If the mailbox is busy, this means that an indirect data transfer is taking place, either writing bytes to the mailbox, or reading bytes from it. A mailbox may not change state between being readable, writeable, or unavailable while it is busy - any existing data transfer must first be completed.
+If a port's mailbox is readable or writeable, it may at the same time be either "busy" or "ready".
 
-If a port's mailbox is busy, no new data transfers of any kind may be initiated by the program. If a data transfer is attempted to or from a port while its mailbox is busy, an [`IDO`](#faults) fault will be raised.
+* If the mailbox is busy, this means that an indirect data transfer is taking place, either writing bytes to the mailbox, or reading bytes from it. A mailbox may not change state between being readable, writeable, or unavailable while it is busy - any existing data transfer must first be completed. No new data transfers to or from the mailbox may be initiated by the program while the mailbox is busy, or an [`IDO`](#faults) fault will be raised.
+* If the mailbox is ready, this means that no indirect data transfer is taking place. A new data transfer may be initiated either to read from the mailbox or to write to it, depending on its readable or writeable state.
 
-Note that although more than one data transfer may not occur at the same time on the same port, concurrent data transfers may be performed on independent ports.
-
-### Relevant Instructions
-
-The [`DPQ`](#h-device-port-query-dpq) and [`DPO`](#h-device-port-operation-dpo) instructions are used to respectively query a device port's state, and to perform an operation on a device port.
+It should be noted that the mailbox for any disconnected port is implicitly unavailable. If a port's mailbox is unavailable, the mailbox is also implicitly busy.
 
 ### Relevant Instructions
 
@@ -426,24 +422,28 @@ Queries the state of a device communications port, and sets the status register 
 
 ```
  DPQ
-|1000|.........AA|
+|1000|........AAA|
 ```
 
-The number of the port to be queried is held in `R0`. Additionally, operand bits `[1 0] (A)` specify the type of query to perform:
+The number of the port to be queried is held in `R0`. Additionally, operand bits `[2 0] (A)` specify the type of query to perform:
 
-* If operand bits `[1 0] (A)` are set to `00b`, the instruction queries the availability of the port - ie. whether there is a device currently attached to the port.
-* If operand bits `[1 0] (A)` are set to `01b`, the instruction queries the readable state of the port's mailbox - ie. whether there is a message (or a portion of a message) available to be read from the mailbox.
-* If operand bits `[1 0] (A)` are set to `10b`, the instruction queries the writeable state of the port's mailbox - ie. whether it is empty and whether the device in question is ready for data to be transferred into the mailbox.
-* If operand bits `[1 0] (A)` are set to `11b`, the instruction queries the readable and writeable state of the port's mailbox at the same time - ie. whether there is either a message ready to read, or mailbox space ready to be written to. This is essentially equivalent to a query asking whether the port is "not busy", and is useful after fully committing a write to a port. After committing a write, the port may remain busy until the device has processed the message and passed back a response, which will then cause it to become readable. In this intermediate busy time, the port will be neither readable nor writeable.
+* If operand bits `[2 0] (A)` are set to `000b`, the instruction queries the connected state of the port - ie. whether there is a device currently attached to the port.
+* If operand bits `[2 0] (A)` are set to `001b`, the instruction queries whether the port's mailbox is readable _and_ ready - ie. whether a data transfer can be initiated for reading.
+* If operand bits `[2 0] (A)` are set to `010b`, the instruction queries whether the port's mailbox is writeable _and_ ready - ie. whether a data transfer can be initiated for writing.
+* If operand bits `[2 0] (A)` are set to `011b`, the instruction queries whether the port's mailbox is _either_ readable _or_ writeable. Whether the port is ready or busy does not affect the result of the query. This query is equivalent to checking whether the port is available.
+* If operand bits `[2 0] (A)` are set to `100b`, the instruction queries whether the port's mailbox is busy - ie. whether a data transfer is currently in progress. This query is useful to determine whether the data transfer buffer in memory should currently be considered off-limits for the CPU to access.
 
-Operand bits `[11 2]` in the instruction word are reserved, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
+Values `101b`, `110b`, and `111b` are reserved. If operand bits `[2 0] (A)` are set to any of these values, a [`RES`](#faults) fault will be raised.
+
+Operand bits `[11 3]` in the instruction word are reserved, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
 After the instruction is executed, `SR[Z]` is set based on the query type. The convention followed is to set `SR[Z]`, as the "zero" status bit, to indicate the _absence_ of the state being queried for. Therefore, conditionally branching on the presence of `SR[Z]` implies "branch on failure" - that the `PC` jump occurs if the state queried for was _not_ present.
 
-* If `A` is `00b`, `SR[Z]` will be set if there _is not_ a device attached to the port, and will be cleared if there _is_ a device attached.
-* If `A` is `01b`, `SR[Z]` will be set if the port's mailbox was _not_ readable, and will be cleared if the mailbox _was_ readable.
-* If `A` is `10b`, `SR[Z]` will be set if the port's mailbox was _not_ writeable, and will be cleared if the mailbox _was_ writeable.
-* If `A` is `11b`, `SR[Z]` will be set if the port's mailbox was _neither_ readable _nor_ writeable (ie. the port was busy), and will be cleared if the mailbox was _either_ readable _or_ writeable (ie. the port was not busy).
+* If `A` is `000b`, `SR[Z]` will be set if there _is not_ a device attached to the port, and will be cleared if there _is_ a device attached.
+* If `A` is `001b`, `SR[Z]` will be set if the port's mailbox was _not_ readable, and will be cleared if the mailbox _was_ readable.
+* If `A` is `010b`, `SR[Z]` will be set if the port's mailbox was _not_ writeable, and will be cleared if the mailbox _was_ writeable.
+* If `A` is `011b`, `SR[Z]` will be set if the port's mailbox was _neither_ readable _nor_ writeable (ie. the port was unavailable), and will be cleared if the mailbox was _either_ readable _or_ writeable (ie. the port was available).
+* If `A` is `100b`, `SR[Z]` will be set if the port's mailbox _was not_ busy (ie. the port was ready), and will be cleared if the mailbox _was_ busy.
 
 All other bits in `SR` will be set to `0`.
 
@@ -463,16 +463,16 @@ The number of the port to use is held in `R0`. Operand bit `[11] (A)` is used to
 
 Additionally, operand bits `[1 0] (B)` are used to specify the type of operation that will take place:
 
-* If operand bits `[1 0] (B)` are set to `00b`, a **usable bytes query** is performed.
+* If operand bits `[1 0] (B)` are set to `00b`, the **usable byte count** is fetched.
 * If operand bits `[1 0] (B)` are set to `01b`, a **read** is performed.
 * If operand bits `[1 0] (B)` are set to `10b`, an **uncommitted write** is performed.
 * If operand bits `[1 0] (B)` are set to `11b`, a **committed write** is performed.
 
 For any operation, operand bits `[10 2]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
-The different supported operations are explained below.
+The different supported operations, specified by operand `B`, are explained below.
 
-#### Usable Bytes Query (`00b`)
+#### Usable Byte Count (`00b`)
 
 If operand bits `[1 0] (B)` are set to `00b`, the operation fetches the number of usable bytes in the device port's mailbox, and places the value into `LR`.
 
@@ -489,14 +489,21 @@ After the instruction has been executed, `SR[Z]` is set or cleared depending on 
 
 #### Read (`01b`)
 
-If operand bits `[1 0] (B)` are set to `01b`, the operation performs a read from the device port's mailbox. The type of data transfer is specified by operand `A`.
+TODO
 
-* If operand bit `[11] (A)` is set to `0`, a **direct data transfer** takes place.
-  * `2` bytes are read from the mailbox, and are placed into `LR` in little-endian format (ie. the first message byte is placed in `LR[7 0]`, and the second message byte in `LR[11 8]`). If only `1` message byte is available in the mailbox, the second message byte is always `00h`.
-  * The number of bytes that were read from the mailbox (either `1` or `2`) is placed in `R1`.
-* If operand bit `[11] (A)` is set to `1`, an **indirect data transfer** takes place.
-  * The value in `LR` is interpreted as the address of a memory buffer in `DS`, and the value in `R1` is interpreted as the maximum number of message bytes to read from the mailbox. The memory buffer in `DS` is assumed to be large enough to hold at least this number of bytes.
-  * Message bytes are consumed from the device port's mailbox and are copied into the memory buffer specified by `LR`. The supervisor performs the copy, potentially over multiple clock cycles.
+Note that `SR[C]` should be set if there were more bytes to consume in the mailbox than were transferred in the read (ie. not all of the message has been read yet). `SR[Z]` should be set if the number of bytes transferred in the read exactly matched the size of the buffer they were transferred into (ie. the remaining space in the buffer was `0`).
+
+#### Uncommitted Write (`10b`)
+
+TODO
+
+Note that `SR[Z]` should be set if there were no more free bytes available in the mailbox after the write. `SR[C]` should be set if more bytes were specified in the write command than were available to write to in the mailbox.
+
+#### Committed Write(`11b`)
+
+TODO
+
+Note that `SR[Z]` should be set if there were no more free bytes available in the mailbox after the write. `SR[C]` should be set if more bytes were specified in the write command than were available to write to in the mailbox.
 
 ## Faults
 
@@ -512,69 +519,6 @@ The possible faults raised by the processor are described below.
 
 ## Todo Notes
 
-### Device Port Communications
-
-The device port is always either:
-
-* Readable,
-* Writeable, or
-* Busy (neither readable nor writeable).
-
-The port is never both readable and writeable at the same time.
-
-**READ**
-
-A readable mailbox always has at least 1 byte waiting to be read. The read operation should specify the maximum number of bytes to read in `R1`.
-
-* If the number of bytes to read is non-zero, this implies indirect data transfer. `LR` holds the address to read into (it is assumed that there is a buffer at this address which holds at least the specified max number of bytes).
-* If the number bytes to read is zero, this implies direct data transfer. A little-endian word is read and the value is stored in `LR`. If there was only one byte to read, the second, higher byte in `LR` is always `00h`.
-
-If the max number of bytes to read is less than the remaining number of bytes in the mailbox, the mailbox retains the remaining bytes and remains in a readable state. Otherwise, all the bytes are consumed from the mailbox, and afterwards it is no longer readable.
-
-After the read, `R1` is set to indicate how many bytes were actually read. In the case of a direct data transfer, this will be either `1` or `2`, depending on how many bytes were left in the mailbox.
-
-If the mailbox was not readable, an `IDO` fault will be raised. If indirect data transfer occurs and `LR` points to an address that is not aligned, an `ALGN` fault will be raised. If indirect data transfer occurs and any part of the transferred data is written off the end of `DS`, a `SEG` fault will be raised.
-
-`SR[Z]` is set if the mailbox content has been read in its entirety, and otherwise is cleared.
-
-**WRITE**
-
-A writeable mailbox always has at least 1 byte space to be written to. The write operation should specify the number of bytes to write in `R1`. The instruction should also specify a flag to say whether the write constitutes a complete message, or whether there is more data to come later.
-
-* If the number of bytes to write is non-zero, this implies indirect data transfer. `LR` holds the address of the data to be written (it is assumed that there is a buffer at this address which holds at least the specified number of bytes to write).
-* If the number of bytes to write is zero, this implies direct data transfer of a 2-byte word. `LR` holds the little-endian word to write.
-
-After the write, `R1` is set to indicate how many bytes were actually written. For a direct data transfer this should usually be `2`, but may be `1` if there was only 1 byte of space left in the mailbox. If there is more data to come in subsequent writes, and the mailbox still has space, then the port remains writeable. Otherwise, it switches to not being writeable. A query should be used to determine when the port has become writeable again.
-
-`SR[Z]` is set if the mailbox has been completely filled, and otherwise is cleared.
-
-**REMAINING**
-
-The "remaining" operation requests how many bytes are waiting to be read (if the port is readable), or how many bytes of space are available to be written to (if the port is writeable). The result of the instruction is placed in `R1`.
-
-If the mailbox is neither readable nor writeable, `0` is placed in `R1`.
-
-If the result placed in `R1` is zero, `SR[Z]` is set.
-
-### Device Port Communications (Again)
-
-Oops - we need to keep track of more state. We need to be able to check whether an indirect data transfer is currently in progress, as we should not modify the data buffer while the transfer is taking place.
-
-If we add another status bit to the port, we can then check the following:
-
-* If a device is attached to the port (ie. whether we can use the port)
-* If the port is readable, and no indirect data transfer is ongoing (ie. if we can initiate a new read)
-* If the port is writeable, and no indirect data transfer is ongoing (ie. if we can initiate a new write)
-* If the port is readable or writeable, and no indirect data transfer is ongoing (ie. if we can initiate a new data transfer of any kind)
-* If an indirect data transfer is currently ongoing (ie. if we are still banned from accessing an indirect data transfer buffer)
-
-This will probably be OK, but we also need to clarify device port state regarding when the device is accessing the mailbox, and when indirect data transfers are in progress. Specifically, we want the following:
-
-* The device cannot read any bytes from the mailbox until the program has committed all the required message bytes to the mailbox.
-* The program cannot read any bytes from the mailbox until the device has committed all the required message bytes to the mailbox.
-* If a program commits bytes to the mailbox using indirect data transfer, the bytes are not committed until the transfer is complete.
-* If a program consumes bytes from the mailbox using indirect data transfer, the bytes are not consumed until the transfer is complete.
-
 ### Stack
 
-Do we have enough remaining instructions to implement stack support?
+Do we have enough remaining instructions to implement stack support? We're beginning to need it once we start wanting to check the results of device operations...
