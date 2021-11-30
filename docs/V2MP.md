@@ -482,10 +482,10 @@ The number of the port to use is held in `R0`. Operand bit `[11] (A)` is used to
 
 Additionally, operand bits `[1 0] (B)` are used to specify the type of operation that will take place:
 
-* If operand bits `[1 0] (B)` are set to `00b`, the usable byte count is fetched.
-* If operand bits `[1 0] (B)` are set to `01b`, control of the port's mailbox is passed to the device.
-* If operand bits `[1 0] (B)` are set to `10b`, a read is performed.
-* If operand bits `[1 0] (B)` are set to `11b`, a write is performed.
+* If operand bits `[1 0] (B)` are set to `00b (0h)`, the usable byte count is fetched.
+* If operand bits `[1 0] (B)` are set to `01b (1h)`, control of the port's mailbox is relinquished by the program.
+* If operand bits `[1 0] (B)` are set to `10b (2h)`, a read is performed.
+* If operand bits `[1 0] (B)` are set to `11b (3h)`, a write is performed.
 
 For any operation, operand bits `[10 2]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
@@ -493,7 +493,7 @@ The different supported operations, specified by operand `B`, are explained belo
 
 #### Usable Byte Count (`00b`)
 
-If operand bits `[1 0] (B)` are set to `00b`, the operation fetches the number of usable bytes in the device port's mailbox, and places the value into `LR`.
+If operand bits `[1 0] (B)` are set to `00b (0h)`, the operation fetches the number of usable bytes in the mailbox of the device port specified by `R0`. The number of usable bytes is placed into `LR`.
 
 The purpose of the usable bytes depends on whether the mailbox is in a readable or writable state (remember that a mailbox cannot be both readable and writable at the same time).
 
@@ -504,25 +504,67 @@ If the mailbox is exhausted, the number of usable bytes is `0`.
 
 When the instruction is executed, operand bit `[11] (A)` must be set to `0`. If it is not, a [`RES`](#faults) fault will be raised.
 
-If the operation is attempted when the mailbox is unavailable, a [`IDO`](#faults) fault will be raised.
+If the operation is attempted when the mailbox is unavailable, an [`IDO`](#faults) fault will be raised.
 
 After the instruction has been executed, `SR[Z]` is set or cleared depending on the number of usable bytes returned. If the number of usable bytes was `0`, `SR[Z]` is set to `1`; otherwise, `SR[Z]` is set to `0`. All other bits in `SR` are set to `0`.
 
 #### Relinquish Mailbox (`01b`)
 
-TODO
+If operand bits `[1 0] (B)` are set to `01b (1h)`, control of the mailbox of the device port specified by `R0` is relinquished by the program. If the program does not have control of the mailbox when the instruction is executed, nothing happens.
+
+When the instruction is executed, operand bit `[11] (A)` must be set to `0`. If it is not, a [`RES`](#faults) fault will be raised.
+
+After the instruction has been executed, `SR[Z]` is cleared if the program had control of the mailbox initially. `SR[Z]` is set if the program did not have control of the mailbox when the instruction was executed.
 
 #### Read (`10b`)
 
-TODO
+If operand bits `[1 0] (B)` are set to `10b (2h)`, the operation initiates a read from the mailbox of the device port specified by `R0`. The type of data transfer is set by operand bit `[11] (A)`.
 
-Note that `SR[C]` should be set if there were more bytes to consume in the mailbox than were transferred in the read (ie. not all of the message has been read yet). `SR[Z]` should be set if the number of bytes transferred in the read exactly matched the size of the buffer they were transferred into (ie. the remaining space in the buffer was `0`).
+If the operation is attempted when the mailbox is not readable or is busy, an [`IDO`](#faults) fault will be raised.
+
+**Direct Data Transfer**
+
+If operand bit `[11] (A)` is `0`, a direct data transfer is performed for the read. A  little-endian word of data is read from the device port's mailbox and placed into `LR`. If the mailbox only contained one byte of data, the second byte read into `LR` is always `00h`. The number of bytes read (either `1` or `2`) is placed into `R1`.
+
+After the instruction is executed, `SR[Z]` is set if there were two or more bytes in the mailbox at the point the read was executed, and is cleared if there was only one byte in the mailbox when the read was executed.
+
+`SR[C]` is set if there were bytes left to read in the mailbox after the data transfer, and is cleared if there were no more bytes in the mailbox after the data transfer. `SR[C]` is always cleared if `SR[Z]` is cleared.
+
+**Indirect Data Transfer**
+
+If operand bit `[11] (A)` is `1`, an indirect data transfer is initiated for the read. The value of `LR` specifies the address in `DS` to which to copy the data from the device port's mailbox, and the value in `R1` specifies the maximum number of bytes to copy. It is assumed that there is a data buffer at the address pointed to by `LR` which is large enough to hold at least as many bytes as are specified in `R1`. If the supervisor attempts to read off the end of `DS` during the data transfer, a [`SEG`](#faults) fault is raised.
+
+Once the instruction is executed, the mailbox becomes busy, and the supervisor begins copying data out of the mailbox and into the buffer that was pointed to by `LR`. `R1` is set to hold the number of bytes that are being transferred - this may be less than the number originally requested, if this number was greater than the number of bytes left in the mailbox.
+
+While the mailbox is busy, the data buffer originally pointed to by `R1` should not be accessed by the CPU, or undefined behaviour may result. Once the mailbox is no longer busy, the indirect data transfer has ended and the memory may be safely accessed.
+
+After the instruction is executed, `SR[Z]` is set if the number of bytes being read in the data transfer exactly matches the maximum number of bytes originally specified by `R1`. `SR[Z]` is cleared if the number of bytes being read in the data transfer is less than the maximum number of bytes originally specified by `R1`.
+
+`SR[C]` is set if there will be bytes left to read in the mailbox after the data transfer completes, and is cleared if there will be no more bytes in the mailbox after the data transfer completes.
 
 #### Write(`11b`)
 
-TODO
+If operand bits `[1 0] (B)` are set to `11b (2h)`, the operation initiates a write to the mailbox of the device port specified by `R0`. The type of data transfer is set by operand bit `[11] (A)`.
 
-Note that `SR[Z]` should be set if there were no more free bytes available in the mailbox after the write. `SR[C]` should be set if more bytes were specified in the write command than were available to write to in the mailbox.
+**Direct Data Transfer**
+
+If operand bit `[11] (A)` is `0`, a direct data transfer is performed for the write. A  little-endian word of data is written to the device port's mailbox from `LR`. If the mailbox only has one byte of writable space left, the lower byte of `LR` is written to the mailbox, and the upper byte is discarded. The number of bytes written (either `1` or `2`) is placed into `R1`.
+
+After the instruction is executed, `SR[Z]` is set if there were no more free bytes in the mailbox after the write, and is cleared if there were free bytes still available in the mailbox after the write.
+
+`SR[C]` is set if there were more bytes specified in the write than there were free bytes in the mailbox, and is cleared if the entirety of the write fitted into the mailbox.
+
+**Indirect Data Transfer**
+
+If operand bit `[11] (A)` is `1`, an indirect data transfer is initiated for the write. The value of `LR` specifies the address in `DS` from which to copy the data to the device port's mailbox, and the value in `R1` specifies the maximum number of bytes to copy. It is assumed that there is a data buffer at the address pointed to by `LR` which holds at least as many bytes as are specified in `R1`. If the supervisor attempts to write off the end of `DS` during the data transfer, a [`SEG`](#faults) fault is raised.
+
+Once the instruction is executed, the mailbox becomes busy, and the supervisor begins copying data into the mailbox from the buffer that was pointed to by `LR`. `R1` is set to hold the number of bytes that are being transferred - this may be less than the number originally requested, if this number was greater than the number of free bytes left in the mailbox.
+
+While the mailbox is busy, the data buffer originally pointed to by `R1` should not be accessed by the CPU, or undefined behaviour may result. Once the mailbox is no longer busy, the indirect data transfer has ended and the memory may be safely accessed.
+
+After the instruction is executed, `SR[Z]` is set if there will be no more space left in the mailbox after the write, and is cleared if there will still be at least one byte of space left in the mailbox after the write.
+
+`SR[C]` is set if there were more bytes specified in the write than there were free bytes in the mailbox, and is cleared if the entirety of the write fitted into the mailbox.
 
 ## Faults
 
