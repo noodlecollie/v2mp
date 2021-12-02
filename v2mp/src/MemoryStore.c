@@ -64,6 +64,26 @@ static void GetSegmentWord(
 	*outWord = *((const V2MP_Word*)(segment->data + address));
 }
 
+static void SetSegmentWord(
+	V2MP_Segment* segment,
+	V2MP_Word address,
+	V2MP_Word word,
+	V2MP_Fault* outFault
+)
+{
+	if ( !segment->data || (size_t)address + 2 > segment->size )
+	{
+		if ( outFault )
+		{
+			*outFault = V2MP_FAULT_SEG;
+		}
+
+		return;
+	}
+
+	*((V2MP_Word*)(segment->data + address)) = word;
+}
+
 void V2MP_MemoryStore_Init(V2MP_MemoryStore* mem)
 {
 	if ( !mem )
@@ -144,5 +164,21 @@ bool V2MP_MemoryStore_FetchDSWord(
 	}
 
 	GetSegmentWord(&mem->ds, address, outWord, outFault);
+	return true;
+}
+
+bool V2MP_MemoryStore_StoreDSWord(
+	V2MP_MemoryStore* mem,
+	V2MP_Word address,
+	V2MP_Word word,
+	V2MP_Fault* outFault
+)
+{
+	if ( !mem )
+	{
+		return false;
+	}
+
+	SetSegmentWord(&mem->ds, address, word, outFault);
 	return true;
 }

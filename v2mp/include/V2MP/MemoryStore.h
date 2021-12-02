@@ -40,4 +40,11 @@ bool V2MP_MemoryStore_FetchDSWord(
 	V2MP_Fault* outFault
 );
 
+bool V2MP_MemoryStore_StoreDSWord(
+	V2MP_MemoryStore* mem,
+	V2MP_Word address,
+	V2MP_Word word,
+	V2MP_Fault* outFault
+);
+
 #endif // V2MP_MEMORYSTORE_H

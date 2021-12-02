@@ -257,7 +257,7 @@ Operand bits `[8 0]` of the instruction are reserved for future use. If any of t
 
 If the memory address specified by `LR` is not aligned to a word boundary, an [`ALGN`](#faults) fault will be raised. If the address is not within the boundaries of `DS`, a [`SEG`](#faults) fault will be raised.
 
-If the value that is loaded into the destination register is zero, `SR[Z]` is set; otherwise, it is cleared. All other bits in `SR` are always cleared.
+If the value that is loaded or stored to or from the register is zero, `SR[Z]` is set; otherwise, it is cleared. All other bits in `SR` are always cleared.
 
 ### `2h`: Assign (`ASGN`)
 
@@ -280,7 +280,7 @@ If instead the source `A` and destination `B` register identifiers are the same,
 If `A` and `B` are the same and the destination register is `R0`, `R1` or `LR`, the following assignment is performed:
 
 * Bits `[6 0]` in the destination register are assigned the operand bits `[6 0]`.
-* Bits `[15 8]` in the destination register are set to `0` if operand bit `[7]` was `0`; otherwise, bits `[15 8]` in the destination register are set to `1`.
+* Bits `[15 7]` in the destination register are set to `0` if operand bit `[7]` was `0`; otherwise, bits `[15 7]` in the destination register are set to `1`.
 
 ```
  R0, R1, or LR, assigning operand 00000010b (2):
@@ -290,24 +290,7 @@ If `A` and `B` are the same and the destination register is `R0`, `R1` or `LR`, 
 |1111111110000010|
 ```
 
-If instead `A` and `B` are the same and the destination register is `PC` (`11b`), operand bits `[7 0] (C)` are treated as a **signed offset in words** from `PC`'s current value. This means that `PC` can be incremented by up to `127` words (`254` bytes), or decremented by up to `128` words (`256` bytes).
-
-```
- ASGN  PC     += 4W      PC - 400h (1024)
-|0010|1111|00000100| -> |0000010000000000|
-                        V                V
-                         PC - 408h (1032)
-                        |0000010000001000|
-
-
- ASGN  PC     -= 4W      PC - 400h (1024)
-|0010|1111|11111100| -> |0000010000000000|
-                        V                V
-                         PC - 3F8h (1016)
-                        |0000001111111000|
-```
-
-If `PC` is incremented or decremented, and the increment or decrement respectively overflows or underflows `PC`, `SR[C]` is set; otherwise, it is cleared. In all other cases, where a value is simply assigned verbatim to a register, `SR[C]` is cleared.
+If `A` and `B` are the same, `PC` may not be assigned to, since the range of values that are passed in operand bits `[7 0] (C)` is too small to be useful. If `A` and `B` are the same and the register index `11b` is specified, an [`INO`](#faults) fault is raised.
 
 In all cases described for this instruction, `SR[Z]` is set if the eventual value in the destination register is zero; otherwise, it is cleared. All other bits in `SR` are cleared.
 
@@ -325,9 +308,9 @@ Increments the value in a register.
 
 If the source `A` and destination `B` register identifiers are different, the source register's value is used to increment the destination register, and the source register remains unchanged. Operand bits `[7 0] (C)` must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
 
-If instead the source `A` and destination `B` register identifiers are the same, operand bits `[7 0] (C)` are interpreted as an unsigned 8-bit literal, which is used to increment destination register. This behaviour is the same regardless of the destination register.
+If instead the source `A` and destination `B` register identifiers are the same, operand bits `[7 0] (C)` are interpreted as an unsigned 8-bit literal, which is used to increment destination register.
 
-It should be noted that, contrary to the [`ASGN`](#h-assign-asgn) instruction which may increment or decrement the program counter `PC` by a certain number of _words,_ the [`ADD`](#h-add-add) instruction will always increment the destination register's absolute value, regardless of which register it is. This means that it is possible to increment `PC` by an odd number of byes, causing it to no longer be aligned to a word boundary. This type of operation should be avoided, or an [`ALGN`](#faults) fault will be raised upon fetching the next instruction.
+Note that if the destination register is `PC`, the increment (either as a literal or from a register) is treated as the number of **words** to increment by, rather than the number of bytes. This is to avoid causing an address mis-alignment by setting `PC` to an odd value.
 
 If the add operation overflows the destination register, `SR[C]` is set; otherwise, it is cleared.
 
@@ -349,9 +332,9 @@ Decrements the value in a register.
 
 If the source `A` and destination `B` register identifiers are different, the source register's value is used to decrement the destination register, and the source register remains unchanged. Operand bits `[7 0] (C)` must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
 
-If instead the source `A` and destination `B` register identifiers are the same, operand bits `[7 0] (C)` are interpreted as an unsigned 8-bit literal, which is used to decrement destination register. This behaviour is the same regardless of the destination register.
+If instead the source `A` and destination `B` register identifiers are the same, operand bits `[7 0] (C)` are interpreted as an unsigned 8-bit literal, which is used to decrement destination register.
 
-It should be noted that, contrary to the [`ASGN`](#h-assign-asgn) instruction which may increment or decrement the program counter by a certain number of _words,_ the [`SUB`](#h-subtract-sub) instruction will always decrement the destination register's absolute value, regardless of which register it is. This means that it is possible to decrement the program counter by an odd number of byes, causing it to no longer be aligned to a word boundary. This type of operation should be avoided, or an [`ALGN`](#faults) fault will be raised upon fetching the next instruction.
+Note that if the destination register is `PC`, the decrement (either as a literal or from a register) is treated as the number of **words** to decrement by, rather than the number of bytes. This is to avoid causing an address mis-alignment by setting `PC` to an odd value.
 
 If the subtraction operation underflows the destination register, `SR[C]` is set; otherwise, it is cleared.
 
@@ -577,7 +560,8 @@ The possible faults raised by the processor are described below.
 | `03h` | `ALGN` | Alignment Violation | Raised when an unaligned memory address is dereferenced in `CS` or `DS`. | [`LDST`](#h-loadstore-ldst), [`DPO`](#h-device-port-operation-dpo), or upon fetching the next instruction using `PC`. |
 | `04h` | `SEG` | Segment Access Violation | Raised when an address outside `CS` or `DS` is dereferenced. | [`LDST`](#h-loadstore-ldst), [`DPO`](#h-device-port-operation-dpo), or upon fetching the next instruction using `PC` |
 | `05h` | `IDO` | Invalid Device Operation | Raised when an operation is attempted on a port which is not in the correct state for the operation. | [`DPO`](#h-device-port-operation-dpo) |
-| `06h` | `INV` | Invalid Instruction | Raised when an unrecognised instruction opcode is decoded. | Decoding of an instruction |
+| `06h` | `INI` | Invalid Instruction | Raised when an unrecognised instruction opcode is decoded. | Decoding of an instruction |
+| `07h` | `INO` | Invalid Operand | Raised when an invalid combination of operands is provided on an instruction. | Execution of any instruction |
 
 ## Todo Notes
 

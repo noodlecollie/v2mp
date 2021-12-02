@@ -33,7 +33,41 @@ typedef enum _V2MP_Fault
 	V2MP_FAULT_ALGN = 0x3,
 	V2MP_FAULT_SEG = 0x4,
 	V2MP_FAULT_IDO = 0x5,
-	V2MP_FAULT_INV = 0x6,
+	V2MP_FAULT_INI = 0x6,
+	V2MP_FAULT_INO = 0x6,
 } V2MP_Fault;
+
+typedef enum _V2MP_RegisterIndex
+{
+	V2MP_REGID_R0 = 0x0,
+	V2MP_REGID_R1 = 0x1,
+	V2MP_REGID_LR = 0x2,
+	V2MP_REGID_PC = 0x3
+} V2MP_RegisterIndex;
+
+#define V2MP_REGID_MASK(val) ((val) & 0x3)
+
+#define V2MP_CPU_SR_Z (1 << 0)
+#define V2MP_CPU_SR_C (1 << 1)
+
+#define V2MP_OPCODE(instr) ((instr) >> 12)
+
+#define V2MP_OP_LDST_IS_STORE(instr) ((instr) & (1 << 11))
+#define V2MP_OP_LDST_REGINDEX(instr) (((instr) & 0x0600) >> 9)
+#define V2MP_OP_LDST_RESBITS(instr) ((instr) & 0x01FF)
+
+#define V2MP_OP_ASGN_SREGINDEX(instr) (((instr) & 0x0C00) >> 10)
+#define V2MP_OP_ASGN_DREGINDEX(instr) (((instr) & 0x0300) >> 8)
+#define V2MP_OP_ASGN_VALUE(instr) ((instr) & 0x00FF)
+
+#define V2MP_OP_ADDSUB_SREGINDEX(instr) (((instr) & 0x0C00) >> 10)
+#define V2MP_OP_ADDSUB_DREGINDEX(instr) (((instr) & 0x0300) >> 8)
+#define V2MP_OP_ADDSUB_VALUE(instr) ((instr) & 0x00FF)
+
+#define V2MP_OP_SHFT_SREGINDEX(instr) (((instr) & 0x0C00) >> 10)
+#define V2MP_OP_SHFT_DREGINDEX(instr) (((instr) & 0x0300) >> 8)
+#define V2MP_OP_SHFT_VALUE(instr) ((instr) & 0x001F)
+#define V2MP_OP_SHFT_RESBITS(instr) ((instr) & 0x00E0)
+#define V2MP_OP_SHFT_MAGMASK(value) ((value) & 0x001F)
 
 #endif // V2MP_DEFS_H

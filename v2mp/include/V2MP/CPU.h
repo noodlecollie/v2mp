@@ -25,4 +25,6 @@ void V2MP_CPU_Deinit(V2MP_CPU* cpu);
 // but we simplify somewhat for ease of simulation.
 bool V2MP_CPU_FetchDecodeAndExecute(V2MP_CPU* cpu);
 
+bool V2MP_CPU_SetFault(V2MP_CPU* cpu, V2MP_Fault fault, V2MP_Word args);
+
 #endif // V2MP_CPU_H
