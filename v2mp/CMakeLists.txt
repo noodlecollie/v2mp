@@ -3,7 +3,9 @@ create_export_header(V2MP)
 
 set(PUBLIC_HEADERS_GENERAL
 	include/V2MP/CPU.h
-	include/V2MP/Types.h
+	include/V2MP/Defs.h
+	include/V2MP/LibExport.h
+	include/V2MP/MemoryStore.h
 )
 
 set(PUBLIC_HEADERS_ALL
@@ -12,6 +14,7 @@ set(PUBLIC_HEADERS_ALL
 
 set(SOURCES_ALL
 	src/CPU.c
+	src/MemoryStore.c
 )
 
 if(BUILD_SHARED_LIBS)

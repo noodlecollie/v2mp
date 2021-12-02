@@ -1,0 +1,39 @@
+#ifndef V2MP_DEFS_H
+#define V2MP_DEFS_H
+
+#include <stdint.h>
+
+typedef uint16_t V2MP_Word;
+
+typedef enum _V2MP_Instruction
+{
+	V2MP_OP_HCF = 0x0,
+	V2MP_OP_LDST = 0x1,
+	V2MP_OP_ASGN = 0x2,
+	V2MP_OP_ADD = 0x3,
+	V2MP_OP_SUB = 0x4,
+	V2MP_OP_SHFT = 0x5,
+	V2MP_OP_BITW = 0x6,
+	V2MP_OP_CBX = 0x7,
+	V2MP_OP_DPQ = 0x8,
+	V2MP_OP_DPO = 0x9,
+	V2MP_OP_UNASSIGNED1 = 0xA,
+	V2MP_OP_UNASSIGNED2 = 0xB,
+	V2MP_OP_UNASSIGNED3 = 0xC,
+	V2MP_OP_UNASSIGNED4 = 0xD,
+	V2MP_OP_UNASSIGNED5 = 0xE,
+	V2MP_OP_UNASSIGNED6 = 0xF,
+} V2MP_Instruction;
+
+typedef enum _V2MP_Fault
+{
+	V2MP_FAULT_NONE = 0x0,
+	V2MP_FAULT_HCF = 0x1,
+	V2MP_FAULT_RES = 0x2,
+	V2MP_FAULT_ALGN = 0x3,
+	V2MP_FAULT_SEG = 0x4,
+	V2MP_FAULT_IDO = 0x5,
+	V2MP_FAULT_INV = 0x6,
+} V2MP_Fault;
+
+#endif // V2MP_DEFS_H

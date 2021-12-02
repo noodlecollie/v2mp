@@ -572,11 +572,12 @@ The possible faults raised by the processor are described below.
 
 | Index | Code | Name | Description | Triggered By |
 | ----- | ---- | ---- | ----------- | ------------ |
-| `00h` | `HCF` | Halt and Catch Fire | Raised by the [`HCF`](#h-halt-hcf) instruction to indicate that the processor has halted. | [`HCF`](#h-halt-hcf) |
-| `01h` | `RES` | Reserved Bits Set | Raised when an instruction is decoded and one or more reserved bits are set to `1`. | Execution of any instruction |
-| `02h` | `ALGN` | Alignment Violation | Raised when an unaligned memory address is dereferenced in `CS` or `DS`. | [`LDST`](#h-loadstore-ldst), [`DPO`](#h-device-port-operation-dpo), or upon fetching the next instruction using `PC`. |
-| `03h` | `SEG` | Segment Access Violation | Raised when an address outside `CS` or `DS` is dereferenced. | [`LDST`](#h-loadstore-ldst), [`DPO`](#h-device-port-operation-dpo), or upon fetching the next instruction using `PC` |
-| `04h` | `IDO` | Invalid Device Operation | Raised when an operation is attempted on a port which is not in the correct state for the operation. | [`DPO`](#h-device-port-operation-dpo) |
+| `01h` | `HCF` | Halt and Catch Fire | Raised by the [`HCF`](#h-halt-hcf) instruction to indicate that the processor has halted. | [`HCF`](#h-halt-hcf) |
+| `02h` | `RES` | Reserved Bits Set | Raised when an instruction is decoded and one or more reserved bits are set to `1`. | Execution of any instruction |
+| `03h` | `ALGN` | Alignment Violation | Raised when an unaligned memory address is dereferenced in `CS` or `DS`. | [`LDST`](#h-loadstore-ldst), [`DPO`](#h-device-port-operation-dpo), or upon fetching the next instruction using `PC`. |
+| `04h` | `SEG` | Segment Access Violation | Raised when an address outside `CS` or `DS` is dereferenced. | [`LDST`](#h-loadstore-ldst), [`DPO`](#h-device-port-operation-dpo), or upon fetching the next instruction using `PC` |
+| `05h` | `IDO` | Invalid Device Operation | Raised when an operation is attempted on a port which is not in the correct state for the operation. | [`DPO`](#h-device-port-operation-dpo) |
+| `06h` | `INV` | Invalid Instruction | Raised when an unrecognised instruction opcode is decoded. | Decoding of an instruction |
 
 ## Todo Notes
 
