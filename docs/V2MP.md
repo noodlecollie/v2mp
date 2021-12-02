@@ -230,12 +230,12 @@ Some instructions make reference to a register in the CPU using a 2-bit identifi
 
 Also known as "halt and catch fire". This instruction stops the processor, leaves all registers as they are, and raises an [`HCF`](#faults) fault.
 
-All operand bits are reserved for future use, and must be set to `0`. If this is not the case, the fault raised will instead be a [`RES`](#faults) fault.
-
 ```
  HCF
-|0000|............|
+|0000|AAAAAAAAAAAA|
 ```
+
+Operand bits `[11 0] (A)` function as an argument to the fault. They do not have any significant meaning to the instruction, but are passed on to the fault handler.
 
 ### `1h`: Load/Store (`LDST`)
 
