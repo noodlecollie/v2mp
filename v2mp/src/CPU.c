@@ -274,31 +274,140 @@ void Execute_SHFT(V2MP_CPU* cpu)
 
 void Execute_BITW(V2MP_CPU* cpu)
 {
-	// TODO:
-	SetFault(cpu, V2MP_FAULT_INO, cpu->ir >> 12);
+	V2MP_Word* sourceReg;
+	V2MP_Word* destReg;
+	V2MP_Word bitmask;
+
+	if ( V2MP_OP_BITW_RESBITS(cpu->ir) != 0 )
+	{
+		SetFault(cpu, V2MP_FAULT_RES, 0);
+		return;
+	}
+
+	sourceReg = GetRegisterPtr(cpu, V2MP_OP_BITW_SREGINDEX(cpu->ir));
+	destReg = GetRegisterPtr(cpu, V2MP_OP_BITW_DREGINDEX(cpu->ir));
+
+	if ( sourceReg != destReg )
+	{
+		if ( V2MP_OP_BITW_MASKSHIFT(cpu->ir) != 0 ||
+		     V2MP_OP_BITW_FLIPMASK(cpu->ir) != 0 )
+		{
+			SetFault(cpu, V2MP_FAULT_RES, 0);
+			return;
+		}
+
+		bitmask = *sourceReg;
+	}
+	else
+	{
+		if ( V2MP_OP_BITW_OPTYPE(cpu->ir) == V2MP_BITOP_NOT &&
+		     V2MP_OP_BITW_FLIPMASK(cpu->ir) != 0 )
+		{
+			SetFault(cpu, V2MP_FAULT_RES, 0);
+			return;
+		}
+
+		bitmask = (1 << V2MP_OP_BITW_MASKSHIFT(cpu->ir));
+
+		if ( V2MP_OP_BITW_FLIPMASK(cpu->ir) )
+		{
+			bitmask = ~bitmask;
+		}
+	}
+
+	switch ( V2MP_OP_BITW_OPTYPE(cpu->ir) )
+	{
+		case V2MP_BITOP_AND:
+		{
+			*destReg &= bitmask;
+			break;
+		}
+
+		case V2MP_BITOP_OR:
+		{
+			*destReg |= bitmask;
+			break;
+		}
+
+		case V2MP_BITOP_XOR:
+		{
+			*destReg ^= bitmask;
+			break;
+		}
+
+		default:
+		{
+			*destReg = ~(*destReg);
+			break;
+		}
+	}
+
+	cpu->sr = 0;
+
+	if ( *destReg == 0 )
+	{
+		cpu->sr |= V2MP_CPU_SR_Z;
+	}
 }
 
 void Execute_CBX(V2MP_CPU* cpu)
 {
-	// TODO:
-	SetFault(cpu, V2MP_FAULT_INO, cpu->ir >> 12);
+	bool shouldBranch;
+
+	if ( V2MP_OP_CBX_RESBITS(cpu->ir) != 0 )
+	{
+		SetFault(cpu, V2MP_FAULT_RES, 0);
+		return;
+	}
+
+	shouldBranch =
+		(V2MP_OP_CBX_BRANCH_ON_SR_Z(cpu->ir) && (cpu->sr & V2MP_CPU_SR_Z)) ||
+		(!V2MP_OP_CBX_BRANCH_ON_SR_Z(cpu->ir) && (cpu->sr & V2MP_CPU_SR_C));
+
+	if ( V2MP_OP_CBX_JUMP(cpu->ir) )
+	{
+		if ( V2MP_OP_CBX_OFFSET(cpu->ir) != 0 )
+		{
+			SetFault(cpu, V2MP_FAULT_RES, 0);
+			return;
+		}
+
+		if ( shouldBranch )
+		{
+			cpu->pc = cpu->lr;
+		}
+	}
+	else
+	{
+		if ( shouldBranch )
+		{
+			cpu->pc += (int8_t)V2MP_OP_CBX_OFFSET(cpu->ir);
+		}
+	}
+
+	cpu->sr = 0;
+
+	if ( shouldBranch )
+	{
+		cpu->sr |= V2MP_CPU_SR_Z;
+	}
 }
 
 void Execute_DPQ(V2MP_CPU* cpu)
 {
 	// TODO:
-	SetFault(cpu, V2MP_FAULT_INO, cpu->ir >> 12);
+	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
 }
 
 void Execute_DPO(V2MP_CPU* cpu)
 {
 	// TODO:
-	SetFault(cpu, V2MP_FAULT_INO, cpu->ir >> 12);
+	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
 }
 
 void Execute_Unassigned(V2MP_CPU* cpu)
 {
-	SetFault(cpu, V2MP_FAULT_INO, cpu->ir >> 12);
+	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
 }
 
 void V2MP_CPU_Init(V2MP_CPU* cpu)

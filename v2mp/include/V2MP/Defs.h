@@ -45,6 +45,14 @@ typedef enum _V2MP_RegisterIndex
 	V2MP_REGID_PC = 0x3
 } V2MP_RegisterIndex;
 
+typedef enum _V2MP_BitwiseOp
+{
+	V2MP_BITOP_AND = 0x0,
+	V2MP_BITOP_OR = 0x1,
+	V2MP_BITOP_XOR = 0x2,
+	V2MP_BITOP_NOT = 0x3
+} V2MP_BitwiseOp;
+
 #define V2MP_REGID_MASK(val) ((val) & 0x3)
 
 #define V2MP_CPU_SR_Z (1 << 0)
@@ -69,5 +77,17 @@ typedef enum _V2MP_RegisterIndex
 #define V2MP_OP_SHFT_VALUE(instr) ((instr) & 0x001F)
 #define V2MP_OP_SHFT_RESBITS(instr) ((instr) & 0x00E0)
 #define V2MP_OP_SHFT_MAGMASK(value) ((value) & 0x001F)
+
+#define V2MP_OP_BITW_SREGINDEX(instr) (((instr) & 0x0C00) >> 10)
+#define V2MP_OP_BITW_DREGINDEX(instr) (((instr) & 0x0300) >> 8)
+#define V2MP_OP_BITW_OPTYPE(instr) (((instr) & 0x00C0) >> 6)
+#define V2MP_OP_BITW_FLIPMASK(instr) ((instr) & 0x0020)
+#define V2MP_OP_BITW_MASKSHIFT(instr) ((instr) & 0x000F)
+#define V2MP_OP_BITW_RESBITS(instr) ((instr) & 0x0010)
+
+#define V2MP_OP_CBX_JUMP(instr) ((instr) & 0x0800)
+#define V2MP_OP_CBX_BRANCH_ON_SR_Z(instr) ((instr) & 0x0400)
+#define V2MP_OP_CBX_OFFSET(instr) ((instr) & 0x00FF)
+#define V2MP_OP_CBX_RESBITS(instr) ((instr) & 0x0F00)
 
 #endif // V2MP_DEFS_H
