@@ -40,7 +40,7 @@ static const InstructionCallback INSTRUCTION_TABLE[0x10] =
 
 void SetFault(V2MP_CPU* cpu, V2MP_Fault fault, V2MP_Word args)
 {
-	cpu->fault = (fault << 12) | (args & 0x0FFF);
+	cpu->fault = V2MP_CPU_MAKE_FAULT_WORD(fault, args);
 }
 
 V2MP_Word* GetRegisterPtr(V2MP_CPU* cpu, V2MP_Word regIndex)
@@ -430,7 +430,7 @@ void V2MP_CPU_Deinit(V2MP_CPU* cpu)
 	// Nothing to do yet.
 }
 
-bool V2MP_CPU_FetchDecodeAndExecute(V2MP_CPU* cpu)
+bool V2MP_CPU_FetchDecodeAndExecuteInstruction(V2MP_CPU* cpu)
 {
 	V2MP_Fault fault = 0;
 	InstructionCallback instructionToExecute = NULL;
@@ -468,6 +468,123 @@ bool V2MP_CPU_FetchDecodeAndExecute(V2MP_CPU* cpu)
 
 	(*instructionToExecute)(cpu);
 	return true;
+}
+
+bool V2MP_CPU_ExecuteInstruction(V2MP_CPU* cpu, V2MP_Word instruction)
+{
+	InstructionCallback instructionToExecute = NULL;
+
+	if ( !cpu || !cpu->memory )
+	{
+		return false;
+	}
+
+	cpu->ir = instruction;
+	instructionToExecute = INSTRUCTION_TABLE[V2MP_OPCODE(cpu->ir)];
+
+	if ( !instructionToExecute )
+	{
+		return false;
+	}
+
+	(*instructionToExecute)(cpu);
+	return true;
+}
+
+struct _V2MP_MemoryStore* V2MP_CPU_GetMemoryStore(V2MP_CPU* cpu)
+{
+	return cpu ? cpu->memory : NULL;
+}
+
+void V2MP_CPU_SetMemoryStore(V2MP_CPU* cpu, struct _V2MP_MemoryStore* memory)
+{
+	if ( cpu )
+	{
+		cpu->memory = memory;
+	}
+}
+
+V2MP_Word V2MP_CPU_GetProgramCounter(const V2MP_CPU* cpu)
+{
+	return cpu ? cpu->pc : 0;
+}
+
+void V2MP_CPU_SetProgramCounter(V2MP_CPU* cpu, V2MP_Word value)
+{
+	if ( cpu )
+	{
+		cpu->pc = value;
+	}
+}
+
+V2MP_Word V2MP_CPU_GetStatusRegister(const V2MP_CPU* cpu)
+{
+	return cpu ? cpu->sr : 0;
+}
+
+void V2MP_CPU_SetStatusRegister(V2MP_CPU* cpu, V2MP_Word value)
+{
+	if ( cpu )
+	{
+		cpu->sr = value;
+	}
+}
+
+V2MP_Word V2MP_CPU_GetLinkRegister(const V2MP_CPU* cpu)
+{
+	return cpu ? cpu->lr : 0;
+}
+
+void V2MP_CPU_SetLinkRegister(V2MP_CPU* cpu, V2MP_Word value)
+{
+	if ( cpu )
+	{
+		cpu->lr = value;
+	}
+}
+
+V2MP_Word V2MP_CPU_GetR0(const V2MP_CPU* cpu)
+{
+	return cpu ? cpu->r0 : 0;
+}
+
+void V2MP_CPU_SetR0(V2MP_CPU* cpu, V2MP_Word value)
+{
+	if ( cpu )
+	{
+		cpu->r0 = value;
+	}
+}
+
+V2MP_Word V2MP_CPU_GetR1(const V2MP_CPU* cpu)
+{
+	return cpu ? cpu->r1 : 0;
+}
+
+void V2MP_CPU_SetR1(V2MP_CPU* cpu, V2MP_Word value)
+{
+	if ( cpu )
+	{
+		cpu->r1 = value;
+	}
+}
+
+V2MP_Word V2MP_CPU_GetInstructionRegister(const V2MP_CPU* cpu)
+{
+	return cpu ? cpu->ir : 0;
+}
+
+void V2MP_CPU_SetInstructionRegister(V2MP_CPU* cpu, V2MP_Word value)
+{
+	if ( cpu )
+	{
+		cpu->ir = value;
+	}
+}
+
+V2MP_Word V2MP_CPU_GetFault(const V2MP_CPU* cpu)
+{
+	return cpu ? cpu->fault : 0;
 }
 
 bool V2MP_CPU_SetFault(V2MP_CPU* cpu, V2MP_Fault fault, V2MP_Word args)

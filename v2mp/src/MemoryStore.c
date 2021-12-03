@@ -11,47 +11,47 @@ static void FreeSegment(V2MP_Segment* segment)
 	}
 
 	segment->data = NULL;
-	segment->size = 0;
+	segment->sizeInBytes = 0;
 }
 
-static bool AllocateSegment(V2MP_Segment* segment, V2MP_Word size, const void* data)
+static bool AllocateSegment(V2MP_Segment* segment, V2MP_Word numWords, const V2MP_Word* data)
 {
 	FreeSegment(segment);
 
-	if ( size < 1 )
+	if ( numWords < 1 )
 	{
 		return false;
 	}
 
-	segment->data = (uint8_t*)malloc(size);
+	segment->data = (uint8_t*)malloc(numWords * sizeof(V2MP_Word));
 
 	if ( !segment->data )
 	{
 		return false;
 	}
 
-	segment->size = size;
+	segment->sizeInBytes = numWords * sizeof(V2MP_Word);
 
 	if ( data )
 	{
-		memcpy(segment->data, data, segment->size);
+		memcpy(segment->data, data, segment->sizeInBytes);
 	}
 	else
 	{
-		memset(segment->data, 0, segment->size);
+		memset(segment->data, 0, segment->sizeInBytes);
 	}
 
 	return true;
 }
 
 static void GetSegmentWord(
-	V2MP_Segment* segment,
+	const V2MP_Segment* segment,
 	V2MP_Word address,
 	V2MP_Word* outWord,
 	V2MP_Fault* outFault
 )
 {
-	if ( !segment->data || (size_t)address + 2 > segment->size )
+	if ( !segment->data || (size_t)address + sizeof(V2MP_Word) > segment->sizeInBytes )
 	{
 		if ( outFault )
 		{
@@ -71,7 +71,7 @@ static void SetSegmentWord(
 	V2MP_Fault* outFault
 )
 {
-	if ( !segment->data || (size_t)address + 2 > segment->size )
+	if ( !segment->data || (size_t)address + sizeof(V2MP_Word) > segment->sizeInBytes )
 	{
 		if ( outFault )
 		{
@@ -105,14 +105,14 @@ void V2MP_MemoryStore_Deinit(V2MP_MemoryStore* mem)
 	FreeSegment(&mem->ds);
 }
 
-bool V2MP_MemoryStore_AllocateCS(V2MP_MemoryStore* mem, V2MP_Word size, const void* data)
+bool V2MP_MemoryStore_AllocateCS(V2MP_MemoryStore* mem, V2MP_Word numWords, const V2MP_Word* data)
 {
 	if ( !mem )
 	{
 		return false;
 	}
 
-	return AllocateSegment(&mem->cs, size, data);
+	return AllocateSegment(&mem->cs, numWords, data);
 }
 
 void V2MP_MemoryStore_FreeCS(V2MP_MemoryStore* mem)
@@ -121,7 +121,7 @@ void V2MP_MemoryStore_FreeCS(V2MP_MemoryStore* mem)
 }
 
 bool V2MP_MemoryStore_FetchCSWord(
-	V2MP_MemoryStore* mem,
+	const V2MP_MemoryStore* mem,
 	V2MP_Word address,
 	V2MP_Word* outWord,
 	V2MP_Fault* outFault
@@ -136,14 +136,14 @@ bool V2MP_MemoryStore_FetchCSWord(
 	return true;
 }
 
-bool V2MP_MemoryStore_AllocateDS(V2MP_MemoryStore* mem, V2MP_Word size, const void* data)
+bool V2MP_MemoryStore_AllocateDS(V2MP_MemoryStore* mem, V2MP_Word numWords, const V2MP_Word* data)
 {
 	if ( !mem )
 	{
 		return false;
 	}
 
-	return AllocateSegment(&mem->ds, size, data);
+	return AllocateSegment(&mem->ds, numWords, data);
 }
 
 void V2MP_MemoryStore_FreeDS(V2MP_MemoryStore* mem)
@@ -152,7 +152,7 @@ void V2MP_MemoryStore_FreeDS(V2MP_MemoryStore* mem)
 }
 
 bool V2MP_MemoryStore_FetchDSWord(
-	V2MP_MemoryStore* mem,
+	const V2MP_MemoryStore* mem,
 	V2MP_Word address,
 	V2MP_Word* outWord,
 	V2MP_Fault* outFault
