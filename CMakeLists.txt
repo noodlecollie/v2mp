@@ -18,7 +18,8 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(BUILD_SHARED_LIBS "YES" CACHE BOOL "If set, builds shared libraries; otherwise, builds static libraries.")
+option(BUILD_SHARED_LIBS "If set, builds shared libraries; otherwise, builds static libraries." YES)
+option(BUILD_TESTS "If set, test suite is built." NO)
 
 # Store Git hash in VCS_COMMIT_ID
 execute_process(
@@ -49,3 +50,7 @@ else()
 endif()
 
 add_subdirectory(v2mp)
+
+if(BUILD_TESTS)
+	add_subdirectory(tests)
+endif()
