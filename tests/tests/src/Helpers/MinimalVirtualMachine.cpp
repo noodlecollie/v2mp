@@ -2,6 +2,8 @@
 #include <vector>
 #include "Helpers/MinimalVirtualMachine.h"
 
+const V2MP_Word VM_StartsInvalid::INVALID_WORD = 0xDEAD;
+
 MinimalVirtualMachine::MinimalVirtualMachine()
 {
 	V2MP_MemoryStore_Init(&m_MemoryStore);
@@ -122,6 +124,11 @@ void MinimalVirtualMachine::SetPC(V2MP_Word value)
 V2MP_Word MinimalVirtualMachine::GetSR() const
 {
 	return V2MP_CPU_GetStatusRegister(&m_CPU);
+}
+
+V2MP_Word MinimalVirtualMachine::GetIR() const
+{
+	return V2MP_CPU_GetInstructionRegister(&m_CPU);
 }
 
 bool MinimalVirtualMachine::GetCSWord(V2MP_Word address, V2MP_Word& outWord, V2MP_Fault* outFault) const

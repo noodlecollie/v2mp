@@ -3,22 +3,6 @@
 #include "Helpers/Assembly.h"
 
 static constexpr V2MP_Word DATA_WORD = 0xF00D;
-static constexpr V2MP_Word INVALID_WORD = 0xDEAD;
-
-class VM_StartsInvalid : public MinimalVirtualMachine
-{
-public:
-	inline VM_StartsInvalid() :
-		MinimalVirtualMachine()
-	{
-		SetR0(INVALID_WORD);
-		SetR1(INVALID_WORD);
-		SetLR(INVALID_WORD);
-		SetPC(INVALID_WORD);
-	}
-
-	virtual ~VM_StartsInvalid() = default;
-};
 
 SCENARIO("Loading a value from memory places the value in the expected register", "[instructions]")
 {
@@ -38,9 +22,9 @@ SCENARIO("Loading a value from memory places the value in the expected register"
 			THEN("The contents of R0 match the data that was in memory")
 			{
 				CHECK(vm.GetR0() == DATA_WORD);
-				CHECK(vm.GetR1() == INVALID_WORD);
+				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == 0);
-				CHECK(vm.GetPC() == INVALID_WORD);
+				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
 		}
@@ -51,10 +35,10 @@ SCENARIO("Loading a value from memory places the value in the expected register"
 
 			THEN("The contents of R1 match the data that was in memory")
 			{
-				CHECK(vm.GetR0() == INVALID_WORD);
+				CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetR1() == DATA_WORD);
 				CHECK(vm.GetLR() == 0);
-				CHECK(vm.GetPC() == INVALID_WORD);
+				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
 		}
@@ -65,10 +49,10 @@ SCENARIO("Loading a value from memory places the value in the expected register"
 
 			THEN("The contents of LR match the data that was in memory")
 			{
-				CHECK(vm.GetR0() == INVALID_WORD);
-				CHECK(vm.GetR1() == INVALID_WORD);
+				CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == DATA_WORD);
-				CHECK(vm.GetPC() == INVALID_WORD);
+				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
 		}
@@ -79,8 +63,8 @@ SCENARIO("Loading a value from memory places the value in the expected register"
 
 			THEN("The contents of PC match the data that was in memory")
 			{
-				CHECK(vm.GetR0() == INVALID_WORD);
-				CHECK(vm.GetR1() == INVALID_WORD);
+				CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == 0);
 				CHECK(vm.GetPC() == DATA_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
@@ -148,7 +132,7 @@ SCENARIO("Saving a value from memory places the value in the expected memory add
 
 		VM_StartsInvalid vm;
 
-		REQUIRE(vm.AllocateDS(1, INVALID_WORD));
+		REQUIRE(vm.AllocateDS(1, VM_StartsInvalid::INVALID_WORD));
 		vm.SetLR(MEM_ADDRESS);
 
 		WHEN("A data word is written to memory from R0")
@@ -167,9 +151,9 @@ SCENARIO("Saving a value from memory places the value in the expected memory add
 				CHECK(fault == V2MP_FAULT_NONE);
 
 				CHECK(vm.GetR0() == DATA_WORD);
-				CHECK(vm.GetR1() == INVALID_WORD);
+				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == MEM_ADDRESS);
-				CHECK(vm.GetPC() == INVALID_WORD);
+				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
 		}
@@ -189,10 +173,10 @@ SCENARIO("Saving a value from memory places the value in the expected memory add
 				CHECK(memWord == DATA_WORD);
 				CHECK(fault == V2MP_FAULT_NONE);
 
-				CHECK(vm.GetR0() == INVALID_WORD);
+				CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetR1() == DATA_WORD);
 				CHECK(vm.GetLR() == MEM_ADDRESS);
-				CHECK(vm.GetPC() == INVALID_WORD);
+				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
 		}
@@ -210,10 +194,10 @@ SCENARIO("Saving a value from memory places the value in the expected memory add
 				CHECK(memWord == MEM_ADDRESS);
 				CHECK(fault == V2MP_FAULT_NONE);
 
-				CHECK(vm.GetR0() == INVALID_WORD);
-				CHECK(vm.GetR1() == INVALID_WORD);
+				CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == MEM_ADDRESS);
-				CHECK(vm.GetPC() == INVALID_WORD);
+				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
 		}
@@ -233,8 +217,8 @@ SCENARIO("Saving a value from memory places the value in the expected memory add
 				CHECK(memWord == DATA_WORD);
 				CHECK(fault == V2MP_FAULT_NONE);
 
-				CHECK(vm.GetR0() == INVALID_WORD);
-				CHECK(vm.GetR1() == INVALID_WORD);
+				CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == MEM_ADDRESS);
 				CHECK(vm.GetPC() == DATA_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
@@ -251,7 +235,7 @@ SCENARIO("Saving a value to memory sets the status register appropriately", "[in
 
 		VM_StartsInvalid vm;
 
-		REQUIRE(vm.AllocateDS({ INVALID_WORD }));
+		REQUIRE(vm.AllocateDS({ VM_StartsInvalid::INVALID_WORD }));
 		vm.SetLR(MEM_ADDRESS);
 
 		WHEN("0x0 is saved to memory")
@@ -314,10 +298,10 @@ SCENARIO("Loading or saving a value to an unaligned memory address raises an ALG
 			{
 				CHECK(vm.CPUHasFault());
 				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_ALGN);
-				CHECK(vm.GetR0() == INVALID_WORD);
-				CHECK(vm.GetR1() == INVALID_WORD);
+				CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == MEM_ADDRESS);
-				CHECK(vm.GetPC() == INVALID_WORD);
+				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetSR() == 0);
 			}
 		}
@@ -334,12 +318,12 @@ SCENARIO("Loading or saving a value to an unaligned memory address raises an ALG
 				CHECK(vm.CPUHasFault());
 				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_ALGN);
 				CHECK(vm.GetR0() == 0x1234);
-				CHECK(vm.GetR1() == INVALID_WORD);
+				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == MEM_ADDRESS);
-				CHECK(vm.GetPC() == INVALID_WORD);
+				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetSR() == 0);
 
-				V2MP_Word outWord = INVALID_WORD;
+				V2MP_Word outWord = VM_StartsInvalid::INVALID_WORD;
 
 				REQUIRE(vm.GetDSWord(MEM_ADDRESS - 1, outWord));
 				CHECK(outWord == 0x0000);

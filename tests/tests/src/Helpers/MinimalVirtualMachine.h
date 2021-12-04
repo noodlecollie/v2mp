@@ -69,6 +69,7 @@ public:
 	void SetPC(V2MP_Word value);
 
 	V2MP_Word GetSR() const;
+	V2MP_Word GetIR() const;
 
 	bool GetCSWord(V2MP_Word address, V2MP_Word& outWord, V2MP_Fault* outFault = nullptr) const;
 	bool GetDSWord(V2MP_Word address, V2MP_Word& outWord, V2MP_Fault* outFault = nullptr) const;
@@ -76,4 +77,21 @@ public:
 private:
 	V2MP_MemoryStore m_MemoryStore;
 	V2MP_CPU m_CPU;
+};
+
+class VM_StartsInvalid : public MinimalVirtualMachine
+{
+public:
+	static const V2MP_Word INVALID_WORD;
+
+	inline VM_StartsInvalid() :
+		MinimalVirtualMachine()
+	{
+		SetR0(INVALID_WORD);
+		SetR1(INVALID_WORD);
+		SetLR(INVALID_WORD);
+		SetPC(INVALID_WORD);
+	}
+
+	virtual ~VM_StartsInvalid() = default;
 };
