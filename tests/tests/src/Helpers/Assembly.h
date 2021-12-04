@@ -31,4 +31,19 @@ namespace Asm
 	{
 		return (V2MP_OP_LDST << 12) | (1 << 11) | ((static_cast<V2MP_Word>(sourceReg) & 0x3) << 9);
 	}
+
+	constexpr inline V2MP_Word ASGNR(uint8_t sourceReg, uint8_t destReg)
+	{
+		return (V2MP_OP_ASGN << 12)
+			| ((static_cast<V2MP_Word>(sourceReg) & 0x3) << 10)
+			| ((static_cast<V2MP_Word>(destReg) & 0x3) << 8);
+	}
+
+	constexpr inline V2MP_Word ASGNL(uint8_t destReg, int8_t literal)
+	{
+		return (V2MP_OP_ASGN << 12)
+			| ((static_cast<V2MP_Word>(destReg) & 0x3) << 10)
+			| ((static_cast<V2MP_Word>(destReg) & 0x3) << 8)
+			| static_cast<V2MP_Word>(*reinterpret_cast<uint8_t*>(&literal));
+	}
 }
