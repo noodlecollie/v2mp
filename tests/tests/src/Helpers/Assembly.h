@@ -12,6 +12,11 @@ namespace Asm
 	constexpr V2MP_Word SR_Z = 1 << 0;
 	constexpr V2MP_Word SR_C = 1 << 1;
 
+	constexpr inline V2MP_Word FaultFromWord(V2MP_Word faultWord)
+	{
+		return (faultWord & 0xF000) >> 12;
+	}
+
 	constexpr inline V2MP_Word LOAD(uint8_t destReg)
 	{
 		return (V2MP_OP_LDST << 12) | ((static_cast<V2MP_Word>(destReg & 0x3)) << 9);

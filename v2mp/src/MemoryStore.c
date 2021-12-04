@@ -61,6 +61,16 @@ static void GetSegmentWord(
 		return;
 	}
 
+	if ( address & 0x1 )
+	{
+		if ( outFault )
+		{
+			*outFault = V2MP_FAULT_ALGN;
+		}
+
+		return;
+	}
+
 	*outWord = *((const V2MP_Word*)(segment->data + address));
 }
 
@@ -76,6 +86,16 @@ static void SetSegmentWord(
 		if ( outFault )
 		{
 			*outFault = V2MP_FAULT_SEG;
+		}
+
+		return;
+	}
+
+	if ( address & 0x1 )
+	{
+		if ( outFault )
+		{
+			*outFault = V2MP_FAULT_ALGN;
 		}
 
 		return;

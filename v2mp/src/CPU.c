@@ -440,12 +440,6 @@ bool V2MP_CPU_FetchDecodeAndExecuteInstruction(V2MP_CPU* cpu)
 		return false;
 	}
 
-	if ( cpu->pc & 1 )
-	{
-		SetFault(cpu, V2MP_FAULT_ALGN, 0);
-		return true;
-	}
-
 	if ( !V2MP_MemoryStore_FetchCSWord(cpu->memory, cpu->pc, &cpu->ir, &fault) )
 	{
 		return false;

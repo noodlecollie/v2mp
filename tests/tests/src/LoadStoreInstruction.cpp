@@ -242,3 +242,111 @@ SCENARIO("Saving a value from memory places the value in the expected memory add
 		}
 	}
 }
+
+SCENARIO("Saving a value to memory sets the status register appropriately", "[instructions]")
+{
+	GIVEN("A virtual machine")
+	{
+		static constexpr V2MP_Word MEM_ADDRESS = 0;
+
+		VM_StartsInvalid vm;
+
+		REQUIRE(vm.AllocateDS({ INVALID_WORD }));
+		vm.SetLR(MEM_ADDRESS);
+
+		WHEN("0x0 is saved to memory")
+		{
+			vm.SetR0({ 0x0000 });
+			REQUIRE(vm.Execute(Asm::STOR(Asm::REG_R0)));
+
+			THEN("SR[Z] is set")
+			{
+				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & ~Asm::SR_Z) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+
+		WHEN("0x1 is loaded from memory")
+		{
+			vm.SetR0({ 0x0001 });
+			REQUIRE(vm.Execute(Asm::STOR(Asm::REG_R0)));
+
+			THEN("SR[Z] is not set")
+			{
+				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & ~Asm::SR_Z) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+
+		WHEN("0x1234 is loaded from memory")
+		{
+			vm.SetR0({ 0x1234 });
+			REQUIRE(vm.Execute(Asm::STOR(Asm::REG_R0)));
+
+			THEN("SR[Z] is not set")
+			{
+				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & ~Asm::SR_Z) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+	}
+}
+
+SCENARIO("Loading or saving a value to an unaligned memory address raises an ALGN fault", "[instructions]")
+{
+	GIVEN("A virtual machine")
+	{
+		static constexpr V2MP_Word MEM_ADDRESS = 0x0001;
+
+		VM_StartsInvalid vm;
+
+		REQUIRE(vm.AllocateDS(4, 0x0000));
+
+		WHEN("A load is attempted from an unaligned address")
+		{
+			vm.SetLR(MEM_ADDRESS);
+			REQUIRE(vm.Execute(Asm::LOAD(Asm::REG_R0)));
+
+			THEN("An ALGN fault is raised and register values are not modified.")
+			{
+				CHECK(vm.CPUHasFault());
+				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_ALGN);
+				CHECK(vm.GetR0() == INVALID_WORD);
+				CHECK(vm.GetR1() == INVALID_WORD);
+				CHECK(vm.GetLR() == MEM_ADDRESS);
+				CHECK(vm.GetPC() == INVALID_WORD);
+				CHECK(vm.GetSR() == 0);
+			}
+		}
+
+		WHEN("A store is attempted to an unaligned address")
+		{
+			vm.SetLR(MEM_ADDRESS);
+			vm.SetR0(0x1234);
+
+			REQUIRE(vm.Execute(Asm::STOR(Asm::REG_R0)));
+
+			THEN("An ALGN fault is raised and memory is not modified")
+			{
+				CHECK(vm.CPUHasFault());
+				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_ALGN);
+				CHECK(vm.GetR0() == 0x1234);
+				CHECK(vm.GetR1() == INVALID_WORD);
+				CHECK(vm.GetLR() == MEM_ADDRESS);
+				CHECK(vm.GetPC() == INVALID_WORD);
+				CHECK(vm.GetSR() == 0);
+
+				V2MP_Word outWord = INVALID_WORD;
+
+				REQUIRE(vm.GetDSWord(MEM_ADDRESS - 1, outWord));
+				CHECK(outWord == 0x0000);
+
+				REQUIRE(vm.GetDSWord(MEM_ADDRESS + 1, outWord));
+				CHECK(outWord == 0x0000);
+			}
+		}
+	}
+}
