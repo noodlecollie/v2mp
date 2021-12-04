@@ -10,16 +10,16 @@ The specification for the virtual processor is outlined in this file.
 * [Memory Model](#memory-model)
 * [Device Ports](#device-ports)
 * [Instruction Set](#instruction-set)
-  * [0h HCF: Halt](#h-halt-hcf)
-  * [1h LDST: Load/Store](#h-loadstore-ldst)
-  * [2h ASGN: Assign](#h-assign-asgn)
-  * [3h ADD: Add](#h-add-add)
-  * [4h SUB: Subtract](#h-subtract-sub)
-  * [5h SHFT: Bit Shift](#h-bit-shift-shft)
-  * [6h BITW: Bitwise Operation](#h-bitwise-operation-bitw)
-  * [7h CBX: Conditional Branch](#h-conditional-branch-cbx)
-  * [8h DPQ: Device Port Query](#h-device-port-query-dpq)
-  * [9h DPO: Device Port Operation](#h-device-port-operation-dpo)
+  * [0h HCF: Halt](#0h-halt-hcf)
+  * [1h LDST: Load/Store](#1h-loadstore-ldst)
+  * [2h ASGN: Assign](#2h-assign-asgn)
+  * [3h ADD: Add](#3h-add-add)
+  * [4h SUB: Subtract](#4h-subtract-sub)
+  * [5h SHFT: Bit Shift](#5h-bit-shift-shft)
+  * [6h BITW: Bitwise Operation](#6h-bitwise-operation-bitw)
+  * [7h CBX: Conditional Branch](#7h-conditional-branch-cbx)
+  * [8h DPQ: Device Port Query](#8h-device-port-query-dpq)
+  * [9h DPO: Device Port Operation](#9h-device-port-operation-dpo)
 * [Faults](#faults)
 
 ## Documentation Conventions
@@ -136,9 +136,9 @@ The V2MP memory model does not support dynamic memory allocation: all memory mus
 
 ### Relevant Instructions
 
-The [`LDST`](#h-loadstore-ldst) instruction loads or stores single words from or to `DS`. The [`DPO`](#h-device-port-operation-dpo) instruction can transfer data between a device port and an address in `DS`.
+The [`LDST`](#1h-loadstore-ldst) instruction loads or stores single words from or to `DS`. The [`DPO`](#9h-device-port-operation-dpo) instruction can transfer data between a device port and an address in `DS`.
 
-The [`CBX`](#h-conditional-branch-cbx) instruction makes reference to an address in `CS` which the program counter `PC` should be set to if the branch condition is met. Other arithmetic instructions may directly modify the contents of `PC` to point to different addresses in `CS`.
+The [`CBX`](#7h-conditional-branch-cbx) instruction makes reference to an address in `CS` which the program counter `PC` should be set to if the branch condition is met. Other arithmetic instructions may directly modify the contents of `PC` to point to different addresses in `CS`.
 
 ## Device Ports
 
@@ -163,11 +163,11 @@ When passing a message using indirect data transfer, it is assumed that a memory
 
 ### State
 
-If a device port has no device attached to it, it is considered "disconnected". A disconnected port may not be operated on using a [`DPO`](#h-device-port-operation-dpo) instruction; if this occurs, an [`IDO`](#faults) fault will be raised.
+If a device port has no device attached to it, it is considered "disconnected". A disconnected port may not be operated on using a [`DPO`](#9h-device-port-operation-dpo) instruction; if this occurs, an [`IDO`](#faults) fault will be raised.
 
 If a port does have a device attached to it, it is considered "connected".
 
-A connected port's mailbox is controlled either by the running program or by the device. If the mailbox is controlled by the device, the mailbox's state is considered "unavailable", and the program is not allowed to perform any operations on the mailbox using the [`DPO`](#h-device-port-operation-dpo) instruction. If the [`DPO`](#h-device-port-operation-dpo) instruction is used on an unavailable mailbox, an [`IDO`](#faults) fault will be raised.
+A connected port's mailbox is controlled either by the running program or by the device. If the mailbox is controlled by the device, the mailbox's state is considered "unavailable", and the program is not allowed to perform any operations on the mailbox using the [`DPO`](#9h-device-port-operation-dpo) instruction. If the [`DPO`](#9h-device-port-operation-dpo) instruction is used on an unavailable mailbox, an [`IDO`](#faults) fault will be raised.
 
 If a connected port's mailbox is not unavailable, it may be in one of three exclusive states:
 
@@ -203,7 +203,7 @@ A transition to a disconnected state may only happen if the port's mailbox is no
 
 ### Relevant Instructions
 
-The [`DPQ`](#h-device-port-query-dpq) and [`DPO`](#h-device-port-operation-dpo) instructions are used to respectively query a device port's state, and to perform an operation on a device port.
+The [`DPQ`](#8h-device-port-query-dpq) and [`DPO`](#9h-device-port-operation-dpo) instructions are used to respectively query a device port's state, and to perform an operation on a device port.
 
 ## Instruction Set
 
@@ -555,11 +555,11 @@ The possible faults raised by the processor are described below.
 
 | Index | Code | Name | Description | Triggered By |
 | ----- | ---- | ---- | ----------- | ------------ |
-| `01h` | `HCF` | Halt and Catch Fire | Raised by the [`HCF`](#h-halt-hcf) instruction to indicate that the processor has halted. | [`HCF`](#h-halt-hcf) |
+| `01h` | `HCF` | Halt and Catch Fire | Raised by the [`HCF`](#0h-halt-hcf) instruction to indicate that the processor has halted. | [`HCF`](#0h-halt-hcf) |
 | `02h` | `RES` | Reserved Bits Set | Raised when an instruction is decoded and one or more reserved bits are set to `1`. | Execution of any instruction |
-| `03h` | `ALGN` | Alignment Violation | Raised when an unaligned memory address is dereferenced in `CS` or `DS`. | [`LDST`](#h-loadstore-ldst), [`DPO`](#h-device-port-operation-dpo), or upon fetching the next instruction using `PC`. |
-| `04h` | `SEG` | Segment Access Violation | Raised when an address outside `CS` or `DS` is dereferenced. | [`LDST`](#h-loadstore-ldst), [`DPO`](#h-device-port-operation-dpo), or upon fetching the next instruction using `PC` |
-| `05h` | `IDO` | Invalid Device Operation | Raised when an operation is attempted on a port which is not in the correct state for the operation. | [`DPO`](#h-device-port-operation-dpo) |
+| `03h` | `ALGN` | Alignment Violation | Raised when an unaligned memory address is dereferenced in `CS` or `DS`. | [`LDST`](#1h-loadstore-ldst), [`DPO`](#9h-device-port-operation-dpo), or upon fetching the next instruction using `PC`. |
+| `04h` | `SEG` | Segment Access Violation | Raised when an address outside `CS` or `DS` is dereferenced. | [`LDST`](#1h-loadstore-ldst), [`DPO`](#9h-device-port-operation-dpo), or upon fetching the next instruction using `PC` |
+| `05h` | `IDO` | Invalid Device Operation | Raised when an operation is attempted on a port which is not in the correct state for the operation. | [`DPO`](#9h-device-port-operation-dpo) |
 | `06h` | `INI` | Invalid Instruction | Raised when an unrecognised instruction opcode is decoded. | Decoding of an instruction |
 | `07h` | `INO` | Invalid Operand | Raised when an invalid combination of operands is provided on an instruction. | Execution of any instruction |
 
