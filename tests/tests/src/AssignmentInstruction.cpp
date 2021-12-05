@@ -388,6 +388,56 @@ SCENARIO("Assigning a literal value to a register results in the correct value b
 	}
 }
 
+SCENARIO("Assigning a value from one register to another sets the status register appropriately", "[instructions]")
+{
+	GIVEN("A virtual machine with different values in different registers")
+	{
+		MinimalVirtualMachine vm;
+
+		WHEN("0x0 is assigned to a register")
+		{
+			vm.SetR0(0x0);
+
+			REQUIRE(vm.Execute(Asm::ADDR(Asm::REG_R0, Asm::REG_LR)));
+
+			THEN("SR[Z] is set")
+			{
+				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & ~Asm::SR_Z) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+
+		WHEN("0x1 is assigned to a register")
+		{
+			vm.SetR0(0x1);
+
+			REQUIRE(vm.Execute(Asm::ADDR(Asm::REG_R0, Asm::REG_LR)));
+
+			THEN("SR[Z] is not set")
+			{
+				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & ~Asm::SR_Z) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+
+		WHEN("0x123 is assigned to a register")
+		{
+			vm.SetR0(0x123);
+
+			REQUIRE(vm.Execute(Asm::ADDR(Asm::REG_R0, Asm::REG_LR)));
+
+			THEN("SR[Z] is not set")
+			{
+				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & ~Asm::SR_Z) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+	}
+}
+
 SCENARIO("Setting any literal operand bit if the source and destination registers are different raises a RES fault", "[instructions]")
 {
 	GIVEN("A virtual machine with different values in different registers")

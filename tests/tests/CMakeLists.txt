@@ -1,5 +1,6 @@
 add_executable(V2MP_Tests
 	src/Helpers/MinimalVirtualMachine.cpp
+	src/AddInstruction.cpp
 	src/AssignmentInstruction.cpp
 	src/HaltInstruction.cpp
 	src/LoadStoreInstruction.cpp
