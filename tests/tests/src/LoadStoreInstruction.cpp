@@ -345,45 +345,51 @@ SCENARIO("Setting any reserved bit raises a RES fault", "[instructions]")
 
 		REQUIRE(vm.AllocateDS(1, 0x0000));
 
-		WHEN("A load is attempted with any reserved bit set, a RES fault is raised and register values are not modified")
+		for ( size_t index = 0; index <= 8; ++index )
 		{
-			for ( size_t index = 0; index <= 8; ++index )
+			WHEN("A load is attempted with any reserved bit set")
 			{
 				vm.ResetCPU();
 				vm.SetLR(MEM_ADDRESS);
 				REQUIRE(vm.Execute(Asm::LOAD(Asm::REG_R0) | (1 << index)));
 
-				CHECK(vm.CPUHasFault());
-				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
-				CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
-				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
-				CHECK(vm.GetLR() == MEM_ADDRESS);
-				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
-				CHECK(vm.GetSR() == 0);
+				THEN("A RES fault is raised and register values are not modified")
+				{
+					CHECK(vm.CPUHasFault());
+					CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+					CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
+					CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
+					CHECK(vm.GetLR() == MEM_ADDRESS);
+					CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
+					CHECK(vm.GetSR() == 0);
+				}
 			}
 		}
 
-		WHEN("A store is attempted with any reserved bit set, a RES fault is raised and memory is not modified")
+		for ( size_t index = 0; index <= 8; ++index )
 		{
-			for ( size_t index = 0; index <= 8; ++index )
+			WHEN("A store is attempted with any reserved bit set")
 			{
 				vm.ResetCPU();
 				vm.SetLR(MEM_ADDRESS);
 				vm.SetR0(0x1234);
-				REQUIRE(vm.Execute(Asm::LOAD(Asm::REG_R0) | (1 << index)));
+				REQUIRE(vm.Execute(Asm::STOR(Asm::REG_R0) | (1 << index)));
 
-				CHECK(vm.CPUHasFault());
-				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
-				CHECK(vm.GetR0() == 0x1234);
-				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
-				CHECK(vm.GetLR() == MEM_ADDRESS);
-				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
-				CHECK(vm.GetSR() == 0);
+				THEN("A RES fault is raised and memory is not modified")
+				{
+					CHECK(vm.CPUHasFault());
+					CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+					CHECK(vm.GetR0() == 0x1234);
+					CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
+					CHECK(vm.GetLR() == MEM_ADDRESS);
+					CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
+					CHECK(vm.GetSR() == 0);
 
-				V2MP_Word outWord = VM_StartsInvalid::INVALID_WORD;
+					V2MP_Word outWord = VM_StartsInvalid::INVALID_WORD;
 
-				REQUIRE(vm.GetDSWord(MEM_ADDRESS, outWord));
-				CHECK(outWord == 0x0000);
+					REQUIRE(vm.GetDSWord(MEM_ADDRESS, outWord));
+					CHECK(outWord == 0x0000);
+				}
 			}
 		}
 	}
