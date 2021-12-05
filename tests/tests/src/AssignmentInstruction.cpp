@@ -387,3 +387,64 @@ SCENARIO("Assigning a literal value to a register results in the correct value b
 		}
 	}
 }
+
+SCENARIO("Setting any literal operand bit if the source and destination registers are different raises a RES fault", "[instructions]")
+{
+	GIVEN("A virtual machine with different values in different registers")
+	{
+		MinimalVirtualMachine vm;
+
+		vm.SetR0(VAL_R0);
+		vm.SetR1(VAL_R1);
+		vm.SetLR(VAL_LR);
+		vm.SetPC(VAL_PC);
+
+		for ( size_t index = 0; index <= 8; ++index )
+		{
+			WHEN("R1 is assigned to R0 with a reserved bit set")
+			{
+				REQUIRE(vm.Execute(Asm::ASGNR(Asm::REG_R1, Asm::REG_R0) | (1 << index)));
+
+				THEN("A RES fault is raised, and all registers are left unchanged")
+				{
+					CHECK(vm.CPUHasFault());
+					CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+					CHECK(vm.GetR0() == VAL_R0);
+					CHECK(vm.GetR1() == VAL_R1);
+					CHECK(vm.GetLR() == VAL_LR);
+					CHECK(vm.GetPC() == VAL_PC);
+					CHECK(vm.GetSR() == 0);
+				}
+			}
+		}
+	}
+}
+
+SCENARIO("Attempting to assign a literal value to PC raises an INO fault", "[instructions]")
+{
+	GIVEN("A virtual machine with different values in different registers")
+	{
+		MinimalVirtualMachine vm;
+
+		vm.SetR0(VAL_R0);
+		vm.SetR1(VAL_R1);
+		vm.SetLR(VAL_LR);
+		vm.SetPC(VAL_PC);
+
+		WHEN("Assignment of a literal to PC is attempted")
+		{
+			REQUIRE(vm.Execute(Asm::ASGNL(Asm::REG_PC, 0x23)));
+
+			THEN("An INO fault is raised, and all registers are left unchanged")
+			{
+				CHECK(vm.CPUHasFault());
+				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_INO);
+				CHECK(vm.GetR0() == VAL_R0);
+				CHECK(vm.GetR1() == VAL_R1);
+				CHECK(vm.GetLR() == VAL_LR);
+				CHECK(vm.GetPC() == VAL_PC);
+				CHECK(vm.GetSR() == 0);
+			}
+		}
+	}
+}
