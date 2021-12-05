@@ -60,6 +60,15 @@ V2MP_CPU* MinimalVirtualMachine::GetCPU()
 	return &m_CPU;
 }
 
+void MinimalVirtualMachine::ResetCPU()
+{
+	V2MP_CPU_Deinit(&m_CPU);
+	V2MP_CPU_Init(&m_CPU);
+	V2MP_CPU_SetMemoryStore(&m_CPU, &m_MemoryStore);
+
+	OnCPUReset();
+}
+
 bool MinimalVirtualMachine::FetchDecodeExecute()
 {
 	return V2MP_CPU_FetchDecodeAndExecuteInstruction(&m_CPU);

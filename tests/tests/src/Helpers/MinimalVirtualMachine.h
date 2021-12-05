@@ -49,6 +49,7 @@ public:
 
 	const V2MP_CPU* GetCPU() const;
 	V2MP_CPU* GetCPU();
+	void ResetCPU();
 
 	bool FetchDecodeExecute();
 	bool Execute(V2MP_Word instruction);
@@ -74,6 +75,11 @@ public:
 	bool GetCSWord(V2MP_Word address, V2MP_Word& outWord, V2MP_Fault* outFault = nullptr) const;
 	bool GetDSWord(V2MP_Word address, V2MP_Word& outWord, V2MP_Fault* outFault = nullptr) const;
 
+protected:
+	virtual void OnCPUReset()
+	{
+	}
+
 private:
 	V2MP_MemoryStore m_MemoryStore;
 	V2MP_CPU m_CPU;
@@ -87,11 +93,23 @@ public:
 	inline VM_StartsInvalid() :
 		MinimalVirtualMachine()
 	{
+		SetUpRegisters();
+	}
+
+	virtual ~VM_StartsInvalid() = default;
+
+protected:
+	void OnCPUReset() override
+	{
+		SetUpRegisters();
+	}
+
+private:
+	void SetUpRegisters()
+	{
 		SetR0(INVALID_WORD);
 		SetR1(INVALID_WORD);
 		SetLR(INVALID_WORD);
 		SetPC(INVALID_WORD);
 	}
-
-	virtual ~VM_StartsInvalid() = default;
 };
