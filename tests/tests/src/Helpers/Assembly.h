@@ -17,9 +17,14 @@ namespace Asm
 		return (faultWord & 0xF000) >> 12;
 	}
 
-	constexpr inline V2MP_Word HCF()
+	constexpr inline V2MP_Word FaultArgsFromWord(V2MP_Word faultWord)
 	{
-		return V2MP_OP_HCF << 12;
+		return faultWord & 0x0FFF;
+	}
+
+	constexpr inline V2MP_Word HCF(V2MP_Word args = 0)
+	{
+		return (V2MP_OP_HCF << 12) | (args & 0x0FFF);
 	}
 
 	constexpr inline V2MP_Word LOAD(uint8_t destReg)
