@@ -2,7 +2,7 @@
 #include "Helpers/MinimalVirtualMachine.h"
 #include "Helpers/Assembly.h"
 
-SCENARIO("Executing a halt instruction raises a HCF fault", "[instructions]")
+SCENARIO("HCF: Executing a halt instruction raises a HCF fault", "[instructions]")
 {
 	GIVEN("A virtual machine")
 	{

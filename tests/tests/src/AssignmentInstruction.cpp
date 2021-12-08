@@ -7,7 +7,7 @@ static constexpr V2MP_Word VAL_R1 = 0x0002;
 static constexpr V2MP_Word VAL_LR = 0x0003;
 static constexpr V2MP_Word VAL_PC = 0x0004;
 
-SCENARIO("Assigning values between different registers results in the correct value being assigned", "[instructions]")
+SCENARIO("ASGN: Assigning values between different registers results in the correct value being assigned", "[instructions]")
 {
 	GIVEN("A virtual machine with different values in different registers")
 	{
@@ -268,7 +268,7 @@ SCENARIO("Assigning values between different registers results in the correct va
 	}
 }
 
-SCENARIO("Assigning a literal value to a register results in the correct value being assigned", "[instructions]")
+SCENARIO("ASGN: Assigning a literal value to a register results in the correct value being assigned", "[instructions]")
 {
 	GIVEN("A virtual machine")
 	{
@@ -388,7 +388,7 @@ SCENARIO("Assigning a literal value to a register results in the correct value b
 	}
 }
 
-SCENARIO("Assigning a value from one register to another sets the status register appropriately", "[instructions]")
+SCENARIO("ASGN: Assigning a value from one register to another sets the status register appropriately", "[instructions]")
 {
 	GIVEN("A virtual machine with different values in different registers")
 	{
@@ -438,7 +438,7 @@ SCENARIO("Assigning a value from one register to another sets the status registe
 	}
 }
 
-SCENARIO("Setting any literal operand bit if the source and destination registers are different raises a RES fault", "[instructions]")
+SCENARIO("ASGN: Setting any literal operand bit if the source and destination registers are different raises a RES fault", "[instructions]")
 {
 	GIVEN("A virtual machine with different values in different registers")
 	{
@@ -470,7 +470,7 @@ SCENARIO("Setting any literal operand bit if the source and destination register
 	}
 }
 
-SCENARIO("Attempting to assign a literal value to PC raises an INO fault", "[instructions]")
+SCENARIO("ASGN: Attempting to assign a literal value to PC raises an INO fault", "[instructions]")
 {
 	GIVEN("A virtual machine with different values in different registers")
 	{

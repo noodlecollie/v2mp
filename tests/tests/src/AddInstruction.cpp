@@ -2,15 +2,15 @@
 #include "Helpers/MinimalVirtualMachine.h"
 #include "Helpers/Assembly.h"
 
-SCENARIO("Adding one register to another results in the correct value in the destination register", "[instructions]")
+static constexpr V2MP_Word VAL_R0 = 0x0101;
+static constexpr V2MP_Word VAL_R1 = 0xBEEF;
+static constexpr V2MP_Word VAL_LR = 0xB00B;
+static constexpr V2MP_Word VAL_PC = 0x1234;
+
+SCENARIO("ADD: Adding one register to another results in the correct value in the destination register", "[instructions]")
 {
 	GIVEN("A virtual machine initialised with known values in registers")
 	{
-		static constexpr V2MP_Word VAL_R0 = 0x0101;
-		static constexpr V2MP_Word VAL_R1 = 0xBEEF;
-		static constexpr V2MP_Word VAL_LR = 0xB00B;
-		static constexpr V2MP_Word VAL_PC = 0x1234;
-
 		MinimalVirtualMachine vm;
 
 		vm.SetR0(VAL_R0);
@@ -284,7 +284,7 @@ SCENARIO("Adding one register to another results in the correct value in the des
 	}
 }
 
-SCENARIO("Adding a literal to a non-PC register results in the correct value in the destination register", "[instructions]")
+SCENARIO("ADD: Adding a literal to a non-PC register results in the correct value in the destination register", "[instructions]")
 {
 	GIVEN("A virtual machine initialised with known values in registers")
 	{
@@ -363,7 +363,7 @@ SCENARIO("Adding a literal to a non-PC register results in the correct value in 
 	}
 }
 
-SCENARIO("Adding a literal to PC results in the correct value in the register", "[instructions]")
+SCENARIO("ADD: Adding a literal to PC results in the correct value in the register", "[instructions]")
 {
 	GIVEN("A virtual machine initialised with known values in registers")
 	{
@@ -396,5 +396,215 @@ SCENARIO("Adding a literal to PC results in the correct value in the register", 
 	}
 }
 
-// TODO: Tests for SR bits
-// TODO: Tests for reserved bits
+SCENARIO("ADD: Adding one register value to another results in the correct status register bits being set", "[instructions]")
+{
+	GIVEN("A virtual machine")
+	{
+		MinimalVirtualMachine vm;
+
+		WHEN("0x0 is added to 0x0")
+		{
+			vm.SetR0(0x0);
+			vm.SetR1(0x0);
+
+			REQUIRE(vm.Execute(Asm::ADDR(Asm::REG_R0, Asm::REG_R1)));
+			REQUIRE(vm.GetR1() == static_cast<V2MP_Word>(0x0 + 0x0));
+
+			THEN("SR[Z] is set, SR[C] is not set")
+			{
+				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+
+		WHEN("0x1 is added to 0x0")
+		{
+			vm.SetR0(0x1);
+			vm.SetR1(0x0);
+
+			REQUIRE(vm.Execute(Asm::ADDR(Asm::REG_R0, Asm::REG_R1)));
+			REQUIRE(vm.GetR1() == static_cast<V2MP_Word>(0x0 + 0x1));
+
+			THEN("SR[Z] is not set, SR[C] is not set")
+			{
+				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+
+		WHEN("0x12 is added to 0x34")
+		{
+			vm.SetR0(0x12);
+			vm.SetR1(0x34);
+
+			REQUIRE(vm.Execute(Asm::ADDR(Asm::REG_R0, Asm::REG_R1)));
+			REQUIRE(vm.GetR1() == static_cast<V2MP_Word>(0x12 + 0x34));
+
+			THEN("SR[Z] is not set, SR[C] is not set")
+			{
+				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+
+		WHEN("0x1 is added to 0xFFFF")
+		{
+			vm.SetR0(0x1);
+			vm.SetR1(0xFFFF);
+
+			REQUIRE(vm.Execute(Asm::ADDR(Asm::REG_R0, Asm::REG_R1)));
+			REQUIRE(vm.GetR1() == static_cast<V2MP_Word>(0xFFFF + 0x1));
+
+			THEN("SR[Z] is set, SR[C] is set")
+			{
+				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+
+		WHEN("0x123 is added to 0xFFF0")
+		{
+			vm.SetR0(0x123);
+			vm.SetR1(0xFFF0);
+
+			REQUIRE(vm.Execute(Asm::ADDR(Asm::REG_R0, Asm::REG_R1)));
+			REQUIRE(vm.GetR1() == static_cast<V2MP_Word>(0xFFF0 + 0x123));
+
+			THEN("SR[Z] is not set, SR[C] is set")
+			{
+				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+	}
+}
+
+SCENARIO("ADD: Adding a literal to a register results in the correct status register bits being set", "[instructions]")
+{
+	GIVEN("A virtual machine")
+	{
+		MinimalVirtualMachine vm;
+
+		WHEN("0x0 is added to 0x0")
+		{
+			vm.SetR0(0x0);
+
+			REQUIRE(vm.Execute(Asm::ADDL(Asm::REG_R0, 0x0)));
+			REQUIRE(vm.GetR0() == static_cast<V2MP_Word>(0x0 + 0x0));
+
+			THEN("SR[Z] is set, SR[C] is not set")
+			{
+				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+
+		WHEN("0x1 is added to 0x0")
+		{
+			vm.SetR0(0x0);
+
+			REQUIRE(vm.Execute(Asm::ADDL(Asm::REG_R0, 0x1)));
+			REQUIRE(vm.GetR0() == static_cast<V2MP_Word>(0x0 + 0x1));
+
+			THEN("SR[Z] is not set, SR[C] is not set")
+			{
+				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+
+		WHEN("0x12 is added to 0x34")
+		{
+			vm.SetR0(0x34);
+
+			REQUIRE(vm.Execute(Asm::ADDL(Asm::REG_R0, 0x12)));
+			REQUIRE(vm.GetR0() == static_cast<V2MP_Word>(0x12 + 0x34));
+
+			THEN("SR[Z] is not set, SR[C] is not set")
+			{
+				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+
+		WHEN("0x1 is added to 0xFFFF")
+		{
+			vm.SetR0(0xFFFF);
+
+			REQUIRE(vm.Execute(Asm::ADDL(Asm::REG_R0, 0x1)));
+			REQUIRE(vm.GetR0() == static_cast<V2MP_Word>(0xFFFF + 0x1));
+
+			THEN("SR[Z] is set, SR[C] is set")
+			{
+				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+
+		WHEN("0xFF is added to 0xFFF0")
+		{
+			vm.SetR0(0xFFF0);
+
+			REQUIRE(vm.Execute(Asm::ADDL(Asm::REG_R0, 0xFF)));
+			REQUIRE(vm.GetR0() == static_cast<V2MP_Word>(0xFFF0 + 0xFF));
+
+			THEN("SR[Z] is not set, SR[C] is set")
+			{
+				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				CHECK_FALSE(vm.CPUHasFault());
+			}
+		}
+	}
+}
+
+SCENARIO("ADD: Setting any literal operand bit if the source and destination registers are different raises a RES fault", "[instructions]")
+{
+	GIVEN("A virtual machine with different values in different registers")
+	{
+		MinimalVirtualMachine vm;
+
+		vm.SetR0(VAL_R0);
+		vm.SetR1(VAL_R1);
+		vm.SetLR(VAL_LR);
+		vm.SetPC(VAL_PC);
+
+		for ( size_t index = 0; index <= 8; ++index )
+		{
+			WHEN("R1 is added to R0 with a reserved bit set")
+			{
+				REQUIRE(vm.Execute(Asm::ADDR(Asm::REG_R1, Asm::REG_R0) | (1 << index)));
+
+				THEN("A RES fault is raised, and all registers are left unchanged")
+				{
+					CHECK(vm.CPUHasFault());
+					CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+					CHECK(vm.GetR0() == VAL_R0);
+					CHECK(vm.GetR1() == VAL_R1);
+					CHECK(vm.GetLR() == VAL_LR);
+					CHECK(vm.GetPC() == VAL_PC);
+					CHECK(vm.GetSR() == 0);
+				}
+			}
+		}
+	}
+}

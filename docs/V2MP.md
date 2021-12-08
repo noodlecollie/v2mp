@@ -314,7 +314,7 @@ Note that if the destination register is `PC`, the increment (either as a litera
 
 If the add operation overflows the destination register, `SR[C]` is set; otherwise, it is cleared.
 
-If the add operation results in a value of `0` in the destination register (ie. a 1-bit arithmetic overflow occurs), `SR[Z]` is set; otherwise, it is cleared.
+If the add operation results in a value of `0` in the destination register, `SR[Z]` is set; otherwise, it is cleared.
 
 All other bits in `SR` are always cleared.
 
@@ -338,7 +338,7 @@ Note that if the destination register is `PC`, the decrement (either as a litera
 
 If the subtraction operation underflows the destination register, `SR[C]` is set; otherwise, it is cleared.
 
-If the subtraction operation results in a value of `0` in the destination register (ie. a 1-bit arithmetic underflow occurs), `SR[Z]` is set; otherwise, it is cleared.
+If the subtraction operation results in a value of `0` in the destination register, `SR[Z]` is set; otherwise, it is cleared.
 
 All other bits in `SR` are always cleared.
 

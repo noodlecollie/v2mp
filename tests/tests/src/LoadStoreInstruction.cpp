@@ -4,7 +4,7 @@
 
 static constexpr V2MP_Word DATA_WORD = 0xF00D;
 
-SCENARIO("Loading a value from memory places the value in the expected register", "[instructions]")
+SCENARIO("LDST: Loading a value from memory places the value in the expected register", "[instructions]")
 {
 	GIVEN("A virtual machine and known data segment")
 	{
@@ -73,7 +73,7 @@ SCENARIO("Loading a value from memory places the value in the expected register"
 	}
 }
 
-SCENARIO("Loading a value from memory sets the status register appropriately", "[instructions]")
+SCENARIO("LDST: Loading a value from memory sets the status register appropriately", "[instructions]")
 {
 	GIVEN("A virtual machine")
 	{
@@ -124,7 +124,7 @@ SCENARIO("Loading a value from memory sets the status register appropriately", "
 	}
 }
 
-SCENARIO("Saving a value from memory places the value in the expected memory address", "[instructions]")
+SCENARIO("LDST: Saving a value from memory places the value in the expected memory address", "[instructions]")
 {
 	GIVEN("A virtual machine and wiped data segment")
 	{
@@ -227,7 +227,7 @@ SCENARIO("Saving a value from memory places the value in the expected memory add
 	}
 }
 
-SCENARIO("Saving a value to memory sets the status register appropriately", "[instructions]")
+SCENARIO("LDST: Saving a value to memory sets the status register appropriately", "[instructions]")
 {
 	GIVEN("A virtual machine")
 	{
@@ -279,7 +279,7 @@ SCENARIO("Saving a value to memory sets the status register appropriately", "[in
 	}
 }
 
-SCENARIO("Loading or saving a value to an unaligned memory address raises an ALGN fault", "[instructions]")
+SCENARIO("LDST: Loading or saving a value to an unaligned memory address raises an ALGN fault", "[instructions]")
 {
 	GIVEN("A virtual machine")
 	{
@@ -335,7 +335,7 @@ SCENARIO("Loading or saving a value to an unaligned memory address raises an ALG
 	}
 }
 
-SCENARIO("Setting any reserved bit raises a RES fault", "[instructions]")
+SCENARIO("LDST: Setting any reserved bit raises a RES fault", "[instructions]")
 {
 	GIVEN("A virtual machine")
 	{
