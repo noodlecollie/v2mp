@@ -5,6 +5,7 @@ add_executable(V2MP_Tests
 	src/HaltInstruction.cpp
 	src/LoadStoreInstruction.cpp
 	src/Main.cpp
+	src/SubtractInstruction.cpp
 )
 
 target_link_libraries(V2MP_Tests PUBLIC Catch2 V2MP)
