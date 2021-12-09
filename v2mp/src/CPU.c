@@ -160,6 +160,12 @@ void Execute_ADDOrSUB(V2MP_CPU* cpu)
 	destReg = GetRegisterPtr(cpu, V2MP_OP_ADDSUB_DREGINDEX(cpu->ir));
 	oldValue = *destReg;
 
+	if ( V2MP_OP_ADDSUB_DREGINDEX(cpu->ir) == V2MP_REGID_PC )
+	{
+		// Increment or decrement by words, not bytes.
+		multiplier *= sizeof(V2MP_Word);
+	}
+
 	if ( sourceReg != destReg )
 	{
 		if ( V2MP_OP_ADDSUB_VALUE(cpu->ir) != 0 )
@@ -172,14 +178,7 @@ void Execute_ADDOrSUB(V2MP_CPU* cpu)
 	}
 	else
 	{
-		if ( V2MP_OP_ADDSUB_DREGINDEX(cpu->ir) == V2MP_REGID_PC )
-		{
-			*destReg += 2 * multiplier * (int32_t)((uint8_t)V2MP_OP_ADDSUB_VALUE(cpu->ir));
-		}
-		else
-		{
-			*destReg += multiplier * (int32_t)((uint8_t)V2MP_OP_ADDSUB_VALUE(cpu->ir));
-		}
+		*destReg += multiplier * (int32_t)((uint8_t)V2MP_OP_ADDSUB_VALUE(cpu->ir));
 	}
 
 	cpu->sr = 0;

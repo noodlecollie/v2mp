@@ -230,12 +230,12 @@ SCENARIO("ADD: Adding one register to another results in the correct value in th
 				{
 					REQUIRE(vm.Execute(Asm::ADDR(REG_SRC, REG_DEST)));
 
-					THEN("PC is incremented by the value in R0, and other registers are unchanged")
+					THEN("PC is incremented by the number of words specified by R0, and other registers are unchanged")
 					{
 						CHECK(vm.GetR0() == VAL_R0);
 						CHECK(vm.GetR1() == VAL_R1);
 						CHECK(vm.GetLR() == VAL_LR);
-						CHECK(vm.GetPC() == static_cast<V2MP_Word>(VAL_DEST + VAL_SRC));
+						CHECK(vm.GetPC() == static_cast<V2MP_Word>(VAL_DEST + (sizeof(V2MP_Word) * VAL_SRC)));
 						CHECK_FALSE(vm.CPUHasFault());
 					}
 				}
@@ -250,12 +250,12 @@ SCENARIO("ADD: Adding one register to another results in the correct value in th
 				{
 					REQUIRE(vm.Execute(Asm::ADDR(REG_SRC, REG_DEST)));
 
-					THEN("PC is incremented by the value in R1, and other registers are unchanged")
+					THEN("PC is incremented by the number of words specified by R1, and other registers are unchanged")
 					{
 						CHECK(vm.GetR0() == VAL_R0);
 						CHECK(vm.GetR1() == VAL_R1);
 						CHECK(vm.GetLR() == VAL_LR);
-						CHECK(vm.GetPC() == static_cast<V2MP_Word>(VAL_DEST + VAL_SRC));
+						CHECK(vm.GetPC() == static_cast<V2MP_Word>(VAL_DEST + (sizeof(V2MP_Word) * VAL_SRC)));
 						CHECK_FALSE(vm.CPUHasFault());
 					}
 				}
@@ -270,12 +270,12 @@ SCENARIO("ADD: Adding one register to another results in the correct value in th
 				{
 					REQUIRE(vm.Execute(Asm::ADDR(REG_SRC, REG_DEST)));
 
-					THEN("PC is incremented by the value in LR, and other registers are unchanged")
+					THEN("PC is incremented by the number of words specified by LR, and other registers are unchanged")
 					{
 						CHECK(vm.GetR0() == VAL_R0);
 						CHECK(vm.GetR1() == VAL_R1);
 						CHECK(vm.GetLR() == VAL_LR);
-						CHECK(vm.GetPC() == static_cast<V2MP_Word>(VAL_DEST + VAL_SRC));
+						CHECK(vm.GetPC() == static_cast<V2MP_Word>(VAL_DEST + (sizeof(V2MP_Word) * VAL_SRC)));
 						CHECK_FALSE(vm.CPUHasFault());
 					}
 				}
@@ -284,7 +284,7 @@ SCENARIO("ADD: Adding one register to another results in the correct value in th
 	}
 }
 
-SCENARIO("ADD: Adding a literal to a non-PC register results in the correct value in the destination register", "[instructions]")
+SCENARIO("ADD: Adding a literal to a register results in the correct value in the destination register", "[instructions]")
 {
 	GIVEN("A virtual machine initialised with known values in registers")
 	{
@@ -360,37 +360,24 @@ SCENARIO("ADD: Adding a literal to a non-PC register results in the correct valu
 				}
 			}
 		}
-	}
-}
 
-SCENARIO("ADD: Adding a literal to PC results in the correct value in the register", "[instructions]")
-{
-	GIVEN("A virtual machine initialised with known values in registers")
-	{
-		static constexpr V2MP_Word VAL_R0 = 0x0101;
-		static constexpr V2MP_Word VAL_R1 = 0xBEEF;
-		static constexpr V2MP_Word VAL_LR = 0xB00B;
-		static constexpr V2MP_Word VAL_PC = 0x1234;
-		static constexpr uint8_t INCREMENT = 0x43;
-
-		MinimalVirtualMachine vm;
-
-		vm.SetR0(VAL_R0);
-		vm.SetR1(VAL_R1);
-		vm.SetLR(VAL_LR);
-		vm.SetPC(VAL_PC);
-
-		WHEN("A literal value is added")
+		AND_GIVEN("The destination register is PC")
 		{
-			REQUIRE(vm.Execute(Asm::ADDL(Asm::REG_PC, INCREMENT)));
+			static constexpr uint8_t REG_DEST = Asm::REG_PC;
+			static constexpr V2MP_Word VAL_DEST = VAL_PC;
 
-			THEN("PC is incremented by this number of words, and other registers are unchanged")
+			WHEN("A literal value is added")
 			{
-				CHECK(vm.GetR0() == VAL_R0);
-				CHECK(vm.GetR1() == VAL_R1);
-				CHECK(vm.GetLR() == VAL_LR);
-				CHECK(vm.GetPC() == static_cast<V2MP_Word>(VAL_PC + (sizeof(V2MP_Word) * static_cast<V2MP_Word>(INCREMENT))));
-				CHECK_FALSE(vm.CPUHasFault());
+				REQUIRE(vm.Execute(Asm::ADDL(REG_DEST, INCREMENT)));
+
+				THEN("PC is incremented by this number of words, and other registers are unchanged")
+				{
+					CHECK(vm.GetR0() == VAL_R0);
+					CHECK(vm.GetR1() == VAL_R1);
+					CHECK(vm.GetLR() == VAL_LR);
+					CHECK(vm.GetPC() == static_cast<V2MP_Word>(VAL_DEST + (sizeof(V2MP_Word) * static_cast<V2MP_Word>(INCREMENT))));
+					CHECK_FALSE(vm.CPUHasFault());
+				}
 			}
 		}
 	}
