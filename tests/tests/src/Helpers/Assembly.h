@@ -88,4 +88,12 @@ namespace Asm
 			| ((static_cast<V2MP_Word>(sourceReg) & 0x3) << 10)
 			| ((static_cast<V2MP_Word>(destReg) & 0x3) << 8);
 	}
+
+	constexpr inline V2MP_Word SHFTL(uint8_t destReg, int8_t shift)
+	{
+		return (V2MP_OP_SHFT << 12)
+			| ((static_cast<V2MP_Word>(destReg) & 0x3) << 10)
+			| ((static_cast<V2MP_Word>(destReg) & 0x3) << 8)
+			| static_cast<V2MP_Word>(*reinterpret_cast<uint8_t*>(&shift) & 0x1F);
+	}
 }

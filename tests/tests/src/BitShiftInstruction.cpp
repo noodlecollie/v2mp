@@ -4,8 +4,10 @@
 
 static constexpr V2MP_Word BIT_0 = 0x0001;
 static constexpr V2MP_Word BIT_4 = 0x0010;
-static constexpr V2MP_Word BIT_15 = 0x8000;
+static constexpr V2MP_Word BIT_6 = 0x0040;
+static constexpr V2MP_Word BIT_9 = 0x0200;
 static constexpr V2MP_Word BIT_11 = 0x0800;
+static constexpr V2MP_Word BIT_15 = 0x8000;
 static constexpr V2MP_Word SHIFT_LEFT_FOUR = 0x0004;
 static constexpr V2MP_Word SHIFT_RIGHT_FOUR = 0xFFFC;
 
@@ -579,6 +581,582 @@ SCENARIO("SHFT: Shifting register bits right by the value in another register re
 						CHECK(vm.GetPC() == BIT_11);
 						CHECK_FALSE(vm.CPUHasFault());
 					}
+				}
+			}
+		}
+	}
+}
+
+SCENARIO("SHFT: Shifting register bits left by a literal value results in the correct value in the destination register", "[instructions]")
+{
+	GIVEN("A virtual machine")
+	{
+		MinimalVirtualMachine vm;
+
+		AND_GIVEN("The destination register is R0")
+		{
+			static constexpr uint8_t REG_DEST = Asm::REG_R0;
+
+			vm.SetR0(BIT_0);
+
+			WHEN("A left shift of 0 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 0)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == BIT_0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of 4 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 4)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == BIT_4);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of 9 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 9)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == BIT_9);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of 15 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 15)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == BIT_15);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+		}
+
+		AND_GIVEN("The destination register is R1")
+		{
+			static constexpr uint8_t REG_DEST = Asm::REG_R1;
+
+			vm.SetR1(BIT_0);
+
+			WHEN("A left shift of 0 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 0)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == BIT_0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of 4 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 4)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == BIT_4);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of 9 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 9)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == BIT_9);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of 15 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 15)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == BIT_15);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+		}
+
+		AND_GIVEN("The destination register is LR")
+		{
+			static constexpr uint8_t REG_DEST = Asm::REG_LR;
+
+			vm.SetLR(BIT_0);
+
+			WHEN("A left shift of 0 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 0)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == BIT_0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of 4 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 4)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == BIT_4);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of 9 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 9)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == BIT_9);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of 15 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 15)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == BIT_15);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+		}
+
+		AND_GIVEN("The destination register is PC")
+		{
+			static constexpr uint8_t REG_DEST = Asm::REG_PC;
+
+			vm.SetPC(BIT_0);
+
+			WHEN("A left shift of 0 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 0)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == BIT_0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of 4 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 4)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == BIT_4);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of 9 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 9)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == BIT_9);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of 15 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 15)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == BIT_15);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+		}
+	}
+}
+
+SCENARIO("SHFT: Shifting register bits right by a literal value results in the correct value in the destination register", "[instructions]")
+{
+	GIVEN("A virtual machine")
+	{
+		MinimalVirtualMachine vm;
+
+		AND_GIVEN("The destination register is R0")
+		{
+			static constexpr uint8_t REG_DEST = Asm::REG_R0;
+
+			vm.SetR0(BIT_15);
+
+			WHEN("A left shift of 0 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 0)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == BIT_15);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -4 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -4)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == BIT_11);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -9 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -9)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == BIT_6);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -15 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -15)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == BIT_0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -16 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -16)));
+
+				THEN("The destination register value is zero, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+		}
+
+		AND_GIVEN("The destination register is R1")
+		{
+			static constexpr uint8_t REG_DEST = Asm::REG_R1;
+
+			vm.SetR1(BIT_15);
+
+			WHEN("A left shift of 0 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 0)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == BIT_15);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -4 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -4)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == BIT_11);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -9 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -9)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == BIT_6);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -15 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -15)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == BIT_0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -16 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -16)));
+
+				THEN("The destination register value is zero, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+		}
+
+		AND_GIVEN("The destination register is LR")
+		{
+			static constexpr uint8_t REG_DEST = Asm::REG_LR;
+
+			vm.SetLR(BIT_15);
+
+			WHEN("A left shift of 0 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 0)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == BIT_15);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -4 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -4)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == BIT_11);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -9 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -9)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == BIT_6);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -15 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -15)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == BIT_0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -16 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -16)));
+
+				THEN("The destination register value is zero, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+		}
+
+		AND_GIVEN("The destination register is PC")
+		{
+			static constexpr uint8_t REG_DEST = Asm::REG_PC;
+
+			vm.SetPC(BIT_15);
+
+			WHEN("A left shift of 0 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, 0)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == BIT_15);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -4 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -4)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == BIT_11);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -9 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -9)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == BIT_6);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -15 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -15)));
+
+				THEN("The destination register value is correct, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == BIT_0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("A left shift of -16 is executed")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(REG_DEST, -16)));
+
+				THEN("The destination register value is zero, and all other registers are left unchanged")
+				{
+					CHECK(vm.GetR0() == 0);
+					CHECK(vm.GetR1() == 0);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == 0);
+					CHECK_FALSE(vm.CPUHasFault());
 				}
 			}
 		}

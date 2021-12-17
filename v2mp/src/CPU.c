@@ -229,7 +229,7 @@ void Execute_SHFT(V2MP_CPU* cpu)
 		{
 			// This is a 5-bit value. Bit 4 signifies that it is negative.
 			// Construct a 16-bit two's complement for the negative value.
-			rawShiftValue = 0xFFE0 | (rawShiftValue & 0x000F);
+			rawShiftValue = 0xFFF0 | (rawShiftValue & 0x000F);
 		}
 	}
 
