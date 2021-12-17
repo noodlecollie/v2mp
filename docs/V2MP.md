@@ -35,6 +35,10 @@ All numeric literals are specified in base 10 by default. Suffixes on numeric li
 
 If a bit is described as being "set" then this means its value is `1`. If a bit is described as being "cleared" then this means its value is `0`.
 
+### Numeric Sign
+
+When values are referred to as "signed", this means that the signed value is represented using two's complement over the specified number of bits, unless otherwise stated.
+
 ### Bit Indexing
 
 Instruction and register bits are numbered starting from `0` and proceeding right to left. A specific bit, or range of bits, in a register or instruction are referred to using square brackets `[ ]`. If the bits are present in a register, the name of the register may also be prefixed to the brackets.
@@ -351,16 +355,16 @@ Shifts the bits in a register left or right.
 |0101|AABB...CCCCC|
 ```
 
-* Operand bits `[11 10] (A)` specify the two-bit identifier of the register whose value determines the magnitude of the shift. Only bits `[4 0]` of the register are used to determine the magnitude; the rest of the bits are ignored.
+* Operand bits `[11 10] (A)` specify the two-bit identifier of the register whose value determines the magnitude of the shift. The contents of the register are treated as a signed 16-bit value.
 * Operand bits `[9 8] (B)` specify the two-bit identifier of the register whose value will be shifted.
 
-If both register identifiers `A` and `B` are the same, operand bits `[4 0] (C)` are used to determine the magnitude of the shift. If register identifiers `A` and `B` are different, operand bits `[4 0] (C)` must be set to `0`, or a [`RES`](#faults) fault will be raised.
+If both register identifiers `A` and `B` are the same, operand bits `[4 0] (C)` are used to determine the magnitude of the shift. The magnitude is treated as a signed 5-bit number, ranging from `-16` to `15`.
+
+If register identifiers `A` and `B` are different, operand bits `[4 0] (C)` must be set to `0`, or a [`RES`](#faults) fault will be raised.
 
 In all cases, operand bits `[7 5]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
-Regardless of whether the shift magnitude is taken from a register or from the instruction, the magnitude is treated as a signed 5-bit number, ranging from `-16` to `15`. A negative magnitude implies a right shift (dividing the value by 2), and a positive magnitude implies a left shift (multiplying the value by 2).
-
-Bits that are shifted off either end of the register are discarded, and bits that are inserted into the register due to the shift are always `0`. A shift of `-16` is equivalent to clearing the register to all `0` bits.
+When shifting bits, a negative magnitude implies a right shift (dividing the value by 2), and a positive magnitude implies a left shift (multiplying the value by 2). Bits that are shifted off either end of the register are discarded, and bits that are inserted into the register due to the shift are always `0`.
 
 If after the operation the remaining value in the register is zero, `SR[Z]` is set to `1`; otherwise, it is set to `0`. Additionally, if any `1` bits were shifted off the end of the register during the operation, `SR[C]` is set to `1`; otherwise, it is set to `0`. All other bits in `SR` are set to `0`.
 

@@ -84,7 +84,6 @@ typedef enum _V2MP_BitwiseOp
 #define V2MP_OP_SHFT_DREGINDEX(instr) (((instr) & 0x0300) >> 8)
 #define V2MP_OP_SHFT_VALUE(instr) ((instr) & 0x001F)
 #define V2MP_OP_SHFT_RESBITS(instr) ((instr) & 0x00E0)
-#define V2MP_OP_SHFT_MAGMASK(value) ((value) & 0x001F)
 
 #define V2MP_OP_BITW_SREGINDEX(instr) (((instr) & 0x0C00) >> 10)
 #define V2MP_OP_BITW_DREGINDEX(instr) (((instr) & 0x0300) >> 8)

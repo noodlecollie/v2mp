@@ -219,18 +219,18 @@ void Execute_SHFT(V2MP_CPU* cpu)
 			return;
 		}
 
-		rawShiftValue = V2MP_OP_SHFT_MAGMASK(*sourceReg);
+		rawShiftValue = *sourceReg;
 	}
 	else
 	{
 		rawShiftValue = V2MP_OP_SHFT_VALUE(cpu->ir);
-	}
 
-	if ( rawShiftValue & 0x0010 )
-	{
-		// This is a 5-bit value. Bit 4 signifies that it is negative.
-		// Construct a 16-bit two's complement for the negative value.
-		rawShiftValue = 0xFFE0 | (rawShiftValue & 0x000F);
+		if ( rawShiftValue & 0x0010 )
+		{
+			// This is a 5-bit value. Bit 4 signifies that it is negative.
+			// Construct a 16-bit two's complement for the negative value.
+			rawShiftValue = 0xFFE0 | (rawShiftValue & 0x000F);
+		}
 	}
 
 	// Actually interpret these bits as signed now.
