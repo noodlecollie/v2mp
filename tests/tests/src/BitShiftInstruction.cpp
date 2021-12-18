@@ -1162,3 +1162,193 @@ SCENARIO("SHFT: Shifting register bits right by a literal value results in the c
 		}
 	}
 }
+
+SCENARIO("SHFT: Performing a bit shift sets the status register appropriately", "[instructions]")
+{
+	// Permutations we need to cover:
+	// - Bits are pushed off the end (left), and the result is not zero
+	// - Bits are pushed off the end (left), and the result is zero
+	// - Bits are pushed off the end (right), and the result is not zero
+	// - Bits are pushed off the end (right), and the result is zero
+
+	GIVEN("A virtual machine")
+	{
+		MinimalVirtualMachine vm;
+
+		AND_GIVEN("An empty register")
+		{
+			vm.SetR0(0x0000);
+
+			WHEN("The register is shifted left")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(Asm::REG_R0, 3)));
+
+				THEN("SR[Z] is set and SR[C] is not set")
+				{
+					CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("The register is shifted right")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(Asm::REG_R0, -3)));
+
+				THEN("SR[Z] is set and SR[C] is not set")
+				{
+					CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+		}
+
+		AND_GIVEN("A register with bit 7 set")
+		{
+			vm.SetR0(0x0080);
+
+			WHEN("The register is shifted left by 4")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(Asm::REG_R0, 4)));
+
+				THEN("SR[Z] is not set and SR[C] is not set")
+				{
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("The register is shifted right by 4")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(Asm::REG_R0, -4)));
+
+				THEN("SR[Z] is not set and SR[C] is not set")
+				{
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("The register is shifted left by 12")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(Asm::REG_R0, 12)));
+
+				THEN("SR[Z] is set and SR[C] is set")
+				{
+					CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("The register is shifted right by 12")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(Asm::REG_R0, -12)));
+
+				THEN("SR[Z] is set and SR[C] is set")
+				{
+					CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+		}
+
+		AND_GIVEN("A register with bits 3 and 12 set")
+		{
+			vm.SetR0(0x1008);
+
+			WHEN("The register is shifted left by 3")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(Asm::REG_R0, 3)));
+
+				THEN("SR[Z] is not set and SR[C] is not set")
+				{
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("The register is shifted right by 3")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(Asm::REG_R0, -3)));
+
+				THEN("SR[Z] is not set and SR[C] is not set")
+				{
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("The register is shifted left by 5")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(Asm::REG_R0, 5)));
+
+				THEN("SR[Z] is not set and SR[C] is set")
+				{
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("The register is shifted right by 5")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(Asm::REG_R0, -5)));
+
+				THEN("SR[Z] is not set and SR[C] is set")
+				{
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+		}
+
+		AND_GIVEN("A register with all bits set")
+		{
+			vm.SetR0(0xFFFF);
+
+			WHEN("The register is shifted left by 1")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(Asm::REG_R0, 1)));
+
+				THEN("SR[Z] is not set and SR[C] is set")
+				{
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+
+			AND_WHEN("The register is shifted right by 1")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTL(Asm::REG_R0, -1)));
+
+				THEN("SR[Z] is not set and SR[C] is set")
+				{
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+		}
+	}
+}
