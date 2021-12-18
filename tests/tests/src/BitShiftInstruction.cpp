@@ -1165,12 +1165,6 @@ SCENARIO("SHFT: Shifting register bits right by a literal value results in the c
 
 SCENARIO("SHFT: Performing a bit shift sets the status register appropriately", "[instructions]")
 {
-	// Permutations we need to cover:
-	// - Bits are pushed off the end (left), and the result is not zero
-	// - Bits are pushed off the end (left), and the result is zero
-	// - Bits are pushed off the end (right), and the result is not zero
-	// - Bits are pushed off the end (right), and the result is zero
-
 	GIVEN("A virtual machine")
 	{
 		MinimalVirtualMachine vm;
@@ -1347,6 +1341,43 @@ SCENARIO("SHFT: Performing a bit shift sets the status register appropriately", 
 					CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
 					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					CHECK_FALSE(vm.CPUHasFault());
+				}
+			}
+		}
+	}
+}
+
+SCENARIO("SHFT: Setting any literal operand bit if the source and destination registers are different raises a RES fault", "[instructions]")
+{
+	GIVEN("A virtual machine with different values in different registers")
+	{
+		static constexpr V2MP_Word VAL_R0 = 0x0101;
+		static constexpr V2MP_Word VAL_R1 = 0xBEEF;
+		static constexpr V2MP_Word VAL_LR = 0xB00B;
+		static constexpr V2MP_Word VAL_PC = 0x1234;
+
+		MinimalVirtualMachine vm;
+
+		vm.SetR0(VAL_R0);
+		vm.SetR1(VAL_R1);
+		vm.SetLR(VAL_LR);
+		vm.SetPC(VAL_PC);
+
+		for ( size_t index = 0; index <= 8; ++index )
+		{
+			WHEN("R1 is shifted by the value in R0, and a reserved bit set")
+			{
+				REQUIRE(vm.Execute(Asm::SHFTR(Asm::REG_R1, Asm::REG_R0) | (1 << index)));
+
+				THEN("A RES fault is raised, and all registers are left unchanged")
+				{
+					CHECK(vm.CPUHasFault());
+					CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+					CHECK(vm.GetR0() == VAL_R0);
+					CHECK(vm.GetR1() == VAL_R1);
+					CHECK(vm.GetLR() == VAL_LR);
+					CHECK(vm.GetPC() == VAL_PC);
+					CHECK(vm.GetSR() == 0);
 				}
 			}
 		}
