@@ -3,6 +3,7 @@ add_executable(V2MP_Tests
 	src/AddInstruction.cpp
 	src/AssignmentInstruction.cpp
 	src/BitShiftInstruction.cpp
+	src/BitwiseANDInstruction.cpp
 	src/HaltInstruction.cpp
 	src/LoadStoreInstruction.cpp
 	src/Main.cpp

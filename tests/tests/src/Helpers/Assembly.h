@@ -12,6 +12,14 @@ namespace Asm
 	constexpr V2MP_Word SR_Z = 1 << 0;
 	constexpr V2MP_Word SR_C = 1 << 1;
 
+	enum class BitwiseOp : uint8_t
+	{
+		AND = 0x0,
+		OR = 0x1,
+		XOR = 0x2,
+		NOT = 0x3
+	};
+
 	constexpr inline V2MP_Word FaultFromWord(V2MP_Word faultWord)
 	{
 		return (faultWord & 0xF000) >> 12;
@@ -95,5 +103,23 @@ namespace Asm
 			| ((static_cast<V2MP_Word>(destReg) & 0x3) << 10)
 			| ((static_cast<V2MP_Word>(destReg) & 0x3) << 8)
 			| static_cast<V2MP_Word>(*reinterpret_cast<uint8_t*>(&shift) & 0x1F);
+	}
+
+	constexpr inline V2MP_Word BITWR(uint8_t sourceReg, uint8_t destReg, BitwiseOp operation)
+	{
+		return (V2MP_OP_BITW << 12)
+			| ((static_cast<V2MP_Word>(sourceReg) & 0x3) << 10)
+			| ((static_cast<V2MP_Word>(destReg) & 0x3) << 8)
+			| ((static_cast<V2MP_Word>(operation) & 0x3) << 6);
+	}
+
+	constexpr inline V2MP_Word BITWL(uint8_t destReg, BitwiseOp operation, uint8_t shift, bool negate)
+	{
+		return (V2MP_OP_BITW << 12)
+			| ((static_cast<V2MP_Word>(destReg) & 0x3) << 10)
+			| ((static_cast<V2MP_Word>(destReg) & 0x3) << 8)
+			| ((static_cast<V2MP_Word>(operation) & 0x3) << 6)
+			| (static_cast<V2MP_Word>(negate ? 0x1 : 0x0) << 5)
+			| (static_cast<V2MP_Word>(shift) & 0xF);
 	}
 }
