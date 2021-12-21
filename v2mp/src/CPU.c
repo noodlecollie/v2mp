@@ -174,11 +174,11 @@ void Execute_ADDOrSUB(V2MP_CPU* cpu)
 			return;
 		}
 
-		*destReg += multiplier * (int32_t)(*sourceReg);
+		*destReg += (V2MP_Word)(multiplier * (int32_t)(*sourceReg));
 	}
 	else
 	{
-		*destReg += multiplier * (int32_t)((uint8_t)V2MP_OP_ADDSUB_VALUE(cpu->ir));
+		*destReg += (V2MP_Word)(multiplier * (int32_t)((uint8_t)V2MP_OP_ADDSUB_VALUE(cpu->ir)));
 	}
 
 	cpu->sr = 0;

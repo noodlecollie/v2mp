@@ -57,7 +57,7 @@ namespace Asm
 		return (V2MP_OP_ASGN << 12)
 			| ((static_cast<V2MP_Word>(destReg) & 0x3) << 10)
 			| ((static_cast<V2MP_Word>(destReg) & 0x3) << 8)
-			| static_cast<V2MP_Word>(*reinterpret_cast<uint8_t*>(&literal));
+			| static_cast<V2MP_Word>(static_cast<uint8_t>(literal));
 	}
 
 	constexpr inline V2MP_Word ADDR(uint8_t sourceReg, uint8_t destReg)
@@ -102,7 +102,7 @@ namespace Asm
 		return (V2MP_OP_SHFT << 12)
 			| ((static_cast<V2MP_Word>(destReg) & 0x3) << 10)
 			| ((static_cast<V2MP_Word>(destReg) & 0x3) << 8)
-			| static_cast<V2MP_Word>(*reinterpret_cast<uint8_t*>(&shift) & 0x1F);
+			| static_cast<V2MP_Word>(static_cast<uint8_t>(shift) & 0x1F);
 	}
 
 	constexpr inline V2MP_Word BITWR(uint8_t sourceReg, uint8_t destReg, BitwiseOp operation)

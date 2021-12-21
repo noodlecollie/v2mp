@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <type_traits>
 #include "V2MP/Defs.h"
 #include "V2MP/CPU.h"
 #include "V2MP/MemoryStore.h"
@@ -8,6 +9,8 @@
 class MinimalVirtualMachine
 {
 public:
+	static constexpr size_t MAX_WORD_VALUE_AS_SIZE_T = static_cast<std::size_t>(static_cast<V2MP_Word>(~0));
+
 	MinimalVirtualMachine();
 	virtual ~MinimalVirtualMachine();
 
@@ -28,13 +31,9 @@ public:
 	}
 
 	template<std::size_t N>
-	bool SetDS(const V2MP_Word (&data)[N])
+	typename std::enable_if<N <= MAX_WORD_VALUE_AS_SIZE_T, bool>::type
+	SetDS(const V2MP_Word (&data)[N])
 	{
-		if ( N > static_cast<std::size_t>(static_cast<V2MP_Word>(~0)) )
-		{
-			return false;
-		}
-
 		return V2MP_MemoryStore_AllocateDS(&m_MemoryStore, static_cast<V2MP_Word>(N), data);
 	}
 

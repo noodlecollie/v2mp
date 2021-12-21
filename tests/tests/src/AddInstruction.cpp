@@ -288,10 +288,6 @@ SCENARIO("ADD: Adding a literal to a register results in the correct value in th
 {
 	GIVEN("A virtual machine initialised with known values in registers")
 	{
-		static constexpr V2MP_Word VAL_R0 = 0x0101;
-		static constexpr V2MP_Word VAL_R1 = 0xBEEF;
-		static constexpr V2MP_Word VAL_LR = 0xB00B;
-		static constexpr V2MP_Word VAL_PC = 0x1234;
 		static constexpr uint8_t INCREMENT = 0x43;
 
 		MinimalVirtualMachine vm;

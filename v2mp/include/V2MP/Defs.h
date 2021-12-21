@@ -62,7 +62,7 @@ typedef enum _V2MP_BitwiseOp
 #define V2MP_CPU_SR_Z (1 << 0)
 #define V2MP_CPU_SR_C (1 << 1)
 
-#define V2MP_CPU_MAKE_FAULT_WORD(fault, args) (((fault) << 12) | ((args) & 0x0FFF))
+#define V2MP_CPU_MAKE_FAULT_WORD(fault, args) ( (V2MP_Word)(((fault) << 12) | ((args) & 0x0FFF)) )
 #define V2MP_CPU_FAULT_CODE(faultWord) (((faultWord) & 0xF000) >> 12)
 #define V2MP_CPU_FAULT_ARGS(faultWord) ((faultWord) & 0x0FFF)
 
