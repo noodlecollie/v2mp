@@ -4,6 +4,7 @@ add_executable(V2MP_Tests
 	src/AssignmentInstruction.cpp
 	src/BitShiftInstruction.cpp
 	src/BitwiseANDInstruction.cpp
+	src/BitwiseNOTInstruction.cpp
 	src/BitwiseORInstruction.cpp
 	src/BitwiseXORInstruction.cpp
 	src/HaltInstruction.cpp
