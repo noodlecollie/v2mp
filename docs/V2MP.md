@@ -152,7 +152,33 @@ V2MP programs can communicate with other devices in the system using device port
 
 Each port contains a mailbox. The mailbox has space for a certain number of bytes, and is used to perform half-duplex communications with the device on the port. The format of the messages between the program and the device depends entirely on what the device expects.
 
-The program can query the number of bytes currently available in a device's mailbox, either for reading or for writing. If required, a device may change the size of its mailbox dynamically at runtime, though this is not recommended without the device first informing the program via a message. The mailbox is at all times expected to be large enough to accommodate any single, complete message - messages whose sizes are larger than the maximum space in the mailbox are not supported.
+The program can query the number of bytes currently available in a device's mailbox, either for reading or for writing. If required, a device may change the size of its mailbox dynamically at runtime, though this is not recommended without the device first informing the program. The mailbox is at all times expected to be large enough to accommodate any single, complete message - messages whose sizes are larger than the maximum space in the mailbox are not supported.
+
+### State
+
+All descriptions of state in this section describe the state as seen from the program's point of view (ie. as reported by a [`DPQ`](#9h-device-port-query-dpq) instruction).
+
+If a device port has no device attached to it, it is considered "disconnected". A disconnected port may not be operated on using a [`DPO`](#9h-device-port-operation-dpo) instruction; if this occurs, an [`IDO`](#faults) fault will be raised.
+
+If a port does have a device attached to it, it is considered "connected".
+
+A connected port's mailbox is controlled either by the running program or by the device. If the mailbox is controlled by the device, the mailbox's state is considered "unavailable", and the program is not allowed to perform any operations on the mailbox using the [`DPO`](#9h-device-port-operation-dpo) instruction. If the [`DPO`](#9h-device-port-operation-dpo) instruction is used on an unavailable mailbox, an [`IDO`](#faults) fault will be raised.
+
+Note that if a port is disconnected, its mailbox is always considered unavailable.
+
+If a connected port's mailbox is controlled by the program, it may be in one of three exclusive states:
+
+* **Readable**: there is at least one byte in the mailbox that has not yet been read by the program.
+* **Writable**: there is at least one byte of free space in the mailbox that has not yet been written to by the program.
+* **Exhausted**: depending on the previous state, either all the bytes have been consumed from the mailbox by the program, or all available bytes in the mailbox have been written to by the program. All ongoing data transfers must have completed before a mailbox can move to an exhausted state.
+
+Once a mailbox becomes exhausted, the program may not initiate any more data transfers in either direction. If a data transfer is attempted on an exhausted mailbox, an [`IDO`](#faults) fault will be raised. The program should pass control of an exhausted mailbox back to the device.
+
+When control of the mailbox is passed back to the device, the mailbox reverts to being unavailable. The device is able to either consume the message that was written to the mailbox by the program, or write its own message into the mailbox for the program. It may do neither of these straight away, but must leave the mailbox in either a readable or writable state when control of the mailbox is passed back to the program.
+
+When the program passes control of the mailbox to the device, it may do so from any of the readable, writable, or exhausted states. However, if an indirect data transfer is in progress into or out of the mailbox, actual control of the mailbox is not passed to the device until the data transfer has finished. In this interim time, the supervisor retains control of the mailbox.
+
+If the program passes control of a readable mailbox back to the device, or the device passes control of a writable mailbox to the program, any remaining bytes in the mailbox are discarded by the supervisor before control of the mailbox is transferred.
 
 ### Data Transfer
 
@@ -161,35 +187,9 @@ Two methods of data transfer are supported when reading from or writing to a dev
 * **Direct data transfer**: a single word from a CPU register is written to the mailbox, or a single word from the mailbox is read into a CPU register. This data transfer always completes in one clock cycle.
 * **Indirect data transfer**: given a memory address and a maximum number of bytes, both of which are held in CPU registers, one or more bytes are either read from the mailbox into the specified `DS` address, or written from the specified `DS` address into the mailbox. The data transfer is performed by the supervisor, and may take more than one clock cycle.
 
-If an indirect data transfer is in progress into or out of a mailbox, the mailbox is considered "busy". No new data transfers of any kind may be initiated on a mailbox while it is busy, or an [`IDO`](#faults) fault will be raised.
+If an indirect data transfer is in progress into or out of a mailbox, the mailbox is considered "busy". No new data transfers of any kind may be initiated on a mailbox while it is busy, or an [`IDO`](#faults) fault will be raised. Because of this, an unavailable or exhausted mailbox is never considered busy.
 
 When passing a message using indirect data transfer, it is assumed that a memory buffer of at least the specified size is present in `DS` at the given address. Until the indirect data transfer has completed, accessing this buffer in any way may cause undefined behaviour.
-
-### State
-
-If a device port has no device attached to it, it is considered "disconnected". A disconnected port may not be operated on using a [`DPO`](#9h-device-port-operation-dpo) instruction; if this occurs, an [`IDO`](#faults) fault will be raised.
-
-If a port does have a device attached to it, it is considered "connected".
-
-A connected port's mailbox is controlled either by the running program or by the device. If the mailbox is controlled by the device, the mailbox's state is considered "unavailable", and the program is not allowed to perform any operations on the mailbox using the [`DPO`](#9h-device-port-operation-dpo) instruction. If the [`DPO`](#9h-device-port-operation-dpo) instruction is used on an unavailable mailbox, an [`IDO`](#faults) fault will be raised.
-
-If a connected port's mailbox is not unavailable, it may be in one of three exclusive states:
-
-* **Readable**: there is at least one byte in the mailbox that has not yet been read by the program.
-* **Writable**: there is at least one byte of free space in the mailbox that has not yet been written to by the program.
-* **Exhausted**: depending on the previous state, either all the bytes have been consumed from the mailbox by the program, or all available bytes in the mailbox have been written to by the program.
-  * All ongoing data transfers must have completed before a mailbox can move to an exhausted state.
-  * Once the exhausted state is reached, the program may not initiate any more data transfers in either direction. If a data transfer is attempted on an exhausted mailbox, an [`IDO`](#faults) fault will be raised.
-  * The program should pass control of an exhausted mailbox back to the device.
-
-When control of the mailbox is passed back to the device, the mailbox reverts to being unavailable. The device is able to either consume the message that was written to the mailbox by the program, or write its own message into the mailbox for the program. It may do neither of these straight away, but must leave the mailbox in either a readable or writable state when control of the mailbox is passed back to the program.
-
-When the program passes control of the mailbox to the device, it may do so from any of the readable, writable, or exhausted states. However, if an indirect data transfer is in progress into or out of the mailbox, actual control of the mailbox is not passed to the device until the data transfer has finished. In this interim time, the supervisor retains control of the mailbox.
-
-In addition to all of the above, the following states are implicit:
-
-* If a port is disconnected, its mailbox is always unavailable.
-* If a port's mailbox is exhausted or unavailable, the mailbox is never busy.
 
 ### State Diagram
 
