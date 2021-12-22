@@ -135,6 +135,11 @@ V2MP_Word MinimalVirtualMachine::GetSR() const
 	return V2MP_CPU_GetStatusRegister(&m_CPU);
 }
 
+void MinimalVirtualMachine::SetSR(V2MP_Word value)
+{
+	V2MP_CPU_SetStatusRegister(&m_CPU, value);
+}
+
 V2MP_Word MinimalVirtualMachine::GetIR() const
 {
 	return V2MP_CPU_GetInstructionRegister(&m_CPU);

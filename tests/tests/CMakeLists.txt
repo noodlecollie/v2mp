@@ -7,6 +7,7 @@ add_executable(V2MP_Tests
 	src/BitwiseNOTInstruction.cpp
 	src/BitwiseORInstruction.cpp
 	src/BitwiseXORInstruction.cpp
+	src/ConditionalBranchInstruction.cpp
 	src/HaltInstruction.cpp
 	src/LoadStoreInstruction.cpp
 	src/Main.cpp

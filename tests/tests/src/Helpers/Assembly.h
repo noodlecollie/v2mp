@@ -122,4 +122,17 @@ namespace Asm
 			| (static_cast<V2MP_Word>(negate ? 0x1 : 0x0) << 5)
 			| (static_cast<V2MP_Word>(shift) & 0xF);
 	}
+
+	constexpr inline V2MP_Word BXZR()
+	{
+		return (V2MP_OP_CBX << 12)
+			| static_cast<V2MP_Word>(1 << 11);
+	}
+
+	constexpr inline V2MP_Word BXCR()
+	{
+		return (V2MP_OP_CBX << 12)
+			| static_cast<V2MP_Word>(1 << 11)
+			| static_cast<V2MP_Word>(1 << 10);
+	}
 }

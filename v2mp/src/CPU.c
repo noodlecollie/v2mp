@@ -361,9 +361,9 @@ void Execute_CBX(V2MP_CPU* cpu)
 
 	shouldBranch =
 		(V2MP_OP_CBX_BRANCH_ON_SR_Z(cpu->ir) && (cpu->sr & V2MP_CPU_SR_Z)) ||
-		(!V2MP_OP_CBX_BRANCH_ON_SR_Z(cpu->ir) && (cpu->sr & V2MP_CPU_SR_C));
+		(V2MP_OP_CBX_BRANCH_ON_SR_C(cpu->ir) && (cpu->sr & V2MP_CPU_SR_C));
 
-	if ( V2MP_OP_CBX_JUMP(cpu->ir) )
+	if ( V2MP_OP_CBX_LR_IS_TARGET(cpu->ir) )
 	{
 		if ( V2MP_OP_CBX_OFFSET(cpu->ir) != 0 )
 		{

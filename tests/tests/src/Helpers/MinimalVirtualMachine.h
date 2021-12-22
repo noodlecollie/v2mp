@@ -69,6 +69,8 @@ public:
 	void SetPC(V2MP_Word value);
 
 	V2MP_Word GetSR() const;
+	void SetSR(V2MP_Word value);
+
 	V2MP_Word GetIR() const;
 
 	bool GetCSWord(V2MP_Word address, V2MP_Word& outWord, V2MP_Fault* outFault = nullptr) const;

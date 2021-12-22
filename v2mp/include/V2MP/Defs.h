@@ -92,10 +92,11 @@ typedef enum _V2MP_BitwiseOp
 #define V2MP_OP_BITW_MASKSHIFT(instr) ((instr) & 0x000F)
 #define V2MP_OP_BITW_RESBITS(instr) ((instr) & 0x0010)
 
-#define V2MP_OP_CBX_JUMP(instr) ((instr) & 0x0800)
-#define V2MP_OP_CBX_BRANCH_ON_SR_Z(instr) ((instr) & 0x0400)
+#define V2MP_OP_CBX_LR_IS_TARGET(instr) ((instr) & 0x0800)
+#define V2MP_OP_CBX_BRANCH_ON_SR_Z(instr) (((instr) & 0x0400) == 0)
+#define V2MP_OP_CBX_BRANCH_ON_SR_C(instr) (((instr) & 0x0400) != 0)
 #define V2MP_OP_CBX_OFFSET(instr) ((instr) & 0x00FF)
-#define V2MP_OP_CBX_RESBITS(instr) ((instr) & 0x0F00)
+#define V2MP_OP_CBX_RESBITS(instr) ((instr) & 0x0300)
 
 #ifdef __cplusplus
 } // extern "C"
