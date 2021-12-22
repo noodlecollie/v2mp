@@ -36,6 +36,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -52,6 +56,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -73,6 +81,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == ALL_ONES);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -89,6 +101,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == ALL_ZEROES);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -110,6 +126,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == ALL_ONES);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -126,6 +146,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == ALL_ZEROES);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -154,6 +178,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -170,6 +198,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -191,6 +223,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == ALL_ONES);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -207,6 +243,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == ALL_ZEROES);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -228,6 +268,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == ALL_ONES);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -244,6 +288,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == ALL_ZEROES);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -272,6 +320,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == ALTERNATE_BITS_B);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -288,6 +340,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == ALTERNATE_BITS_A);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -309,6 +365,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == ALTERNATE_BITS_B);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -325,6 +385,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == ALTERNATE_BITS_A);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -346,6 +410,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == ALTERNATE_BITS_B);
 						CHECK(vm.GetPC() == ALL_ONES);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -362,6 +430,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == ALTERNATE_BITS_A);
 						CHECK(vm.GetPC() == ALL_ZEROES);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -390,6 +462,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == ALTERNATE_BITS_B);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -406,6 +482,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == ALTERNATE_BITS_A);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -427,6 +507,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == ALTERNATE_BITS_B);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -443,6 +527,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == ALTERNATE_BITS_A);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -464,6 +552,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == ALL_ONES);
 						CHECK(vm.GetPC() == ALTERNATE_BITS_B);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -480,6 +572,10 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 						CHECK(vm.GetLR() == ALL_ZEROES);
 						CHECK(vm.GetPC() == ALTERNATE_BITS_A);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -512,6 +608,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -531,6 +631,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -555,6 +659,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -574,6 +682,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -598,6 +710,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -617,6 +733,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -641,6 +761,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -660,6 +784,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -684,6 +812,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == static_cast<V2MP_Word>(1 << shift));
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -703,6 +835,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == static_cast<V2MP_Word>(~static_cast<V2MP_Word>(1 << shift)));
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -727,6 +863,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == static_cast<V2MP_Word>(~static_cast<V2MP_Word>(1 << shift)));
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -746,6 +886,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == static_cast<V2MP_Word>(1 << shift));
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -770,6 +914,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == static_cast<V2MP_Word>(1 << shift));
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -789,6 +937,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == static_cast<V2MP_Word>(~static_cast<V2MP_Word>(1 << shift)));
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -813,6 +965,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == static_cast<V2MP_Word>(~static_cast<V2MP_Word>(1 << shift)));
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -832,6 +988,10 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == static_cast<V2MP_Word>(1 << shift));
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}

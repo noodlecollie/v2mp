@@ -33,6 +33,10 @@ SCENARIO("BITW: Performing a bitwise NOT on a register results in the correct va
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -52,6 +56,10 @@ SCENARIO("BITW: Performing a bitwise NOT on a register results in the correct va
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -71,6 +79,10 @@ SCENARIO("BITW: Performing a bitwise NOT on a register results in the correct va
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -97,6 +109,10 @@ SCENARIO("BITW: Performing a bitwise NOT on a register results in the correct va
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -116,6 +132,10 @@ SCENARIO("BITW: Performing a bitwise NOT on a register results in the correct va
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -135,6 +155,10 @@ SCENARIO("BITW: Performing a bitwise NOT on a register results in the correct va
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -161,6 +185,10 @@ SCENARIO("BITW: Performing a bitwise NOT on a register results in the correct va
 						CHECK(vm.GetLR() == static_cast<V2MP_Word>(~TEST_VALUE));
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -180,6 +208,10 @@ SCENARIO("BITW: Performing a bitwise NOT on a register results in the correct va
 						CHECK(vm.GetLR() == static_cast<V2MP_Word>(~TEST_VALUE));
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -199,6 +231,10 @@ SCENARIO("BITW: Performing a bitwise NOT on a register results in the correct va
 						CHECK(vm.GetLR() == static_cast<V2MP_Word>(~TEST_VALUE));
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -225,6 +261,10 @@ SCENARIO("BITW: Performing a bitwise NOT on a register results in the correct va
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == static_cast<V2MP_Word>(~TEST_VALUE));
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -244,6 +284,10 @@ SCENARIO("BITW: Performing a bitwise NOT on a register results in the correct va
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == static_cast<V2MP_Word>(~TEST_VALUE));
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -263,6 +307,10 @@ SCENARIO("BITW: Performing a bitwise NOT on a register results in the correct va
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == static_cast<V2MP_Word>(~TEST_VALUE));
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
