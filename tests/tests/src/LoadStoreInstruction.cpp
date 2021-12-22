@@ -90,7 +90,7 @@ SCENARIO("LDST: Loading a value from memory sets the status register appropriate
 
 			THEN("SR[Z] is set")
 			{
-				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_Z) != 0);
 				CHECK((vm.GetSR() & ~Asm::SR_Z) == 0);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
@@ -245,7 +245,7 @@ SCENARIO("LDST: Saving a value to memory sets the status register appropriately"
 
 			THEN("SR[Z] is set")
 			{
-				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_Z) != 0);
 				CHECK((vm.GetSR() & ~Asm::SR_Z) == 0);
 				CHECK_FALSE(vm.CPUHasFault());
 			}

@@ -839,7 +839,7 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 	}
 }
 
-SCENARIO("BITW: Performing a bitwise XOR between two registers with other operand bits set raises a RES fault.", "[instructions]")
+SCENARIO("BITW: Performing a bitwise XOR between two registers with other operand bits set raises a RES fault", "[instructions]")
 {
 	GIVEN("A virtual machine with different values in different registers")
 	{

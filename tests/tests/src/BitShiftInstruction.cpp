@@ -1179,7 +1179,7 @@ SCENARIO("SHFT: Performing a bit shift sets the status register appropriately", 
 
 				THEN("SR[Z] is set and SR[C] is not set")
 				{
-					CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_Z) != 0);
 					CHECK((vm.GetSR() & Asm::SR_C) == 0);
 					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					CHECK_FALSE(vm.CPUHasFault());
@@ -1192,7 +1192,7 @@ SCENARIO("SHFT: Performing a bit shift sets the status register appropriately", 
 
 				THEN("SR[Z] is set and SR[C] is not set")
 				{
-					CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_Z) != 0);
 					CHECK((vm.GetSR() & Asm::SR_C) == 0);
 					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					CHECK_FALSE(vm.CPUHasFault());
@@ -1236,8 +1236,8 @@ SCENARIO("SHFT: Performing a bit shift sets the status register appropriately", 
 
 				THEN("SR[Z] is set and SR[C] is set")
 				{
-					CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
-					CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+					CHECK((vm.GetSR() & Asm::SR_C) != 0);
 					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					CHECK_FALSE(vm.CPUHasFault());
 				}
@@ -1249,8 +1249,8 @@ SCENARIO("SHFT: Performing a bit shift sets the status register appropriately", 
 
 				THEN("SR[Z] is set and SR[C] is set")
 				{
-					CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
-					CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+					CHECK((vm.GetSR() & Asm::SR_C) != 0);
 					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					CHECK_FALSE(vm.CPUHasFault());
 				}
@@ -1294,7 +1294,7 @@ SCENARIO("SHFT: Performing a bit shift sets the status register appropriately", 
 				THEN("SR[Z] is not set and SR[C] is set")
 				{
 					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
-					CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) != 0);
 					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					CHECK_FALSE(vm.CPUHasFault());
 				}
@@ -1307,7 +1307,7 @@ SCENARIO("SHFT: Performing a bit shift sets the status register appropriately", 
 				THEN("SR[Z] is not set and SR[C] is set")
 				{
 					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
-					CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) != 0);
 					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					CHECK_FALSE(vm.CPUHasFault());
 				}
@@ -1325,7 +1325,7 @@ SCENARIO("SHFT: Performing a bit shift sets the status register appropriately", 
 				THEN("SR[Z] is not set and SR[C] is set")
 				{
 					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
-					CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) != 0);
 					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					CHECK_FALSE(vm.CPUHasFault());
 				}
@@ -1338,7 +1338,7 @@ SCENARIO("SHFT: Performing a bit shift sets the status register appropriately", 
 				THEN("SR[Z] is not set and SR[C] is set")
 				{
 					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
-					CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) != 0);
 					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					CHECK_FALSE(vm.CPUHasFault());
 				}

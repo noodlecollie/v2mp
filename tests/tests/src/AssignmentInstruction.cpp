@@ -402,7 +402,7 @@ SCENARIO("ASGN: Assigning a value from one register to another sets the status r
 
 			THEN("SR[Z] is set")
 			{
-				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_Z) != 0);
 				CHECK((vm.GetSR() & ~Asm::SR_Z) == 0);
 				CHECK_FALSE(vm.CPUHasFault());
 			}

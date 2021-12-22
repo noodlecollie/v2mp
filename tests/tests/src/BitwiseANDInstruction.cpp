@@ -35,6 +35,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -51,6 +55,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -72,6 +80,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == ALL_ONES);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -88,6 +100,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == ALL_ZEROES);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -109,6 +125,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == ALL_ONES);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -125,6 +145,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == ALL_ZEROES);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -153,6 +177,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -169,6 +197,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -190,6 +222,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == ALL_ONES);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -206,6 +242,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == ALL_ZEROES);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -227,6 +267,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == ALL_ONES);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -243,6 +287,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == ALL_ZEROES);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -271,6 +319,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == TEST_VALUE);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -287,6 +339,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -308,6 +364,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == TEST_VALUE);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -324,6 +384,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -345,6 +409,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == TEST_VALUE);
 						CHECK(vm.GetPC() == ALL_ONES);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -361,6 +429,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == ALL_ZEROES);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -389,6 +461,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == TEST_VALUE);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -405,6 +481,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -426,6 +506,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == TEST_VALUE);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -442,6 +526,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -463,6 +551,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == ALL_ONES);
 						CHECK(vm.GetPC() == TEST_VALUE);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 
@@ -479,6 +571,10 @@ SCENARIO("BITW: Performing a bitwise AND between two registers results in the co
 						CHECK(vm.GetLR() == ALL_ZEROES);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -511,6 +607,10 @@ SCENARIO("BITW: Performing a bitwise AND using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -530,6 +630,10 @@ SCENARIO("BITW: Performing a bitwise AND using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -554,6 +658,10 @@ SCENARIO("BITW: Performing a bitwise AND using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -573,6 +681,10 @@ SCENARIO("BITW: Performing a bitwise AND using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -597,6 +709,10 @@ SCENARIO("BITW: Performing a bitwise AND using a constructed mask results in the
 						CHECK(vm.GetLR() == static_cast<V2MP_Word>(1 << shift));
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -616,6 +732,10 @@ SCENARIO("BITW: Performing a bitwise AND using a constructed mask results in the
 						CHECK(vm.GetLR() == static_cast<V2MP_Word>(~static_cast<V2MP_Word>(1 << shift)));
 						CHECK(vm.GetPC() == 0);
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -640,6 +760,10 @@ SCENARIO("BITW: Performing a bitwise AND using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == static_cast<V2MP_Word>(1 << shift));
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -659,6 +783,10 @@ SCENARIO("BITW: Performing a bitwise AND using a constructed mask results in the
 						CHECK(vm.GetLR() == 0);
 						CHECK(vm.GetPC() == static_cast<V2MP_Word>(~static_cast<V2MP_Word>(1 << shift)));
 						CHECK_FALSE(vm.CPUHasFault());
+
+						CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+						CHECK((vm.GetSR() & Asm::SR_C) == 0);
+						CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 					}
 				}
 			}
@@ -666,7 +794,7 @@ SCENARIO("BITW: Performing a bitwise AND using a constructed mask results in the
 	}
 }
 
-SCENARIO("BITW: Performing a bitwise AND between two registers with other operand bits set raises a RES fault.", "[instructions]")
+SCENARIO("BITW: Performing a bitwise AND between two registers with other operand bits set raises a RES fault", "[instructions]")
 {
 	GIVEN("A virtual machine with different values in different registers")
 	{

@@ -395,7 +395,7 @@ SCENARIO("ADD: Adding one register value to another results in the correct statu
 
 			THEN("SR[Z] is set, SR[C] is not set")
 			{
-				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_Z) != 0);
 				CHECK((vm.GetSR() & Asm::SR_C) == 0);
 				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 				CHECK_FALSE(vm.CPUHasFault());
@@ -446,8 +446,8 @@ SCENARIO("ADD: Adding one register value to another results in the correct statu
 
 			THEN("SR[Z] is set, SR[C] is set")
 			{
-				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
-				CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+				CHECK((vm.GetSR() & Asm::SR_C) != 0);
 				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
@@ -464,7 +464,7 @@ SCENARIO("ADD: Adding one register value to another results in the correct statu
 			THEN("SR[Z] is not set, SR[C] is set")
 			{
 				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
-				CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & Asm::SR_C) != 0);
 				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
@@ -487,7 +487,7 @@ SCENARIO("ADD: Adding a literal to a register results in the correct status regi
 
 			THEN("SR[Z] is set, SR[C] is not set")
 			{
-				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_Z) != 0);
 				CHECK((vm.GetSR() & Asm::SR_C) == 0);
 				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 				CHECK_FALSE(vm.CPUHasFault());
@@ -535,8 +535,8 @@ SCENARIO("ADD: Adding a literal to a register results in the correct status regi
 
 			THEN("SR[Z] is set, SR[C] is set")
 			{
-				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
-				CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+				CHECK((vm.GetSR() & Asm::SR_C) != 0);
 				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
@@ -552,7 +552,7 @@ SCENARIO("ADD: Adding a literal to a register results in the correct status regi
 			THEN("SR[Z] is not set, SR[C] is set")
 			{
 				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
-				CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & Asm::SR_C) != 0);
 				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 				CHECK_FALSE(vm.CPUHasFault());
 			}

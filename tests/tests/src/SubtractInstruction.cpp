@@ -395,7 +395,7 @@ SCENARIO("SUB: Subtracting one register value from another results in the correc
 
 			THEN("SR[Z] is set, SR[C] is not set")
 			{
-				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_Z) != 0);
 				CHECK((vm.GetSR() & Asm::SR_C) == 0);
 				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 				CHECK_FALSE(vm.CPUHasFault());
@@ -446,7 +446,7 @@ SCENARIO("SUB: Subtracting one register value from another results in the correc
 
 			THEN("SR[Z] is set, SR[C] is not set")
 			{
-				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_Z) != 0);
 				CHECK((vm.GetSR() & Asm::SR_C) == 0);
 				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 				CHECK_FALSE(vm.CPUHasFault());
@@ -464,7 +464,7 @@ SCENARIO("SUB: Subtracting one register value from another results in the correc
 			THEN("SR[Z] is not set, SR[C] is set")
 			{
 				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
-				CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & Asm::SR_C) != 0);
 				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
@@ -487,7 +487,7 @@ SCENARIO("SUB: Subtracting a literal from a register results in the correct stat
 
 			THEN("SR[Z] is set, SR[C] is not set")
 			{
-				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_Z) != 0);
 				CHECK((vm.GetSR() & Asm::SR_C) == 0);
 				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 				CHECK_FALSE(vm.CPUHasFault());
@@ -519,7 +519,7 @@ SCENARIO("SUB: Subtracting a literal from a register results in the correct stat
 
 			THEN("SR[Z] is set, SR[C] is not set")
 			{
-				CHECK_FALSE((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_Z) != 0);
 				CHECK((vm.GetSR() & Asm::SR_C) == 0);
 				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 				CHECK_FALSE(vm.CPUHasFault());
@@ -552,7 +552,7 @@ SCENARIO("SUB: Subtracting a literal from a register results in the correct stat
 			THEN("SR[Z] is not set, SR[C] is set")
 			{
 				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
-				CHECK_FALSE((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & Asm::SR_C) != 0);
 				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
