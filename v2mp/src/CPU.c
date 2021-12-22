@@ -380,13 +380,13 @@ void Execute_CBX(V2MP_CPU* cpu)
 	{
 		if ( shouldBranch )
 		{
-			cpu->pc += (int8_t)V2MP_OP_CBX_OFFSET(cpu->ir);
+			cpu->pc += sizeof(V2MP_Word) * (int8_t)V2MP_OP_CBX_OFFSET(cpu->ir);
 		}
 	}
 
 	cpu->sr = 0;
 
-	if ( shouldBranch )
+	if ( !shouldBranch )
 	{
 		cpu->sr |= V2MP_CPU_SR_Z;
 	}

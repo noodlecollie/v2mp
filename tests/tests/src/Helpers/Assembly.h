@@ -135,4 +135,17 @@ namespace Asm
 			| static_cast<V2MP_Word>(1 << 11)
 			| static_cast<V2MP_Word>(1 << 10);
 	}
+
+	constexpr inline V2MP_Word BXZL(int8_t deltaWords)
+	{
+		return (V2MP_OP_CBX << 12)
+			| (static_cast<V2MP_Word>(deltaWords) & 0x00FF);
+	}
+
+	constexpr inline V2MP_Word BXCL(int8_t deltaWords)
+	{
+		return (V2MP_OP_CBX << 12)
+			| static_cast<V2MP_Word>(1 << 10)
+			| (static_cast<V2MP_Word>(deltaWords) & 0x00FF);
+	}
 }
