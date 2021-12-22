@@ -300,7 +300,7 @@ void Execute_BITW(V2MP_CPU* cpu)
 	else
 	{
 		if ( V2MP_OP_BITW_OPTYPE(cpu->ir) == V2MP_BITOP_NOT &&
-		     V2MP_OP_BITW_FLIPMASK(cpu->ir) != 0 )
+		     (V2MP_OP_BITW_FLIPMASK(cpu->ir) | V2MP_OP_BITW_MASKSHIFT(cpu->ir)) != 0 )
 		{
 			SetFault(cpu, V2MP_FAULT_RES, 0);
 			return;

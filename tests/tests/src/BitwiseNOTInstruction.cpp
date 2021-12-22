@@ -269,3 +269,71 @@ SCENARIO("BITW: Performing a bitwise NOT on a register results in the correct va
 		}
 	}
 }
+
+SCENARIO("BITW: Performing a bitwise NOT between two registers with other operand bits set raises a RES fault.", "[instructions]")
+{
+	GIVEN("A virtual machine with different values in different registers")
+	{
+		static constexpr V2MP_Word VAL_R0 = 0x0001;
+		static constexpr V2MP_Word VAL_R1 = 0x0002;
+		static constexpr V2MP_Word VAL_LR = 0x0003;
+		static constexpr V2MP_Word VAL_PC = 0x0004;
+
+		MinimalVirtualMachine vm;
+
+		vm.SetR0(VAL_R0);
+		vm.SetR1(VAL_R1);
+		vm.SetLR(VAL_LR);
+		vm.SetPC(VAL_PC);
+
+		AND_GIVEN("The source and destination registers are different")
+		{
+			static constexpr uint8_t REG_SRC = Asm::REG_R1;
+			static constexpr uint8_t REG_DEST = Asm::REG_R0;
+
+			for ( size_t index = 0; index <= 5; ++index )
+			{
+				WHEN("A bitwise NOT is performed with a reserved bit set")
+				{
+					REQUIRE(vm.Execute(Asm::BITWR(REG_SRC, REG_DEST, Asm::BitwiseOp::NOT) | (1 << index)));
+
+					THEN("A RES fault is raised, and all registers are left unchanged")
+					{
+						CHECK(vm.CPUHasFault());
+						CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+						CHECK(vm.GetR0() == VAL_R0);
+						CHECK(vm.GetR1() == VAL_R1);
+						CHECK(vm.GetLR() == VAL_LR);
+						CHECK(vm.GetPC() == VAL_PC);
+						CHECK(vm.GetSR() == 0);
+					}
+				}
+			}
+		}
+
+		AND_GIVEN("The source and destination registers are the same")
+		{
+			static constexpr uint8_t REG_SRC = Asm::REG_R0;
+			static constexpr uint8_t REG_DEST = Asm::REG_R0;
+
+			for ( size_t index = 0; index <= 5; ++index )
+			{
+				WHEN("A bitwise NOT is performed with a reserved bit set")
+				{
+					REQUIRE(vm.Execute(Asm::BITWR(REG_SRC, REG_DEST, Asm::BitwiseOp::NOT) | (1 << index)));
+
+					THEN("A RES fault is raised, and all registers are left unchanged")
+					{
+						CHECK(vm.CPUHasFault());
+						CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+						CHECK(vm.GetR0() == VAL_R0);
+						CHECK(vm.GetR1() == VAL_R1);
+						CHECK(vm.GetLR() == VAL_LR);
+						CHECK(vm.GetPC() == VAL_PC);
+						CHECK(vm.GetSR() == 0);
+					}
+				}
+			}
+		}
+	}
+}
