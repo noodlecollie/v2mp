@@ -27,14 +27,14 @@ public:
 			return false;
 		}
 
-		return V2MP_MemoryStore_AllocateCS(&m_MemoryStore, static_cast<V2MP_Word>(N), data);
+		return V2MP_MemoryStore_AllocateCS(m_MemoryStore, static_cast<V2MP_Word>(N), data);
 	}
 
 	template<std::size_t N>
 	typename std::enable_if<N <= MAX_WORD_VALUE_AS_SIZE_T, bool>::type
 	SetDS(const V2MP_Word (&data)[N])
 	{
-		return V2MP_MemoryStore_AllocateDS(&m_MemoryStore, static_cast<V2MP_Word>(N), data);
+		return V2MP_MemoryStore_AllocateDS(m_MemoryStore, static_cast<V2MP_Word>(N), data);
 	}
 
 	bool SetCS(const V2MP_Word* data, V2MP_Word numWords);
@@ -82,8 +82,8 @@ protected:
 	}
 
 private:
-	V2MP_MemoryStore m_MemoryStore;
-	V2MP_CPU m_CPU;
+	V2MP_MemoryStore* m_MemoryStore;
+	V2MP_CPU* m_CPU;
 };
 
 class VM_StartsInvalid : public MinimalVirtualMachine

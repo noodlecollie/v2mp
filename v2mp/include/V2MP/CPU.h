@@ -2,6 +2,7 @@
 #define V2MP_CPU_H
 
 #include <stdbool.h>
+#include <stddef.h>
 #include "V2MP/LibExport.h"
 #include "V2MP/Defs.h"
 
@@ -9,23 +10,14 @@
 extern "C" {
 #endif
 
-struct _V2MP_MemoryStore;
+struct V2MP_MemoryStore;
+typedef struct V2MP_CPU V2MP_CPU;
 
-typedef struct _V2MP_CPU
-{
-	V2MP_Word pc;
-	V2MP_Word sr;
-	V2MP_Word lr;
-	V2MP_Word r0;
-	V2MP_Word r1;
-	V2MP_Word ir;
+API_V2MP size_t V2MP_CPU_Footprint(void);
+API_V2MP V2MP_CPU* V2MP_CPU_AllocateAndInit(void);
+API_V2MP void V2MP_CPU_DeinitAndFree(V2MP_CPU* cpu);
 
-	struct _V2MP_MemoryStore* memory;
-	V2MP_Word fault;
-} V2MP_CPU;
-
-API_V2MP void V2MP_CPU_Init(V2MP_CPU* cpu);
-API_V2MP void V2MP_CPU_Deinit(V2MP_CPU* cpu);
+API_V2MP void V2MP_CPU_Reset(V2MP_CPU* cpu);
 
 // Not really representative of an actual CPU,
 // which would do this over multiple clock cycles,
@@ -33,8 +25,8 @@ API_V2MP void V2MP_CPU_Deinit(V2MP_CPU* cpu);
 API_V2MP bool V2MP_CPU_FetchDecodeAndExecuteInstruction(V2MP_CPU* cpu);
 
 // The memory store is not owned by the CPU.
-API_V2MP struct _V2MP_MemoryStore* V2MP_CPU_GetMemoryStore(V2MP_CPU* cpu);
-API_V2MP void V2MP_CPU_SetMemoryStore(V2MP_CPU* cpu, struct _V2MP_MemoryStore* memory);
+API_V2MP struct V2MP_MemoryStore* V2MP_CPU_GetMemoryStore(V2MP_CPU* cpu);
+API_V2MP void V2MP_CPU_SetMemoryStore(V2MP_CPU* cpu, struct V2MP_MemoryStore* memory);
 
 // The following functions are primarily for debugging:
 

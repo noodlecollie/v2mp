@@ -3,6 +3,18 @@
 #include <stdint.h>
 #include "V2MP/MemoryStore.h"
 
+typedef struct V2MP_Segment
+{
+	uint8_t* data;
+	V2MP_Word sizeInBytes;
+} V2MP_Segment;
+
+struct V2MP_MemoryStore
+{
+	V2MP_Segment cs;
+	V2MP_Segment ds;
+};
+
 static void FreeSegment(V2MP_Segment* segment)
 {
 	if ( segment->data )
@@ -104,17 +116,17 @@ static void SetSegmentWord(
 	*((V2MP_Word*)(segment->data + address)) = word;
 }
 
-void V2MP_MemoryStore_Init(V2MP_MemoryStore* mem)
+size_t V2MP_MemoryStore_Footprint(void)
 {
-	if ( !mem )
-	{
-		return;
-	}
-
-	memset(mem, 0, sizeof(*mem));
+	return sizeof(V2MP_MemoryStore);
 }
 
-void V2MP_MemoryStore_Deinit(V2MP_MemoryStore* mem)
+V2MP_MemoryStore* V2MP_MemoryStore_AllocateAndInit(void)
+{
+	return (V2MP_MemoryStore*)calloc(1, sizeof(V2MP_MemoryStore));
+}
+
+void V2MP_MemoryStore_DeinitAndFree(V2MP_MemoryStore* mem)
 {
 	if ( !mem )
 	{
@@ -123,6 +135,8 @@ void V2MP_MemoryStore_Deinit(V2MP_MemoryStore* mem)
 
 	FreeSegment(&mem->cs);
 	FreeSegment(&mem->ds);
+
+	free(mem);
 }
 
 bool V2MP_MemoryStore_AllocateCS(V2MP_MemoryStore* mem, V2MP_Word numWords, const V2MP_Word* data)

@@ -1,6 +1,20 @@
 #include <string.h>
+#include <stdlib.h>
 #include "V2MP/CPU.h"
 #include "V2MP/MemoryStore.h"
+
+struct V2MP_CPU
+{
+	V2MP_Word pc;
+	V2MP_Word sr;
+	V2MP_Word lr;
+	V2MP_Word r0;
+	V2MP_Word r1;
+	V2MP_Word ir;
+
+	V2MP_MemoryStore* memory;
+	V2MP_Word fault;
+};
 
 typedef void (* InstructionCallback)(V2MP_CPU*);
 
@@ -409,24 +423,47 @@ void Execute_Unassigned(V2MP_CPU* cpu)
 	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
 }
 
-void V2MP_CPU_Init(V2MP_CPU* cpu)
+size_t V2MP_CPU_Footprint(void)
 {
-	if ( !cpu )
-	{
-		return;
-	}
-
-	memset(cpu, 0, sizeof(*cpu));
+	return sizeof(V2MP_CPU);
 }
 
-void V2MP_CPU_Deinit(V2MP_CPU* cpu)
+V2MP_CPU* V2MP_CPU_AllocateAndInit(void)
+{
+	return (V2MP_CPU*)calloc(1, sizeof(V2MP_CPU));
+}
+
+void V2MP_CPU_DeinitAndFree(V2MP_CPU* cpu)
 {
 	if ( !cpu )
 	{
 		return;
 	}
 
-	// Nothing to do yet.
+	// Nothing to deinit yet.
+
+	free(cpu);
+}
+
+void V2MP_CPU_Reset(V2MP_CPU* cpu)
+{
+	if ( !cpu )
+	{
+		return;
+	}
+
+	// From a defensive programming point of view, even though
+	// it would be quicker to stash the memory store pointer,
+	// wipe the struct and reapply the pointer, zeroing only
+	// the members we want is a safer approach.
+
+	cpu->pc = 0;
+	cpu->sr = 0;
+	cpu->lr = 0;
+	cpu->r0 = 0;
+	cpu->r1 = 0;
+	cpu->ir = 0;
+	cpu->fault = 0;
 }
 
 bool V2MP_CPU_FetchDecodeAndExecuteInstruction(V2MP_CPU* cpu)
@@ -484,12 +521,12 @@ bool V2MP_CPU_ExecuteInstruction(V2MP_CPU* cpu, V2MP_Word instruction)
 	return true;
 }
 
-struct _V2MP_MemoryStore* V2MP_CPU_GetMemoryStore(V2MP_CPU* cpu)
+struct V2MP_MemoryStore* V2MP_CPU_GetMemoryStore(V2MP_CPU* cpu)
 {
 	return cpu ? cpu->memory : NULL;
 }
 
-void V2MP_CPU_SetMemoryStore(V2MP_CPU* cpu, struct _V2MP_MemoryStore* memory)
+void V2MP_CPU_SetMemoryStore(V2MP_CPU* cpu, struct V2MP_MemoryStore* memory)
 {
 	if ( cpu )
 	{
