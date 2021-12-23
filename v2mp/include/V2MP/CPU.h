@@ -10,8 +10,8 @@
 extern "C" {
 #endif
 
-struct V2MP_MemoryStore;
 typedef struct V2MP_CPU V2MP_CPU;
+struct V2MP_MemoryStore;
 
 API_V2MP size_t V2MP_CPU_Footprint(void);
 API_V2MP V2MP_CPU* V2MP_CPU_AllocateAndInit(void);

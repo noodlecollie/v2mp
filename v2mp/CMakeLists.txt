@@ -13,7 +13,10 @@ set(PUBLIC_HEADERS_ALL
 )
 
 set(SOURCES_ALL
+	src/DataStructures/HexTree.c
 	src/CPU.c
+	src/DevicePort.c
+	src/DevicePortStore.c
 	src/MemoryStore.c
 )
 
