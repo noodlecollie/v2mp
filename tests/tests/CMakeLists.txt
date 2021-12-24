@@ -1,17 +1,17 @@
 add_executable(V2MP_Tests
 	src/Helpers/MinimalVirtualMachine.cpp
-	src/AddInstruction.cpp
-	src/AssignmentInstruction.cpp
-	src/BitShiftInstruction.cpp
-	src/BitwiseANDInstruction.cpp
-	src/BitwiseNOTInstruction.cpp
-	src/BitwiseORInstruction.cpp
-	src/BitwiseXORInstruction.cpp
-	src/ConditionalBranchInstruction.cpp
-	src/HaltInstruction.cpp
-	src/LoadStoreInstruction.cpp
+	src/Instructions/AddInstruction.cpp
+	src/Instructions/AssignmentInstruction.cpp
+	src/Instructions/BitShiftInstruction.cpp
+	src/Instructions/BitwiseANDInstruction.cpp
+	src/Instructions/BitwiseNOTInstruction.cpp
+	src/Instructions/BitwiseORInstruction.cpp
+	src/Instructions/BitwiseXORInstruction.cpp
+	src/Instructions/ConditionalBranchInstruction.cpp
+	src/Instructions/HaltInstruction.cpp
+	src/Instructions/LoadStoreInstruction.cpp
+	src/Instructions/SubtractInstruction.cpp
 	src/Main.cpp
-	src/SubtractInstruction.cpp
 )
 
 target_link_libraries(V2MP_Tests PUBLIC Catch2 V2MP)
