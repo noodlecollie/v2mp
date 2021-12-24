@@ -3,8 +3,14 @@
 #include "HexTree.h"
 #include "Util/Util.h"
 
+#define NUM_SLOTS 16
 #define MAX_DEPTH 3
 #define CLAMP_DEPTH(d) ((d) > MAX_DEPTH ? MAX_DEPTH : (d))
+
+struct V2MP_HexTreeNode
+{
+	void* slots[NUM_SLOTS];
+};
 
 static inline V2MP_Word GetKeyFragment(V2MP_Word key, size_t depth)
 {
@@ -24,7 +30,7 @@ static void DeallocateNodesRecursive(size_t depth, V2MP_HexTreeNode* node)
 	{
 		size_t index;
 
-		for ( index = 0; index < 16; ++index )
+		for ( index = 0; index < NUM_SLOTS; ++index )
 		{
 			DeallocateNodesRecursive(depth + 1, (V2MP_HexTreeNode*)node->slots[index]);
 			node->slots[index] = NULL;
@@ -86,17 +92,17 @@ static void** GetLeafSlot(V2MP_HexTreeNode* root, V2MP_Word key, bool createIfNo
 	return NULL;
 }
 
-void V2MP_HexTree_InitRoot(V2MP_HexTreeNode* root)
+size_t V2MP_HexTree_Footprint(void)
 {
-	if ( !root )
-	{
-		return;
-	}
-
-	V2MP_ZERO_STRUCT_PTR(root);
+	return sizeof(V2MP_HexTreeNode);
 }
 
-void V2MP_HexTree_DeinitRoot(V2MP_HexTreeNode* root)
+V2MP_HexTreeNode* V2MP_HexTree_AllocateAndInit(void)
+{
+	return V2MP_CALLOC_STRUCT(V2MP_HexTreeNode);
+}
+
+void V2MP_HexTree_DeinitAndFree(V2MP_HexTreeNode* root)
 {
 	DeallocateNodesRecursive(0, root);
 }

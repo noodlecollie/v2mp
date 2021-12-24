@@ -4,13 +4,11 @@
 #include <stdbool.h>
 #include "V2MP/Defs.h"
 
-typedef struct V2MP_HexTreeNode
-{
-	void* slots[16];
-} V2MP_HexTreeNode;
+typedef struct V2MP_HexTreeNode V2MP_HexTreeNode;
 
-void V2MP_HexTree_InitRoot(V2MP_HexTreeNode* root);
-void V2MP_HexTree_DeinitRoot(V2MP_HexTreeNode* root);
+size_t V2MP_HexTree_Footprint(void);
+V2MP_HexTreeNode* V2MP_HexTree_AllocateAndInit(void);
+void V2MP_HexTree_DeinitAndFree(V2MP_HexTreeNode* root);
 
 // Returns true if the insert took place, and false otherwise.
 // The insert will not take place if the value is NULL, or if
