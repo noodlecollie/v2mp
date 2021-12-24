@@ -15,7 +15,6 @@ typedef struct V2MPCpts_CircularBuffer V2MPCpts_CircularBuffer;
 
 V2MPCpts_CircularBuffer* V2MPCpts_CircularBuffer_AllocateAndInit(size_t capacity);
 void V2MPCpts_CircularBuffer_DeinitAndFree(V2MPCpts_CircularBuffer* cb);
-void V2MPCpts_CircularBuffer_Reset(V2MPCpts_CircularBuffer* cb);
 
 size_t V2MPCpts_CircularBuffer_InternalSize(const V2MPCpts_CircularBuffer* cb);
 size_t V2MPCpts_CircularBuffer_Capacity(const V2MPCpts_CircularBuffer* cb);
@@ -30,6 +29,7 @@ const uint8_t* V2MPCpts_CircularBuffer_Tail(const V2MPCpts_CircularBuffer* cb);
 
 size_t V2MPCpts_CircularBuffer_WriteData(V2MPCpts_CircularBuffer* cb, const uint8_t* data, size_t dataSize);
 size_t V2MPCpts_CircularBuffer_ReadData(V2MPCpts_CircularBuffer* cb, uint8_t* buffer, size_t bufferSize);
+void V2MPCpts_CircularBuffer_Reset(V2MPCpts_CircularBuffer* cb);
 
 #ifdef __cplusplus
 } // extern "C"

@@ -55,17 +55,6 @@ void V2MPCpts_CircularBuffer_DeinitAndFree(V2MPCpts_CircularBuffer* cb)
 	free(cb);
 }
 
-void V2MPCpts_CircularBuffer_Reset(V2MPCpts_CircularBuffer* cb)
-{
-	if ( !cb )
-	{
-		return;
-	}
-
-	cb->head = cb->buffer;
-	cb->tail = cb->buffer;
-}
-
 size_t V2MPCpts_CircularBuffer_InternalSize(const V2MPCpts_CircularBuffer* cb)
 {
 	return cb ? cb->bufferSize : 0;
@@ -170,4 +159,15 @@ size_t V2MPCpts_CircularBuffer_ReadData(V2MPCpts_CircularBuffer* cb, uint8_t* bu
 	}
 
 	return bytesWritten;
+}
+
+void V2MPCpts_CircularBuffer_Reset(V2MPCpts_CircularBuffer* cb)
+{
+	if ( !cb )
+	{
+		return;
+	}
+
+	cb->head = cb->buffer;
+	cb->tail = cb->buffer;
 }
