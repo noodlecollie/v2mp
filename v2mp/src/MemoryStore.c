@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "V2MP/MemoryStore.h"
+#include "Util/Util.h"
 
 typedef struct V2MP_Segment
 {
@@ -123,7 +124,7 @@ size_t V2MP_MemoryStore_Footprint(void)
 
 V2MP_MemoryStore* V2MP_MemoryStore_AllocateAndInit(void)
 {
-	return (V2MP_MemoryStore*)calloc(1, sizeof(V2MP_MemoryStore));
+	return V2MP_CALLOC_STRUCT(V2MP_MemoryStore);
 }
 
 void V2MP_MemoryStore_DeinitAndFree(V2MP_MemoryStore* mem)

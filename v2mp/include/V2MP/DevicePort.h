@@ -16,8 +16,12 @@ API_V2MP size_t V2MP_DevicePort_Footprint(void);
 API_V2MP V2MP_DevicePort* V2MP_DevicePort_AllocateAndInit(void);
 API_V2MP void V2MP_DevicePort_DeinitAndFree(V2MP_DevicePort* port);
 
+API_V2MP V2MP_Word V2MP_DevicePort_GetAddress(V2MP_DevicePort* port);
+API_V2MP void V2MP_DevicePort_SetAddress(V2MP_DevicePort* port, V2MP_Word address);
+
 API_V2MP size_t V2MP_DevicePort_GetMailboxSize(V2MP_DevicePort* port);
-API_V2MP size_t V2MP_DevicePort_GetNumberOfBytesInMailbox(V2MP_DevicePort* port);
+API_V2MP size_t V2MP_DevicePort_GetMailboxMessageLength(V2MP_DevicePort* port);
+API_V2MP size_t V2MP_DevicePort_GetMailboxFreeSpace(V2MP_DevicePort* port);
 
 // If any mailbox already exists, its contents are discarded.
 // Specifiying a mailbox of 0 bytes simply deallocates its memory.

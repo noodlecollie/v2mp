@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "HexTree.h"
+#include "Util/Util.h"
 
 #define MAX_DEPTH 3
 #define CLAMP_DEPTH(d) ((d) > MAX_DEPTH ? MAX_DEPTH : (d))
@@ -65,7 +66,7 @@ static void** GetLeafSlot(V2MP_HexTreeNode* root, V2MP_Word key, bool createIfNo
 					break;
 				}
 
-				(*slot) = calloc(1, sizeof(V2MP_HexTreeNode));
+				(*slot) = V2MP_CALLOC_STRUCT(V2MP_HexTreeNode);
 
 				if ( !(*slot) )
 				{
@@ -92,7 +93,7 @@ void V2MP_HexTree_InitRoot(V2MP_HexTreeNode* root)
 		return;
 	}
 
-	memset(root, 0, sizeof(*root));
+	V2MP_ZERO_STRUCT_PTR(root);
 }
 
 void V2MP_HexTree_DeinitRoot(V2MP_HexTreeNode* root)

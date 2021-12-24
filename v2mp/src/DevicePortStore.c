@@ -3,6 +3,7 @@
 #include "V2MP/DevicePortStore.h"
 #include "V2MP/DevicePort.h"
 #include "DataStructures/HexTree.h"
+#include "Util/Util.h"
 
 // TODO: We might want to make this a generic data structure class somehow.
 typedef struct V2MP_DevicePort_ListItem
@@ -22,7 +23,7 @@ struct V2MP_DevicePortStore
 
 static inline V2MP_DevicePort_ListItem* AllocateListItem(void)
 {
-	return (V2MP_DevicePort_ListItem*)calloc(1, sizeof(V2MP_DevicePort_ListItem));
+	return V2MP_CALLOC_STRUCT(V2MP_DevicePort_ListItem);
 }
 
 static inline void FreeListItem(V2MP_DevicePort_ListItem* item)
@@ -99,7 +100,7 @@ V2MP_DevicePortStore* V2MP_DevicePortStore_AllocateAndInit(void)
 {
 	V2MP_DevicePortStore* store;
 
-	store = (V2MP_DevicePortStore*)calloc(1, sizeof(V2MP_DevicePortStore));
+	store = V2MP_CALLOC_STRUCT(V2MP_DevicePortStore);
 
 	if ( !store )
 	{
@@ -153,7 +154,9 @@ struct V2MP_DevicePort* V2MP_DevicePortStore_CreatePort(V2MP_DevicePortStore* st
 			break;
 		}
 
+		V2MP_DevicePort_SetAddress(item->port, address);
 		AppendToPortList(store, item);
+
 		return item->port;
 	}
 	while ( false );

@@ -13,6 +13,7 @@ set(PUBLIC_HEADERS_ALL
 )
 
 set(SOURCES_ALL
+	src/DataStructures/CircularBuffer.c
 	src/DataStructures/HexTree.c
 	src/CPU.c
 	src/DevicePort.c
