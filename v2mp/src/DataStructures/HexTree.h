@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include "V2MP/Defs.h"
 
-typedef struct _V2MP_HexTreeNode
+typedef struct V2MP_HexTreeNode
 {
 	void* slots[16];
 } V2MP_HexTreeNode;

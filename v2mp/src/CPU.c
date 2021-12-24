@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "V2MP/CPU.h"
 #include "V2MP/MemoryStore.h"
+#include "V2MP/DevicePortStore.h"
 
 struct V2MP_CPU
 {
@@ -11,9 +12,10 @@ struct V2MP_CPU
 	V2MP_Word r0;
 	V2MP_Word r1;
 	V2MP_Word ir;
+	V2MP_Word fault;
 
 	V2MP_MemoryStore* memory;
-	V2MP_Word fault;
+	V2MP_DevicePortStore* devicePorts;
 };
 
 typedef void (* InstructionCallback)(V2MP_CPU*);
@@ -531,6 +533,19 @@ void V2MP_CPU_SetMemoryStore(V2MP_CPU* cpu, struct V2MP_MemoryStore* memory)
 	if ( cpu )
 	{
 		cpu->memory = memory;
+	}
+}
+
+struct V2MP_DevicePortStore* V2MP_CPU_GetDevicePortStore(V2MP_CPU* cpu)
+{
+	return cpu ? cpu->devicePorts : NULL;
+}
+
+void V2MP_CPU_SetDevicePortStore(V2MP_CPU* cpu, struct V2MP_DevicePortStore* devicePorts)
+{
+	if ( cpu )
+	{
+		cpu->devicePorts = devicePorts;
 	}
 }
 

@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 typedef uint16_t V2MP_Word;
+typedef uint8_t V2MP_Byte;
 
 typedef enum _V2MP_Instruction
 {

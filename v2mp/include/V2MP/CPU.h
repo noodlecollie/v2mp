@@ -12,6 +12,7 @@ extern "C" {
 
 typedef struct V2MP_CPU V2MP_CPU;
 struct V2MP_MemoryStore;
+struct V2MP_DevicePortStore;
 
 API_V2MP size_t V2MP_CPU_Footprint(void);
 API_V2MP V2MP_CPU* V2MP_CPU_AllocateAndInit(void);
@@ -27,6 +28,10 @@ API_V2MP bool V2MP_CPU_FetchDecodeAndExecuteInstruction(V2MP_CPU* cpu);
 // The memory store is not owned by the CPU.
 API_V2MP struct V2MP_MemoryStore* V2MP_CPU_GetMemoryStore(V2MP_CPU* cpu);
 API_V2MP void V2MP_CPU_SetMemoryStore(V2MP_CPU* cpu, struct V2MP_MemoryStore* memory);
+
+// The device port store is not owned by the CPU.
+API_V2MP struct V2MP_DevicePortStore* V2MP_CPU_GetDevicePortStore(V2MP_CPU* cpu);
+API_V2MP void V2MP_CPU_SetDevicePortStore(V2MP_CPU* cpu, struct V2MP_DevicePortStore* devicePorts);
 
 // The following functions are primarily for debugging:
 
