@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "V2MP/MemoryStore.h"
-#include "Util/Util.h"
+#include "V2MPComponents/Util/Util.h"
 
 typedef struct V2MP_Segment
 {

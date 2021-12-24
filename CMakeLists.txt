@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_CXX_STANDARD 11)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 	message(STATUS "Setting build type to 'Release' as none was specified.")
@@ -16,7 +14,15 @@ project(V2MP)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+set(TARGETNAME_V2MP V2MP)
+set(TARGETNAME_V2MP_COMPONENTS V2MPComponents)
 
 option(BUILD_SHARED_LIBS "If set, builds shared libraries; otherwise, builds static libraries." YES)
 option(BUILD_TESTS "If set, test suite is built." NO)
@@ -50,6 +56,7 @@ else()
 endif()
 
 add_subdirectory(v2mp)
+add_subdirectory(components)
 
 if(BUILD_TESTS)
 	if(BUILD_SHARED_LIBS)
