@@ -1,5 +1,5 @@
-#ifndef V2MPCOMPONENTS_HEXTREE_H
-#define V2MPCOMPONENTS_HEXTREE_H
+#ifndef V2MPINTERNAL_HEXTREE_H
+#define V2MPINTERNAL_HEXTREE_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -31,4 +31,4 @@ void* V2MPI_HexTree_Find(V2MPI_HexTreeNode* root, uint16_t key);
 } // extern "C"
 #endif
 
-#endif // V2MPCOMPONENTS_HEXTREE_H
+#endif // V2MPINTERNAL_HEXTREE_H
