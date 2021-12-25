@@ -1,6 +1,6 @@
 #include <cstring>
 #include "catch2/catch.hpp"
-#include "V2MPComponents/CircularBuffer.h"
+#include "V2MPInternal/CircularBuffer.h"
 
 static constexpr size_t DEFAULT_CAPACITY = 32;
 

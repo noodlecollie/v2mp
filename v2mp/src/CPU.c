@@ -3,7 +3,7 @@
 #include "V2MP/CPU.h"
 #include "V2MP/MemoryStore.h"
 #include "V2MP/DevicePortStore.h"
-#include "V2MPComponents/Util/Util.h"
+#include "V2MPInternal/Util/Util.h"
 
 struct V2MP_CPU
 {

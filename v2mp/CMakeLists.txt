@@ -28,7 +28,7 @@ endif()
 target_include_directories(${TARGETNAME_V2MP} PUBLIC include)
 target_include_directories(${TARGETNAME_V2MP} PRIVATE src)
 
-target_link_libraries(${TARGETNAME_V2MP} PRIVATE ${TARGETNAME_V2MP_COMPONENTS})
+target_link_libraries(${TARGETNAME_V2MP} PRIVATE ${TARGETNAME_V2MP_INTERNAL})
 
 install(TARGETS ${TARGETNAME_V2MP}
 	ARCHIVE DESTINATION ${TARGETNAME_V2MP}/lib

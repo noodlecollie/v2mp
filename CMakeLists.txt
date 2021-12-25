@@ -22,7 +22,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(TARGETNAME_V2MP V2MP)
-set(TARGETNAME_V2MP_COMPONENTS V2MPComponents)
+set(TARGETNAME_V2MP_INTERNAL V2MPInternal)
 
 option(BUILD_SHARED_LIBS "If set, builds shared libraries; otherwise, builds static libraries." YES)
 option(BUILD_TESTS "If set, test suite is built." NO)
@@ -56,7 +56,7 @@ else()
 endif()
 
 add_subdirectory(v2mp)
-add_subdirectory(components)
+add_subdirectory(internal)
 
 if(BUILD_TESTS)
 	if(BUILD_SHARED_LIBS)

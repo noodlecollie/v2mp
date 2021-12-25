@@ -15,7 +15,7 @@ add_executable(V2MP_Tests
 	src/Main.cpp
 )
 
-target_link_libraries(V2MP_Tests PUBLIC Catch2 ${TARGETNAME_V2MP} ${TARGETNAME_V2MP_COMPONENTS})
+target_link_libraries(V2MP_Tests PUBLIC Catch2 ${TARGETNAME_V2MP} ${TARGETNAME_V2MP_INTERNAL})
 target_include_directories(V2MP_Tests PRIVATE src)
 
 install(TARGETS V2MP_Tests

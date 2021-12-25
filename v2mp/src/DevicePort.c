@@ -2,8 +2,8 @@
 #include <stdint.h>
 #include <string.h>
 #include "V2MP/DevicePort.h"
-#include "V2MPComponents/CircularBuffer.h"
-#include "V2MPComponents/Util/Util.h"
+#include "V2MPInternal/CircularBuffer.h"
+#include "V2MPInternal/Util/Util.h"
 
 struct V2MP_DevicePort
 {
