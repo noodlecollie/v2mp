@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "V2MP/DevicePortStore.h"
 #include "V2MP/DevicePort.h"
-#include "V2MPInternal/HexTree.h"
+#include "V2MPInternal/Components/HexTree.h"
 #include "V2MPInternal/Util/Util.h"
 
 // TODO: We might want to make this a generic data structure class somehow.

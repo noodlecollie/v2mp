@@ -1,4 +1,4 @@
-#include "V2MPInternal/CircularBuffer.h"
+#include "V2MPInternal/Components/CircularBuffer.h"
 #include "V2MPInternal/Util/Util.h"
 
 struct V2MPCpts_CircularBuffer

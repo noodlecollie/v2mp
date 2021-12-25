@@ -1,6 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
-#include "V2MPInternal/HexTree.h"
+#include "V2MPInternal/Components/HexTree.h"
 #include "V2MPInternal/Util/Util.h"
 
 // Each level of the tree has 16 slots, corresponding to the number of permutations in a half-byte.
