@@ -4,6 +4,7 @@
 #include "V2MP/MemoryStore.h"
 #include "V2MP/DevicePortStore.h"
 #include "V2MPInternal/Util/Util.h"
+#include "V2MPInternal/Util/Heap.h"
 
 struct V2MP_CPU
 {
@@ -433,7 +434,7 @@ size_t V2MP_CPU_Footprint(void)
 
 V2MP_CPU* V2MP_CPU_AllocateAndInit(void)
 {
-	return V2MP_CALLOC_STRUCT(V2MP_CPU);
+	return V2MPI_CALLOC_STRUCT(V2MP_CPU);
 }
 
 void V2MP_CPU_DeinitAndFree(V2MP_CPU* cpu)

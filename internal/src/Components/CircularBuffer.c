@@ -1,5 +1,6 @@
 #include "V2MPInternal/Components/CircularBuffer.h"
 #include "V2MPInternal/Util/Util.h"
+#include "V2MPInternal/Util/Heap.h"
 
 struct V2MPI_CircularBuffer
 {
@@ -20,7 +21,7 @@ V2MPI_CircularBuffer* V2MPI_CircularBuffer_AllocateAndInit(size_t capacity)
 		return NULL;
 	}
 
-	cb = V2MP_CALLOC_STRUCT(V2MPI_CircularBuffer);
+	cb = V2MPI_CALLOC_STRUCT(V2MPI_CircularBuffer);
 
 	if ( !cb )
 	{
@@ -28,7 +29,7 @@ V2MPI_CircularBuffer* V2MPI_CircularBuffer_AllocateAndInit(size_t capacity)
 	}
 
 	cb->bufferSize = capacity + 1;
-	cb->buffer = (uint8_t*)malloc(cb->bufferSize);
+	cb->buffer = (uint8_t*)V2MPI_MALLOC(cb->bufferSize);
 
 	if ( !cb->buffer )
 	{
@@ -125,7 +126,7 @@ size_t V2MPI_CircularBuffer_WriteData(V2MPI_CircularBuffer* cb, const uint8_t* d
 			cb->head = cb->buffer;
 		}
 
-		bytesToCopy = V2MP_MIN((size_t)(CB_END(cb) - cb->head), dataSize - bytesRead);
+		bytesToCopy = V2MPI_MIN((size_t)(CB_END(cb) - cb->head), dataSize - bytesRead);
 
 		memcpy(cb->head, data + bytesRead, bytesToCopy);
 
@@ -154,7 +155,7 @@ size_t V2MPI_CircularBuffer_ReadData(V2MPI_CircularBuffer* cb, uint8_t* buffer, 
 			cb->tail = cb->buffer;
 		}
 
-		bytesToCopy = V2MP_MIN((size_t)(CB_END(cb) - cb->tail), bufferSize - bytesWritten);
+		bytesToCopy = V2MPI_MIN((size_t)(CB_END(cb) - cb->tail), bufferSize - bytesWritten);
 
 		memcpy(buffer + bytesWritten, cb->tail, bytesToCopy);
 

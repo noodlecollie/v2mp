@@ -1,6 +1,7 @@
 add_library(${TARGETNAME_V2MP_INTERNAL} STATIC
 	src/Components/CircularBuffer.c
 	src/Components/HexTree.c
+	src/Util/Heap.c
 )
 
 target_include_directories(${TARGETNAME_V2MP_INTERNAL} PUBLIC include)

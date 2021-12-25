@@ -8,11 +8,10 @@
 extern "C" {
 #endif
 
-#define V2MP_ZERO_STRUCT_PTR(ptr) memset((ptr), 0, sizeof(*(ptr)))
-#define V2MP_CALLOC_STRUCT(structType) ((structType*)calloc(1, sizeof(structType)))
+#define V2MPI_ZERO_STRUCT_PTR(ptr) memset((ptr), 0, sizeof(*(ptr)))
 
-#define V2MP_MIN(a, b) ((a) < (b) ? (a) : (b))
-#define V2MP_MAX(a, b) ((a) > (b) ? (a) : (b))
+#define V2MPI_MIN(a, b) ((a) < (b) ? (a) : (b))
+#define V2MPI_MAX(a, b) ((a) > (b) ? (a) : (b))
 
 #ifdef __cplusplus
 } // extern "C"
