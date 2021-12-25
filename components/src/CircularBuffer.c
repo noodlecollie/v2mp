@@ -9,7 +9,7 @@ struct V2MPCpts_CircularBuffer
 	uint8_t* tail;
 };
 
-#define CB_END(cb) ((cb)->buffer + (cb)->bufferSize)
+#define CB_END(cb) ((cb)->buffer + (cb)->bufferSize - 1)
 
 V2MPCpts_CircularBuffer* V2MPCpts_CircularBuffer_AllocateAndInit(size_t capacity)
 {
@@ -118,17 +118,19 @@ size_t V2MPCpts_CircularBuffer_WriteData(V2MPCpts_CircularBuffer* cb, const uint
 
 	while ( !V2MPCpts_CircularBuffer_IsFull(cb) && bytesRead < dataSize )
 	{
-		const size_t bytesToCopy = V2MP_MIN((size_t)(CB_END(cb) - cb->head), dataSize - bytesRead);
-
-		memcpy(cb->head, data + bytesRead, bytesToCopy);
-
-		cb->head += bytesToCopy;
-		bytesRead += bytesToCopy;
+		size_t bytesToCopy;
 
 		if ( cb->head >= CB_END(cb) )
 		{
 			cb->head = cb->buffer;
 		}
+
+		bytesToCopy = V2MP_MIN((size_t)(CB_END(cb) - cb->head), dataSize - bytesRead);
+
+		memcpy(cb->head, data + bytesRead, bytesToCopy);
+
+		cb->head += bytesToCopy;
+		bytesRead += bytesToCopy;
 	}
 
 	return bytesRead;
@@ -145,17 +147,19 @@ size_t V2MPCpts_CircularBuffer_ReadData(V2MPCpts_CircularBuffer* cb, uint8_t* bu
 
 	while ( !V2MPCpts_CircularBuffer_IsEmpty(cb) && bytesWritten < bufferSize )
 	{
-		const size_t bytesToCopy = V2MP_MIN((size_t)(CB_END(cb) - cb->tail), bufferSize - bytesWritten);
-
-		memcpy(buffer + bytesWritten, cb->tail, bytesToCopy);
-
-		cb->tail += bytesToCopy;
-		bytesWritten += bytesToCopy;
+		size_t bytesToCopy;
 
 		if ( cb->tail >= CB_END(cb) )
 		{
 			cb->tail = cb->buffer;
 		}
+
+		bytesToCopy = V2MP_MIN((size_t)(CB_END(cb) - cb->tail), bufferSize - bytesWritten);
+
+		memcpy(buffer + bytesWritten, cb->tail, bytesToCopy);
+
+		cb->tail += bytesToCopy;
+		bytesWritten += bytesToCopy;
 	}
 
 	return bytesWritten;
