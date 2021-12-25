@@ -7,7 +7,7 @@
 
 struct V2MP_DevicePort
 {
-	V2MPCpts_CircularBuffer* mailbox;
+	V2MPI_CircularBuffer* mailbox;
 	V2MP_Word address;
 };
 
@@ -15,7 +15,7 @@ static inline void FreeMailbox(V2MP_DevicePort* port)
 {
 	if ( port->mailbox )
 	{
-		V2MPCpts_CircularBuffer_DeinitAndFree(port->mailbox);
+		V2MPI_CircularBuffer_DeinitAndFree(port->mailbox);
 		port->mailbox = NULL;
 	}
 }
@@ -58,17 +58,17 @@ void V2MP_DevicePort_SetAddress(V2MP_DevicePort* port, V2MP_Word address)
 
 size_t V2MP_DevicePort_GetMailboxSize(V2MP_DevicePort* port)
 {
-	return port ? V2MPCpts_CircularBuffer_Capacity(port->mailbox) : 0;
+	return port ? V2MPI_CircularBuffer_Capacity(port->mailbox) : 0;
 }
 
 size_t V2MP_DevicePort_GetMailboxMessageLength(V2MP_DevicePort* port)
 {
-	return port ? V2MPCpts_CircularBuffer_BytesUsed(port->mailbox) : 0;
+	return port ? V2MPI_CircularBuffer_BytesUsed(port->mailbox) : 0;
 }
 
 size_t V2MP_DevicePort_GetMailboxFreeSpace(V2MP_DevicePort* port)
 {
-	return port ? V2MPCpts_CircularBuffer_BytesFree(port->mailbox) : 0;
+	return port ? V2MPI_CircularBuffer_BytesFree(port->mailbox) : 0;
 }
 
 bool V2MP_DevicePort_AllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes)
@@ -85,7 +85,7 @@ bool V2MP_DevicePort_AllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes)
 		return true;
 	}
 
-	port->mailbox = V2MPCpts_CircularBuffer_AllocateAndInit(sizeInBytes);
+	port->mailbox = V2MPI_CircularBuffer_AllocateAndInit(sizeInBytes);
 
 	return port->mailbox != NULL;
 }
@@ -97,10 +97,10 @@ void V2MP_DevicePort_DeallocateMailbox(V2MP_DevicePort* port)
 
 size_t V2MP_DevicePort_WriteToMailbox(V2MP_DevicePort* port, const V2MP_Byte* data, size_t dataSize)
 {
-	return port ? V2MPCpts_CircularBuffer_WriteData(port->mailbox, data, dataSize) : 0;
+	return port ? V2MPI_CircularBuffer_WriteData(port->mailbox, data, dataSize) : 0;
 }
 
 size_t V2MP_DevicePort_ReadFromMailbox(V2MP_DevicePort* port, V2MP_Byte* buffer, size_t bufferSize)
 {
-	return port ? V2MPCpts_CircularBuffer_ReadData(port->mailbox, buffer, bufferSize) : 0;
+	return port ? V2MPI_CircularBuffer_ReadData(port->mailbox, buffer, bufferSize) : 0;
 }

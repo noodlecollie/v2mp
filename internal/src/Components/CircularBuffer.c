@@ -1,7 +1,7 @@
 #include "V2MPInternal/Components/CircularBuffer.h"
 #include "V2MPInternal/Util/Util.h"
 
-struct V2MPCpts_CircularBuffer
+struct V2MPI_CircularBuffer
 {
 	uint8_t* buffer;
 	size_t bufferSize;
@@ -11,16 +11,16 @@ struct V2MPCpts_CircularBuffer
 
 #define CB_END(cb) ((cb)->buffer + (cb)->bufferSize - 1)
 
-V2MPCpts_CircularBuffer* V2MPCpts_CircularBuffer_AllocateAndInit(size_t capacity)
+V2MPI_CircularBuffer* V2MPI_CircularBuffer_AllocateAndInit(size_t capacity)
 {
-	V2MPCpts_CircularBuffer* cb;
+	V2MPI_CircularBuffer* cb;
 
 	if ( capacity < 1 || capacity == (size_t)(~0) )
 	{
 		return NULL;
 	}
 
-	cb = V2MP_CALLOC_STRUCT(V2MPCpts_CircularBuffer);
+	cb = V2MP_CALLOC_STRUCT(V2MPI_CircularBuffer);
 
 	if ( !cb )
 	{
@@ -36,11 +36,11 @@ V2MPCpts_CircularBuffer* V2MPCpts_CircularBuffer_AllocateAndInit(size_t capacity
 		return NULL;
 	}
 
-	V2MPCpts_CircularBuffer_Reset(cb);
+	V2MPI_CircularBuffer_Reset(cb);
 	return cb;
 }
 
-void V2MPCpts_CircularBuffer_DeinitAndFree(V2MPCpts_CircularBuffer* cb)
+void V2MPI_CircularBuffer_DeinitAndFree(V2MPI_CircularBuffer* cb)
 {
 	if ( !cb )
 	{
@@ -55,17 +55,17 @@ void V2MPCpts_CircularBuffer_DeinitAndFree(V2MPCpts_CircularBuffer* cb)
 	free(cb);
 }
 
-size_t V2MPCpts_CircularBuffer_InternalSize(const V2MPCpts_CircularBuffer* cb)
+size_t V2MPI_CircularBuffer_InternalSize(const V2MPI_CircularBuffer* cb)
 {
 	return cb ? cb->bufferSize : 0;
 }
 
-size_t V2MPCpts_CircularBuffer_Capacity(const V2MPCpts_CircularBuffer* cb)
+size_t V2MPI_CircularBuffer_Capacity(const V2MPI_CircularBuffer* cb)
 {
 	return cb ? (cb->bufferSize - 1) : 0;
 }
 
-size_t V2MPCpts_CircularBuffer_BytesFree(const V2MPCpts_CircularBuffer* cb)
+size_t V2MPI_CircularBuffer_BytesFree(const V2MPI_CircularBuffer* cb)
 {
 	if ( !cb )
 	{
@@ -74,7 +74,7 @@ size_t V2MPCpts_CircularBuffer_BytesFree(const V2MPCpts_CircularBuffer* cb)
 
 	if ( cb->head >= cb->tail )
 	{
-		return V2MPCpts_CircularBuffer_Capacity(cb) - (cb->head - cb->tail);
+		return V2MPI_CircularBuffer_Capacity(cb) - (cb->head - cb->tail);
 	}
 	else
 	{
@@ -82,32 +82,32 @@ size_t V2MPCpts_CircularBuffer_BytesFree(const V2MPCpts_CircularBuffer* cb)
 	}
 }
 
-size_t V2MPCpts_CircularBuffer_BytesUsed(const V2MPCpts_CircularBuffer* cb)
+size_t V2MPI_CircularBuffer_BytesUsed(const V2MPI_CircularBuffer* cb)
 {
-	return cb ? (V2MPCpts_CircularBuffer_Capacity(cb) - V2MPCpts_CircularBuffer_BytesFree(cb)) : 0;
+	return cb ? (V2MPI_CircularBuffer_Capacity(cb) - V2MPI_CircularBuffer_BytesFree(cb)) : 0;
 }
 
-bool V2MPCpts_CircularBuffer_IsFull(const V2MPCpts_CircularBuffer* cb)
+bool V2MPI_CircularBuffer_IsFull(const V2MPI_CircularBuffer* cb)
 {
-	return cb ? V2MPCpts_CircularBuffer_BytesFree(cb) == 0 : 0;
+	return cb ? V2MPI_CircularBuffer_BytesFree(cb) == 0 : 0;
 }
 
-bool V2MPCpts_CircularBuffer_IsEmpty(const V2MPCpts_CircularBuffer* cb)
+bool V2MPI_CircularBuffer_IsEmpty(const V2MPI_CircularBuffer* cb)
 {
-	return cb ? V2MPCpts_CircularBuffer_BytesFree(cb) == V2MPCpts_CircularBuffer_Capacity(cb) : 0;
+	return cb ? V2MPI_CircularBuffer_BytesFree(cb) == V2MPI_CircularBuffer_Capacity(cb) : 0;
 }
 
-const uint8_t* V2MPCpts_CircularBuffer_Head(const V2MPCpts_CircularBuffer* cb)
+const uint8_t* V2MPI_CircularBuffer_Head(const V2MPI_CircularBuffer* cb)
 {
 	return cb ? cb->head : 0;
 }
 
-const uint8_t* V2MPCpts_CircularBuffer_Tail(const V2MPCpts_CircularBuffer* cb)
+const uint8_t* V2MPI_CircularBuffer_Tail(const V2MPI_CircularBuffer* cb)
 {
 	return cb ? cb->tail : 0;
 }
 
-size_t V2MPCpts_CircularBuffer_WriteData(V2MPCpts_CircularBuffer* cb, const uint8_t* data, size_t dataSize)
+size_t V2MPI_CircularBuffer_WriteData(V2MPI_CircularBuffer* cb, const uint8_t* data, size_t dataSize)
 {
 	size_t bytesRead = 0;
 
@@ -116,7 +116,7 @@ size_t V2MPCpts_CircularBuffer_WriteData(V2MPCpts_CircularBuffer* cb, const uint
 		return 0;
 	}
 
-	while ( !V2MPCpts_CircularBuffer_IsFull(cb) && bytesRead < dataSize )
+	while ( !V2MPI_CircularBuffer_IsFull(cb) && bytesRead < dataSize )
 	{
 		size_t bytesToCopy;
 
@@ -136,7 +136,7 @@ size_t V2MPCpts_CircularBuffer_WriteData(V2MPCpts_CircularBuffer* cb, const uint
 	return bytesRead;
 }
 
-size_t V2MPCpts_CircularBuffer_ReadData(V2MPCpts_CircularBuffer* cb, uint8_t* buffer, size_t bufferSize)
+size_t V2MPI_CircularBuffer_ReadData(V2MPI_CircularBuffer* cb, uint8_t* buffer, size_t bufferSize)
 {
 	size_t bytesWritten = 0;
 
@@ -145,7 +145,7 @@ size_t V2MPCpts_CircularBuffer_ReadData(V2MPCpts_CircularBuffer* cb, uint8_t* bu
 		return 0;
 	}
 
-	while ( !V2MPCpts_CircularBuffer_IsEmpty(cb) && bytesWritten < bufferSize )
+	while ( !V2MPI_CircularBuffer_IsEmpty(cb) && bytesWritten < bufferSize )
 	{
 		size_t bytesToCopy;
 
@@ -165,7 +165,7 @@ size_t V2MPCpts_CircularBuffer_ReadData(V2MPCpts_CircularBuffer* cb, uint8_t* bu
 	return bytesWritten;
 }
 
-void V2MPCpts_CircularBuffer_Reset(V2MPCpts_CircularBuffer* cb)
+void V2MPI_CircularBuffer_Reset(V2MPI_CircularBuffer* cb)
 {
 	if ( !cb )
 	{

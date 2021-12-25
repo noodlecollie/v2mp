@@ -18,7 +18,7 @@ struct V2MP_DevicePortStore
 {
 	V2MP_DevicePort_ListItem* head;
 	V2MP_DevicePort_ListItem* tail;
-	V2MPCpts_HexTreeNode* tree;
+	V2MPI_HexTreeNode* tree;
 };
 
 static inline V2MP_DevicePort_ListItem* AllocateListItem(void)
@@ -107,7 +107,7 @@ V2MP_DevicePortStore* V2MP_DevicePortStore_AllocateAndInit(void)
 		return NULL;
 	}
 
-	store->tree = V2MPCpts_HexTree_AllocateAndInit();
+	store->tree = V2MPI_HexTree_AllocateAndInit();
 
 	if ( !store->tree )
 	{
@@ -125,7 +125,7 @@ void V2MP_DevicePortStore_DeinitAndFree(V2MP_DevicePortStore* store)
 		return;
 	}
 
-	V2MPCpts_HexTree_DeinitAndFree(store->tree);
+	V2MPI_HexTree_DeinitAndFree(store->tree);
 	FreePortList(store);
 	free(store);
 }
@@ -155,7 +155,7 @@ struct V2MP_DevicePort* V2MP_DevicePortStore_CreatePort(V2MP_DevicePortStore* st
 			break;
 		}
 
-		if ( !V2MPCpts_HexTree_Insert(store->tree, address, item) )
+		if ( !V2MPI_HexTree_Insert(store->tree, address, item) )
 		{
 			break;
 		}
@@ -184,7 +184,7 @@ bool V2MP_DevicePortStore_DestroyPort(V2MP_DevicePortStore* store, V2MP_Word add
 		return false;
 	}
 
-	item = V2MPCpts_HexTree_Remove(store->tree, address);
+	item = V2MPI_HexTree_Remove(store->tree, address);
 
 	if ( !item )
 	{
@@ -205,6 +205,6 @@ struct V2MP_DevicePort* V2MP_DevicePort_GetPort(V2MP_DevicePortStore* store, V2M
 		return NULL;
 	}
 
-	item = V2MPCpts_HexTree_Find(store->tree, address);
+	item = V2MPI_HexTree_Find(store->tree, address);
 	return item ? item->port : NULL;
 }

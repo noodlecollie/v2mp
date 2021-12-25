@@ -8,7 +8,7 @@ SCENARIO("Initialising a circular buffer", "[components]")
 {
 	WHEN("A circular buffer is initialised with a capacity of zero")
 	{
-		V2MPCpts_CircularBuffer* cb = V2MPCpts_CircularBuffer_AllocateAndInit(0);
+		V2MPI_CircularBuffer* cb = V2MPI_CircularBuffer_AllocateAndInit(0);
 
 		THEN("A null pointer is returned")
 		{
@@ -17,20 +17,20 @@ SCENARIO("Initialising a circular buffer", "[components]")
 
 		AND_THEN("Deinitialising the null pointer is safe")
 		{
-			REQUIRE_NOTHROW(V2MPCpts_CircularBuffer_DeinitAndFree(cb));
+			REQUIRE_NOTHROW(V2MPI_CircularBuffer_DeinitAndFree(cb));
 		}
 	}
 
 	AND_WHEN("A circular buffer is initialised with a non-zero capacity")
 	{
-		V2MPCpts_CircularBuffer* cb = V2MPCpts_CircularBuffer_AllocateAndInit(DEFAULT_CAPACITY);
+		V2MPI_CircularBuffer* cb = V2MPI_CircularBuffer_AllocateAndInit(DEFAULT_CAPACITY);
 
 		THEN("The circular buffer returned is valid")
 		{
 			REQUIRE(cb != nullptr);
 		}
 
-		V2MPCpts_CircularBuffer_DeinitAndFree(cb);
+		V2MPI_CircularBuffer_DeinitAndFree(cb);
 	}
 }
 
@@ -38,12 +38,12 @@ SCENARIO("Querying circular buffer capacity", "[components]")
 {
 	GIVEN("A valid circular buffer")
 	{
-		V2MPCpts_CircularBuffer* cb = V2MPCpts_CircularBuffer_AllocateAndInit(DEFAULT_CAPACITY);
+		V2MPI_CircularBuffer* cb = V2MPI_CircularBuffer_AllocateAndInit(DEFAULT_CAPACITY);
 		REQUIRE(cb);
 
 		WHEN("The circular buffer's capacity is fetched")
 		{
-			const size_t capacity = V2MPCpts_CircularBuffer_Capacity(cb);
+			const size_t capacity = V2MPI_CircularBuffer_Capacity(cb);
 
 			THEN("The reported capacity matches the capacity the buffer was initialised with")
 			{
@@ -52,7 +52,7 @@ SCENARIO("Querying circular buffer capacity", "[components]")
 
 			AND_WHEN("The circular buffer's free space is fetched")
 			{
-				const size_t freeSpace = V2MPCpts_CircularBuffer_BytesFree(cb);
+				const size_t freeSpace = V2MPI_CircularBuffer_BytesFree(cb);
 
 				THEN("The reported free space matches the capacity the buffer was initialised with")
 				{
@@ -67,7 +67,7 @@ SCENARIO("Querying circular buffer capacity", "[components]")
 
 			AND_WHEN("The circular buffer's number of used bytes is fetched")
 			{
-				size_t usedBytes = V2MPCpts_CircularBuffer_BytesUsed(cb);
+				size_t usedBytes = V2MPI_CircularBuffer_BytesUsed(cb);
 
 				THEN("The number of used bytes is zero")
 				{
@@ -77,7 +77,7 @@ SCENARIO("Querying circular buffer capacity", "[components]")
 
 			AND_WHEN("The circular buffer is queried about being full")
 			{
-				const bool isFull = V2MPCpts_CircularBuffer_IsFull(cb);
+				const bool isFull = V2MPI_CircularBuffer_IsFull(cb);
 
 				THEN("The buffer is not reported as full.")
 				{
@@ -87,7 +87,7 @@ SCENARIO("Querying circular buffer capacity", "[components]")
 
 			AND_WHEN("The circular buffer is queried about being empty")
 			{
-				const bool isEmpty = V2MPCpts_CircularBuffer_IsEmpty(cb);
+				const bool isEmpty = V2MPI_CircularBuffer_IsEmpty(cb);
 
 				THEN("The buffer is reported as empty.")
 				{
@@ -96,7 +96,7 @@ SCENARIO("Querying circular buffer capacity", "[components]")
 			}
 		}
 
-		V2MPCpts_CircularBuffer_DeinitAndFree(cb);
+		V2MPI_CircularBuffer_DeinitAndFree(cb);
 	}
 }
 
@@ -104,7 +104,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 {
 	GIVEN("A valid circular buffer")
 	{
-		V2MPCpts_CircularBuffer* cb = V2MPCpts_CircularBuffer_AllocateAndInit(DEFAULT_CAPACITY);
+		V2MPI_CircularBuffer* cb = V2MPI_CircularBuffer_AllocateAndInit(DEFAULT_CAPACITY);
 		REQUIRE(cb);
 
 		WHEN("A small amount of data is written to the buffer")
@@ -115,7 +115,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 			origData.resize(dataString.length() + 1);
 			std::memcpy(origData.data(), dataString.c_str(), origData.size());
 
-			const size_t bytesWritten = V2MPCpts_CircularBuffer_WriteData(
+			const size_t bytesWritten = V2MPI_CircularBuffer_WriteData(
 				cb,
 				reinterpret_cast<const uint8_t*>(origData.data()),
 				origData.size()
@@ -128,7 +128,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 
 			AND_THEN("The number of used bytes in the buffer matches the length of the input data")
 			{
-				const size_t used = V2MPCpts_CircularBuffer_BytesUsed(cb);
+				const size_t used = V2MPI_CircularBuffer_BytesUsed(cb);
 
 				REQUIRE(used == origData.size());
 				REQUIRE(used == bytesWritten);
@@ -136,19 +136,19 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 
 			AND_THEN("The number of free bytes in the buffer matches the remaining capacity")
 			{
-				const size_t free = V2MPCpts_CircularBuffer_BytesFree(cb);
+				const size_t free = V2MPI_CircularBuffer_BytesFree(cb);
 
 				REQUIRE(free == DEFAULT_CAPACITY - origData.size());
 			}
 
 			AND_THEN("The buffer is not reported as being empty")
 			{
-				REQUIRE_FALSE(V2MPCpts_CircularBuffer_IsEmpty(cb));
+				REQUIRE_FALSE(V2MPI_CircularBuffer_IsEmpty(cb));
 			}
 
 			AND_THEN("The buffer is not reported as being full")
 			{
-				REQUIRE_FALSE(V2MPCpts_CircularBuffer_IsFull(cb));
+				REQUIRE_FALSE(V2MPI_CircularBuffer_IsFull(cb));
 			}
 
 			AND_WHEN("The data is read from the buffer")
@@ -156,7 +156,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 				std::vector<char> readData;
 				readData.resize(origData.size());
 
-				const size_t bytesRead = V2MPCpts_CircularBuffer_ReadData(
+				const size_t bytesRead = V2MPI_CircularBuffer_ReadData(
 					cb,
 					reinterpret_cast<uint8_t*>(readData.data()),
 					readData.size()
@@ -182,7 +182,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 			origData.resize(dataString.length() + 1);
 			std::memcpy(origData.data(), dataString.c_str(), origData.size());
 
-			const size_t bytesWritten = V2MPCpts_CircularBuffer_WriteData(
+			const size_t bytesWritten = V2MPI_CircularBuffer_WriteData(
 				cb,
 				reinterpret_cast<const uint8_t*>(origData.data()),
 				origData.size()
@@ -192,17 +192,17 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 			{
 				REQUIRE(bytesWritten != origData.size());
 				REQUIRE(bytesWritten == DEFAULT_CAPACITY);
-				REQUIRE(bytesWritten == V2MPCpts_CircularBuffer_Capacity(cb));
+				REQUIRE(bytesWritten == V2MPI_CircularBuffer_Capacity(cb));
 			}
 
 			AND_THEN("The buffer is not reported as being empty")
 			{
-				REQUIRE_FALSE(V2MPCpts_CircularBuffer_IsEmpty(cb));
+				REQUIRE_FALSE(V2MPI_CircularBuffer_IsEmpty(cb));
 			}
 
 			AND_THEN("The buffer is reported as being full")
 			{
-				REQUIRE(V2MPCpts_CircularBuffer_IsFull(cb));
+				REQUIRE(V2MPI_CircularBuffer_IsFull(cb));
 			}
 
 			AND_WHEN("The data is read from the buffer")
@@ -210,7 +210,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 				std::vector<char> readData;
 				readData.resize(origData.size());
 
-				const size_t bytesRead = V2MPCpts_CircularBuffer_ReadData(
+				const size_t bytesRead = V2MPI_CircularBuffer_ReadData(
 					cb,
 					reinterpret_cast<uint8_t*>(readData.data()),
 					readData.size()
@@ -218,7 +218,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 
 				THEN("The amount of data read matches the buffer capacity")
 				{
-					REQUIRE(bytesRead == V2MPCpts_CircularBuffer_Capacity(cb));
+					REQUIRE(bytesRead == V2MPI_CircularBuffer_Capacity(cb));
 					REQUIRE(bytesRead != origData.size());
 				}
 
@@ -236,7 +236,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 		{
 			std::vector<char> data;
 
-			const size_t bytesWritten = V2MPCpts_CircularBuffer_WriteData(
+			const size_t bytesWritten = V2MPI_CircularBuffer_WriteData(
 				cb,
 				reinterpret_cast<const uint8_t*>(data.data()),
 				data.size()
@@ -249,19 +249,19 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 
 			AND_THEN("The buffer is reported as being empty")
 			{
-				REQUIRE(V2MPCpts_CircularBuffer_IsEmpty(cb));
+				REQUIRE(V2MPI_CircularBuffer_IsEmpty(cb));
 			}
 
 			AND_THEN("The buffer is not reported as being full")
 			{
-				REQUIRE_FALSE(V2MPCpts_CircularBuffer_IsFull(cb));
+				REQUIRE_FALSE(V2MPI_CircularBuffer_IsFull(cb));
 			}
 
 			AND_WHEN("The data is read from the buffer")
 			{
 				std::vector<char> readData(DEFAULT_CAPACITY, 'A');
 
-				const size_t bytesRead = V2MPCpts_CircularBuffer_ReadData(
+				const size_t bytesRead = V2MPI_CircularBuffer_ReadData(
 					cb,
 					reinterpret_cast<uint8_t*>(readData.data()),
 					readData.size()
@@ -279,6 +279,6 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 			}
 		}
 
-		V2MPCpts_CircularBuffer_DeinitAndFree(cb);
+		V2MPI_CircularBuffer_DeinitAndFree(cb);
 	}
 }
