@@ -197,7 +197,7 @@ bool V2MP_DevicePortStore_DestroyPort(V2MP_DevicePortStore* store, V2MP_Word add
 	return true;
 }
 
-struct V2MP_DevicePort* V2MP_DevicePort_GetPort(V2MP_DevicePortStore* store, V2MP_Word address)
+struct V2MP_DevicePort* V2MP_DevicePortStore_GetPort(V2MP_DevicePortStore* store, V2MP_Word address)
 {
 	V2MP_DevicePort_ListItem* item;
 

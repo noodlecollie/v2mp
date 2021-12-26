@@ -3,6 +3,7 @@
 #include "V2MP/CPU.h"
 #include "V2MP/MemoryStore.h"
 #include "V2MP/DevicePortStore.h"
+#include "V2MP/DevicePort.h"
 #include "V2MPInternal/Util/Util.h"
 #include "V2MPInternal/Util/Heap.h"
 
@@ -56,12 +57,12 @@ static const InstructionCallback INSTRUCTION_TABLE[0x10] =
 	&Execute_Unassigned		// 0xF
 };
 
-void SetFault(V2MP_CPU* cpu, V2MP_Fault fault, V2MP_Word args)
+static void SetFault(V2MP_CPU* cpu, V2MP_Fault fault, V2MP_Word args)
 {
 	cpu->fault = V2MP_CPU_MAKE_FAULT_WORD(fault, args);
 }
 
-V2MP_Word* GetRegisterPtr(V2MP_CPU* cpu, V2MP_Word regIndex)
+static V2MP_Word* GetRegisterPtr(V2MP_CPU* cpu, V2MP_Word regIndex)
 {
 	switch ( V2MP_REGID_MASK(regIndex) )
 	{
@@ -85,6 +86,11 @@ V2MP_Word* GetRegisterPtr(V2MP_CPU* cpu, V2MP_Word regIndex)
 			return &cpu->pc;
 		}
 	}
+}
+
+static inline bool CPUHasAllPeripherals(V2MP_CPU* cpu)
+{
+	return cpu && cpu->memory && cpu->devicePorts;
 }
 
 void Execute_HCF(V2MP_CPU* cpu)
@@ -412,8 +418,46 @@ void Execute_CBX(V2MP_CPU* cpu)
 
 void Execute_DPQ(V2MP_CPU* cpu)
 {
-	// TODO:
-	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
+	V2MP_DevicePort* port = NULL;
+	bool result = false;
+
+	if ( V2MP_OP_DPQ_RESBITS(cpu->ir) != 0 )
+	{
+		SetFault(cpu, V2MP_FAULT_RES, 0);
+		return;
+	}
+
+	port = V2MP_DevicePortStore_GetPort(cpu->devicePorts, cpu->r0);
+
+	switch ( V2MP_OP_DPQ_QUERY_TYPE(cpu->ir) )
+	{
+		case V2MP_DPQT_CONNECTED:
+		{
+			result = port != NULL;
+			break;
+		}
+
+		case V2MP_DPQT_EXHAUSTED:
+		{
+			result = port ? V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED : false;
+			break;
+		}
+
+		// TODO: Others
+
+		default:
+		{
+			SetFault(cpu, V2MP_FAULT_RES, 0);
+			return;
+		}
+	}
+
+	cpu->sr = 0;
+
+	if ( !result )
+	{
+		cpu->sr |= V2MP_CPU_SR_Z;
+	}
 }
 
 void Execute_DPO(V2MP_CPU* cpu)
@@ -475,7 +519,7 @@ bool V2MP_CPU_FetchDecodeAndExecuteInstruction(V2MP_CPU* cpu)
 	V2MP_Fault fault = 0;
 	InstructionCallback instructionToExecute = NULL;
 
-	if ( !cpu || !cpu->memory )
+	if ( !CPUHasAllPeripherals(cpu) )
 	{
 		return false;
 	}
@@ -508,7 +552,7 @@ bool V2MP_CPU_ExecuteInstruction(V2MP_CPU* cpu, V2MP_Word instruction)
 {
 	InstructionCallback instructionToExecute = NULL;
 
-	if ( !cpu || !cpu->memory )
+	if ( !CPUHasAllPeripherals(cpu) )
 	{
 		return false;
 	}

@@ -10,7 +10,7 @@ extern "C" {
 typedef uint16_t V2MP_Word;
 typedef uint8_t V2MP_Byte;
 
-typedef enum _V2MP_Instruction
+typedef enum V2MP_Instruction
 {
 	V2MP_OP_HCF = 0x0,
 	V2MP_OP_LDST = 0x1,
@@ -30,7 +30,7 @@ typedef enum _V2MP_Instruction
 	V2MP_OP_UNASSIGNED6 = 0xF,
 } V2MP_Instruction;
 
-typedef enum _V2MP_Fault
+typedef enum V2MP_Fault
 {
 	V2MP_FAULT_NONE = 0x0,
 	V2MP_FAULT_HCF = 0x1,
@@ -42,7 +42,7 @@ typedef enum _V2MP_Fault
 	V2MP_FAULT_INO = 0x6,
 } V2MP_Fault;
 
-typedef enum _V2MP_RegisterIndex
+typedef enum V2MP_RegisterIndex
 {
 	V2MP_REGID_R0 = 0x0,
 	V2MP_REGID_R1 = 0x1,
@@ -50,13 +50,23 @@ typedef enum _V2MP_RegisterIndex
 	V2MP_REGID_PC = 0x3
 } V2MP_RegisterIndex;
 
-typedef enum _V2MP_BitwiseOp
+typedef enum V2MP_BitwiseOp
 {
 	V2MP_BITOP_AND = 0x0,
 	V2MP_BITOP_OR = 0x1,
 	V2MP_BITOP_XOR = 0x2,
 	V2MP_BITOP_NOT = 0x3
 } V2MP_BitwiseOp;
+
+typedef enum V2MP_DevicePortQueryType
+{
+	V2MP_DPQT_CONNECTED = 0x0,
+	V2MP_DPQT_READABLE_NOT_BUSY = 0x1,
+	V2MP_DPQT_WRITEABLE_NOT_BUSY = 0x2,
+	V2MP_DPQT_EXHAUSTED = 0x3,
+	V2MP_DPQT_BUSY = 0x4,
+	V2MP_DPQT_CONTROLLED_BY_PROGRAM = 0x5,
+} V2MP_DevicePortQueryType;
 
 #define V2MP_REGID_MASK(val) ((val) & 0x3)
 
@@ -98,6 +108,9 @@ typedef enum _V2MP_BitwiseOp
 #define V2MP_OP_CBX_BRANCH_ON_SR_C(instr) (((instr) & 0x0400) != 0)
 #define V2MP_OP_CBX_OFFSET(instr) ((instr) & 0x00FF)
 #define V2MP_OP_CBX_RESBITS(instr) ((instr) & 0x0300)
+
+#define V2MP_OP_DPQ_QUERY_TYPE(instr) ((instr) & 0x0007)
+#define V2MP_OP_DPQ_RESBITS(instr) ((instr) & 0x0FF8)
 
 #ifdef __cplusplus
 } // extern "C"

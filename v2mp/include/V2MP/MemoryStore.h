@@ -44,6 +44,14 @@ API_V2MP bool V2MP_MemoryStore_StoreDSWord(
 	V2MP_Fault* outFault
 );
 
+API_V2MP bool V2MP_MemoryStore_WriteBytesToDS(
+	V2MP_MemoryStore* mem,
+	V2MP_Word address,
+	const V2MP_Byte* data,
+	size_t dataSize,
+	V2MP_Fault* outFault
+);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

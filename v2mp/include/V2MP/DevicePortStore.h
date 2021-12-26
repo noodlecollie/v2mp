@@ -22,7 +22,7 @@ API_V2MP struct V2MP_DevicePort* V2MP_DevicePortStore_CreatePort(V2MP_DevicePort
 // Returns true if a port at the given address was destroyed, or false if there was no port at this address.
 API_V2MP bool V2MP_DevicePortStore_DestroyPort(V2MP_DevicePortStore* store, V2MP_Word address);
 
-API_V2MP struct V2MP_DevicePort* V2MP_DevicePort_GetPort(V2MP_DevicePortStore* store, V2MP_Word address);
+API_V2MP struct V2MP_DevicePort* V2MP_DevicePortStore_GetPort(V2MP_DevicePortStore* store, V2MP_Word address);
 
 #ifdef __cplusplus
 } // extern "C"

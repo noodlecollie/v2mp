@@ -118,6 +118,48 @@ static void SetSegmentWord(
 	*((V2MP_Word*)(segment->data + address)) = word;
 }
 
+static void WriteSegmentBytes(
+	V2MP_Segment* segment,
+	V2MP_Word address,
+	const V2MP_Byte* data,
+	size_t dataSize,
+	V2MP_Fault* outFault
+)
+{
+	if ( address & 0x1 )
+	{
+		if ( outFault )
+		{
+			*outFault = V2MP_FAULT_ALGN;
+		}
+
+		return;
+	}
+
+	if ( !segment->data )
+	{
+		if ( outFault )
+		{
+			*outFault = V2MP_FAULT_SEG;
+		}
+
+		return;
+	}
+
+	if ( (size_t)address + dataSize > segment->sizeInBytes )
+	{
+		if ( outFault )
+		{
+			*outFault = V2MP_FAULT_SEG;
+		}
+
+		// Write as many bytes as we can.
+		dataSize = segment->sizeInBytes - address;
+	}
+
+	memcpy(segment->data + address, data, dataSize);
+}
+
 size_t V2MP_MemoryStore_Footprint(void)
 {
 	return sizeof(V2MP_MemoryStore);
@@ -216,5 +258,22 @@ bool V2MP_MemoryStore_StoreDSWord(
 	}
 
 	SetSegmentWord(&mem->ds, address, word, outFault);
+	return true;
+}
+
+bool V2MP_MemoryStore_WriteBytesToDS(
+	V2MP_MemoryStore* mem,
+	V2MP_Word address,
+	const V2MP_Byte* data,
+	size_t dataSize,
+	V2MP_Fault* outFault
+)
+{
+	if ( !mem || !data || dataSize < 1 )
+	{
+		return false;
+	}
+
+	WriteSegmentBytes(&mem->ds, address, data, dataSize, outFault);
 	return true;
 }
