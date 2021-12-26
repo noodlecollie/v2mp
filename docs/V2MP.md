@@ -133,10 +133,11 @@ Each memory segment lives in a 16-bit address space, and so can hold a maximum o
 
 The following restrictions apply to any memory access (either in `CS` or `DS`), via any register (`PC` or general-purpose):
 
-* The address of the access must be aligned to a word (ie. to a 16-bit boundary). If this is not the case, an [`ALGN`](#faults) fault will be raised.
+* When accessing a unit of memory (eg. a 2-byte word), the address of the access must be aligned to a multiple of the size of the unit. If this is not the case, an [`ALGN`](#faults) fault will be raised.
+  * Although the processor itself can only load and store individual words using the [`LDST`](#1h-loadstore-ldst) instruction, other instructions such as [`DPO`](#9h-device-port-operation-dpo) can access memory segments at single-byte granularity. As such, alignment restrictions do not apply to these operations.
 * The address of the access must be within the size of the segment. Although 64KB of memory from each segment is addressable, the entire memory space might not be used if the program is not that large, and so will not be allocated by the supervisor. If access is attempted to a memory address outside of either segment, a [`SEG`](#faults) fault will be raised.
 
-The V2MP memory model does not support dynamic memory allocation: all memory must be statically allocated. However, supervisor calls may be used to manipulate memory pages themselves at runtime, eg. to swap one page out for another.
+The V2MP memory model does not directly support dynamic memory allocation: memory segments are of a fixed size. However, supervisor calls may be used to manipulate memory pages themselves at runtime, eg. to swap one page out for another.
 
 ### Relevant Instructions
 
@@ -277,7 +278,7 @@ Assigns a value to a register.
 
 If the source `A` and destination `B` register identifiers are different, the source register's value is copied to the destination register, and the source register remains unchanged. This behaviour is the same regardless of the destination register. Operand bits `[7 0] (C)` of the instruction must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
 
-Assigning to the program counter `PC` (`11b`) is equivalent to performing an unconditional jump. Beware not to assign a value that is not aligned to a word boundary. If an assignment like this is performed, an [`ALGN`](#faults) fault will be raised upon fetching the next instruction.
+Assigning to the program counter `PC` (`11b`) is equivalent to performing an unconditional jump. Beware assigning a value that is not aligned to a word boundary. If an assignment like this is performed, an [`ALGN`](#faults) fault will be raised upon fetching the next instruction.
 
 If instead the source `A` and destination `B` register identifiers are the same, operand bits `[7 0] (C)` of the instruction are interpreted as a signed 8-bit literal to assign to the destination register. The behaviour of the assignment depends on the destination register.
 
@@ -519,7 +520,7 @@ After the instruction is executed, `SR[Z]` is set if there were two or more byte
 
 **Indirect Data Transfer**
 
-If operand bit `[11] (A)` is `1`, an indirect data transfer is initiated for the read. The value of `LR` specifies the address in `DS` to which to copy the data from the device port's mailbox, and the value in `R1` specifies the maximum number of bytes to copy. It is assumed that there is a data buffer at the address pointed to by `LR` which is large enough to hold at least as many bytes as are specified in `R1`. If the supervisor attempts to read off the end of `DS` during the data transfer, a [`SEG`](#faults) fault is raised.
+If operand bit `[11] (A)` is `1`, an indirect data transfer is initiated for the read. The value of `LR` specifies the address in `DS` to which to copy the data from the device port's mailbox, and the value in `R1` specifies the maximum number of bytes to copy. It is assumed that there is a data buffer at the address pointed to by `LR` which is large enough to hold at least as many bytes as are specified in `R1`. If the supervisor attempts to write off the end of `DS` during the data transfer, a [`SEG`](#faults) fault is raised.
 
 Once the instruction is executed, the mailbox becomes busy, and the supervisor begins copying data out of the mailbox and into the buffer that was pointed to by `LR`. `R1` is set to hold the number of bytes that are being transferred - this may be less than the number originally requested, if this number was greater than the number of bytes left in the mailbox.
 
@@ -543,7 +544,7 @@ After the instruction is executed, `SR[Z]` is set if there were no more free byt
 
 **Indirect Data Transfer**
 
-If operand bit `[11] (A)` is `1`, an indirect data transfer is initiated for the write. The value of `LR` specifies the address in `DS` from which to copy the data to the device port's mailbox, and the value in `R1` specifies the maximum number of bytes to copy. It is assumed that there is a data buffer at the address pointed to by `LR` which holds at least as many bytes as are specified in `R1`. If the supervisor attempts to write off the end of `DS` during the data transfer, a [`SEG`](#faults) fault is raised.
+If operand bit `[11] (A)` is `1`, an indirect data transfer is initiated for the write. The value of `LR` specifies the address in `DS` from which to copy the data to the device port's mailbox, and the value in `R1` specifies the maximum number of bytes to copy. It is assumed that there is a data buffer at the address pointed to by `LR` which holds at least as many bytes as are specified in `R1`. If the supervisor attempts to read off the end of `DS` during the data transfer, a [`SEG`](#faults) fault is raised.
 
 Once the instruction is executed, the mailbox becomes busy, and the supervisor begins copying data into the mailbox from the buffer that was pointed to by `LR`. `R1` is set to hold the number of bytes that are being transferred - this may be less than the number originally requested, if this number was greater than the number of free bytes left in the mailbox.
 
@@ -561,7 +562,7 @@ The possible faults raised by the processor are described below.
 | ----- | ---- | ---- | ----------- | ------------ |
 | `01h` | `HCF` | Halt and Catch Fire | Raised by the [`HCF`](#0h-halt-hcf) instruction to indicate that the processor has halted. | [`HCF`](#0h-halt-hcf) |
 | `02h` | `RES` | Reserved Bits Set | Raised when an instruction is decoded and one or more reserved bits are set to `1`. | Execution of any instruction |
-| `03h` | `ALGN` | Alignment Violation | Raised when an unaligned memory address is dereferenced in `CS` or `DS`. | [`LDST`](#1h-loadstore-ldst), [`DPO`](#9h-device-port-operation-dpo), or upon fetching the next instruction using `PC`. |
+| `03h` | `ALGN` | Alignment Violation | Raised when an unaligned memory address is dereferenced in `CS` or `DS`. | [`LDST`](#1h-loadstore-ldst), or upon fetching the next instruction using `PC`. |
 | `04h` | `SEG` | Segment Access Violation | Raised when an address outside `CS` or `DS` is dereferenced. | [`LDST`](#1h-loadstore-ldst), [`DPO`](#9h-device-port-operation-dpo), or upon fetching the next instruction using `PC` |
 | `05h` | `IDO` | Invalid Device Operation | Raised when an operation is attempted on a port which is not in the correct state for the operation. | [`DPO`](#9h-device-port-operation-dpo) |
 | `06h` | `INI` | Invalid Instruction | Raised when an unrecognised instruction opcode is decoded. | Decoding of an instruction |
