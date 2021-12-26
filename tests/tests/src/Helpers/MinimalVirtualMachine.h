@@ -5,6 +5,7 @@
 #include "V2MP/Defs.h"
 #include "V2MP/CPU.h"
 #include "V2MP/MemoryStore.h"
+#include "V2MP/DevicePortStore.h"
 
 class MinimalVirtualMachine
 {
@@ -46,6 +47,9 @@ public:
 	const V2MP_MemoryStore* GetMemoryStore() const;
 	V2MP_MemoryStore* GetMemoryStore();
 
+	const V2MP_DevicePortStore* GetDevicePortStore() const;
+	V2MP_DevicePortStore* GetDevicePortStore();
+
 	const V2MP_CPU* GetCPU() const;
 	V2MP_CPU* GetCPU();
 	void ResetCPU();
@@ -83,6 +87,7 @@ protected:
 
 private:
 	V2MP_MemoryStore* m_MemoryStore;
+	V2MP_DevicePortStore* m_DevicePortStore;
 	V2MP_CPU* m_CPU;
 };
 

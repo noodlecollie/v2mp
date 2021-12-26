@@ -7,15 +7,20 @@ const V2MP_Word VM_StartsInvalid::INVALID_WORD = 0xDEAD;
 MinimalVirtualMachine::MinimalVirtualMachine()
 {
 	m_MemoryStore = V2MP_MemoryStore_AllocateAndInit();
+	m_DevicePortStore = V2MP_DevicePortStore_AllocateAndInit();
 
 	m_CPU = V2MP_CPU_AllocateAndInit();
 	V2MP_CPU_SetMemoryStore(m_CPU, m_MemoryStore);
+	V2MP_CPU_SetDevicePortStore(m_CPU, m_DevicePortStore);
 }
 
 MinimalVirtualMachine::~MinimalVirtualMachine()
 {
 	V2MP_CPU_DeinitAndFree(m_CPU);
 	m_CPU = NULL;
+
+	V2MP_DevicePortStore_DeinitAndFree(m_DevicePortStore);
+	m_DevicePortStore = NULL;
 
 	V2MP_MemoryStore_DeinitAndFree(m_MemoryStore);
 	m_MemoryStore = NULL;
@@ -51,6 +56,16 @@ const V2MP_MemoryStore* MinimalVirtualMachine::GetMemoryStore() const
 V2MP_MemoryStore* MinimalVirtualMachine::GetMemoryStore()
 {
 	return m_MemoryStore;
+}
+
+const V2MP_DevicePortStore* MinimalVirtualMachine::GetDevicePortStore() const
+{
+	return m_DevicePortStore;
+}
+
+V2MP_DevicePortStore* MinimalVirtualMachine::GetDevicePortStore()
+{
+	return m_DevicePortStore;
 }
 
 const V2MP_CPU* MinimalVirtualMachine::GetCPU() const
