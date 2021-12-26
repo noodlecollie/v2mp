@@ -30,6 +30,7 @@ API_V2MP bool V2MP_MemoryStore_FetchCSWord(
 API_V2MP bool V2MP_MemoryStore_AllocateDS(V2MP_MemoryStore* mem, V2MP_Word numWords, const V2MP_Word* data);
 API_V2MP void V2MP_MemoryStore_FreeDS(V2MP_MemoryStore* mem);
 
+// The address should be aligned to a word.
 API_V2MP bool V2MP_MemoryStore_FetchDSWord(
 	const V2MP_MemoryStore* mem,
 	V2MP_Word address,
@@ -37,6 +38,7 @@ API_V2MP bool V2MP_MemoryStore_FetchDSWord(
 	V2MP_Fault* outFault
 );
 
+// The address should be aligned to a word.
 API_V2MP bool V2MP_MemoryStore_StoreDSWord(
 	V2MP_MemoryStore* mem,
 	V2MP_Word address,
@@ -49,6 +51,7 @@ API_V2MP bool V2MP_MemoryStore_WriteBytesToDS(
 	V2MP_Word address,
 	const V2MP_Byte* data,
 	size_t dataSize,
+	size_t* numBytesWritten,
 	V2MP_Fault* outFault
 );
 

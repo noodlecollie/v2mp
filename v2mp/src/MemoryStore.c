@@ -123,19 +123,10 @@ static void WriteSegmentBytes(
 	V2MP_Word address,
 	const V2MP_Byte* data,
 	size_t dataSize,
+	size_t* numBytesWritten,
 	V2MP_Fault* outFault
 )
 {
-	if ( address & 0x1 )
-	{
-		if ( outFault )
-		{
-			*outFault = V2MP_FAULT_ALGN;
-		}
-
-		return;
-	}
-
 	if ( !segment->data )
 	{
 		if ( outFault )
@@ -158,6 +149,11 @@ static void WriteSegmentBytes(
 	}
 
 	memcpy(segment->data + address, data, dataSize);
+
+	if ( numBytesWritten )
+	{
+		*numBytesWritten = dataSize;
+	}
 }
 
 size_t V2MP_MemoryStore_Footprint(void)
@@ -266,14 +262,20 @@ bool V2MP_MemoryStore_WriteBytesToDS(
 	V2MP_Word address,
 	const V2MP_Byte* data,
 	size_t dataSize,
+	size_t* numBytesWritten,
 	V2MP_Fault* outFault
 )
 {
+	if ( numBytesWritten )
+	{
+		*numBytesWritten = 0;
+	}
+
 	if ( !mem || !data || dataSize < 1 )
 	{
 		return false;
 	}
 
-	WriteSegmentBytes(&mem->ds, address, data, dataSize, outFault);
+	WriteSegmentBytes(&mem->ds, address, data, dataSize, numBytesWritten, outFault);
 	return true;
 }
