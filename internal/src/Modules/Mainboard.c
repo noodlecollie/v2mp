@@ -21,6 +21,11 @@ V2MP_Mainboard* V2MP_Mainboard_AllocateAndInit(void)
 {
 	V2MP_Mainboard* board = V2MP_CALLOC_STRUCT(V2MP_Mainboard);
 
+	if ( !board )
+	{
+		return NULL;
+	}
+
 	board->memoryStore = V2MP_MemoryStoreRenameMe_AllocateAndInit();
 	board->cpu = V2MP_CPURenameMe_AllocateAndInit();
 

@@ -1,5 +1,6 @@
 add_library(${TARGETNAME_V2MP_INTERNAL} STATIC
 	src/Components/CircularBuffer.c
+	src/Components/DoubleLinkedList.c
 	src/Components/HexTree.c
 	src/Modules/CPU_Instructions.c
 	src/Modules/CPU.c

@@ -1,5 +1,5 @@
-#ifndef V2MP_CIRCULARBUFFER_H
-#define V2MP_CIRCULARBUFFER_H
+#ifndef V2MP_COMPONENTS_CIRCULARBUFFER_H
+#define V2MP_COMPONENTS_CIRCULARBUFFER_H
 
 #include <stddef.h>
 #include <stdbool.h>
@@ -35,4 +35,4 @@ void V2MP_CircularBuffer_Reset(V2MP_CircularBuffer* cb);
 } // extern "C"
 #endif
 
-#endif // V2MP_CIRCULARBUFFER_H
+#endif // V2MP_COMPONENTS_CIRCULARBUFFER_H
