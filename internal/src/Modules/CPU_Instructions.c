@@ -44,7 +44,7 @@ static const InstructionCallback INSTRUCTION_TABLE[0x10] =
 
 static inline void SetFault(V2MP_CPURenameMe* cpu, V2MP_Fault fault, V2MP_Word args)
 {
-	V2MP_CPURenameMe_NotifyFault(cpu, fault, args);
+	V2MP_CPURenameMe_NotifyFault(cpu, V2MP_CPU_MAKE_FAULT_WORD(fault, args));
 }
 
 static V2MP_Word* GetRegisterPtr(V2MP_CPURenameMe* cpu, V2MP_Word regIndex)
@@ -394,11 +394,11 @@ bool Execute_LDST(V2MP_CPURenameMe* cpu)
 
 	if ( V2MP_OP_LDST_IS_STORE(cpu->ir) )
 	{
-		cpu->supervisorInterface.requestStoreWordToDS(cpu->lr, *reg);
+		cpu->supervisorInterface.requestStoreWordToDS(cpu->supervisorInterface.supervisor, cpu->lr, *reg);
 	}
 	else
 	{
-		cpu->supervisorInterface.requestLoadWordFromDS(cpu->lr, reg);
+		cpu->supervisorInterface.requestLoadWordFromDS(cpu->supervisorInterface.supervisor, cpu->lr, reg);
 	}
 
 	cpu->sr = 0;
@@ -437,7 +437,7 @@ bool Execute_HCF(V2MP_CPURenameMe* cpu)
 	return true;
 }
 
-bool V2MP_CPURenameMe_ExecuteInstructionInternal(V2MP_CPURenameMe* cpu, V2MP_Word instruction)
+bool V2MP_CPURenameMe_ExecuteInstructionInternal(V2MP_CPURenameMe* cpu)
 {
 	InstructionCallback instructionToExecute = NULL;
 
@@ -446,7 +446,6 @@ bool V2MP_CPURenameMe_ExecuteInstructionInternal(V2MP_CPURenameMe* cpu, V2MP_Wor
 		return false;
 	}
 
-	cpu->ir = instruction;
 	instructionToExecute = INSTRUCTION_TABLE[V2MP_OPCODE(cpu->ir)];
 
 	if ( !instructionToExecute )

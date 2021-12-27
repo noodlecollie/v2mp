@@ -2,6 +2,7 @@
 #include "V2MPInternal/Util/Heap.h"
 #include "V2MPInternal/Util/Util.h"
 #include "Modules/CPU_Internal.h"
+#include "Modules/CPU_Instructions.h"
 
 V2MP_CPURenameMe* V2MP_CPURenameMe_AllocateAndInit(void)
 {
@@ -33,6 +34,11 @@ void V2MP_CPURenameMe_SetSupervisorInterface(V2MP_CPURenameMe* cpu, const V2MP_C
 	}
 }
 
+void V2MP_CPURenameMe_ResetSupervisorInterface(V2MP_CPURenameMe* cpu)
+{
+	V2MP_CPURenameMe_SetSupervisorInterface(cpu, NULL);
+}
+
 void V2MP_CPURenameMe_Reset(V2MP_CPURenameMe* cpu)
 {
 	if ( !cpu )
@@ -49,14 +55,36 @@ void V2MP_CPURenameMe_Reset(V2MP_CPURenameMe* cpu)
 	cpu->fault = 0;
 }
 
-void V2MP_CPURenameMe_NotifyFault(V2MP_CPURenameMe* cpu, V2MP_Fault fault, V2MP_Word args)
+bool V2MP_CPURenameMe_ExecuteClockCycle(V2MP_CPURenameMe* cpu)
+{
+	V2MP_Word fault;
+
+	if ( !cpu || !cpu->supervisorInterface.fetchInstructionWord )
+	{
+		return false;
+	}
+
+	fault = cpu->supervisorInterface.fetchInstructionWord(cpu->supervisorInterface.supervisor, cpu->pc, &cpu->ir);
+
+	if ( V2MP_CPU_FAULT_CODE(fault) != V2MP_FAULT_NONE )
+	{
+		V2MP_CPURenameMe_NotifyFault(cpu, fault);
+		return true;
+	}
+
+	cpu->pc += 2;
+
+	return V2MP_CPURenameMe_ExecuteInstructionInternal(cpu);
+}
+
+void V2MP_CPURenameMe_NotifyFault(V2MP_CPURenameMe* cpu, V2MP_Fault fault)
 {
 	if ( !cpu )
 	{
 		return;
 	}
 
-	cpu->fault = V2MP_CPU_MAKE_FAULT_WORD(fault, args);
+	cpu->fault = fault;
 }
 
 bool V2MP_CPURenameMe_HasFault(V2MP_CPURenameMe* cpu)

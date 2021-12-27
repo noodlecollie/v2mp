@@ -55,12 +55,12 @@ void V2MP_Mainboard_DeinitAndFree(V2MP_Mainboard* board)
 	V2MP_FREE(board);
 }
 
-struct V2MP_CPURenameMe* V2MP_Mainboard_GetCPU(V2MP_Mainboard* board)
+struct V2MP_CPURenameMe* V2MP_Mainboard_GetCPU(const V2MP_Mainboard* board)
 {
 	return board ? board->cpu : NULL;
 }
 
-struct V2MP_MemoryStoreRenameMe* V2MP_Mainboard_GetMemoryStore(V2MP_Mainboard* board)
+struct V2MP_MemoryStoreRenameMe* V2MP_Mainboard_GetMemoryStore(const V2MP_Mainboard* board)
 {
 	return board ? board->memoryStore : NULL;
 }
