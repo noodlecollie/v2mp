@@ -1,5 +1,5 @@
-#ifndef V2MPINTERNAL_HEXTREE_H
-#define V2MPINTERNAL_HEXTREE_H
+#ifndef V2MP_HEXTREE_H
+#define V2MP_HEXTREE_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -11,7 +11,6 @@ extern "C" {
 
 typedef struct V2MP_HexTreeNode V2MP_HexTreeNode;
 
-size_t V2MP_HexTree_Footprint(void);
 V2MP_HexTreeNode* V2MP_HexTree_AllocateAndInit(void);
 void V2MP_HexTree_DeinitAndFree(V2MP_HexTreeNode* root);
 
@@ -31,4 +30,4 @@ void* V2MP_HexTree_Find(V2MP_HexTreeNode* root, uint16_t key);
 } // extern "C"
 #endif
 
-#endif // V2MPINTERNAL_HEXTREE_H
+#endif // V2MP_HEXTREE_H

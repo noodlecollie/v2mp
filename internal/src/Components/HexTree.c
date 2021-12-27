@@ -108,11 +108,6 @@ static void** GetLeafSlot(V2MP_HexTreeNode* root, uint16_t key, bool createIfNon
 	return NULL;
 }
 
-size_t V2MP_HexTree_Footprint(void)
-{
-	return sizeof(V2MP_HexTreeNode);
-}
-
 V2MP_HexTreeNode* V2MP_HexTree_AllocateAndInit(void)
 {
 	return V2MP_CALLOC_STRUCT(V2MP_HexTreeNode);

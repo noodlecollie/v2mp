@@ -1,6 +1,10 @@
 add_library(${TARGETNAME_V2MP_INTERNAL} STATIC
 	src/Components/CircularBuffer.c
 	src/Components/HexTree.c
+	src/Modules/CPU_Instructions.c
+	src/Modules/CPU.c
+	src/Modules/Mainboard.c
+	src/Modules/MemoryStore.c
 	src/Util/Heap.c
 )
 

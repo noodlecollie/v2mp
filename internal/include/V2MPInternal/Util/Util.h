@@ -1,5 +1,5 @@
-#ifndef V2MPINTERNAL_UTIL_H
-#define V2MPINTERNAL_UTIL_H
+#ifndef V2MP_UTIL_H
+#define V2MP_UTIL_H
 
 #include <string.h>
 #include <stdlib.h>
@@ -17,4 +17,4 @@ extern "C" {
 } // extern "C"
 #endif
 
-#endif // V2MPINTERNAL_UTIL_H
+#endif // V2MP_UTIL_H
