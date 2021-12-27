@@ -59,3 +59,33 @@ bool V2MP_MemoryStoreRenameMe_AllocateTotalMemory(V2MP_MemoryStoreRenameMe* mem,
 	mem->totalMemorySizeInBytes = sizeInBytes;
 	return true;
 }
+
+size_t V2MP_MemoryStoreRenameMe_GetTotalMemorySize(const V2MP_MemoryStoreRenameMe* mem)
+{
+	return mem ? mem->totalMemorySizeInBytes : 0;
+}
+
+V2MP_Byte* V2MP_MemoryStoreRenameMe_GetPtrToRange(V2MP_MemoryStoreRenameMe* mem, size_t base, size_t length)
+{
+	if ( !mem || !mem->totalMemory || mem->totalMemorySizeInBytes < 1 )
+	{
+		return NULL;
+	}
+
+	// The following checks are carefully constructed to avoid calculating
+	// values that are outside of the range of a size_t:
+
+	if ( base >= mem->totalMemorySizeInBytes )
+	{
+		// Begins out of range.
+		return NULL;
+	}
+
+	if ( mem->totalMemorySizeInBytes - base < length )
+	{
+		// Ends out of range.
+		return NULL;
+	}
+
+	return &mem->totalMemory[base];
+}
