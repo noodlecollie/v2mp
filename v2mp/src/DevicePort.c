@@ -19,7 +19,7 @@ typedef struct DataTransferInfo
 struct V2MP_DevicePort
 {
 	V2MP_Word address;
-	V2MPI_CircularBuffer* mailbox;
+	V2MP_CircularBuffer* mailbox;
 	V2MP_DevicePort_MailboxState mailboxState;
 	DataTransferInfo currentDataTransfer;
 	size_t dataTransferSpeed;
@@ -29,7 +29,7 @@ static inline void FreeMailbox(V2MP_DevicePort* port)
 {
 	if ( port->mailbox )
 	{
-		V2MPI_CircularBuffer_DeinitAndFree(port->mailbox);
+		V2MP_CircularBuffer_DeinitAndFree(port->mailbox);
 		port->mailbox = NULL;
 	}
 }
@@ -43,7 +43,7 @@ static inline void ClearActiveDataTransfer(V2MP_DevicePort* port)
 {
 	if ( port )
 	{
-		V2MPI_ZERO_STRUCT_PTR(&port->currentDataTransfer);
+		V2MP_ZERO_STRUCT_PTR(&port->currentDataTransfer);
 	}
 }
 
@@ -57,7 +57,7 @@ static size_t PerformDataTransferToDS(V2MP_DevicePort* port, size_t bytesToTrans
 		size_t numBytesTransferredByCall = 0;
 		V2MP_Fault localFault = V2MP_FAULT_NONE;
 
-		numBytesToTransferThisIteration = V2MPI_CircularBuffer_NumSequentialBytesReadableFromTail(port->mailbox);
+		numBytesToTransferThisIteration = V2MP_CircularBuffer_NumSequentialBytesReadableFromTail(port->mailbox);
 
 		if ( numBytesToTransferThisIteration > bytesToTransfer )
 		{
@@ -67,7 +67,7 @@ static size_t PerformDataTransferToDS(V2MP_DevicePort* port, size_t bytesToTrans
 		if ( !V2MP_MemoryStore_WriteBytesToDS(
 				port->currentDataTransfer.memoryStore,
 				port->currentDataTransfer.dsAddress,
-				V2MPI_CircularBuffer_Tail(port->mailbox),
+				V2MP_CircularBuffer_Tail(port->mailbox),
 				numBytesToTransferThisIteration,
 				&numBytesTransferredByCall,
 				&localFault) )
@@ -76,9 +76,9 @@ static size_t PerformDataTransferToDS(V2MP_DevicePort* port, size_t bytesToTrans
 			break;
 		}
 
-		V2MPI_CircularBuffer_DiscardBytes(port->mailbox, numBytesTransferredByCall);
+		V2MP_CircularBuffer_DiscardBytes(port->mailbox, numBytesTransferredByCall);
 		totalBytesTransferred += numBytesTransferredByCall;
-		bytesToTransfer -= V2MPI_MIN(numBytesTransferredByCall, bytesToTransfer);
+		bytesToTransfer -= V2MP_MIN(numBytesTransferredByCall, bytesToTransfer);
 
 		if ( localFault != V2MP_FAULT_NONE )
 		{
@@ -100,7 +100,7 @@ static void HandleDataTransferToDS(V2MP_DevicePort* port, V2MP_Fault* outFault)
 	size_t bytesToTransfer;
 	size_t bytesTransferred;
 
-	bytesToTransfer = V2MPI_CircularBuffer_BytesUsed(port->mailbox);
+	bytesToTransfer = V2MP_CircularBuffer_BytesUsed(port->mailbox);
 
 	if ( port->dataTransferSpeed > 0 && bytesToTransfer > port->dataTransferSpeed )
 	{
@@ -110,7 +110,7 @@ static void HandleDataTransferToDS(V2MP_DevicePort* port, V2MP_Fault* outFault)
 	bytesTransferred = PerformDataTransferToDS(port, bytesToTransfer, outFault);
 
 	dt->dsAddress += bytesTransferred;
-	dt->dsBufferSize -= V2MPI_MIN(bytesTransferred, dt->dsBufferSize);
+	dt->dsBufferSize -= V2MP_MIN(bytesTransferred, dt->dsBufferSize);
 
 	if ( dt->dsBufferSize < 1 )
 	{
@@ -125,7 +125,7 @@ size_t V2MP_DevicePort_Footprint(void)
 
 V2MP_DevicePort* V2MP_DevicePort_AllocateAndInit(void)
 {
-	return V2MPI_CALLOC_STRUCT(V2MP_DevicePort);
+	return V2MP_CALLOC_STRUCT(V2MP_DevicePort);
 }
 
 void V2MP_DevicePort_DeinitAndFree(V2MP_DevicePort* port)
@@ -156,17 +156,17 @@ void V2MP_DevicePort_SetAddress(V2MP_DevicePort* port, V2MP_Word address)
 
 size_t V2MP_DevicePort_GetMailboxSize(const V2MP_DevicePort* port)
 {
-	return port ? V2MPI_CircularBuffer_Capacity(port->mailbox) : 0;
+	return port ? V2MP_CircularBuffer_Capacity(port->mailbox) : 0;
 }
 
 size_t V2MP_DevicePort_GetMailboxMessageLength(const V2MP_DevicePort* port)
 {
-	return port ? V2MPI_CircularBuffer_BytesUsed(port->mailbox) : 0;
+	return port ? V2MP_CircularBuffer_BytesUsed(port->mailbox) : 0;
 }
 
 size_t V2MP_DevicePort_GetMailboxFreeSpace(const V2MP_DevicePort* port)
 {
-	return port ? V2MPI_CircularBuffer_BytesFree(port->mailbox) : 0;
+	return port ? V2MP_CircularBuffer_BytesFree(port->mailbox) : 0;
 }
 
 V2MP_DevicePort_MailboxState V2MP_DevicePort_GetMailboxState(const V2MP_DevicePort* port)
@@ -214,7 +214,7 @@ bool V2MP_DevicePort_AllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes)
 		return true;
 	}
 
-	port->mailbox = V2MPI_CircularBuffer_AllocateAndInit(sizeInBytes);
+	port->mailbox = V2MP_CircularBuffer_AllocateAndInit(sizeInBytes);
 
 	return port->mailbox != NULL;
 }

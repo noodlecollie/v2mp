@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "V2MPInternal/Util/Heap.h"
 
-V2MPI_HeapFunctions LocalHeapFunctions =
+V2MP_HeapFunctions LocalHeapFunctions =
 {
 	&malloc,
 	&realloc,
@@ -9,7 +9,7 @@ V2MPI_HeapFunctions LocalHeapFunctions =
 	&free
 };
 
-void V2MPI_Heap_SetHeapFunctions(V2MPI_HeapFunctions functions)
+void V2MP_Heap_SetHeapFunctions(V2MP_HeapFunctions functions)
 {
 	if ( !functions.mallocFunc )
 	{
@@ -34,28 +34,28 @@ void V2MPI_Heap_SetHeapFunctions(V2MPI_HeapFunctions functions)
 	LocalHeapFunctions = functions;
 }
 
-void V2MPI_Heap_ResetHeapFunctions(void)
+void V2MP_Heap_ResetHeapFunctions(void)
 {
-	V2MPI_HeapFunctions functions = { NULL, NULL, NULL, NULL };
-	V2MPI_Heap_SetHeapFunctions(functions);
+	V2MP_HeapFunctions functions = { NULL, NULL, NULL, NULL };
+	V2MP_Heap_SetHeapFunctions(functions);
 }
 
-void* V2MPI_Heap_Malloc(size_t size)
+void* V2MP_Heap_Malloc(size_t size)
 {
 	return LocalHeapFunctions.mallocFunc(size);
 }
 
-void* V2MPI_Heap_Realloc(void* ptr, size_t newSize)
+void* V2MP_Heap_Realloc(void* ptr, size_t newSize)
 {
 	return LocalHeapFunctions.reallocFunc(ptr, newSize);
 }
 
-void* V2MPI_Heap_Calloc(size_t numElements, size_t elementSize)
+void* V2MP_Heap_Calloc(size_t numElements, size_t elementSize)
 {
 	return LocalHeapFunctions.callocFunc(numElements, elementSize);
 }
 
-void V2MPI_Heap_Free(void* ptr)
+void V2MP_Heap_Free(void* ptr)
 {
 	LocalHeapFunctions.freeFunc(ptr);
 }

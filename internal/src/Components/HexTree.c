@@ -19,7 +19,7 @@
 
 #define CLAMP_DEPTH(d) ((d) > MAX_DEPTH ? MAX_DEPTH : (d))
 
-struct V2MPI_HexTreeNode
+struct V2MP_HexTreeNode
 {
 	void* slots[NUM_SLOTS];
 };
@@ -34,7 +34,7 @@ static inline uint16_t GetKeyFragment(uint16_t key, size_t depth)
 	return (key & (KEY_FRAG_MASK << shift)) >> shift;
 }
 
-static void DeallocateNodesRecursive(size_t depth, V2MPI_HexTreeNode* node)
+static void DeallocateNodesRecursive(size_t depth, V2MP_HexTreeNode* node)
 {
 	if ( !node )
 	{
@@ -48,7 +48,7 @@ static void DeallocateNodesRecursive(size_t depth, V2MPI_HexTreeNode* node)
 
 		for ( index = 0; index < NUM_SLOTS; ++index )
 		{
-			DeallocateNodesRecursive(depth + 1, (V2MPI_HexTreeNode*)node->slots[index]);
+			DeallocateNodesRecursive(depth + 1, (V2MP_HexTreeNode*)node->slots[index]);
 			node->slots[index] = NULL;
 		}
 	}
@@ -60,10 +60,10 @@ static void DeallocateNodesRecursive(size_t depth, V2MPI_HexTreeNode* node)
 	}
 }
 
-static void** GetLeafSlot(V2MPI_HexTreeNode* root, uint16_t key, bool createIfNonExistent)
+static void** GetLeafSlot(V2MP_HexTreeNode* root, uint16_t key, bool createIfNonExistent)
 {
 	size_t depth;
-	V2MPI_HexTreeNode* node;
+	V2MP_HexTreeNode* node;
 
 	if ( !root )
 	{
@@ -88,7 +88,7 @@ static void** GetLeafSlot(V2MPI_HexTreeNode* root, uint16_t key, bool createIfNo
 					break;
 				}
 
-				(*slot) = V2MPI_CALLOC_STRUCT(V2MPI_HexTreeNode);
+				(*slot) = V2MP_CALLOC_STRUCT(V2MP_HexTreeNode);
 
 				if ( !(*slot) )
 				{
@@ -96,7 +96,7 @@ static void** GetLeafSlot(V2MPI_HexTreeNode* root, uint16_t key, bool createIfNo
 				}
 			}
 
-			node = (V2MPI_HexTreeNode*)(*slot);
+			node = (V2MP_HexTreeNode*)(*slot);
 		}
 		else
 		{
@@ -108,22 +108,22 @@ static void** GetLeafSlot(V2MPI_HexTreeNode* root, uint16_t key, bool createIfNo
 	return NULL;
 }
 
-size_t V2MPI_HexTree_Footprint(void)
+size_t V2MP_HexTree_Footprint(void)
 {
-	return sizeof(V2MPI_HexTreeNode);
+	return sizeof(V2MP_HexTreeNode);
 }
 
-V2MPI_HexTreeNode* V2MPI_HexTree_AllocateAndInit(void)
+V2MP_HexTreeNode* V2MP_HexTree_AllocateAndInit(void)
 {
-	return V2MPI_CALLOC_STRUCT(V2MPI_HexTreeNode);
+	return V2MP_CALLOC_STRUCT(V2MP_HexTreeNode);
 }
 
-void V2MPI_HexTree_DeinitAndFree(V2MPI_HexTreeNode* root)
+void V2MP_HexTree_DeinitAndFree(V2MP_HexTreeNode* root)
 {
 	DeallocateNodesRecursive(0, root);
 }
 
-bool V2MPI_HexTree_Insert(V2MPI_HexTreeNode* root, uint16_t key, void* value)
+bool V2MP_HexTree_Insert(V2MP_HexTreeNode* root, uint16_t key, void* value)
 {
 	void** slot;
 
@@ -150,7 +150,7 @@ bool V2MPI_HexTree_Insert(V2MPI_HexTreeNode* root, uint16_t key, void* value)
 	return true;
 }
 
-void* V2MPI_HexTree_Remove(V2MPI_HexTreeNode* root, uint16_t key)
+void* V2MP_HexTree_Remove(V2MP_HexTreeNode* root, uint16_t key)
 {
 	void** slot;
 	void* item = NULL;
@@ -166,7 +166,7 @@ void* V2MPI_HexTree_Remove(V2MPI_HexTreeNode* root, uint16_t key)
 	return item;
 }
 
-void* V2MPI_HexTree_Find(V2MPI_HexTreeNode* root, uint16_t key)
+void* V2MP_HexTree_Find(V2MP_HexTreeNode* root, uint16_t key)
 {
 	void** slot;
 

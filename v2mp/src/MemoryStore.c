@@ -37,7 +37,7 @@ static bool AllocateSegment(V2MP_Segment* segment, V2MP_Word numWords, const V2M
 		return false;
 	}
 
-	segment->data = (uint8_t*)V2MPI_MALLOC(numWords * sizeof(V2MP_Word));
+	segment->data = (uint8_t*)V2MP_MALLOC(numWords * sizeof(V2MP_Word));
 
 	if ( !segment->data )
 	{
@@ -163,7 +163,7 @@ size_t V2MP_MemoryStore_Footprint(void)
 
 V2MP_MemoryStore* V2MP_MemoryStore_AllocateAndInit(void)
 {
-	return V2MPI_CALLOC_STRUCT(V2MP_MemoryStore);
+	return V2MP_CALLOC_STRUCT(V2MP_MemoryStore);
 }
 
 void V2MP_MemoryStore_DeinitAndFree(V2MP_MemoryStore* mem)
