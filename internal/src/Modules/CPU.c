@@ -87,12 +87,60 @@ void V2MP_CPURenameMe_NotifyFault(V2MP_CPURenameMe* cpu, V2MP_Fault fault)
 	cpu->fault = fault;
 }
 
-bool V2MP_CPURenameMe_HasFault(V2MP_CPURenameMe* cpu)
+bool V2MP_CPURenameMe_HasFault(const V2MP_CPURenameMe* cpu)
 {
 	return cpu && V2MP_CPU_FAULT_CODE(cpu->fault) != V2MP_FAULT_NONE;
 }
 
-V2MP_Word V2MP_CPURenameMe_GetFaultWord(V2MP_CPURenameMe* cpu)
+V2MP_Word V2MP_CPURenameMe_GetFaultWord(const V2MP_CPURenameMe* cpu)
 {
 	return cpu ? cpu->fault : 0;
+}
+
+bool V2MP_CPURenameMe_SetRegisterValue(V2MP_CPURenameMe* cpu, V2MP_RegisterIndex regIndex, V2MP_Word value)
+{
+	V2MP_Word* regPtr;
+
+	if ( !cpu )
+	{
+		return false;
+	}
+
+	regPtr = V2MP_CPURenameMe_GetRegisterPtr(cpu, regIndex);
+
+	if ( !regPtr )
+	{
+		return false;
+	}
+
+	*regPtr = value;
+
+	cpu->sr = 0;
+
+	if ( *regPtr == 0 )
+	{
+		cpu->sr |= V2MP_CPU_SR_Z;
+	}
+
+	return true;
+}
+
+bool V2MP_CPURenameMe_GetRegisterValue(const V2MP_CPURenameMe* cpu, V2MP_RegisterIndex regIndex, V2MP_Word* outValue)
+{
+	const V2MP_Word* regPtr;
+
+	if ( !cpu || !outValue )
+	{
+		return false;
+	}
+
+	regPtr = V2MP_CPURenameMe_GetRegisterConstPtr(cpu, regIndex);
+
+	if ( !regPtr )
+	{
+		return false;
+	}
+
+	*outValue = *regPtr;
+	return true;
 }

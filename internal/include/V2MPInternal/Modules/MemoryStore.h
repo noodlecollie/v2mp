@@ -18,6 +18,7 @@ void V2MP_MemoryStoreRenameMe_DeinitAndFree(V2MP_MemoryStoreRenameMe* mem);
 bool V2MP_MemoryStoreRenameMe_AllocateTotalMemory(V2MP_MemoryStoreRenameMe* mem, size_t sizeInBytes);
 
 size_t V2MP_MemoryStoreRenameMe_GetTotalMemorySize(const V2MP_MemoryStoreRenameMe* mem);
+V2MP_Byte* V2MP_MemoryStoreRenameMe_GetPtrToBase(V2MP_MemoryStoreRenameMe* mem);
 
 // Returns null if the range would exceed the total memory area.
 V2MP_Byte* V2MP_MemoryStoreRenameMe_GetPtrToRange(V2MP_MemoryStoreRenameMe* mem, size_t base, size_t length);

@@ -47,32 +47,6 @@ static inline void SetFault(V2MP_CPURenameMe* cpu, V2MP_Fault fault, V2MP_Word a
 	V2MP_CPURenameMe_NotifyFault(cpu, V2MP_CPU_MAKE_FAULT_WORD(fault, args));
 }
 
-static V2MP_Word* GetRegisterPtr(V2MP_CPURenameMe* cpu, V2MP_Word regIndex)
-{
-	switch ( V2MP_REGID_MASK(regIndex) )
-	{
-		case V2MP_REGID_R0:
-		{
-			return &cpu->r0;
-		}
-
-		case V2MP_REGID_R1:
-		{
-			return &cpu->r1;
-		}
-
-		case V2MP_REGID_LR:
-		{
-			return &cpu->lr;
-		}
-
-		default:
-		{
-			return &cpu->pc;
-		}
-	}
-}
-
 static bool Execute_ADDOrSUB(V2MP_CPURenameMe* cpu, bool isAdd)
 {
 	int32_t multiplier;
@@ -81,8 +55,8 @@ static bool Execute_ADDOrSUB(V2MP_CPURenameMe* cpu, bool isAdd)
 	V2MP_Word oldValue;
 
 	multiplier = isAdd ? 1 : -1;
-	sourceReg = GetRegisterPtr(cpu, V2MP_OP_ADDSUB_SREGINDEX(cpu->ir));
-	destReg = GetRegisterPtr(cpu, V2MP_OP_ADDSUB_DREGINDEX(cpu->ir));
+	sourceReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_ADDSUB_SREGINDEX(cpu->ir));
+	destReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_ADDSUB_DREGINDEX(cpu->ir));
 	oldValue = *destReg;
 
 	if ( V2MP_OP_ADDSUB_DREGINDEX(cpu->ir) == V2MP_REGID_PC )
@@ -137,8 +111,8 @@ bool Execute_ASGN(V2MP_CPURenameMe* cpu)
 	V2MP_Word* sourceReg;
 	V2MP_Word* destReg;
 
-	sourceReg = GetRegisterPtr(cpu, V2MP_OP_ASGN_SREGINDEX(cpu->ir));
-	destReg = GetRegisterPtr(cpu, V2MP_OP_ASGN_DREGINDEX(cpu->ir));
+	sourceReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_ASGN_SREGINDEX(cpu->ir));
+	destReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_ASGN_DREGINDEX(cpu->ir));
 
 	if ( sourceReg != destReg )
 	{
@@ -184,8 +158,8 @@ bool Execute_SHFT(V2MP_CPURenameMe* cpu)
 		return true;
 	}
 
-	sourceReg = GetRegisterPtr(cpu, V2MP_OP_SHFT_SREGINDEX(cpu->ir));
-	destReg = GetRegisterPtr(cpu, V2MP_OP_SHFT_DREGINDEX(cpu->ir));
+	sourceReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_SHFT_SREGINDEX(cpu->ir));
+	destReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_SHFT_DREGINDEX(cpu->ir));
 
 	if ( sourceReg != destReg )
 	{
@@ -261,8 +235,8 @@ bool Execute_BITW(V2MP_CPURenameMe* cpu)
 		return true;
 	}
 
-	sourceReg = GetRegisterPtr(cpu, V2MP_OP_BITW_SREGINDEX(cpu->ir));
-	destReg = GetRegisterPtr(cpu, V2MP_OP_BITW_DREGINDEX(cpu->ir));
+	sourceReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_BITW_SREGINDEX(cpu->ir));
+	destReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_BITW_DREGINDEX(cpu->ir));
 
 	if ( sourceReg != destReg )
 	{
@@ -390,24 +364,27 @@ bool Execute_LDST(V2MP_CPURenameMe* cpu)
 		return true;
 	}
 
-	reg = GetRegisterPtr(cpu, V2MP_OP_LDST_REGINDEX(cpu->ir));
+	reg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_LDST_REGINDEX(cpu->ir));
 
 	if ( V2MP_OP_LDST_IS_STORE(cpu->ir) )
 	{
-		cpu->supervisorInterface.requestStoreWordToDS(cpu->supervisorInterface.supervisor, cpu->lr, *reg);
+		cpu->supervisorInterface.requestStoreWordToDS(
+			cpu->supervisorInterface.supervisor,
+			cpu->lr,
+			*reg
+		);
 	}
 	else
 	{
-		cpu->supervisorInterface.requestLoadWordFromDS(cpu->supervisorInterface.supervisor, cpu->lr, reg);
+		cpu->supervisorInterface.requestLoadWordFromDS(
+			cpu->supervisorInterface.supervisor,
+			cpu->lr,
+			(V2MP_RegisterIndex)V2MP_OP_LDST_REGINDEX(cpu->ir)
+		);
 	}
 
+	// The status register will be updated later.
 	cpu->sr = 0;
-
-	if ( *reg == 0 )
-	{
-		cpu->sr |= V2MP_CPU_SR_Z;
-	}
-
 	return true;
 }
 

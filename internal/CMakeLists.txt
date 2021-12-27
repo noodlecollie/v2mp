@@ -3,9 +3,11 @@ add_library(${TARGETNAME_V2MP_INTERNAL} STATIC
 	src/Components/DoubleLinkedList.c
 	src/Components/HexTree.c
 	src/Modules/CPU_Instructions.c
+	src/Modules/CPU_Internal.c
 	src/Modules/CPU.c
 	src/Modules/Mainboard.c
 	src/Modules/MemoryStore.c
+	src/Modules/Supervisor_Action.c
 	src/Modules/Supervisor_CPUInterface.c
 	src/Modules/Supervisor_Internal.c
 	src/Modules/Supervisor.c

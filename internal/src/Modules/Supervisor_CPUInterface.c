@@ -1,9 +1,10 @@
 #include "Modules/Supervisor_CPUInterface.h"
 #include "Modules/Supervisor_Internal.h"
+#include "Modules/Supervisor_Action.h"
 
-V2MP_Word FetchInstructionWord(void* supervisor, V2MP_Word address, V2MP_Word* destReg);
-void RequestLoadWordFromDS(void* supervisor, V2MP_Word address, V2MP_Word* destReg);
-void RequestStoreWordToDS(void* supervisor, V2MP_Word address, V2MP_Word wordToStore);
+V2MP_Word FetchInstructionWord(void* opaqueSv, V2MP_Word address, V2MP_Word* destReg);
+void RequestLoadWordFromDS(void* opaqueSv, V2MP_Word address, V2MP_RegisterIndex destReg);
+void RequestStoreWordToDS(void* opaqueSv, V2MP_Word address, V2MP_Word wordToStore);
 
 void V2MP_Supervisor_CreateCPUInterface(V2MP_Supervisor* supervisor, V2MP_CPURenameMe_SupervisorInterface* interface)
 {
@@ -19,23 +20,17 @@ void V2MP_Supervisor_CreateCPUInterface(V2MP_Supervisor* supervisor, V2MP_CPURen
 	interface->requestStoreWordToDS = &RequestStoreWordToDS;
 }
 
-V2MP_Word FetchInstructionWord(void* supervisor, V2MP_Word address, V2MP_Word* destReg)
+V2MP_Word FetchInstructionWord(void* opaqueSv, V2MP_Word address, V2MP_Word* destReg)
 {
-	return V2MP_Supervisor_FetchInstructionWord((V2MP_Supervisor*)supervisor, address, destReg);
+	return V2MP_Supervisor_FetchInstructionWord((V2MP_Supervisor*)opaqueSv, address, destReg);
 }
 
-void RequestLoadWordFromDS(void* supervisor, V2MP_Word address, V2MP_Word* destReg)
+void RequestLoadWordFromDS(void* opaqueSv, V2MP_Word address, V2MP_RegisterIndex destReg)
 {
-	// TODO
-	(void)supervisor;
-	(void)address;
-	(void)destReg;
+	V2MP_Supervisor_RequestLoadWordFromDS((V2MP_Supervisor*)opaqueSv, address, destReg);
 }
 
-void RequestStoreWordToDS(void* supervisor, V2MP_Word address, V2MP_Word wordToStore)
+void RequestStoreWordToDS(void* opaqueSv, V2MP_Word address, V2MP_Word wordToStore)
 {
-	// TODO
-	(void)supervisor;
-	(void)address;
-	(void)wordToStore;
+	V2MP_Supervisor_RequestStoreWordToDS(opaqueSv, address, wordToStore);
 }

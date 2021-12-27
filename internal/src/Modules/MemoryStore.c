@@ -65,6 +65,11 @@ size_t V2MP_MemoryStoreRenameMe_GetTotalMemorySize(const V2MP_MemoryStoreRenameM
 	return mem ? mem->totalMemorySizeInBytes : 0;
 }
 
+V2MP_Byte* V2MP_MemoryStoreRenameMe_GetPtrToBase(V2MP_MemoryStoreRenameMe* mem)
+{
+	return mem ? mem->totalMemory : NULL;
+}
+
 V2MP_Byte* V2MP_MemoryStoreRenameMe_GetPtrToRange(V2MP_MemoryStoreRenameMe* mem, size_t base, size_t length)
 {
 	if ( !mem || !mem->totalMemory || mem->totalMemorySizeInBytes < 1 )
