@@ -47,6 +47,77 @@ static inline void ClearActiveDataTransfer(V2MP_DevicePort* port)
 	}
 }
 
+static size_t PerformDataTransferToDS(V2MP_DevicePort* port, size_t bytesToTransfer, V2MP_Fault* outFault)
+{
+	size_t totalBytesTransferred = 0;
+
+	while ( bytesToTransfer > 0 )
+	{
+		size_t numBytesToTransferThisIteration;
+		size_t numBytesTransferredByCall = 0;
+		V2MP_Fault localFault = V2MP_FAULT_NONE;
+
+		numBytesToTransferThisIteration = V2MPI_CircularBuffer_NumSequentialBytesReadableFromTail(port->mailbox);
+
+		if ( numBytesToTransferThisIteration > bytesToTransfer )
+		{
+			numBytesToTransferThisIteration = bytesToTransfer;
+		}
+
+		if ( !V2MP_MemoryStore_WriteBytesToDS(
+				port->currentDataTransfer.memoryStore,
+				port->currentDataTransfer.dsAddress,
+				V2MPI_CircularBuffer_Tail(port->mailbox),
+				numBytesToTransferThisIteration,
+				&numBytesTransferredByCall,
+				&localFault) )
+		{
+			// Should never happen, but just cancel.
+			break;
+		}
+
+		V2MPI_CircularBuffer_DiscardBytes(port->mailbox, numBytesTransferredByCall);
+		totalBytesTransferred += numBytesTransferredByCall;
+		bytesToTransfer -= V2MPI_MIN(numBytesTransferredByCall, bytesToTransfer);
+
+		if ( localFault != V2MP_FAULT_NONE )
+		{
+			if ( outFault )
+			{
+				*outFault = localFault;
+			}
+
+			break;
+		}
+	}
+
+	return totalBytesTransferred;
+}
+
+static void HandleDataTransferToDS(V2MP_DevicePort* port, V2MP_Fault* outFault)
+{
+	DataTransferInfo* dt = &port->currentDataTransfer;
+	size_t bytesToTransfer;
+	size_t bytesTransferred;
+
+	bytesToTransfer = V2MPI_CircularBuffer_BytesUsed(port->mailbox);
+
+	if ( port->dataTransferSpeed > 0 && bytesToTransfer > port->dataTransferSpeed )
+	{
+		bytesToTransfer = port->dataTransferSpeed;
+	}
+
+	bytesTransferred = PerformDataTransferToDS(port, bytesToTransfer, outFault);
+
+	dt->dsAddress += bytesTransferred;
+	dt->dsBufferSize -= V2MPI_MIN(bytesTransferred, dt->dsBufferSize);
+
+	if ( dt->dsBufferSize < 1 )
+	{
+		dt->transferOngoing = false;
+	}
+}
+
 size_t V2MP_DevicePort_Footprint(void)
 {
 	return sizeof(V2MP_DevicePort);
@@ -207,8 +278,28 @@ bool V2MP_DevicePort_BeginWriteToMailbox(
 
 bool V2MP_DevicePort_ExecuteCycle(V2MP_DevicePort* port, V2MP_Fault* outFault)
 {
-	// TODO
-	(void)port;
-	(void)outFault;
-	return false;
+	if ( outFault )
+	{
+		*outFault = V2MP_FAULT_NONE;
+	}
+
+	if ( !port )
+	{
+		return false;
+	}
+
+	if ( HasActiveDataTransfer(port) )
+	{
+		if ( port->currentDataTransfer.writingToDS )
+		{
+			HandleDataTransferToDS(port, outFault);
+		}
+		else
+		{
+			// TODO
+			return false;
+		}
+	}
+
+	return true;
 }
