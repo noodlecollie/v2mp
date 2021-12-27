@@ -10,16 +10,16 @@ The specification for the virtual processor is outlined in this file.
 * [Memory Model](#memory-model)
 * [Device Ports](#device-ports)
 * [Instruction Set](#instruction-set)
-  * [0h HCF: Halt](#0h-halt-hcf)
-  * [1h LDST: Load/Store](#1h-loadstore-ldst)
+  * [0h ADD: Add](#0h-add-add)
+  * [1h SUB: Subtract](#1h-subtract-sub)
   * [2h ASGN: Assign](#2h-assign-asgn)
-  * [3h ADD: Add](#3h-add-add)
-  * [4h SUB: Subtract](#4h-subtract-sub)
-  * [5h SHFT: Bit Shift](#5h-bit-shift-shft)
-  * [6h BITW: Bitwise Operation](#6h-bitwise-operation-bitw)
-  * [7h CBX: Conditional Branch](#7h-conditional-branch-cbx)
-  * [8h DPQ: Device Port Query](#8h-device-port-query-dpq)
-  * [9h DPO: Device Port Operation](#9h-device-port-operation-dpo)
+  * [3h SHFT: Bit Shift](#3h-bit-shift-shft)
+  * [4h BITW: Bitwise Operation](#4h-bitwise-operation-bitw)
+  * [5h CBX: Conditional Branch](#5h-conditional-branch-cbx)
+  * [6h LDST: Load/Store](#6h-loadstore-ldst)
+  * [7h DPQ: Device Port Query](#7h-device-port-query-dpq)
+  * [8h DPO: Device Port Operation](#8h-device-port-operation-dpo)
+  * [Fh HCF: Halt](#fh-halt-hcf)
 * [Faults](#faults)
 
 ## Documentation Conventions
@@ -231,38 +231,55 @@ Some instructions make reference to a register in the CPU using a 2-bit identifi
 * `10b` refers to `LR`.
 * `11b` refers to `PC`.
 
-### `0h`: Halt (`HCF`)
+### `0h`: Add (`ADD`)
 
-Also known as "halt and catch fire". This instruction stops the processor, leaves all registers as they are, and raises an [`HCF`](#faults) fault.
-
-```
- HCF
-|0000|AAAAAAAAAAAA|
-```
-
-Operand bits `[11 0] (A)` function as an argument to the fault. They do not have any significant meaning to the instruction, but are passed on to the fault handler.
-
-### `1h`: Load/Store (`LDST`)
-
-Depending on the operands, either loads a value from a location in memory, or stores a value to a location in memory.
+Increments the value in a register.
 
 ```
- LDST
-|0001|ABB.........|
+ ADD
+|0000|AABBCCCCCCCC|
 ```
 
-* Operand bit `[11] (A)` specifies the mode of the operation:
-  * `0b` means that the operation is a load.
-  * `1b` means that the operation is a store.
-* Operand bits `[10 9] (B)` specify the two-bit identifier of the register whose value will be used for the operation.
+* Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
+* Operand bits `[9 8] (B)` specify the two-bit identifier of the register to use as the destination.
 
-The memory location for the load or store is always specified by the value of `LR`. This always refers to the data segment `DS`.
+If the source `A` and destination `B` register identifiers are different, the source register's value is used to increment the destination register, and the source register remains unchanged. Operand bits `[7 0] (C)` must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
 
-Operand bits `[8 0]` of the instruction are reserved for future use. If any of these bits is not `0`, a [`RES`](#fault) fault will be raised.
+If instead the source `A` and destination `B` register identifiers are the same, operand bits `[7 0] (C)` are interpreted as an unsigned 8-bit literal, which is used to increment destination register.
 
-If the memory address specified by `LR` is not aligned to a word boundary, an [`ALGN`](#faults) fault will be raised. If the address is not within the boundaries of `DS`, a [`SEG`](#faults) fault will be raised.
+Note that if the destination register is `PC`, the increment (either as a literal or from a register) is treated as the number of **words** to increment by, rather than the number of bytes. This is to avoid causing an address mis-alignment by setting `PC` to an odd value.
 
-If the value that is loaded or stored to or from the register is zero, `SR[Z]` is set; otherwise, it is cleared. All other bits in `SR` are always cleared.
+If the add operation overflows the destination register, `SR[C]` is set; otherwise, it is cleared.
+
+If the add operation results in a value of `0` in the destination register, `SR[Z]` is set; otherwise, it is cleared.
+
+All other bits in `SR` are always cleared.
+
+A useful aspect to note is that an all-zero instruction word corresponds to the instruction "add zero to register `R0`". This can be used as a "nop" instruction.
+
+### `1h`: Subtract (`SUB`)
+
+Decrements the value in a register.
+
+```
+ SUB
+|0001|AABBCCCCCCCC|
+```
+
+* Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
+* Operand bits `[9 8] (B)` specify the two-bit identifier of the register to use as the destination.
+
+If the source `A` and destination `B` register identifiers are different, the source register's value is used to decrement the destination register, and the source register remains unchanged. Operand bits `[7 0] (C)` must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
+
+If instead the source `A` and destination `B` register identifiers are the same, operand bits `[7 0] (C)` are interpreted as an unsigned 8-bit literal, which is used to decrement destination register.
+
+Note that if the destination register is `PC`, the decrement (either as a literal or from a register) is treated as the number of **words** to decrement by, rather than the number of bytes. This is to avoid causing an address mis-alignment by setting `PC` to an odd value.
+
+If the subtraction operation underflows the destination register, `SR[C]` is set; otherwise, it is cleared.
+
+If the subtraction operation results in a value of `0` in the destination register, `SR[Z]` is set; otherwise, it is cleared.
+
+All other bits in `SR` are always cleared.
 
 ### `2h`: Assign (`ASGN`)
 
@@ -299,61 +316,13 @@ If `A` and `B` are the same, `PC` may not be assigned to, since the range of val
 
 In all cases described for this instruction, `SR[Z]` is set if the eventual value in the destination register is zero; otherwise, it is cleared. All other bits in `SR` are cleared.
 
-### `3h`: Add (`ADD`)
-
-Increments the value in a register.
-
-```
- ADD
-|0011|AABBCCCCCCCC|
-```
-
-* Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
-* Operand bits `[9 8] (B)` specify the two-bit identifier of the register to use as the destination.
-
-If the source `A` and destination `B` register identifiers are different, the source register's value is used to increment the destination register, and the source register remains unchanged. Operand bits `[7 0] (C)` must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
-
-If instead the source `A` and destination `B` register identifiers are the same, operand bits `[7 0] (C)` are interpreted as an unsigned 8-bit literal, which is used to increment destination register.
-
-Note that if the destination register is `PC`, the increment (either as a literal or from a register) is treated as the number of **words** to increment by, rather than the number of bytes. This is to avoid causing an address mis-alignment by setting `PC` to an odd value.
-
-If the add operation overflows the destination register, `SR[C]` is set; otherwise, it is cleared.
-
-If the add operation results in a value of `0` in the destination register, `SR[Z]` is set; otherwise, it is cleared.
-
-All other bits in `SR` are always cleared.
-
-### `4h`: Subtract (`SUB`)
-
-Decrements the value in a register.
-
-```
- SUB
-|0100|AABBCCCCCCCC|
-```
-
-* Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
-* Operand bits `[9 8] (B)` specify the two-bit identifier of the register to use as the destination.
-
-If the source `A` and destination `B` register identifiers are different, the source register's value is used to decrement the destination register, and the source register remains unchanged. Operand bits `[7 0] (C)` must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
-
-If instead the source `A` and destination `B` register identifiers are the same, operand bits `[7 0] (C)` are interpreted as an unsigned 8-bit literal, which is used to decrement destination register.
-
-Note that if the destination register is `PC`, the decrement (either as a literal or from a register) is treated as the number of **words** to decrement by, rather than the number of bytes. This is to avoid causing an address mis-alignment by setting `PC` to an odd value.
-
-If the subtraction operation underflows the destination register, `SR[C]` is set; otherwise, it is cleared.
-
-If the subtraction operation results in a value of `0` in the destination register, `SR[Z]` is set; otherwise, it is cleared.
-
-All other bits in `SR` are always cleared.
-
-### `5h`: Bit Shift (`SHFT`)
+### `3h`: Bit Shift (`SHFT`)
 
 Shifts the bits in a register left or right.
 
 ```
  SHFT
-|0101|AABB...CCCCC|
+|0011|AABB...CCCCC|
 ```
 
 * Operand bits `[11 10] (A)` specify the two-bit identifier of the register whose value determines the magnitude of the shift. The contents of the register are treated as a signed 16-bit value.
@@ -369,13 +338,13 @@ When shifting bits, a negative magnitude implies a right shift (dividing the val
 
 If after the operation the remaining value in the register is zero, `SR[Z]` is set to `1`; otherwise, it is set to `0`. Additionally, if any `1` bits were shifted off the end of the register during the operation, `SR[C]` is set to `1`; otherwise, it is set to `0`. All other bits in `SR` are set to `0`.
 
-### `6h`: Bitwise Operation (`BITW`)
+### `4h`: Bitwise Operation (`BITW`)
 
 Performs a bitwise operation between two register values.
 
 ```
  BITW
-|0110|AABBCCD.EEEE|
+|0100|AABBCCD.EEEE|
 ```
 
 * Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source of the bit mask.
@@ -401,13 +370,13 @@ In all cases, operand bit `[4]` is reserved for future use, and must be set to `
 
 If the resulting value in the destination register is zero, `SR[Z]` is set to `1`; otherwise, it is set to `0`. All other bits in `SR` are set to `0`.
 
-### `7h` Conditional Branch (`CBX`)
+### `5h` Conditional Branch (`CBX`)
 
 Decided whether or not to modify the value of the program counter `PC`, depending on the current state of the status register `SR`.
 
 ```
  CBX
-|0111|AB..CCCCCCCC|
+|0101|AB..CCCCCCCC|
 ```
 
 * Operand bit `[11] (A)` specifies how the value of `PC` should be modified:
@@ -421,13 +390,35 @@ Operand bits `[9 8]` are reserved for future use, and must be set to `0`. If thi
 
 After this instruction, `SR[Z]` will be set to `1` if the condition was not met. If the condition was met, and `PC` was set, `SR[Z]` will be set to `0`. All other bits in `SR` will be set to `0`.
 
-### `8h` Device Port Query (`DPQ`)
+### `6h`: Load/Store (`LDST`)
+
+Depending on the operands, either loads a value from a location in memory, or stores a value to a location in memory.
+
+```
+ LDST
+|0110|ABB.........|
+```
+
+* Operand bit `[11] (A)` specifies the mode of the operation:
+  * `0b` means that the operation is a load.
+  * `1b` means that the operation is a store.
+* Operand bits `[10 9] (B)` specify the two-bit identifier of the register whose value will be used for the operation.
+
+The memory location for the load or store is always specified by the value of `LR`. This always refers to the data segment `DS`.
+
+Operand bits `[8 0]` of the instruction are reserved for future use. If any of these bits is not `0`, a [`RES`](#fault) fault will be raised.
+
+If the memory address specified by `LR` is not aligned to a word boundary, an [`ALGN`](#faults) fault will be raised. If the address is not within the boundaries of `DS`, a [`SEG`](#faults) fault will be raised.
+
+If the value that is loaded or stored to or from the register is zero, `SR[Z]` is set; otherwise, it is cleared. All other bits in `SR` are always cleared.
+
+### `7h` Device Port Query (`DPQ`)
 
 Queries the state of a device communications port, and sets the status register `SR` appropriately.
 
 ```
  DPQ
-|1000|........AAA|
+|0111|........AAA|
 ```
 
 The number of the port to be queried is held in `R0`. Additionally, operand bits `[2 0] (A)` specify the type of query to perform:
@@ -454,13 +445,13 @@ After the instruction is executed, `SR[Z]` is set based on the query type. The c
 
 All other bits in `SR` will be set to `0`.
 
-### `9h` Device Port Operation (`DPO`)
+### `8h` Device Port Operation (`DPO`)
 
 Performs an operation on a device communications port.
 
 ```
  DPO
-|1001|A........BB|
+|1000|A........BB|
 ```
 
 The number of the port to use is held in `R0`. Operand bit `[11] (A)` is used to specify the type of data transfer used for a read or a write:
@@ -553,6 +544,17 @@ While the mailbox is busy, the data buffer originally pointed to by `R1` should 
 After the instruction is executed, `SR[Z]` is set if there will be no more space left in the mailbox after the write, and is cleared if there will still be at least one byte of space left in the mailbox after the write.
 
 `SR[C]` is set if there were more bytes specified in the write than there were free bytes in the mailbox, and is cleared if the entirety of the write fitted into the mailbox.
+
+### `Fh`: Halt (`HCF`)
+
+Also known as "halt and catch fire". This instruction stops the processor, leaves all registers as they are, and raises an [`HCF`](#faults) fault.
+
+```
+ HCF
+|1111|AAAAAAAAAAAA|
+```
+
+Operand bits `[11 0] (A)` function as an argument to the fault. They do not have any significant meaning to the instruction, but are passed on to the fault handler.
 
 ## Faults
 
