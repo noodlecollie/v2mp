@@ -26,35 +26,36 @@ typedef void (* InstructionCallback)(V2MP_CPU*);
 static void SetFault(V2MP_CPU* cpu, V2MP_Fault fault, V2MP_Word args);
 static V2MP_Word* GetRegisterPtr(V2MP_CPU* cpu, V2MP_Word regIndex);
 
-static void Execute_HCF(V2MP_CPU* cpu);
-static void Execute_LDST(V2MP_CPU* cpu);
+static void Execute_ADD(V2MP_CPU* cpu);
+static void Execute_SUB(V2MP_CPU* cpu);
 static void Execute_ASGN(V2MP_CPU* cpu);
-static void Execute_ADDOrSUB(V2MP_CPU* cpu);
 static void Execute_SHFT(V2MP_CPU* cpu);
 static void Execute_BITW(V2MP_CPU* cpu);
 static void Execute_CBX(V2MP_CPU* cpu);
+static void Execute_LDST(V2MP_CPU* cpu);
 static void Execute_DPQ(V2MP_CPU* cpu);
 static void Execute_DPO(V2MP_CPU* cpu);
 static void Execute_Unassigned(V2MP_CPU* cpu);
+static void Execute_HCF(V2MP_CPU* cpu);
 
 static const InstructionCallback INSTRUCTION_TABLE[0x10] =
 {
-	&Execute_HCF,			// 0x0
-	&Execute_LDST,			// 0x1
-	&Execute_ASGN,			// 0x2
-	&Execute_ADDOrSUB,		// 0x3
-	&Execute_ADDOrSUB,		// 0x4
-	&Execute_SHFT,			// 0x5
-	&Execute_BITW,			// 0x6
-	&Execute_CBX,			// 0x7
-	&Execute_DPQ,			// 0x8
-	&Execute_DPO,			// 0x9
-	&Execute_Unassigned,	// 0xA
-	&Execute_Unassigned,	// 0xB
-	&Execute_Unassigned,	// 0xC
-	&Execute_Unassigned,	// 0xD
-	&Execute_Unassigned,	// 0xE
-	&Execute_Unassigned		// 0xF
+	&Execute_ADD,
+	&Execute_SUB,
+	&Execute_ASGN,
+	&Execute_SHFT,
+	&Execute_BITW,
+	&Execute_CBX,
+	&Execute_LDST,
+	&Execute_DPQ,
+	&Execute_DPO,
+	&Execute_Unassigned,
+	&Execute_Unassigned,
+	&Execute_Unassigned,
+	&Execute_Unassigned,
+	&Execute_Unassigned,
+	&Execute_Unassigned,
+	&Execute_HCF
 };
 
 static void SetFault(V2MP_CPU* cpu, V2MP_Fault fault, V2MP_Word args)
@@ -93,93 +94,14 @@ static inline bool CPUHasAllPeripherals(V2MP_CPU* cpu)
 	return cpu && cpu->memory && cpu->devicePorts;
 }
 
-void Execute_HCF(V2MP_CPU* cpu)
-{
-	SetFault(cpu, V2MP_FAULT_HCF, cpu->ir);
-}
-
-void Execute_LDST(V2MP_CPU* cpu)
-{
-	V2MP_Word* reg;
-	V2MP_Fault fault = V2MP_FAULT_NONE;
-
-	if ( V2MP_OP_LDST_RESBITS(cpu->ir) != 0 )
-	{
-		SetFault(cpu, V2MP_FAULT_RES, 0);
-		return;
-	}
-
-	reg = GetRegisterPtr(cpu, V2MP_OP_LDST_REGINDEX(cpu->ir));
-
-	if ( V2MP_OP_LDST_IS_STORE(cpu->ir) )
-	{
-		V2MP_MemoryStore_StoreDSWord(cpu->memory, cpu->lr, *reg, &fault);
-	}
-	else
-	{
-		V2MP_MemoryStore_FetchDSWord(cpu->memory, cpu->lr, reg, &fault);
-	}
-
-	SetFault(cpu, fault, 0);
-
-	if ( cpu->fault )
-	{
-		return;
-	}
-
-	cpu->sr = 0;
-
-	if ( *reg == 0 )
-	{
-		cpu->sr |= V2MP_CPU_SR_Z;
-	}
-}
-
-void Execute_ASGN(V2MP_CPU* cpu)
-{
-	V2MP_Word* sourceReg;
-	V2MP_Word* destReg;
-
-	sourceReg = GetRegisterPtr(cpu, V2MP_OP_ASGN_SREGINDEX(cpu->ir));
-	destReg = GetRegisterPtr(cpu, V2MP_OP_ASGN_DREGINDEX(cpu->ir));
-
-	if ( sourceReg != destReg )
-	{
-		if ( V2MP_OP_ASGN_VALUE(cpu->ir) != 0 )
-		{
-			SetFault(cpu, V2MP_FAULT_RES, 0);
-			return;
-		}
-
-		*destReg = *sourceReg;
-	}
-	else
-	{
-		if ( V2MP_OP_ASGN_DREGINDEX(cpu->ir) == V2MP_REGID_PC )
-		{
-			SetFault(cpu, V2MP_FAULT_INO, 0);
-			return;
-		}
-
-		*destReg = (int8_t)V2MP_OP_ASGN_VALUE(cpu->ir);
-	}
-
-	cpu->sr = 0;
-
-	if ( *destReg == 0 )
-	{
-		cpu->sr |= V2MP_CPU_SR_Z;
-	}
-}
-
-void Execute_ADDOrSUB(V2MP_CPU* cpu)
+static void Execute_ADDOrSUB(V2MP_CPU* cpu, bool isAdd)
 {
 	int32_t multiplier;
 	V2MP_Word* sourceReg;
 	V2MP_Word* destReg;
 	V2MP_Word oldValue;
 
-	multiplier = V2MP_OPCODE(cpu->ir) == V2MP_OP_ADD ? 1 : -1;
+	multiplier = isAdd ? 1 : -1;
 	sourceReg = GetRegisterPtr(cpu, V2MP_OP_ADDSUB_SREGINDEX(cpu->ir));
 	destReg = GetRegisterPtr(cpu, V2MP_OP_ADDSUB_DREGINDEX(cpu->ir));
 	oldValue = *destReg;
@@ -212,6 +134,53 @@ void Execute_ADDOrSUB(V2MP_CPU* cpu)
 	{
 		cpu->sr |= V2MP_CPU_SR_C;
 	}
+
+	if ( *destReg == 0 )
+	{
+		cpu->sr |= V2MP_CPU_SR_Z;
+	}
+}
+
+void Execute_ADD(V2MP_CPU* cpu)
+{
+	Execute_ADDOrSUB(cpu, true);
+}
+
+void Execute_SUB(V2MP_CPU* cpu)
+{
+	Execute_ADDOrSUB(cpu, false);
+}
+
+void Execute_ASGN(V2MP_CPU* cpu)
+{
+	V2MP_Word* sourceReg;
+	V2MP_Word* destReg;
+
+	sourceReg = GetRegisterPtr(cpu, V2MP_OP_ASGN_SREGINDEX(cpu->ir));
+	destReg = GetRegisterPtr(cpu, V2MP_OP_ASGN_DREGINDEX(cpu->ir));
+
+	if ( sourceReg != destReg )
+	{
+		if ( V2MP_OP_ASGN_VALUE(cpu->ir) != 0 )
+		{
+			SetFault(cpu, V2MP_FAULT_RES, 0);
+			return;
+		}
+
+		*destReg = *sourceReg;
+	}
+	else
+	{
+		if ( V2MP_OP_ASGN_DREGINDEX(cpu->ir) == V2MP_REGID_PC )
+		{
+			SetFault(cpu, V2MP_FAULT_INO, 0);
+			return;
+		}
+
+		*destReg = (int8_t)V2MP_OP_ASGN_VALUE(cpu->ir);
+	}
+
+	cpu->sr = 0;
 
 	if ( *destReg == 0 )
 	{
@@ -416,48 +385,47 @@ void Execute_CBX(V2MP_CPU* cpu)
 	}
 }
 
-void Execute_DPQ(V2MP_CPU* cpu)
+void Execute_LDST(V2MP_CPU* cpu)
 {
-	V2MP_DevicePort* port = NULL;
-	bool result = false;
+	V2MP_Word* reg;
+	V2MP_Fault fault = V2MP_FAULT_NONE;
 
-	if ( V2MP_OP_DPQ_RESBITS(cpu->ir) != 0 )
+	if ( V2MP_OP_LDST_RESBITS(cpu->ir) != 0 )
 	{
 		SetFault(cpu, V2MP_FAULT_RES, 0);
 		return;
 	}
 
-	port = V2MP_DevicePortStore_GetPort(cpu->devicePorts, cpu->r0);
+	reg = GetRegisterPtr(cpu, V2MP_OP_LDST_REGINDEX(cpu->ir));
 
-	switch ( V2MP_OP_DPQ_QUERY_TYPE(cpu->ir) )
+	if ( V2MP_OP_LDST_IS_STORE(cpu->ir) )
 	{
-		case V2MP_DPQT_CONNECTED:
-		{
-			result = port != NULL;
-			break;
-		}
+		V2MP_MemoryStore_StoreDSWord(cpu->memory, cpu->lr, *reg, &fault);
+	}
+	else
+	{
+		V2MP_MemoryStore_FetchDSWord(cpu->memory, cpu->lr, reg, &fault);
+	}
 
-		case V2MP_DPQT_EXHAUSTED:
-		{
-			result = port ? V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED : false;
-			break;
-		}
+	SetFault(cpu, fault, 0);
 
-		// TODO: Others
-
-		default:
-		{
-			SetFault(cpu, V2MP_FAULT_RES, 0);
-			return;
-		}
+	if ( cpu->fault )
+	{
+		return;
 	}
 
 	cpu->sr = 0;
 
-	if ( !result )
+	if ( *reg == 0 )
 	{
 		cpu->sr |= V2MP_CPU_SR_Z;
 	}
+}
+
+void Execute_DPQ(V2MP_CPU* cpu)
+{
+	// TODO:
+	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
 }
 
 void Execute_DPO(V2MP_CPU* cpu)
@@ -469,6 +437,11 @@ void Execute_DPO(V2MP_CPU* cpu)
 void Execute_Unassigned(V2MP_CPU* cpu)
 {
 	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
+}
+
+void Execute_HCF(V2MP_CPU* cpu)
+{
+	SetFault(cpu, V2MP_FAULT_HCF, cpu->ir);
 }
 
 size_t V2MP_CPU_Footprint(void)
