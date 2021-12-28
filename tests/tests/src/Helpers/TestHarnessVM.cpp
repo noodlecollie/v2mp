@@ -59,7 +59,7 @@ const V2MP_MemoryStore* TestHarnessVM::GetMemoryStore() const
 
 bool TestHarnessVM::SetCSAndDS(const V2MP_Word* cs, V2MP_Word csWords, const V2MP_Word* ds, V2MP_Word dsWords)
 {
-	return V2MP_Supervisor_LoadProgram(GetSupervisor(), cs, csWords, ds, dsWords);
+	return V2MP_VirtualMachine_LoadProgram(m_VM, cs, csWords, ds, dsWords);
 }
 
 bool TestHarnessVM::FillCSAndDS(V2MP_Word csWords, V2MP_Word csFill, V2MP_Word dsWords, V2MP_Word dsFill)
@@ -67,7 +67,7 @@ bool TestHarnessVM::FillCSAndDS(V2MP_Word csWords, V2MP_Word csFill, V2MP_Word d
 	const std::vector<V2MP_Word> cs(static_cast<size_t>(csWords), csFill);
 	const std::vector<V2MP_Word> ds(static_cast<size_t>(dsWords), dsFill);
 
-	return V2MP_Supervisor_LoadProgram(GetSupervisor(), cs.data(), cs.size(), ds.data(), ds.size());
+	return V2MP_VirtualMachine_LoadProgram(m_VM, cs.data(), cs.size(), ds.data(), ds.size());
 }
 
 V2MP_Word TestHarnessVM::GetCPUFaultWord() const
@@ -178,7 +178,7 @@ void TestHarnessVM::ThrowExceptionIfNotInitialisedCorrectly(V2MP_Word totalRamIn
 		throw InitException("Memory store could not be allocated");
 	}
 
-	if ( V2MP_VirtualMachile_GetTotalMemoryBytes(m_VM) != totalRamInBytes )
+	if ( V2MP_VirtualMachine_GetTotalMemoryBytes(m_VM) != totalRamInBytes )
 	{
 		throw InitException("Memory store internal memory bank could not be allocated");
 	}
