@@ -2,13 +2,13 @@
 #include "V2MPInternal/Util/Heap.h"
 #include "V2MPInternal/Defs.h"
 
-struct V2MP_MemoryStoreRenameMe
+struct V2MP_MemoryStore
 {
 	V2MP_Byte* totalMemory;
 	size_t totalMemorySizeInBytes;
 };
 
-static void FreeAllMemory(V2MP_MemoryStoreRenameMe* mem)
+static void FreeAllMemory(V2MP_MemoryStore* mem)
 {
 	if ( !mem )
 	{
@@ -24,12 +24,12 @@ static void FreeAllMemory(V2MP_MemoryStoreRenameMe* mem)
 	mem->totalMemorySizeInBytes = 0;
 }
 
-V2MP_MemoryStoreRenameMe* V2MP_MemoryStoreRenameMe_AllocateAndInit(void)
+V2MP_MemoryStore* V2MP_MemoryStore_AllocateAndInit(void)
 {
-	return V2MP_CALLOC_STRUCT(V2MP_MemoryStoreRenameMe);
+	return V2MP_CALLOC_STRUCT(V2MP_MemoryStore);
 }
 
-void V2MP_MemoryStoreRenameMe_DeinitAndFree(V2MP_MemoryStoreRenameMe* mem)
+void V2MP_MemoryStore_DeinitAndFree(V2MP_MemoryStore* mem)
 {
 	if ( !mem )
 	{
@@ -40,7 +40,7 @@ void V2MP_MemoryStoreRenameMe_DeinitAndFree(V2MP_MemoryStoreRenameMe* mem)
 	V2MP_FREE(mem);
 }
 
-bool V2MP_MemoryStoreRenameMe_AllocateTotalMemory(V2MP_MemoryStoreRenameMe* mem, size_t sizeInBytes)
+bool V2MP_MemoryStore_AllocateTotalMemory(V2MP_MemoryStore* mem, size_t sizeInBytes)
 {
 	if ( !mem || (sizeInBytes & 0x1) )
 	{
@@ -60,23 +60,23 @@ bool V2MP_MemoryStoreRenameMe_AllocateTotalMemory(V2MP_MemoryStoreRenameMe* mem,
 	return true;
 }
 
-size_t V2MP_MemoryStoreRenameMe_GetTotalMemorySize(const V2MP_MemoryStoreRenameMe* mem)
+size_t V2MP_MemoryStore_GetTotalMemorySize(const V2MP_MemoryStore* mem)
 {
 	return mem ? mem->totalMemorySizeInBytes : 0;
 }
 
-V2MP_Byte* V2MP_MemoryStoreRenameMe_GetPtrToBase(V2MP_MemoryStoreRenameMe* mem)
+V2MP_Byte* V2MP_MemoryStore_GetPtrToBase(V2MP_MemoryStore* mem)
 {
-	return (V2MP_Byte*)V2MP_MemoryStoreRenameMe_GetConstPtrToBase(mem);
+	return (V2MP_Byte*)V2MP_MemoryStore_GetConstPtrToBase(mem);
 }
 
-const V2MP_Byte* V2MP_MemoryStoreRenameMe_GetConstPtrToBase(const V2MP_MemoryStoreRenameMe* mem)
+const V2MP_Byte* V2MP_MemoryStore_GetConstPtrToBase(const V2MP_MemoryStore* mem)
 {
 	return mem ? mem->totalMemory : NULL;
 }
 
-bool V2MP_MemoryStoreRenameMe_LoadWord(
-	const V2MP_MemoryStoreRenameMe* mem,
+bool V2MP_MemoryStore_LoadWord(
+	const V2MP_MemoryStore* mem,
 	size_t address,
 	V2MP_Word* outWord
 )
@@ -88,7 +88,7 @@ bool V2MP_MemoryStoreRenameMe_LoadWord(
 		return false;
 	}
 
-	rawData = V2MP_MemoryStoreRenameMe_GetConstPtrToRange(mem, address, sizeof(V2MP_Word));
+	rawData = V2MP_MemoryStore_GetConstPtrToRange(mem, address, sizeof(V2MP_Word));
 
 	if ( !rawData )
 	{
@@ -99,8 +99,8 @@ bool V2MP_MemoryStoreRenameMe_LoadWord(
 	return true;
 }
 
-bool V2MP_MemoryStoreRenameMe_StoreWord(
-	V2MP_MemoryStoreRenameMe* mem,
+bool V2MP_MemoryStore_StoreWord(
+	V2MP_MemoryStore* mem,
 	size_t address,
 	V2MP_Word inWord
 )
@@ -112,7 +112,7 @@ bool V2MP_MemoryStoreRenameMe_StoreWord(
 		return false;
 	}
 
-	rawData = V2MP_MemoryStoreRenameMe_GetPtrToRange(mem, address, sizeof(V2MP_Word));
+	rawData = V2MP_MemoryStore_GetPtrToRange(mem, address, sizeof(V2MP_Word));
 
 	if ( !rawData )
 	{
@@ -123,17 +123,17 @@ bool V2MP_MemoryStoreRenameMe_StoreWord(
 	return true;
 }
 
-V2MP_Byte* V2MP_MemoryStoreRenameMe_GetPtrToRange(
-	V2MP_MemoryStoreRenameMe* mem,
+V2MP_Byte* V2MP_MemoryStore_GetPtrToRange(
+	V2MP_MemoryStore* mem,
 	size_t base,
 	size_t length
 )
 {
-	return (V2MP_Byte*)V2MP_MemoryStoreRenameMe_GetConstPtrToRange(mem, base, length);
+	return (V2MP_Byte*)V2MP_MemoryStore_GetConstPtrToRange(mem, base, length);
 }
 
-const V2MP_Byte* V2MP_MemoryStoreRenameMe_GetConstPtrToRange(
-	const V2MP_MemoryStoreRenameMe* mem,
+const V2MP_Byte* V2MP_MemoryStore_GetConstPtrToRange(
+	const V2MP_MemoryStore* mem,
 	size_t base,
 	size_t length
 )

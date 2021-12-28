@@ -7,7 +7,7 @@ TestHarnessVM::TestHarnessVM(V2MP_Word totalRamInBytes)
 	m_Supervisor = V2MP_Supervisor_AllocateAndInit();
 
 	V2MP_Supervisor_SetMainboard(m_Supervisor, m_Mainboard);
-	V2MP_MemoryStoreRenameMe_AllocateTotalMemory(GetMemoryStore(), totalRamInBytes);
+	V2MP_MemoryStore_AllocateTotalMemory(GetMemoryStore(), totalRamInBytes);
 
 	ThrowExceptionIfNotInitialisedCorrectly(totalRamInBytes);
 }
@@ -51,12 +51,12 @@ const V2MP_CPU* TestHarnessVM::GetCPU() const
 	return V2MP_Mainboard_GetCPU(m_Mainboard);
 }
 
-V2MP_MemoryStoreRenameMe* TestHarnessVM::GetMemoryStore()
+V2MP_MemoryStore* TestHarnessVM::GetMemoryStore()
 {
 	return V2MP_Mainboard_GetMemoryStore(m_Mainboard);
 }
 
-const V2MP_MemoryStoreRenameMe* TestHarnessVM::GetMemoryStore() const
+const V2MP_MemoryStore* TestHarnessVM::GetMemoryStore() const
 {
 	return V2MP_Mainboard_GetMemoryStore(m_Mainboard);
 }
@@ -182,7 +182,7 @@ void TestHarnessVM::ThrowExceptionIfNotInitialisedCorrectly(V2MP_Word totalRamIn
 		throw InitException("Memory store could not be allocated");
 	}
 
-	if ( V2MP_MemoryStoreRenameMe_GetTotalMemorySize(GetMemoryStore()) != totalRamInBytes )
+	if ( V2MP_MemoryStore_GetTotalMemorySize(GetMemoryStore()) != totalRamInBytes )
 	{
 		throw InitException("Memory store internal memory bank could not be allocated");
 	}

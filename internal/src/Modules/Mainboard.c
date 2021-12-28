@@ -6,7 +6,7 @@
 struct V2MP_Mainboard
 {
 	V2MP_CPU* cpu;
-	V2MP_MemoryStoreRenameMe* memoryStore;
+	V2MP_MemoryStore* memoryStore;
 };
 
 static inline bool HasAllModules(V2MP_Mainboard* board)
@@ -26,7 +26,7 @@ V2MP_Mainboard* V2MP_Mainboard_AllocateAndInit(void)
 		return NULL;
 	}
 
-	board->memoryStore = V2MP_MemoryStoreRenameMe_AllocateAndInit();
+	board->memoryStore = V2MP_MemoryStore_AllocateAndInit();
 	board->cpu = V2MP_CPU_AllocateAndInit();
 
 	if ( !HasAllModules(board) )
@@ -53,7 +53,7 @@ void V2MP_Mainboard_DeinitAndFree(V2MP_Mainboard* board)
 
 	if ( board->memoryStore )
 	{
-		V2MP_MemoryStoreRenameMe_DeinitAndFree(board->memoryStore);
+		V2MP_MemoryStore_DeinitAndFree(board->memoryStore);
 		board->memoryStore = NULL;
 	}
 
@@ -65,7 +65,7 @@ struct V2MP_CPU* V2MP_Mainboard_GetCPU(const V2MP_Mainboard* board)
 	return board ? board->cpu : NULL;
 }
 
-struct V2MP_MemoryStoreRenameMe* V2MP_Mainboard_GetMemoryStore(const V2MP_Mainboard* board)
+struct V2MP_MemoryStore* V2MP_Mainboard_GetMemoryStore(const V2MP_Mainboard* board)
 {
 	return board ? board->memoryStore : NULL;
 }

@@ -49,7 +49,7 @@ static bool FetchWordFromSegment(
 	V2MP_Word* outWord
 )
 {
-	V2MP_MemoryStoreRenameMe* memoryStore;
+	V2MP_MemoryStore* memoryStore;
 
 	if ( !supervisor || !seg || seg->lengthInBytes < sizeof(V2MP_Word) )
 	{
@@ -63,7 +63,7 @@ static bool FetchWordFromSegment(
 		return false;
 	}
 
-	return V2MP_MemoryStoreRenameMe_LoadWord(memoryStore, seg->base + address, outWord);
+	return V2MP_MemoryStore_LoadWord(memoryStore, seg->base + address, outWord);
 }
 
 V2MP_Supervisor* V2MP_Supervisor_AllocateAndInit(void)
@@ -122,7 +122,7 @@ bool V2MP_Supervisor_LoadProgram(
 	size_t dsLengthInWords
 )
 {
-	V2MP_MemoryStoreRenameMe* memoryStore;
+	V2MP_MemoryStore* memoryStore;
 	size_t totalMemoryAvailable;
 	V2MP_Byte* rawMemory = NULL;
 
@@ -138,14 +138,14 @@ bool V2MP_Supervisor_LoadProgram(
 		return false;
 	}
 
-	rawMemory = V2MP_MemoryStoreRenameMe_GetPtrToBase(memoryStore);
+	rawMemory = V2MP_MemoryStore_GetPtrToBase(memoryStore);
 
 	if ( !rawMemory )
 	{
 		return false;
 	}
 
-	totalMemoryAvailable = V2MP_MemoryStoreRenameMe_GetTotalMemorySize(memoryStore);
+	totalMemoryAvailable = V2MP_MemoryStore_GetTotalMemorySize(memoryStore);
 
 	// We do this carefully, to avoid overflowing any size_t calculations:
 

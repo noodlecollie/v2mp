@@ -39,8 +39,8 @@ public:
 	V2MP_CPU* GetCPU();
 	const V2MP_CPU* GetCPU() const;
 
-	V2MP_MemoryStoreRenameMe* GetMemoryStore();
-	const V2MP_MemoryStoreRenameMe* GetMemoryStore() const;
+	V2MP_MemoryStore* GetMemoryStore();
+	const V2MP_MemoryStore* GetMemoryStore() const;
 
 	bool SetCSAndDS(const V2MP_Word* cs, V2MP_Word csWords, const V2MP_Word* ds, V2MP_Word dsWords);
 	bool FillCSAndDS(V2MP_Word csWords, V2MP_Word csFill, V2MP_Word dsWords, V2MP_Word dsFill);

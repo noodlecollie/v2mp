@@ -22,7 +22,7 @@ void V2MP_Supervisor_SetCPUFault(V2MP_Supervisor* supervisor, V2MP_Word fault)
 
 V2MP_Word V2MP_Supervisor_FetchInstructionWord(V2MP_Supervisor* supervisor, V2MP_Word address, V2MP_Word* destReg)
 {
-	V2MP_MemoryStoreRenameMe* memoryStore;
+	V2MP_MemoryStore* memoryStore;
 
 	if ( !supervisor )
 	{
@@ -36,7 +36,7 @@ V2MP_Word V2MP_Supervisor_FetchInstructionWord(V2MP_Supervisor* supervisor, V2MP
 		return V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, 0);
 	}
 
-	if ( !V2MP_MemoryStoreRenameMe_LoadWord(memoryStore, address, destReg) )
+	if ( !V2MP_MemoryStore_LoadWord(memoryStore, address, destReg) )
 	{
 		return V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0);
 	}

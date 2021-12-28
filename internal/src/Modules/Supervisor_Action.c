@@ -7,7 +7,7 @@
 
 static bool LoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
 {
-	V2MP_MemoryStoreRenameMe* memoryStore;
+	V2MP_MemoryStore* memoryStore;
 	V2MP_CPU* cpu;
 	size_t address;
 	V2MP_RegisterIndex destReg;
@@ -36,7 +36,7 @@ static bool LoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action
 		return true;
 	}
 
-	if ( !V2MP_MemoryStoreRenameMe_LoadWord(memoryStore, address, &loadedWord) )
+	if ( !V2MP_MemoryStore_LoadWord(memoryStore, address, &loadedWord) )
 	{
 		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
 		return true;
@@ -48,7 +48,7 @@ static bool LoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action
 
 static bool StoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
 {
-	V2MP_MemoryStoreRenameMe* memoryStore;
+	V2MP_MemoryStore* memoryStore;
 	size_t address;
 	V2MP_Word wordToStore;
 
@@ -68,7 +68,7 @@ static bool StoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* actio
 		return true;
 	}
 
-	if ( !V2MP_MemoryStoreRenameMe_StoreWord(memoryStore, address, wordToStore) )
+	if ( !V2MP_MemoryStore_StoreWord(memoryStore, address, wordToStore) )
 	{
 		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
 	}
