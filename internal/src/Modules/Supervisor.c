@@ -42,6 +42,30 @@ static void AttachToMainboard(V2MP_Supervisor* supervisor)
 	}
 }
 
+static bool FetchWordFromSegment(
+	const V2MP_Supervisor* supervisor,
+	const MemorySegment* seg,
+	size_t address,
+	V2MP_Word* outWord
+)
+{
+	V2MP_MemoryStoreRenameMe* memoryStore;
+
+	if ( !supervisor || !seg || seg->lengthInBytes < sizeof(V2MP_Word) )
+	{
+		return false;
+	}
+
+	memoryStore = V2MP_Mainboard_GetMemoryStore(supervisor->mainboard);
+
+	if ( !memoryStore )
+	{
+		return false;
+	}
+
+	return V2MP_MemoryStoreRenameMe_LoadWord(memoryStore, seg->base + address, outWord);
+}
+
 V2MP_Supervisor* V2MP_Supervisor_AllocateAndInit(void)
 {
 	V2MP_Supervisor* supervisor = V2MP_CALLOC_STRUCT(V2MP_Supervisor);
@@ -202,4 +226,32 @@ bool V2MP_Supervisor_ExecuteClockCycle(V2MP_Supervisor* supervisor)
 
 	// TODO: Handle fault if one was set?
 	return true;
+}
+
+bool V2MP_Supervisor_FetchCSWord(
+	const V2MP_Supervisor* supervisor,
+	V2MP_Word address,
+	V2MP_Word* outWord
+)
+{
+	if ( !supervisor )
+	{
+		return false;
+	}
+
+	return FetchWordFromSegment(supervisor, &supervisor->programCS, address, outWord);
+}
+
+bool V2MP_Supervisor_FetchDSWord(
+	const V2MP_Supervisor* supervisor,
+	V2MP_Word address,
+	V2MP_Word* outWord
+)
+{
+	if ( !supervisor )
+	{
+		return false;
+	}
+
+	return FetchWordFromSegment(supervisor, &supervisor->programDS, address, outWord);
 }

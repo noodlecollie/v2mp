@@ -22,7 +22,7 @@ public:
 	};
 
 	TestHarnessVM();
-	~TestHarnessVM();
+	virtual ~TestHarnessVM();
 
 	TestHarnessVM(const TestHarnessVM& other) = delete;
 	TestHarnessVM(TestHarnessVM&& other) = delete;
@@ -40,6 +40,13 @@ public:
 
 	V2MP_MemoryStoreRenameMe* GetMemoryStore();
 	const V2MP_MemoryStoreRenameMe* GetMemoryStore() const;
+
+	template<std::size_t CSN, std::size_t DSN>
+	inline typename std::enable_if<CSN <= MAX_WORD_VALUE_AS_SIZE_T && DSN <= MAX_WORD_VALUE_AS_SIZE_T, bool>::type
+	SetCSAndDS(const V2MP_Word (&csData)[CSN], const V2MP_Word (&dsData)[DSN])
+	{
+		return SetCSAndDS(csData, CSN, dsData, DSN);
+	}
 
 	bool SetCSAndDS(const V2MP_Word* cs, V2MP_Word csWords, const V2MP_Word* ds, V2MP_Word dsWords);
 	bool FillCSAndDS(V2MP_Word csWords, V2MP_Word csFill, V2MP_Word dsWords, V2MP_Word dsFill);
@@ -64,12 +71,48 @@ public:
 
 	V2MP_Word GetIR() const;
 
+	void ResetCPU();
+
 	bool GetCSWord(V2MP_Word address, V2MP_Word& outWord) const;
 	bool GetDSWord(V2MP_Word address, V2MP_Word& outWord) const;
+
+protected:
+	virtual void OnCPUReset()
+	{
+	}
 
 private:
 	void ThrowExceptionIfNotInitialisedCorrectly();
 
 	V2MP_Mainboard* m_Mainboard = nullptr;
 	V2MP_Supervisor* m_Supervisor = nullptr;
+};
+
+class TestHarnessVM_StartsInvalid : public TestHarnessVM
+{
+public:
+	static const V2MP_Word INVALID_WORD;
+
+	inline TestHarnessVM_StartsInvalid() :
+		TestHarnessVM()
+	{
+		SetUpRegisters();
+	}
+
+	virtual ~TestHarnessVM_StartsInvalid() = default;
+
+protected:
+	void OnCPUReset() override
+	{
+		SetUpRegisters();
+	}
+
+private:
+	void SetUpRegisters()
+	{
+		SetR0(INVALID_WORD);
+		SetR1(INVALID_WORD);
+		SetLR(INVALID_WORD);
+		SetPC(INVALID_WORD);
+	}
 };

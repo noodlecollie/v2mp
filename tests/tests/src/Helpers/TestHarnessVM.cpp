@@ -14,7 +14,10 @@ TestHarnessVM::TestHarnessVM()
 TestHarnessVM::~TestHarnessVM()
 {
 	V2MP_Supervisor_DeinitAndFree(m_Supervisor);
+	m_Supervisor = nullptr;
+
 	V2MP_Mainboard_DeinitAndFree(m_Mainboard);
+	m_Mainboard = nullptr;
 }
 
 V2MP_Mainboard* TestHarnessVM::GetMainboard()
@@ -135,20 +138,20 @@ V2MP_Word TestHarnessVM::GetIR() const
 	return V2MP_CPURenameMe_GetInstructionRegister(GetCPU());
 }
 
+void TestHarnessVM::ResetCPU()
+{
+	V2MP_CPURenameMe_Reset(GetCPU());
+	OnCPUReset();
+}
+
 bool TestHarnessVM::GetCSWord(V2MP_Word address, V2MP_Word& outWord) const
 {
-	// TODO: We need to add functions to the supervisor for loading words from CS/DS.
-	(void)address;
-	(void)outWord;
-	return false;
+	return V2MP_Supervisor_FetchCSWord(m_Supervisor, address, &outWord);
 }
 
 bool TestHarnessVM::GetDSWord(V2MP_Word address, V2MP_Word& outWord) const
 {
-	// TODO: We need to add functions to the supervisor for loading words from CS/DS.
-	(void)address;
-	(void)outWord;
-	return false;
+	return V2MP_Supervisor_FetchDSWord(m_Supervisor, address, &outWord);
 }
 
 void TestHarnessVM::ThrowExceptionIfNotInitialisedCorrectly()
