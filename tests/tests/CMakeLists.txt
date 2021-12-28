@@ -1,6 +1,9 @@
 add_executable(V2MP_Tests
 	src/Components/CircularBuffer.cpp
+
 	src/Helpers/MinimalVirtualMachine.cpp
+	src/Helpers/TestHarnessVM.cpp
+
 	src/Instructions/AddInstruction.cpp
 	src/Instructions/AssignmentInstruction.cpp
 	src/Instructions/BitShiftInstruction.cpp
@@ -12,6 +15,7 @@ add_executable(V2MP_Tests
 	src/Instructions/HaltInstruction.cpp
 	src/Instructions/LoadStoreInstruction.cpp
 	src/Instructions/SubtractInstruction.cpp
+
 	src/Main.cpp
 )
 

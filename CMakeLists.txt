@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
+
+include (TestBigEndian)
+
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -53,6 +56,12 @@ if(MSVC)
 else()
 	add_compile_options(-Wall -Wextra -pedantic -Werror)
 	add_link_options(-Wl,--fatal-warnings)
+endif()
+
+TEST_BIG_ENDIAN(V2MP_HOST_IS_BIG_ENDIAN)
+
+if(V2MP_HOST_IS_BIG_ENDIAN)
+	add_compile_definitions(V2MP_HOST_IS_BIG_ENDIAN=1)
 endif()
 
 add_subdirectory(v2mp)

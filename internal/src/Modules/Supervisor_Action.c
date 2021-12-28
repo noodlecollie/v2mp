@@ -11,8 +11,7 @@ static bool LoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action
 	V2MP_CPURenameMe* cpu;
 	V2MP_Word address;
 	V2MP_RegisterIndex destReg;
-	const V2MP_Byte* rawMemory;
-	V2MP_Word loadedWord;
+	V2MP_Word loadedWord = 0;
 
 	memoryStore = V2MP_Mainboard_GetMemoryStore(supervisor->mainboard);
 
@@ -28,19 +27,14 @@ static bool LoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action
 		return false;
 	}
 
-	address = SVACTION_LOAD_WORD_ARG_ADDRESS(action);
+	address = supervisor->programDS.base + SVACTION_LOAD_WORD_ARG_ADDRESS(action);
 	destReg = (V2MP_RegisterIndex)SVACTION_LOAD_WORD_ARG_DESTREG(action);
 
-	rawMemory = V2MP_MemoryStoreRenameMe_GetPtrToRange(memoryStore, address, sizeof(V2MP_Word));
-
-	if ( !rawMemory )
+	if ( !V2MP_MemoryStoreRenameMe_LoadWord(memoryStore, address, &loadedWord) )
 	{
 		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
 		return true;
 	}
-
-	// TODO: Do we need to twiddle endianness depending on the system we're compiled for?
-	loadedWord = *((const V2MP_Word*)rawMemory);
 
 	V2MP_CPURenameMe_SetRegisterValue(cpu, destReg, loadedWord);
 	return true;
@@ -51,7 +45,6 @@ static bool StoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* actio
 	V2MP_MemoryStoreRenameMe* memoryStore;
 	V2MP_Word address;
 	V2MP_Word wordToStore;
-	V2MP_Byte* rawMemory;
 
 	memoryStore = V2MP_Mainboard_GetMemoryStore(supervisor->mainboard);
 
@@ -60,19 +53,14 @@ static bool StoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* actio
 		return false;
 	}
 
-	address = SVACTION_STORE_WORD_ARG_ADDRESS(action);
+	address = supervisor->programDS.base + SVACTION_STORE_WORD_ARG_ADDRESS(action);
 	wordToStore = SVACTION_STORE_WORD_ARG_WORD(action);
 
-	rawMemory = V2MP_MemoryStoreRenameMe_GetPtrToRange(memoryStore, address, sizeof(V2MP_Word));
-
-	if ( !rawMemory )
+	if ( !V2MP_MemoryStoreRenameMe_StoreWord(memoryStore, address, wordToStore) )
 	{
 		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
-		return true;
 	}
 
-	// TODO: Do we need to twiddle endianness depending on the system we're compiled for?
-	*((V2MP_Word*)rawMemory) = wordToStore;
 	return true;
 }
 

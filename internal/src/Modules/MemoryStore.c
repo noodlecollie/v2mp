@@ -1,6 +1,7 @@
 #include "V2MPInternal/Modules/MemoryStore.h"
 #include "V2MPInternal/Util/Heap.h"
 #include "V2MPInternal/Defs.h"
+#include "V2MPInternal/Util/Endianness.h"
 
 struct V2MP_MemoryStoreRenameMe
 {
@@ -67,10 +68,78 @@ size_t V2MP_MemoryStoreRenameMe_GetTotalMemorySize(const V2MP_MemoryStoreRenameM
 
 V2MP_Byte* V2MP_MemoryStoreRenameMe_GetPtrToBase(V2MP_MemoryStoreRenameMe* mem)
 {
+	return (V2MP_Byte*)V2MP_MemoryStoreRenameMe_GetConstPtrToBase(mem);
+}
+
+const V2MP_Byte* V2MP_MemoryStoreRenameMe_GetConstPtrToBase(const V2MP_MemoryStoreRenameMe* mem)
+{
 	return mem ? mem->totalMemory : NULL;
 }
 
-V2MP_Byte* V2MP_MemoryStoreRenameMe_GetPtrToRange(V2MP_MemoryStoreRenameMe* mem, size_t base, size_t length)
+bool V2MP_MemoryStoreRenameMe_LoadWord(
+	const V2MP_MemoryStoreRenameMe* mem,
+	V2MP_Word address,
+	V2MP_Word* outWord
+)
+{
+	const V2MP_Byte* rawData;
+
+	if ( !mem || !outWord )
+	{
+		return false;
+	}
+
+	rawData = V2MP_MemoryStoreRenameMe_GetConstPtrToRange(mem, address, sizeof(V2MP_Word));
+
+	if ( !rawData )
+	{
+		return false;
+	}
+
+	// TODO: Do we need to worry about host system endianness here?
+	*outWord = *((const V2MP_Word*)rawData);
+	return true;
+}
+
+bool V2MP_MemoryStoreRenameMe_StoreWord(
+	V2MP_MemoryStoreRenameMe* mem,
+	V2MP_Word address,
+	V2MP_Word inWord
+)
+{
+	V2MP_Byte* rawData;
+
+	if ( !mem )
+	{
+		return false;
+	}
+
+	rawData = V2MP_MemoryStoreRenameMe_GetPtrToRange(mem, address, sizeof(V2MP_Word));
+
+	if ( !rawData )
+	{
+		return false;
+	}
+
+	// TODO: Do we need to worry about host system endianness here?
+	*((V2MP_Word*)rawData) = inWord;
+	return true;
+}
+
+V2MP_Byte* V2MP_MemoryStoreRenameMe_GetPtrToRange(
+	V2MP_MemoryStoreRenameMe* mem,
+	size_t base,
+	size_t length
+)
+{
+	return (V2MP_Byte*)V2MP_MemoryStoreRenameMe_GetConstPtrToRange(mem, base, length);
+}
+
+const V2MP_Byte* V2MP_MemoryStoreRenameMe_GetConstPtrToRange(
+	const V2MP_MemoryStoreRenameMe* mem,
+	size_t base,
+	size_t length
+)
 {
 	if ( !mem || !mem->totalMemory || mem->totalMemorySizeInBytes < 1 )
 	{

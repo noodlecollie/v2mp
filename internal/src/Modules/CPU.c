@@ -144,3 +144,105 @@ bool V2MP_CPURenameMe_GetRegisterValue(const V2MP_CPURenameMe* cpu, V2MP_Registe
 	*outValue = *regPtr;
 	return true;
 }
+
+bool V2MP_CPURenameMe_ExecuteSingleInstruction(V2MP_CPURenameMe* cpu, V2MP_Word instruction)
+{
+	if ( !cpu )
+	{
+		return false;
+	}
+
+	cpu->ir = instruction;
+
+	return V2MP_CPURenameMe_ExecuteInstructionInternal(cpu);
+}
+
+V2MP_Word V2MP_CPURenameMe_GetProgramCounter(const V2MP_CPURenameMe* cpu)
+{
+	return cpu ? cpu->pc : 0;
+}
+
+void V2MP_CPURenameMe_SetProgramCounter(V2MP_CPURenameMe* cpu, V2MP_Word value)
+{
+	if ( !cpu )
+	{
+		return;
+	}
+
+	cpu->pc = value;
+}
+
+V2MP_Word V2MP_CPURenameMe_GetStatusRegister(const V2MP_CPURenameMe* cpu)
+{
+	return cpu ? cpu->sr : 0;
+}
+
+void V2MP_CPURenameMe_SetStatusRegister(V2MP_CPURenameMe* cpu, V2MP_Word value)
+{
+	if ( !cpu )
+	{
+		return;
+	}
+
+	cpu->sr = value;
+}
+
+V2MP_Word V2MP_CPURenameMe_GetLinkRegister(const V2MP_CPURenameMe* cpu)
+{
+	return cpu ? cpu->lr : 0;
+}
+
+void V2MP_CPURenameMe_SetLinkRegister(V2MP_CPURenameMe* cpu, V2MP_Word value)
+{
+	if ( !cpu )
+	{
+		return;
+	}
+
+	cpu->lr = value;
+}
+
+V2MP_Word V2MP_CPURenameMe_GetR0(const V2MP_CPURenameMe* cpu)
+{
+	return cpu ? cpu->r0 : 0;
+}
+
+void V2MP_CPURenameMe_SetR0(V2MP_CPURenameMe* cpu, V2MP_Word value)
+{
+	if ( !cpu )
+	{
+		return;
+	}
+
+	cpu->r0 = value;
+}
+
+V2MP_Word V2MP_CPURenameMe_GetR1(const V2MP_CPURenameMe* cpu)
+{
+	return cpu ? cpu->r1 : 0;
+}
+
+void V2MP_CPURenameMe_SetR1(V2MP_CPURenameMe* cpu, V2MP_Word value)
+{
+	if ( !cpu )
+	{
+		return;
+	}
+
+	cpu->r1 = value;
+}
+
+V2MP_Word V2MP_CPURenameMe_GetInstructionRegister(const V2MP_CPURenameMe* cpu)
+{
+	return cpu ? cpu->ir : 0;
+}
+
+void V2MP_CPURenameMe_SetInstructionRegister(V2MP_CPURenameMe* cpu, V2MP_Word value)
+{
+	if ( !cpu )
+	{
+		return;
+	}
+
+	cpu->ir = value;
+}

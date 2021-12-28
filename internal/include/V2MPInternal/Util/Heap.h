@@ -1,5 +1,5 @@
-#ifndef V2MP_HEAP_H
-#define V2MP_HEAP_H
+#ifndef V2MP_UTIL_HEAP_H
+#define V2MP_UTIL_HEAP_H
 
 #include <stddef.h>
 
@@ -34,4 +34,4 @@ void V2MP_Heap_Free(void* ptr);
 } // extern "C"
 #endif
 
-#endif // V2MP_HEAP_H
+#endif // V2MP_UTIL_HEAP_H
