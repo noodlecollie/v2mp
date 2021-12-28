@@ -1,7 +1,5 @@
-#define OLD_TEST
-
 #include "catch2/catch.hpp"
-#include "Helpers/MinimalVirtualMachine.h"
+#include "Helpers/TestHarnessVM.h"
 #include "Helpers/Assembly.h"
 
 static constexpr V2MP_Word BEGIN_ADDRESS = 0xD0D0;
@@ -12,7 +10,7 @@ SCENARIO("CBX: A conditional branch to the address in LR is performed correctly 
 {
 	GIVEN("A virtual machine with an address set in LR")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetLR(TARGET_ADDRESS);
 		vm.SetPC(BEGIN_ADDRESS);
@@ -61,7 +59,7 @@ SCENARIO("CBX: A conditional branch to the address in LR is performed correctly 
 {
 	GIVEN("A virtual machine with an address set in LR")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetLR(TARGET_ADDRESS);
 		vm.SetPC(BEGIN_ADDRESS);
@@ -110,7 +108,7 @@ SCENARIO("CBX: A PC increment or decrement is performed correctly based on the s
 {
 	GIVEN("A virtual machine")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetPC(BEGIN_ADDRESS);
 
@@ -186,7 +184,7 @@ SCENARIO("CBX: A PC increment or decrement is performed correctly based on the s
 {
 	GIVEN("A virtual machine")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetPC(BEGIN_ADDRESS);
 
@@ -262,7 +260,7 @@ SCENARIO("CBX: SR is set appropriately based on whether or not a branch occurred
 {
 	GIVEN("A virtual machine")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetPC(BEGIN_ADDRESS);
 
@@ -441,7 +439,7 @@ SCENARIO("CBX: Setting any literal operand bit if LR is being used as the target
 		static constexpr V2MP_Word VAL_LR = 0xB00B;
 		static constexpr V2MP_Word VAL_PC = 0x1234;
 
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
 		vm.SetR1(VAL_R1);
@@ -458,7 +456,7 @@ SCENARIO("CBX: Setting any literal operand bit if LR is being used as the target
 				THEN("A RES fault is raised, and all registers are left unchanged")
 				{
 					CHECK(vm.CPUHasFault());
-					CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == VAL_R0);
 					CHECK(vm.GetR1() == VAL_R1);
 					CHECK(vm.GetLR() == VAL_LR);
@@ -475,7 +473,7 @@ SCENARIO("CBX: Setting any literal operand bit if LR is being used as the target
 				THEN("A RES fault is raised, and all registers are left unchanged")
 				{
 					CHECK(vm.CPUHasFault());
-					CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == VAL_R0);
 					CHECK(vm.GetR1() == VAL_R1);
 					CHECK(vm.GetLR() == VAL_LR);
@@ -496,7 +494,7 @@ SCENARIO("CBX: Executing any instruction with a reserved bit set raises a RES fa
 		static constexpr V2MP_Word VAL_LR = 0xB00B;
 		static constexpr V2MP_Word VAL_PC = 0x1234;
 
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
 		vm.SetR1(VAL_R1);
@@ -510,7 +508,7 @@ SCENARIO("CBX: Executing any instruction with a reserved bit set raises a RES fa
 			THEN("A RES fault is raised, and all registers are left unchanged")
 			{
 				CHECK(vm.CPUHasFault());
-				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 				CHECK(vm.GetR0() == VAL_R0);
 				CHECK(vm.GetR1() == VAL_R1);
 				CHECK(vm.GetLR() == VAL_LR);
@@ -526,7 +524,7 @@ SCENARIO("CBX: Executing any instruction with a reserved bit set raises a RES fa
 			THEN("A RES fault is raised, and all registers are left unchanged")
 			{
 				CHECK(vm.CPUHasFault());
-				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 				CHECK(vm.GetR0() == VAL_R0);
 				CHECK(vm.GetR1() == VAL_R1);
 				CHECK(vm.GetLR() == VAL_LR);
@@ -542,7 +540,7 @@ SCENARIO("CBX: Executing any instruction with a reserved bit set raises a RES fa
 			THEN("A RES fault is raised, and all registers are left unchanged")
 			{
 				CHECK(vm.CPUHasFault());
-				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 				CHECK(vm.GetR0() == VAL_R0);
 				CHECK(vm.GetR1() == VAL_R1);
 				CHECK(vm.GetLR() == VAL_LR);
@@ -558,7 +556,7 @@ SCENARIO("CBX: Executing any instruction with a reserved bit set raises a RES fa
 			THEN("A RES fault is raised, and all registers are left unchanged")
 			{
 				CHECK(vm.CPUHasFault());
-				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 				CHECK(vm.GetR0() == VAL_R0);
 				CHECK(vm.GetR1() == VAL_R1);
 				CHECK(vm.GetLR() == VAL_LR);
@@ -574,7 +572,7 @@ SCENARIO("CBX: Executing any instruction with a reserved bit set raises a RES fa
 			THEN("A RES fault is raised, and all registers are left unchanged")
 			{
 				CHECK(vm.CPUHasFault());
-				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 				CHECK(vm.GetR0() == VAL_R0);
 				CHECK(vm.GetR1() == VAL_R1);
 				CHECK(vm.GetLR() == VAL_LR);
@@ -590,7 +588,7 @@ SCENARIO("CBX: Executing any instruction with a reserved bit set raises a RES fa
 			THEN("A RES fault is raised, and all registers are left unchanged")
 			{
 				CHECK(vm.CPUHasFault());
-				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 				CHECK(vm.GetR0() == VAL_R0);
 				CHECK(vm.GetR1() == VAL_R1);
 				CHECK(vm.GetLR() == VAL_LR);
@@ -606,7 +604,7 @@ SCENARIO("CBX: Executing any instruction with a reserved bit set raises a RES fa
 			THEN("A RES fault is raised, and all registers are left unchanged")
 			{
 				CHECK(vm.CPUHasFault());
-				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 				CHECK(vm.GetR0() == VAL_R0);
 				CHECK(vm.GetR1() == VAL_R1);
 				CHECK(vm.GetLR() == VAL_LR);
@@ -622,7 +620,7 @@ SCENARIO("CBX: Executing any instruction with a reserved bit set raises a RES fa
 			THEN("A RES fault is raised, and all registers are left unchanged")
 			{
 				CHECK(vm.CPUHasFault());
-				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 				CHECK(vm.GetR0() == VAL_R0);
 				CHECK(vm.GetR1() == VAL_R1);
 				CHECK(vm.GetLR() == VAL_LR);
