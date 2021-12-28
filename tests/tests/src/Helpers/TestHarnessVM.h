@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include "V2MPInternal/Defs.h"
+#include "V2MPInternal/Modules/VirtualMachine.h"
 #include "V2MPInternal/Modules/Mainboard.h"
 #include "V2MPInternal/Modules/Supervisor.h"
 #include "V2MPInternal/Modules/CPU.h"
@@ -103,14 +104,15 @@ protected:
 private:
 	void ThrowExceptionIfNotInitialisedCorrectly(V2MP_Word totalRamInBytes);
 
-	V2MP_Mainboard* m_Mainboard = nullptr;
-	V2MP_Supervisor* m_Supervisor = nullptr;
+	V2MP_VirtualMachine* m_VM;
 };
 
 class TestHarnessVM_StartsInvalid : public TestHarnessVM
 {
 public:
-	static constexpr V2MP_Word INVALID_WORD = 0xDEAD;
+	// For some weird reason this can't be defined inline,
+	// even it it's constexpr... Dammit, GCC.
+	static const V2MP_Word INVALID_WORD;
 
 	inline TestHarnessVM_StartsInvalid() :
 		TestHarnessVM()

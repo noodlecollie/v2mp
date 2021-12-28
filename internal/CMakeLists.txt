@@ -11,6 +11,7 @@ add_library(${TARGETNAME_V2MP_INTERNAL} STATIC
 	src/Modules/Supervisor_CPUInterface.c
 	src/Modules/Supervisor_Internal.c
 	src/Modules/Supervisor.c
+	src/Modules/VirtualMachine.c
 	src/Util/Heap.c
 )
 

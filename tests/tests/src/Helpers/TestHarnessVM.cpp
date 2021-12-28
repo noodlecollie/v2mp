@@ -1,69 +1,65 @@
 #include <vector>
 #include "Helpers/TestHarnessVM.h"
 
+const V2MP_Word TestHarnessVM_StartsInvalid::INVALID_WORD = 0xDEAD;
+
 TestHarnessVM::TestHarnessVM(V2MP_Word totalRamInBytes)
 {
-	m_Mainboard = V2MP_Mainboard_AllocateAndInit();
-	m_Supervisor = V2MP_Supervisor_AllocateAndInit();
-
-	V2MP_Supervisor_SetMainboard(m_Supervisor, m_Mainboard);
-	V2MP_MemoryStore_AllocateTotalMemory(GetMemoryStore(), totalRamInBytes);
+	m_VM = V2MP_VirtualMachine_AllocateAndInit();
+	V2MP_VirtualMachine_AllocateTotalMemory(m_VM, totalRamInBytes);
 
 	ThrowExceptionIfNotInitialisedCorrectly(totalRamInBytes);
 }
 
 TestHarnessVM::~TestHarnessVM()
 {
-	V2MP_Supervisor_DeinitAndFree(m_Supervisor);
-	m_Supervisor = nullptr;
-
-	V2MP_Mainboard_DeinitAndFree(m_Mainboard);
-	m_Mainboard = nullptr;
+	V2MP_VirtualMachine_DeinitAndFree(m_VM);
+	m_VM = nullptr;
 }
 
 V2MP_Mainboard* TestHarnessVM::GetMainboard()
 {
-	return m_Mainboard;
+	return V2MP_VirtualMachine_GetMainboard(m_VM);
 }
 
 const V2MP_Mainboard* TestHarnessVM::GetMainboard() const
 {
-	return m_Mainboard;
+	return V2MP_VirtualMachine_GetMainboard(m_VM);
 }
 
 V2MP_Supervisor* TestHarnessVM::GetSupervisor()
 {
-	return m_Supervisor;
+	return V2MP_VirtualMachine_GetSupervisor(m_VM);
 }
 
 const V2MP_Supervisor* TestHarnessVM::GetSupervisor() const
 {
-	return m_Supervisor;
+	return V2MP_VirtualMachine_GetSupervisor(m_VM);
 }
 
 V2MP_CPU* TestHarnessVM::GetCPU()
 {
-	return V2MP_Mainboard_GetCPU(m_Mainboard);
+	return V2MP_Mainboard_GetCPU(GetMainboard());
 }
 
 const V2MP_CPU* TestHarnessVM::GetCPU() const
 {
-	return V2MP_Mainboard_GetCPU(m_Mainboard);
+	return V2MP_Mainboard_GetCPU(GetMainboard());
 }
 
 V2MP_MemoryStore* TestHarnessVM::GetMemoryStore()
 {
-	return V2MP_Mainboard_GetMemoryStore(m_Mainboard);
+	return V2MP_Mainboard_GetMemoryStore(GetMainboard());
 }
 
 const V2MP_MemoryStore* TestHarnessVM::GetMemoryStore() const
 {
-	return V2MP_Mainboard_GetMemoryStore(m_Mainboard);
+	return V2MP_Mainboard_GetMemoryStore(GetMainboard());
 }
 
 bool TestHarnessVM::SetCSAndDS(const V2MP_Word* cs, V2MP_Word csWords, const V2MP_Word* ds, V2MP_Word dsWords)
 {
-	return V2MP_Supervisor_LoadProgram(m_Supervisor, cs, csWords, ds, dsWords);
+	return V2MP_Supervisor_LoadProgram(GetSupervisor(), cs, csWords, ds, dsWords);
 }
 
 bool TestHarnessVM::FillCSAndDS(V2MP_Word csWords, V2MP_Word csFill, V2MP_Word dsWords, V2MP_Word dsFill)
@@ -71,7 +67,7 @@ bool TestHarnessVM::FillCSAndDS(V2MP_Word csWords, V2MP_Word csFill, V2MP_Word d
 	const std::vector<V2MP_Word> cs(static_cast<size_t>(csWords), csFill);
 	const std::vector<V2MP_Word> ds(static_cast<size_t>(dsWords), dsFill);
 
-	return V2MP_Supervisor_LoadProgram(m_Supervisor, cs.data(), cs.size(), ds.data(), ds.size());
+	return V2MP_Supervisor_LoadProgram(GetSupervisor(), cs.data(), cs.size(), ds.data(), ds.size());
 }
 
 V2MP_Word TestHarnessVM::GetCPUFaultWord() const
@@ -147,17 +143,17 @@ void TestHarnessVM::ResetCPU()
 
 bool TestHarnessVM::Execute(V2MP_Word instruction)
 {
-	return V2MP_Supervisor_ExecuteSingleInstruction(m_Supervisor, instruction);
+	return V2MP_Supervisor_ExecuteSingleInstruction(GetSupervisor(), instruction);
 }
 
 bool TestHarnessVM::GetCSWord(V2MP_Word address, V2MP_Word& outWord) const
 {
-	return V2MP_Supervisor_FetchCSWord(m_Supervisor, address, &outWord);
+	return V2MP_Supervisor_FetchCSWord(GetSupervisor(), address, &outWord);
 }
 
 bool TestHarnessVM::GetDSWord(V2MP_Word address, V2MP_Word& outWord) const
 {
-	return V2MP_Supervisor_FetchDSWord(m_Supervisor, address, &outWord);
+	return V2MP_Supervisor_FetchDSWord(GetSupervisor(), address, &outWord);
 }
 
 void TestHarnessVM::ThrowExceptionIfNotInitialisedCorrectly(V2MP_Word totalRamInBytes)
@@ -182,7 +178,7 @@ void TestHarnessVM::ThrowExceptionIfNotInitialisedCorrectly(V2MP_Word totalRamIn
 		throw InitException("Memory store could not be allocated");
 	}
 
-	if ( V2MP_MemoryStore_GetTotalMemorySize(GetMemoryStore()) != totalRamInBytes )
+	if ( V2MP_VirtualMachile_GetTotalMemoryBytes(m_VM) != totalRamInBytes )
 	{
 		throw InitException("Memory store internal memory bank could not be allocated");
 	}
