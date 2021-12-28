@@ -9,7 +9,7 @@ static bool LoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action
 {
 	V2MP_MemoryStoreRenameMe* memoryStore;
 	V2MP_CPURenameMe* cpu;
-	V2MP_Word address;
+	size_t address;
 	V2MP_RegisterIndex destReg;
 	V2MP_Word loadedWord = 0;
 
@@ -43,7 +43,7 @@ static bool LoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action
 static bool StoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
 {
 	V2MP_MemoryStoreRenameMe* memoryStore;
-	V2MP_Word address;
+	size_t address;
 	V2MP_Word wordToStore;
 
 	memoryStore = V2MP_Mainboard_GetMemoryStore(supervisor->mainboard);

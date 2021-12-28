@@ -11,8 +11,8 @@ typedef struct DataTransferInfo
 {
 	bool transferOngoing;
 	V2MP_MemoryStore* memoryStore;
-	V2MP_Word dsAddress;
-	V2MP_Word dsBufferSize;
+	size_t dsAddress;
+	size_t dsBufferSize;
 	bool writingToDS;
 } DataTransferInfo;
 
@@ -66,7 +66,7 @@ static size_t PerformDataTransferToDS(V2MP_DevicePort* port, size_t bytesToTrans
 
 		if ( !V2MP_MemoryStore_WriteBytesToDS(
 				port->currentDataTransfer.memoryStore,
-				port->currentDataTransfer.dsAddress,
+				(V2MP_Word)port->currentDataTransfer.dsAddress,
 				V2MP_CircularBuffer_Tail(port->mailbox),
 				numBytesToTransferThisIteration,
 				&numBytesTransferredByCall,

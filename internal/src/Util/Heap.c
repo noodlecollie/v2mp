@@ -1,34 +1,57 @@
 #include <stdlib.h>
 #include "V2MPInternal/Util/Heap.h"
 
+// According to Windows, functions like malloc() are dllimported, so they don't
+// necessarily have a static address. Instead, we have to wrap them.
+
+static void* LocalMalloc(size_t size)
+{
+	return malloc(size);
+}
+
+static void* LocalRealloc(void* ptr, size_t newSize)
+{
+	return realloc(ptr, newSize);
+}
+
+static void* LocalCalloc(size_t numItems, size_t itemSize)
+{
+	return calloc(numItems, itemSize);
+}
+
+static void LocalFree(void* ptr)
+{
+	free(ptr);
+}
+
 V2MP_HeapFunctions LocalHeapFunctions =
 {
-	&malloc,
-	&realloc,
-	&calloc,
-	&free
+	&LocalMalloc,
+	&LocalRealloc,
+	&LocalCalloc,
+	&LocalFree
 };
 
 void V2MP_Heap_SetHeapFunctions(V2MP_HeapFunctions functions)
 {
 	if ( !functions.mallocFunc )
 	{
-		functions.mallocFunc = &malloc;
+		functions.mallocFunc = &LocalMalloc;
 	}
 
 	if ( !functions.reallocFunc )
 	{
-		functions.reallocFunc = &realloc;
+		functions.reallocFunc = &LocalRealloc;
 	}
 
 	if ( !functions.callocFunc )
 	{
-		functions.callocFunc = &calloc;
+		functions.callocFunc = &LocalCalloc;
 	}
 
 	if ( !functions.freeFunc )
 	{
-		functions.freeFunc = &free;
+		functions.freeFunc = &LocalFree;
 	}
 
 	LocalHeapFunctions = functions;

@@ -24,13 +24,13 @@ const V2MP_Byte* V2MP_MemoryStoreRenameMe_GetConstPtrToBase(const V2MP_MemorySto
 
 bool V2MP_MemoryStoreRenameMe_LoadWord(
 	const V2MP_MemoryStoreRenameMe* mem,
-	V2MP_Word address,
+	size_t address,
 	V2MP_Word* outWord
 );
 
 bool V2MP_MemoryStoreRenameMe_StoreWord(
 	V2MP_MemoryStoreRenameMe* mem,
-	V2MP_Word address,
+	size_t address,
 	V2MP_Word inWord
 );
 
