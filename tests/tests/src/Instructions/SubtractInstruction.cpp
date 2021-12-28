@@ -1,7 +1,5 @@
-#define OLD_TEST
-
 #include "catch2/catch.hpp"
-#include "Helpers/MinimalVirtualMachine.h"
+#include "Helpers/TestHarnessVM.h"
 #include "Helpers/Assembly.h"
 
 static constexpr V2MP_Word VAL_R0 = 0x0101;
@@ -13,7 +11,7 @@ SCENARIO("SUB: Subtracting one register from another results in the correct valu
 {
 	GIVEN("A virtual machine initialised with known values in registers")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
 		vm.SetR1(VAL_R1);
@@ -292,7 +290,7 @@ SCENARIO("SUB: Subtracting a literal from a register results in the correct valu
 	{
 		static constexpr uint8_t INCREMENT = 0x43;
 
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
 		vm.SetR1(VAL_R1);
@@ -385,7 +383,7 @@ SCENARIO("SUB: Subtracting one register value from another results in the correc
 {
 	GIVEN("A virtual machine")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		WHEN("0x0 is subtracted from 0x0")
 		{
@@ -478,7 +476,7 @@ SCENARIO("SUB: Subtracting a literal from a register results in the correct stat
 {
 	GIVEN("A virtual machine")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		WHEN("0x0 is subtracted from 0x0")
 		{
@@ -566,7 +564,7 @@ SCENARIO("SUB: Setting any literal operand bit if the source and destination reg
 {
 	GIVEN("A virtual machine with different values in different registers")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
 		vm.SetR1(VAL_R1);
@@ -582,7 +580,7 @@ SCENARIO("SUB: Setting any literal operand bit if the source and destination reg
 				THEN("A RES fault is raised, and all registers are left unchanged")
 				{
 					CHECK(vm.CPUHasFault());
-					CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == VAL_R0);
 					CHECK(vm.GetR1() == VAL_R1);
 					CHECK(vm.GetLR() == VAL_LR);
