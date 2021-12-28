@@ -1,7 +1,5 @@
-#define OLD_TEST
-
 #include "catch2/catch.hpp"
-#include "Helpers/MinimalVirtualMachine.h"
+#include "Helpers/TestHarnessVM.h"
 #include "Helpers/Assembly.h"
 
 static constexpr V2MP_Word VAL_R0 = 0x0001;
@@ -13,7 +11,7 @@ SCENARIO("ASGN: Assigning values between different registers results in the corr
 {
 	GIVEN("A virtual machine with different values in different registers")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
 		vm.SetR1(VAL_R1);
@@ -282,7 +280,7 @@ SCENARIO("ASGN: Assigning a literal value to a register results in the correct v
 		static constexpr int8_t NEGATIVE_LITERAL = -33;
 		static constexpr int16_t NEGATIVE_VALUE = -33;
 
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
 		vm.SetR1(VAL_R1);
@@ -394,7 +392,7 @@ SCENARIO("ASGN: Assigning a value from one register to another sets the status r
 {
 	GIVEN("A virtual machine with different values in different registers")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		WHEN("0x0 is assigned to a register")
 		{
@@ -444,7 +442,7 @@ SCENARIO("ASGN: Setting any literal operand bit if the source and destination re
 {
 	GIVEN("A virtual machine with different values in different registers")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
 		vm.SetR1(VAL_R1);
@@ -460,7 +458,7 @@ SCENARIO("ASGN: Setting any literal operand bit if the source and destination re
 				THEN("A RES fault is raised, and all registers are left unchanged")
 				{
 					CHECK(vm.CPUHasFault());
-					CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == VAL_R0);
 					CHECK(vm.GetR1() == VAL_R1);
 					CHECK(vm.GetLR() == VAL_LR);
@@ -476,7 +474,7 @@ SCENARIO("ASGN: Attempting to assign a literal value to PC raises an INO fault",
 {
 	GIVEN("A virtual machine with different values in different registers")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
 		vm.SetR1(VAL_R1);
@@ -490,7 +488,7 @@ SCENARIO("ASGN: Attempting to assign a literal value to PC raises an INO fault",
 			THEN("An INO fault is raised, and all registers are left unchanged")
 			{
 				CHECK(vm.CPUHasFault());
-				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_INO);
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_INO);
 				CHECK(vm.GetR0() == VAL_R0);
 				CHECK(vm.GetR1() == VAL_R1);
 				CHECK(vm.GetLR() == VAL_LR);
