@@ -418,7 +418,7 @@ Queries the state of a device communications port, and sets the status register 
 
 ```
  DPQ
-|0111|........AAA|
+|0111|.........AAA|
 ```
 
 The number of the port to be queried is held in `R0`. Additionally, operand bits `[2 0] (A)` specify the type of query to perform:
@@ -451,7 +451,7 @@ Performs an operation on a device communications port.
 
 ```
  DPO
-|1000|A........BB|
+|1000|A.........BB|
 ```
 
 The number of the port to use is held in `R0`. Operand bit `[11] (A)` is used to specify the type of data transfer used for a read or a write:
