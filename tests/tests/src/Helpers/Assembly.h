@@ -1,6 +1,10 @@
 #pragma once
 
+#ifdef OLD_TEST
 #include "V2MP/Defs.h"
+#else
+#include "V2MPInternal/Defs.h"
+#endif
 
 namespace Asm
 {

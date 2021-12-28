@@ -1,5 +1,5 @@
 #include "catch2/catch.hpp"
-#include "Helpers/MinimalVirtualMachine.h"
+#include "Helpers/TestHarnessVM.h"
 #include "Helpers/Assembly.h"
 
 static constexpr V2MP_Word VAL_R0 = 0x0101;
@@ -11,7 +11,7 @@ SCENARIO("ADD: Adding one register to another results in the correct value in th
 {
 	GIVEN("A virtual machine initialised with known values in registers")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
 		vm.SetR1(VAL_R1);
@@ -290,7 +290,7 @@ SCENARIO("ADD: Adding a literal to a register results in the correct value in th
 	{
 		static constexpr uint8_t INCREMENT = 0x43;
 
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
 		vm.SetR1(VAL_R1);
@@ -383,7 +383,7 @@ SCENARIO("ADD: Adding one register value to another results in the correct statu
 {
 	GIVEN("A virtual machine")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		WHEN("0x0 is added to 0x0")
 		{
@@ -476,7 +476,7 @@ SCENARIO("ADD: Adding a literal to a register results in the correct status regi
 {
 	GIVEN("A virtual machine")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		WHEN("0x0 is added to 0x0")
 		{
@@ -564,7 +564,7 @@ SCENARIO("ADD: Setting any literal operand bit if the source and destination reg
 {
 	GIVEN("A virtual machine with different values in different registers")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
 		vm.SetR1(VAL_R1);
@@ -580,7 +580,7 @@ SCENARIO("ADD: Setting any literal operand bit if the source and destination reg
 				THEN("A RES fault is raised, and all registers are left unchanged")
 				{
 					CHECK(vm.CPUHasFault());
-					CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == VAL_R0);
 					CHECK(vm.GetR1() == VAL_R1);
 					CHECK(vm.GetLR() == VAL_LR);

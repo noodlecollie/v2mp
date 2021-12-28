@@ -1,3 +1,5 @@
+#define OLD_TEST
+
 #include "catch2/catch.hpp"
 #include "Helpers/MinimalVirtualMachine.h"
 #include "Helpers/Assembly.h"

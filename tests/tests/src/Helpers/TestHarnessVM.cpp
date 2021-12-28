@@ -144,6 +144,11 @@ void TestHarnessVM::ResetCPU()
 	OnCPUReset();
 }
 
+bool TestHarnessVM::Execute(V2MP_Word instruction)
+{
+	return V2MP_CPURenameMe_ExecuteSingleInstruction(GetCPU(), instruction);
+}
+
 bool TestHarnessVM::GetCSWord(V2MP_Word address, V2MP_Word& outWord) const
 {
 	return V2MP_Supervisor_FetchCSWord(m_Supervisor, address, &outWord);

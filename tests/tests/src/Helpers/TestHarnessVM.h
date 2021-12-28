@@ -72,6 +72,7 @@ public:
 	V2MP_Word GetIR() const;
 
 	void ResetCPU();
+	bool Execute(V2MP_Word instruction);
 
 	bool GetCSWord(V2MP_Word address, V2MP_Word& outWord) const;
 	bool GetDSWord(V2MP_Word address, V2MP_Word& outWord) const;
