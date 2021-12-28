@@ -228,6 +228,31 @@ bool V2MP_Supervisor_ExecuteClockCycle(V2MP_Supervisor* supervisor)
 	return true;
 }
 
+bool V2MP_Supervisor_ExecuteSingleInstruction(V2MP_Supervisor* supervisor, V2MP_Word instruction)
+{
+	V2MP_CPURenameMe* cpu;
+
+	if ( !supervisor || !supervisor->mainboard )
+	{
+		return false;
+	}
+
+	cpu = V2MP_Mainboard_GetCPU(supervisor->mainboard);
+
+	if ( !cpu || !V2MP_CPURenameMe_ExecuteSingleInstruction(cpu, instruction) )
+	{
+		return false;
+	}
+
+	if ( !V2MP_Supervisor_ResolveOutstandingActions(supervisor) )
+	{
+		return false;
+	}
+
+	// TODO: Handle fault if one was set?
+	return true;
+}
+
 bool V2MP_Supervisor_FetchCSWord(
 	const V2MP_Supervisor* supervisor,
 	V2MP_Word address,

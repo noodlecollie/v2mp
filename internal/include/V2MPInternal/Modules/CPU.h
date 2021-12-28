@@ -34,7 +34,7 @@ void V2MP_CPURenameMe_NotifyFault(V2MP_CPURenameMe* cpu, V2MP_Fault fault);
 bool V2MP_CPURenameMe_HasFault(const V2MP_CPURenameMe* cpu);
 V2MP_Word V2MP_CPURenameMe_GetFaultWord(const V2MP_CPURenameMe* cpu);
 
-bool V2MP_CPURenameMe_SetRegisterValue(V2MP_CPURenameMe* cpu, V2MP_RegisterIndex regIndex, V2MP_Word value);
+bool V2MP_CPURenameMe_SetRegisterValueAndUpdateSR(V2MP_CPURenameMe* cpu, V2MP_RegisterIndex regIndex, V2MP_Word value);
 bool V2MP_CPURenameMe_GetRegisterValue(const V2MP_CPURenameMe* cpu, V2MP_RegisterIndex regIndex, V2MP_Word* outValue);
 
 // The functions below are for debugging/introspection. They should not be used in normal operation.

@@ -1,14 +1,15 @@
 #include <vector>
 #include "Helpers/TestHarnessVM.h"
 
-TestHarnessVM::TestHarnessVM()
+TestHarnessVM::TestHarnessVM(V2MP_Word totalRamInBytes)
 {
 	m_Mainboard = V2MP_Mainboard_AllocateAndInit();
 	m_Supervisor = V2MP_Supervisor_AllocateAndInit();
 
 	V2MP_Supervisor_SetMainboard(m_Supervisor, m_Mainboard);
+	V2MP_MemoryStoreRenameMe_AllocateTotalMemory(GetMemoryStore(), totalRamInBytes);
 
-	ThrowExceptionIfNotInitialisedCorrectly();
+	ThrowExceptionIfNotInitialisedCorrectly(totalRamInBytes);
 }
 
 TestHarnessVM::~TestHarnessVM()
@@ -146,7 +147,7 @@ void TestHarnessVM::ResetCPU()
 
 bool TestHarnessVM::Execute(V2MP_Word instruction)
 {
-	return V2MP_CPURenameMe_ExecuteSingleInstruction(GetCPU(), instruction);
+	return V2MP_Supervisor_ExecuteSingleInstruction(m_Supervisor, instruction);
 }
 
 bool TestHarnessVM::GetCSWord(V2MP_Word address, V2MP_Word& outWord) const
@@ -159,7 +160,7 @@ bool TestHarnessVM::GetDSWord(V2MP_Word address, V2MP_Word& outWord) const
 	return V2MP_Supervisor_FetchDSWord(m_Supervisor, address, &outWord);
 }
 
-void TestHarnessVM::ThrowExceptionIfNotInitialisedCorrectly()
+void TestHarnessVM::ThrowExceptionIfNotInitialisedCorrectly(V2MP_Word totalRamInBytes)
 {
 	if ( !GetMainboard() )
 	{
@@ -179,5 +180,10 @@ void TestHarnessVM::ThrowExceptionIfNotInitialisedCorrectly()
 	if ( !GetMemoryStore() )
 	{
 		throw InitException("Memory store could not be allocated");
+	}
+
+	if ( V2MP_MemoryStoreRenameMe_GetTotalMemorySize(GetMemoryStore()) != totalRamInBytes )
+	{
+		throw InitException("Memory store internal memory bank could not be allocated");
 	}
 }

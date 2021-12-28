@@ -1,10 +1,19 @@
-#define OLD_TEST
-
 #include "catch2/catch.hpp"
-#include "Helpers/MinimalVirtualMachine.h"
+#include "Helpers/TestHarnessVM.h"
 #include "Helpers/Assembly.h"
 
 static constexpr V2MP_Word DATA_WORD = 0xF00D;
+
+template<std::size_t N>
+static inline bool SetDS(TestHarnessVM& vm, const V2MP_Word (&data)[N])
+{
+	return vm.SetCSAndDS({0}, data);
+}
+
+static inline bool FillDS(TestHarnessVM& vm, V2MP_Word numWords, V2MP_Word fill)
+{
+	return vm.FillCSAndDS(1, 0, numWords, fill);
+}
 
 SCENARIO("LDST: Loading a value from memory places the value in the expected register", "[instructions]")
 {
@@ -12,8 +21,8 @@ SCENARIO("LDST: Loading a value from memory places the value in the expected reg
 	{
 		static constexpr V2MP_Word MEM_ADDRESS = 0;
 
-		VM_StartsInvalid vm;
-		REQUIRE(vm.SetDS({ DATA_WORD }));
+		TestHarnessVM_StartsInvalid vm;
+		REQUIRE(SetDS(vm, { DATA_WORD }));
 
 		vm.SetLR(MEM_ADDRESS);
 
@@ -24,9 +33,9 @@ SCENARIO("LDST: Loading a value from memory places the value in the expected reg
 			THEN("The contents of R0 match the data that was in memory")
 			{
 				CHECK(vm.GetR0() == DATA_WORD);
-				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR1() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == 0);
-				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
 		}
@@ -37,10 +46,10 @@ SCENARIO("LDST: Loading a value from memory places the value in the expected reg
 
 			THEN("The contents of R1 match the data that was in memory")
 			{
-				CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR0() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetR1() == DATA_WORD);
 				CHECK(vm.GetLR() == 0);
-				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
 		}
@@ -51,10 +60,10 @@ SCENARIO("LDST: Loading a value from memory places the value in the expected reg
 
 			THEN("The contents of LR match the data that was in memory")
 			{
-				CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
-				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR0() == TestHarnessVM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR1() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == DATA_WORD);
-				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
 		}
@@ -65,8 +74,8 @@ SCENARIO("LDST: Loading a value from memory places the value in the expected reg
 
 			THEN("The contents of PC match the data that was in memory")
 			{
-				CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
-				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR0() == TestHarnessVM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR1() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == 0);
 				CHECK(vm.GetPC() == DATA_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
@@ -81,13 +90,13 @@ SCENARIO("LDST: Loading a value from memory sets the status register appropriate
 	{
 		static constexpr V2MP_Word MEM_ADDRESS = 0;
 
-		VM_StartsInvalid vm;
+		TestHarnessVM_StartsInvalid vm;
 
 		vm.SetLR(MEM_ADDRESS);
 
 		WHEN("0x0 is loaded from memory")
 		{
-			REQUIRE(vm.SetDS({ 0x0000 }));
+			REQUIRE(SetDS(vm, { 0x0000 }));
 			REQUIRE(vm.Execute(Asm::LOAD(Asm::REG_R0)));
 
 			THEN("SR[Z] is set")
@@ -100,7 +109,7 @@ SCENARIO("LDST: Loading a value from memory sets the status register appropriate
 
 		WHEN("0x1 is loaded from memory")
 		{
-			REQUIRE(vm.SetDS({ 0x0001 }));
+			REQUIRE(SetDS(vm, { 0x0001 }));
 			REQUIRE(vm.Execute(Asm::LOAD(Asm::REG_R0)));
 
 			THEN("SR[Z] is not set")
@@ -113,7 +122,7 @@ SCENARIO("LDST: Loading a value from memory sets the status register appropriate
 
 		WHEN("0x1234 is loaded from memory")
 		{
-			REQUIRE(vm.SetDS({ 0x1234 }));
+			REQUIRE(SetDS(vm, { 0x1234 }));
 			REQUIRE(vm.Execute(Asm::LOAD(Asm::REG_R0)));
 
 			THEN("SR[Z] is not set")
@@ -132,9 +141,9 @@ SCENARIO("LDST: Saving a value from memory places the value in the expected memo
 	{
 		static constexpr V2MP_Word MEM_ADDRESS = 0;
 
-		VM_StartsInvalid vm;
+		TestHarnessVM_StartsInvalid vm;
 
-		REQUIRE(vm.AllocateDS(1, VM_StartsInvalid::INVALID_WORD));
+		REQUIRE(FillDS(vm, 1, TestHarnessVM_StartsInvalid::INVALID_WORD));
 		vm.SetLR(MEM_ADDRESS);
 
 		WHEN("A data word is written to memory from R0")
@@ -146,16 +155,14 @@ SCENARIO("LDST: Saving a value from memory places the value in the expected memo
 			THEN("The word in memory matches the value that was in R0")
 			{
 				V2MP_Word memWord = 0;
-				V2MP_Fault fault = V2MP_FAULT_NONE;
 
-				REQUIRE(vm.GetDSWord(MEM_ADDRESS, memWord, &fault));
+				REQUIRE(vm.GetDSWord(MEM_ADDRESS, memWord));
 				CHECK(memWord == DATA_WORD);
-				CHECK(fault == V2MP_FAULT_NONE);
 
 				CHECK(vm.GetR0() == DATA_WORD);
-				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR1() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == MEM_ADDRESS);
-				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
 		}
@@ -169,16 +176,14 @@ SCENARIO("LDST: Saving a value from memory places the value in the expected memo
 			THEN("The word in memory matches the value that was in R1")
 			{
 				V2MP_Word memWord = 0;
-				V2MP_Fault fault = V2MP_FAULT_NONE;
 
-				REQUIRE(vm.GetDSWord(MEM_ADDRESS, memWord, &fault));
+				REQUIRE(vm.GetDSWord(MEM_ADDRESS, memWord));
 				CHECK(memWord == DATA_WORD);
-				CHECK(fault == V2MP_FAULT_NONE);
 
-				CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR0() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetR1() == DATA_WORD);
 				CHECK(vm.GetLR() == MEM_ADDRESS);
-				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
 		}
@@ -190,16 +195,14 @@ SCENARIO("LDST: Saving a value from memory places the value in the expected memo
 			THEN("The word in memory matches the memory address that was in LR")
 			{
 				V2MP_Word memWord = 0;
-				V2MP_Fault fault = V2MP_FAULT_NONE;
 
-				REQUIRE(vm.GetDSWord(MEM_ADDRESS, memWord, &fault));
+				REQUIRE(vm.GetDSWord(MEM_ADDRESS, memWord));
 				CHECK(memWord == MEM_ADDRESS);
-				CHECK(fault == V2MP_FAULT_NONE);
 
-				CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
-				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR0() == TestHarnessVM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR1() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == MEM_ADDRESS);
-				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
 			}
 		}
@@ -213,14 +216,12 @@ SCENARIO("LDST: Saving a value from memory places the value in the expected memo
 			THEN("The word in memory matches the value that was in PC")
 			{
 				V2MP_Word memWord = 0;
-				V2MP_Fault fault = V2MP_FAULT_NONE;
 
-				REQUIRE(vm.GetDSWord(MEM_ADDRESS, memWord, &fault));
+				REQUIRE(vm.GetDSWord(MEM_ADDRESS, memWord));
 				CHECK(memWord == DATA_WORD);
-				CHECK(fault == V2MP_FAULT_NONE);
 
-				CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
-				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR0() == TestHarnessVM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR1() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == MEM_ADDRESS);
 				CHECK(vm.GetPC() == DATA_WORD);
 				CHECK_FALSE(vm.CPUHasFault());
@@ -235,9 +236,9 @@ SCENARIO("LDST: Saving a value to memory sets the status register appropriately"
 	{
 		static constexpr V2MP_Word MEM_ADDRESS = 0;
 
-		VM_StartsInvalid vm;
+		TestHarnessVM_StartsInvalid vm;
 
-		REQUIRE(vm.AllocateDS({ VM_StartsInvalid::INVALID_WORD }));
+		REQUIRE(FillDS(vm, 1, TestHarnessVM_StartsInvalid::INVALID_WORD));
 		vm.SetLR(MEM_ADDRESS);
 
 		WHEN("0x0 is saved to memory")
@@ -287,9 +288,9 @@ SCENARIO("LDST: Loading or saving a value to an unaligned memory address raises 
 	{
 		static constexpr V2MP_Word MEM_ADDRESS = 0x0001;
 
-		VM_StartsInvalid vm;
+		TestHarnessVM_StartsInvalid vm;
 
-		REQUIRE(vm.AllocateDS(4, 0x0000));
+		REQUIRE(FillDS(vm, 4, 0x0000));
 
 		WHEN("A load is attempted from an unaligned address")
 		{
@@ -299,11 +300,11 @@ SCENARIO("LDST: Loading or saving a value to an unaligned memory address raises 
 			THEN("An ALGN fault is raised and register values are not modified.")
 			{
 				CHECK(vm.CPUHasFault());
-				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_ALGN);
-				CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
-				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_ALGN);
+				CHECK(vm.GetR0() == TestHarnessVM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR1() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == MEM_ADDRESS);
-				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetSR() == 0);
 			}
 		}
@@ -318,14 +319,14 @@ SCENARIO("LDST: Loading or saving a value to an unaligned memory address raises 
 			THEN("An ALGN fault is raised and memory is not modified")
 			{
 				CHECK(vm.CPUHasFault());
-				CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_ALGN);
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_ALGN);
 				CHECK(vm.GetR0() == 0x1234);
-				CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetR1() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetLR() == MEM_ADDRESS);
-				CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
+				CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				CHECK(vm.GetSR() == 0);
 
-				V2MP_Word outWord = VM_StartsInvalid::INVALID_WORD;
+				V2MP_Word outWord = TestHarnessVM_StartsInvalid::INVALID_WORD;
 
 				REQUIRE(vm.GetDSWord(MEM_ADDRESS - 1, outWord));
 				CHECK(outWord == 0x0000);
@@ -343,9 +344,9 @@ SCENARIO("LDST: Setting any reserved bit raises a RES fault", "[instructions]")
 	{
 		static constexpr V2MP_Word MEM_ADDRESS = 0x0000;
 
-		VM_StartsInvalid vm;
+		TestHarnessVM_StartsInvalid vm;
 
-		REQUIRE(vm.AllocateDS(1, 0x0000));
+		REQUIRE(FillDS(vm, 1, 0x0000));
 
 		for ( size_t index = 0; index <= 8; ++index )
 		{
@@ -358,11 +359,11 @@ SCENARIO("LDST: Setting any reserved bit raises a RES fault", "[instructions]")
 				THEN("A RES fault is raised and register values are not modified")
 				{
 					CHECK(vm.CPUHasFault());
-					CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
-					CHECK(vm.GetR0() == VM_StartsInvalid::INVALID_WORD);
-					CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
+					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
+					CHECK(vm.GetR0() == TestHarnessVM_StartsInvalid::INVALID_WORD);
+					CHECK(vm.GetR1() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 					CHECK(vm.GetLR() == MEM_ADDRESS);
-					CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
+					CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 					CHECK(vm.GetSR() == 0);
 				}
 			}
@@ -380,14 +381,14 @@ SCENARIO("LDST: Setting any reserved bit raises a RES fault", "[instructions]")
 				THEN("A RES fault is raised and memory is not modified")
 				{
 					CHECK(vm.CPUHasFault());
-					CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == 0x1234);
-					CHECK(vm.GetR1() == VM_StartsInvalid::INVALID_WORD);
+					CHECK(vm.GetR1() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 					CHECK(vm.GetLR() == MEM_ADDRESS);
-					CHECK(vm.GetPC() == VM_StartsInvalid::INVALID_WORD);
+					CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 					CHECK(vm.GetSR() == 0);
 
-					V2MP_Word outWord = VM_StartsInvalid::INVALID_WORD;
+					V2MP_Word outWord = TestHarnessVM_StartsInvalid::INVALID_WORD;
 
 					REQUIRE(vm.GetDSWord(MEM_ADDRESS, outWord));
 					CHECK(outWord == 0x0000);

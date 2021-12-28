@@ -97,7 +97,7 @@ V2MP_Word V2MP_CPURenameMe_GetFaultWord(const V2MP_CPURenameMe* cpu)
 	return cpu ? cpu->fault : 0;
 }
 
-bool V2MP_CPURenameMe_SetRegisterValue(V2MP_CPURenameMe* cpu, V2MP_RegisterIndex regIndex, V2MP_Word value)
+bool V2MP_CPURenameMe_SetRegisterValueAndUpdateSR(V2MP_CPURenameMe* cpu, V2MP_RegisterIndex regIndex, V2MP_Word value)
 {
 	V2MP_Word* regPtr;
 

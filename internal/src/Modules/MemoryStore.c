@@ -1,7 +1,6 @@
 #include "V2MPInternal/Modules/MemoryStore.h"
 #include "V2MPInternal/Util/Heap.h"
 #include "V2MPInternal/Defs.h"
-#include "V2MPInternal/Util/Endianness.h"
 
 struct V2MP_MemoryStoreRenameMe
 {
@@ -96,7 +95,6 @@ bool V2MP_MemoryStoreRenameMe_LoadWord(
 		return false;
 	}
 
-	// TODO: Do we need to worry about host system endianness here?
 	*outWord = *((const V2MP_Word*)rawData);
 	return true;
 }
@@ -121,7 +119,6 @@ bool V2MP_MemoryStoreRenameMe_StoreWord(
 		return false;
 	}
 
-	// TODO: Do we need to worry about host system endianness here?
 	*((V2MP_Word*)rawData) = inWord;
 	return true;
 }

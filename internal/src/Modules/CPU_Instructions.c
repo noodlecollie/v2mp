@@ -373,6 +373,13 @@ bool Execute_LDST(V2MP_CPURenameMe* cpu)
 			cpu->lr,
 			*reg
 		);
+
+		cpu->sr = 0;
+
+		if ( *reg == 0 )
+		{
+			cpu->sr |= V2MP_CPU_SR_Z;
+		}
 	}
 	else
 	{
@@ -381,10 +388,10 @@ bool Execute_LDST(V2MP_CPURenameMe* cpu)
 			cpu->lr,
 			(V2MP_RegisterIndex)V2MP_OP_LDST_REGINDEX(cpu->ir)
 		);
+
+		// The status register will be updated later.
 	}
 
-	// The status register will be updated later.
-	cpu->sr = 0;
 	return true;
 }
 

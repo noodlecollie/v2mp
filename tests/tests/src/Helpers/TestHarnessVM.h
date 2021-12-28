@@ -11,6 +11,7 @@ class TestHarnessVM
 {
 public:
 	static constexpr size_t MAX_WORD_VALUE_AS_SIZE_T = static_cast<std::size_t>(static_cast<V2MP_Word>(~0));
+	static constexpr size_t DEFAULT_RAM_BYTES = 64;
 
 	class InitException : public std::runtime_error
 	{
@@ -21,7 +22,7 @@ public:
 		}
 	};
 
-	TestHarnessVM();
+	TestHarnessVM(V2MP_Word totalRamInBytes = DEFAULT_RAM_BYTES);
 	virtual ~TestHarnessVM();
 
 	TestHarnessVM(const TestHarnessVM& other) = delete;
@@ -41,6 +42,19 @@ public:
 	V2MP_MemoryStoreRenameMe* GetMemoryStore();
 	const V2MP_MemoryStoreRenameMe* GetMemoryStore() const;
 
+	bool SetCSAndDS(const V2MP_Word* cs, V2MP_Word csWords, const V2MP_Word* ds, V2MP_Word dsWords);
+	bool FillCSAndDS(V2MP_Word csWords, V2MP_Word csFill, V2MP_Word dsWords, V2MP_Word dsFill);
+
+	inline bool SetCS(const V2MP_Word* cs, V2MP_Word csWords)
+	{
+		return SetCSAndDS(cs, csWords, nullptr, 0);
+	}
+
+	inline bool FillCS(V2MP_Word csWords, V2MP_Word csFill)
+	{
+		return FillCSAndDS(csWords, csFill, 0, 0);
+	}
+
 	template<std::size_t CSN, std::size_t DSN>
 	inline typename std::enable_if<CSN <= MAX_WORD_VALUE_AS_SIZE_T && DSN <= MAX_WORD_VALUE_AS_SIZE_T, bool>::type
 	SetCSAndDS(const V2MP_Word (&csData)[CSN], const V2MP_Word (&dsData)[DSN])
@@ -48,8 +62,12 @@ public:
 		return SetCSAndDS(csData, CSN, dsData, DSN);
 	}
 
-	bool SetCSAndDS(const V2MP_Word* cs, V2MP_Word csWords, const V2MP_Word* ds, V2MP_Word dsWords);
-	bool FillCSAndDS(V2MP_Word csWords, V2MP_Word csFill, V2MP_Word dsWords, V2MP_Word dsFill);
+	template<std::size_t CSN>
+	inline typename std::enable_if<CSN <= MAX_WORD_VALUE_AS_SIZE_T, bool>::type
+	SetCS(const V2MP_Word (&csData)[CSN])
+	{
+		return SetCSAndDS(csData, CSN, nullptr, 0);
+	}
 
 	V2MP_Word GetCPUFaultWord() const;
 	bool CPUHasFault() const;
@@ -83,7 +101,7 @@ protected:
 	}
 
 private:
-	void ThrowExceptionIfNotInitialisedCorrectly();
+	void ThrowExceptionIfNotInitialisedCorrectly(V2MP_Word totalRamInBytes);
 
 	V2MP_Mainboard* m_Mainboard = nullptr;
 	V2MP_Supervisor* m_Supervisor = nullptr;

@@ -30,6 +30,7 @@ void V2MP_Supervisor_ClearProgram(V2MP_Supervisor* supervisor);
 bool V2MP_Supervisor_IsProgramLoaded(const V2MP_Supervisor* supervisor);
 
 bool V2MP_Supervisor_ExecuteClockCycle(V2MP_Supervisor* supervisor);
+bool V2MP_Supervisor_ExecuteSingleInstruction(V2MP_Supervisor* supervisor, V2MP_Word instruction);
 
 bool V2MP_Supervisor_FetchCSWord(
 	const V2MP_Supervisor* supervisor,

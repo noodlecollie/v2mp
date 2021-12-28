@@ -24,6 +24,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+TEST_BIG_ENDIAN(HOST_IS_BIG_ENDIAN)
+
+if(HOST_IS_BIG_ENDIAN)
+	message(FATAL "Compilation is not currently supported for big-endian systems.")
+endif()
+
 set(TARGETNAME_V2MP V2MP)
 set(TARGETNAME_V2MP_INTERNAL V2MPInternal)
 
@@ -56,12 +62,6 @@ if(MSVC)
 else()
 	add_compile_options(-Wall -Wextra -pedantic -Werror)
 	add_link_options(-Wl,--fatal-warnings)
-endif()
-
-TEST_BIG_ENDIAN(V2MP_HOST_IS_BIG_ENDIAN)
-
-if(V2MP_HOST_IS_BIG_ENDIAN)
-	add_compile_definitions(V2MP_HOST_IS_BIG_ENDIAN=1)
 endif()
 
 add_subdirectory(v2mp)

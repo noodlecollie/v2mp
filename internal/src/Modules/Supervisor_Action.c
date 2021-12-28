@@ -30,13 +30,19 @@ static bool LoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action
 	address = supervisor->programDS.base + SVACTION_LOAD_WORD_ARG_ADDRESS(action);
 	destReg = (V2MP_RegisterIndex)SVACTION_LOAD_WORD_ARG_DESTREG(action);
 
+	if ( address & 0x1 )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_ALGN, 0));
+		return true;
+	}
+
 	if ( !V2MP_MemoryStoreRenameMe_LoadWord(memoryStore, address, &loadedWord) )
 	{
 		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
 		return true;
 	}
 
-	V2MP_CPURenameMe_SetRegisterValue(cpu, destReg, loadedWord);
+	V2MP_CPURenameMe_SetRegisterValueAndUpdateSR(cpu, destReg, loadedWord);
 	return true;
 }
 
@@ -55,6 +61,12 @@ static bool StoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* actio
 
 	address = supervisor->programDS.base + SVACTION_STORE_WORD_ARG_ADDRESS(action);
 	wordToStore = SVACTION_STORE_WORD_ARG_WORD(action);
+
+	if ( address & 0x1 )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_ALGN, 0));
+		return true;
+	}
 
 	if ( !V2MP_MemoryStoreRenameMe_StoreWord(memoryStore, address, wordToStore) )
 	{
