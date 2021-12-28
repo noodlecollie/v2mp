@@ -17,8 +17,24 @@ typedef struct V2MP_CPU_SupervisorInterface
 	// Returns a fault word indicating the result of the operation.
 	V2MP_Word (*fetchInstructionWord)(void* supervisor, V2MP_Word address, V2MP_Word* destReg);
 
+	// LDST
 	void (*requestLoadWordFromDS)(void* supervisor, V2MP_Word address, V2MP_RegisterIndex destReg);
 	void (*requestStoreWordToDS)(void* supervisor, V2MP_Word address, V2MP_Word wordToStore);
+
+	// DPO
+	void (*requestDevicePortIndirectRead)(
+		void* supervisor,
+		V2MP_Word port,
+		V2MP_Word dsSrcAddress,
+		V2MP_Word dsMaxBytes
+	);
+
+	void (*requestDevicePortIndirectWrite)(
+		void* supervisor,
+		V2MP_Word port,
+		V2MP_Word dsDestAddress,
+		V2MP_Word dsMaxBytes
+	);
 } V2MP_CPU_SupervisorInterface;
 
 V2MP_CPU* V2MP_CPU_AllocateAndInit(void);
