@@ -1,7 +1,5 @@
-#define OLD_TEST
-
 #include "catch2/catch.hpp"
-#include "Helpers/MinimalVirtualMachine.h"
+#include "Helpers/TestHarnessVM.h"
 #include "Helpers/Assembly.h"
 
 static constexpr V2MP_Word ALTERNATE_BITS_A = 0x5A5A;
@@ -13,7 +11,7 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers results in the co
 {
 	GIVEN("A virtual machine")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		AND_GIVEN("The destination register is R0")
 		{
@@ -589,7 +587,7 @@ SCENARIO("BITW: Performing a bitwise XOR using a constructed mask results in the
 {
 	GIVEN("A virtual machine")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		AND_GIVEN("The destination register is R0, filled with all-zeroes")
 		{
@@ -1010,7 +1008,7 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers with other operan
 		static constexpr V2MP_Word VAL_LR = 0x0003;
 		static constexpr V2MP_Word VAL_PC = 0x0004;
 
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
 		vm.SetR1(VAL_R1);
@@ -1026,7 +1024,7 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers with other operan
 				THEN("A RES fault is raised, and all registers are left unchanged")
 				{
 					CHECK(vm.CPUHasFault());
-					CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == VAL_R0);
 					CHECK(vm.GetR1() == VAL_R1);
 					CHECK(vm.GetLR() == VAL_LR);
