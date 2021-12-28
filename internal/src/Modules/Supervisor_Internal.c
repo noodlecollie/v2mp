@@ -5,7 +5,7 @@
 
 void V2MP_Supervisor_SetCPUFault(V2MP_Supervisor* supervisor, V2MP_Word fault)
 {
-	V2MP_CPURenameMe* cpu;
+	V2MP_CPU* cpu;
 
 	if ( !supervisor )
 	{
@@ -16,7 +16,7 @@ void V2MP_Supervisor_SetCPUFault(V2MP_Supervisor* supervisor, V2MP_Word fault)
 
 	if ( cpu )
 	{
-		V2MP_CPURenameMe_NotifyFault(cpu, fault);
+		V2MP_CPU_NotifyFault(cpu, fault);
 	}
 }
 

@@ -4,12 +4,12 @@
 #include "Modules/CPU_Internal.h"
 #include "Modules/CPU_Instructions.h"
 
-V2MP_CPURenameMe* V2MP_CPURenameMe_AllocateAndInit(void)
+V2MP_CPU* V2MP_CPU_AllocateAndInit(void)
 {
-	return V2MP_CALLOC_STRUCT(V2MP_CPURenameMe);
+	return V2MP_CALLOC_STRUCT(V2MP_CPU);
 }
 
-void V2MP_CPURenameMe_DeinitAndFree(V2MP_CPURenameMe* cpu)
+void V2MP_CPU_DeinitAndFree(V2MP_CPU* cpu)
 {
 	if ( cpu )
 	{
@@ -17,7 +17,7 @@ void V2MP_CPURenameMe_DeinitAndFree(V2MP_CPURenameMe* cpu)
 	}
 }
 
-void V2MP_CPURenameMe_SetSupervisorInterface(V2MP_CPURenameMe* cpu, const V2MP_CPURenameMe_SupervisorInterface* interface)
+void V2MP_CPU_SetSupervisorInterface(V2MP_CPU* cpu, const V2MP_CPU_SupervisorInterface* interface)
 {
 	if ( !cpu )
 	{
@@ -34,12 +34,12 @@ void V2MP_CPURenameMe_SetSupervisorInterface(V2MP_CPURenameMe* cpu, const V2MP_C
 	}
 }
 
-void V2MP_CPURenameMe_ResetSupervisorInterface(V2MP_CPURenameMe* cpu)
+void V2MP_CPU_ResetSupervisorInterface(V2MP_CPU* cpu)
 {
-	V2MP_CPURenameMe_SetSupervisorInterface(cpu, NULL);
+	V2MP_CPU_SetSupervisorInterface(cpu, NULL);
 }
 
-void V2MP_CPURenameMe_Reset(V2MP_CPURenameMe* cpu)
+void V2MP_CPU_Reset(V2MP_CPU* cpu)
 {
 	if ( !cpu )
 	{
@@ -55,7 +55,7 @@ void V2MP_CPURenameMe_Reset(V2MP_CPURenameMe* cpu)
 	cpu->fault = 0;
 }
 
-bool V2MP_CPURenameMe_ExecuteClockCycle(V2MP_CPURenameMe* cpu)
+bool V2MP_CPU_ExecuteClockCycle(V2MP_CPU* cpu)
 {
 	V2MP_Word fault;
 
@@ -68,16 +68,16 @@ bool V2MP_CPURenameMe_ExecuteClockCycle(V2MP_CPURenameMe* cpu)
 
 	if ( V2MP_CPU_FAULT_CODE(fault) != V2MP_FAULT_NONE )
 	{
-		V2MP_CPURenameMe_NotifyFault(cpu, fault);
+		V2MP_CPU_NotifyFault(cpu, fault);
 		return true;
 	}
 
 	cpu->pc += 2;
 
-	return V2MP_CPURenameMe_ExecuteInstructionInternal(cpu);
+	return V2MP_CPU_ExecuteInstructionInternal(cpu);
 }
 
-void V2MP_CPURenameMe_NotifyFault(V2MP_CPURenameMe* cpu, V2MP_Fault fault)
+void V2MP_CPU_NotifyFault(V2MP_CPU* cpu, V2MP_Fault fault)
 {
 	if ( !cpu )
 	{
@@ -87,17 +87,17 @@ void V2MP_CPURenameMe_NotifyFault(V2MP_CPURenameMe* cpu, V2MP_Fault fault)
 	cpu->fault = fault;
 }
 
-bool V2MP_CPURenameMe_HasFault(const V2MP_CPURenameMe* cpu)
+bool V2MP_CPU_HasFault(const V2MP_CPU* cpu)
 {
 	return cpu && V2MP_CPU_FAULT_CODE(cpu->fault) != V2MP_FAULT_NONE;
 }
 
-V2MP_Word V2MP_CPURenameMe_GetFaultWord(const V2MP_CPURenameMe* cpu)
+V2MP_Word V2MP_CPU_GetFaultWord(const V2MP_CPU* cpu)
 {
 	return cpu ? cpu->fault : 0;
 }
 
-bool V2MP_CPURenameMe_SetRegisterValueAndUpdateSR(V2MP_CPURenameMe* cpu, V2MP_RegisterIndex regIndex, V2MP_Word value)
+bool V2MP_CPU_SetRegisterValueAndUpdateSR(V2MP_CPU* cpu, V2MP_RegisterIndex regIndex, V2MP_Word value)
 {
 	V2MP_Word* regPtr;
 
@@ -106,7 +106,7 @@ bool V2MP_CPURenameMe_SetRegisterValueAndUpdateSR(V2MP_CPURenameMe* cpu, V2MP_Re
 		return false;
 	}
 
-	regPtr = V2MP_CPURenameMe_GetRegisterPtr(cpu, regIndex);
+	regPtr = V2MP_CPU_GetRegisterPtr(cpu, regIndex);
 
 	if ( !regPtr )
 	{
@@ -125,7 +125,7 @@ bool V2MP_CPURenameMe_SetRegisterValueAndUpdateSR(V2MP_CPURenameMe* cpu, V2MP_Re
 	return true;
 }
 
-bool V2MP_CPURenameMe_GetRegisterValue(const V2MP_CPURenameMe* cpu, V2MP_RegisterIndex regIndex, V2MP_Word* outValue)
+bool V2MP_CPU_GetRegisterValue(const V2MP_CPU* cpu, V2MP_RegisterIndex regIndex, V2MP_Word* outValue)
 {
 	const V2MP_Word* regPtr;
 
@@ -134,7 +134,7 @@ bool V2MP_CPURenameMe_GetRegisterValue(const V2MP_CPURenameMe* cpu, V2MP_Registe
 		return false;
 	}
 
-	regPtr = V2MP_CPURenameMe_GetRegisterConstPtr(cpu, regIndex);
+	regPtr = V2MP_CPU_GetRegisterConstPtr(cpu, regIndex);
 
 	if ( !regPtr )
 	{
@@ -145,7 +145,7 @@ bool V2MP_CPURenameMe_GetRegisterValue(const V2MP_CPURenameMe* cpu, V2MP_Registe
 	return true;
 }
 
-bool V2MP_CPURenameMe_ExecuteSingleInstruction(V2MP_CPURenameMe* cpu, V2MP_Word instruction)
+bool V2MP_CPU_ExecuteSingleInstruction(V2MP_CPU* cpu, V2MP_Word instruction)
 {
 	if ( !cpu )
 	{
@@ -154,15 +154,15 @@ bool V2MP_CPURenameMe_ExecuteSingleInstruction(V2MP_CPURenameMe* cpu, V2MP_Word 
 
 	cpu->ir = instruction;
 
-	return V2MP_CPURenameMe_ExecuteInstructionInternal(cpu);
+	return V2MP_CPU_ExecuteInstructionInternal(cpu);
 }
 
-V2MP_Word V2MP_CPURenameMe_GetProgramCounter(const V2MP_CPURenameMe* cpu)
+V2MP_Word V2MP_CPU_GetProgramCounter(const V2MP_CPU* cpu)
 {
 	return cpu ? cpu->pc : 0;
 }
 
-void V2MP_CPURenameMe_SetProgramCounter(V2MP_CPURenameMe* cpu, V2MP_Word value)
+void V2MP_CPU_SetProgramCounter(V2MP_CPU* cpu, V2MP_Word value)
 {
 	if ( !cpu )
 	{
@@ -172,12 +172,12 @@ void V2MP_CPURenameMe_SetProgramCounter(V2MP_CPURenameMe* cpu, V2MP_Word value)
 	cpu->pc = value;
 }
 
-V2MP_Word V2MP_CPURenameMe_GetStatusRegister(const V2MP_CPURenameMe* cpu)
+V2MP_Word V2MP_CPU_GetStatusRegister(const V2MP_CPU* cpu)
 {
 	return cpu ? cpu->sr : 0;
 }
 
-void V2MP_CPURenameMe_SetStatusRegister(V2MP_CPURenameMe* cpu, V2MP_Word value)
+void V2MP_CPU_SetStatusRegister(V2MP_CPU* cpu, V2MP_Word value)
 {
 	if ( !cpu )
 	{
@@ -187,12 +187,12 @@ void V2MP_CPURenameMe_SetStatusRegister(V2MP_CPURenameMe* cpu, V2MP_Word value)
 	cpu->sr = value;
 }
 
-V2MP_Word V2MP_CPURenameMe_GetLinkRegister(const V2MP_CPURenameMe* cpu)
+V2MP_Word V2MP_CPU_GetLinkRegister(const V2MP_CPU* cpu)
 {
 	return cpu ? cpu->lr : 0;
 }
 
-void V2MP_CPURenameMe_SetLinkRegister(V2MP_CPURenameMe* cpu, V2MP_Word value)
+void V2MP_CPU_SetLinkRegister(V2MP_CPU* cpu, V2MP_Word value)
 {
 	if ( !cpu )
 	{
@@ -202,12 +202,12 @@ void V2MP_CPURenameMe_SetLinkRegister(V2MP_CPURenameMe* cpu, V2MP_Word value)
 	cpu->lr = value;
 }
 
-V2MP_Word V2MP_CPURenameMe_GetR0(const V2MP_CPURenameMe* cpu)
+V2MP_Word V2MP_CPU_GetR0(const V2MP_CPU* cpu)
 {
 	return cpu ? cpu->r0 : 0;
 }
 
-void V2MP_CPURenameMe_SetR0(V2MP_CPURenameMe* cpu, V2MP_Word value)
+void V2MP_CPU_SetR0(V2MP_CPU* cpu, V2MP_Word value)
 {
 	if ( !cpu )
 	{
@@ -217,12 +217,12 @@ void V2MP_CPURenameMe_SetR0(V2MP_CPURenameMe* cpu, V2MP_Word value)
 	cpu->r0 = value;
 }
 
-V2MP_Word V2MP_CPURenameMe_GetR1(const V2MP_CPURenameMe* cpu)
+V2MP_Word V2MP_CPU_GetR1(const V2MP_CPU* cpu)
 {
 	return cpu ? cpu->r1 : 0;
 }
 
-void V2MP_CPURenameMe_SetR1(V2MP_CPURenameMe* cpu, V2MP_Word value)
+void V2MP_CPU_SetR1(V2MP_CPU* cpu, V2MP_Word value)
 {
 	if ( !cpu )
 	{
@@ -232,12 +232,12 @@ void V2MP_CPURenameMe_SetR1(V2MP_CPURenameMe* cpu, V2MP_Word value)
 	cpu->r1 = value;
 }
 
-V2MP_Word V2MP_CPURenameMe_GetInstructionRegister(const V2MP_CPURenameMe* cpu)
+V2MP_Word V2MP_CPU_GetInstructionRegister(const V2MP_CPU* cpu)
 {
 	return cpu ? cpu->ir : 0;
 }
 
-void V2MP_CPURenameMe_SetInstructionRegister(V2MP_CPURenameMe* cpu, V2MP_Word value)
+void V2MP_CPU_SetInstructionRegister(V2MP_CPU* cpu, V2MP_Word value)
 {
 	if ( !cpu )
 	{

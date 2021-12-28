@@ -8,19 +8,19 @@
 // error states that the CPU may legitimately enter into
 // (eg. raising a fault) should still result in true
 // being returned.
-typedef bool (* InstructionCallback)(V2MP_CPURenameMe*);
+typedef bool (* InstructionCallback)(V2MP_CPU*);
 
-static bool Execute_ADD(V2MP_CPURenameMe* cpu);
-static bool Execute_SUB(V2MP_CPURenameMe* cpu);
-static bool Execute_ASGN(V2MP_CPURenameMe* cpu);
-static bool Execute_SHFT(V2MP_CPURenameMe* cpu);
-static bool Execute_BITW(V2MP_CPURenameMe* cpu);
-static bool Execute_CBX(V2MP_CPURenameMe* cpu);
-static bool Execute_LDST(V2MP_CPURenameMe* cpu);
-static bool Execute_DPQ(V2MP_CPURenameMe* cpu);
-static bool Execute_DPO(V2MP_CPURenameMe* cpu);
-static bool Execute_Unassigned(V2MP_CPURenameMe* cpu);
-static bool Execute_HCF(V2MP_CPURenameMe* cpu);
+static bool Execute_ADD(V2MP_CPU* cpu);
+static bool Execute_SUB(V2MP_CPU* cpu);
+static bool Execute_ASGN(V2MP_CPU* cpu);
+static bool Execute_SHFT(V2MP_CPU* cpu);
+static bool Execute_BITW(V2MP_CPU* cpu);
+static bool Execute_CBX(V2MP_CPU* cpu);
+static bool Execute_LDST(V2MP_CPU* cpu);
+static bool Execute_DPQ(V2MP_CPU* cpu);
+static bool Execute_DPO(V2MP_CPU* cpu);
+static bool Execute_Unassigned(V2MP_CPU* cpu);
+static bool Execute_HCF(V2MP_CPU* cpu);
 
 static const InstructionCallback INSTRUCTION_TABLE[0x10] =
 {
@@ -42,12 +42,12 @@ static const InstructionCallback INSTRUCTION_TABLE[0x10] =
 	&Execute_HCF			// 0xF
 };
 
-static inline void SetFault(V2MP_CPURenameMe* cpu, V2MP_Fault fault, V2MP_Word args)
+static inline void SetFault(V2MP_CPU* cpu, V2MP_Fault fault, V2MP_Word args)
 {
-	V2MP_CPURenameMe_NotifyFault(cpu, V2MP_CPU_MAKE_FAULT_WORD(fault, args));
+	V2MP_CPU_NotifyFault(cpu, V2MP_CPU_MAKE_FAULT_WORD(fault, args));
 }
 
-static bool Execute_ADDOrSUB(V2MP_CPURenameMe* cpu, bool isAdd)
+static bool Execute_ADDOrSUB(V2MP_CPU* cpu, bool isAdd)
 {
 	int32_t multiplier;
 	V2MP_Word* sourceReg;
@@ -55,8 +55,8 @@ static bool Execute_ADDOrSUB(V2MP_CPURenameMe* cpu, bool isAdd)
 	V2MP_Word oldValue;
 
 	multiplier = isAdd ? 1 : -1;
-	sourceReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_ADDSUB_SREGINDEX(cpu->ir));
-	destReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_ADDSUB_DREGINDEX(cpu->ir));
+	sourceReg = V2MP_CPU_GetRegisterPtr(cpu, V2MP_OP_ADDSUB_SREGINDEX(cpu->ir));
+	destReg = V2MP_CPU_GetRegisterPtr(cpu, V2MP_OP_ADDSUB_DREGINDEX(cpu->ir));
 	oldValue = *destReg;
 
 	if ( V2MP_OP_ADDSUB_DREGINDEX(cpu->ir) == V2MP_REGID_PC )
@@ -96,23 +96,23 @@ static bool Execute_ADDOrSUB(V2MP_CPURenameMe* cpu, bool isAdd)
 	return true;
 }
 
-bool Execute_ADD(V2MP_CPURenameMe* cpu)
+bool Execute_ADD(V2MP_CPU* cpu)
 {
 	return Execute_ADDOrSUB(cpu, true);
 }
 
-bool Execute_SUB(V2MP_CPURenameMe* cpu)
+bool Execute_SUB(V2MP_CPU* cpu)
 {
 	return Execute_ADDOrSUB(cpu, false);
 }
 
-bool Execute_ASGN(V2MP_CPURenameMe* cpu)
+bool Execute_ASGN(V2MP_CPU* cpu)
 {
 	V2MP_Word* sourceReg;
 	V2MP_Word* destReg;
 
-	sourceReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_ASGN_SREGINDEX(cpu->ir));
-	destReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_ASGN_DREGINDEX(cpu->ir));
+	sourceReg = V2MP_CPU_GetRegisterPtr(cpu, V2MP_OP_ASGN_SREGINDEX(cpu->ir));
+	destReg = V2MP_CPU_GetRegisterPtr(cpu, V2MP_OP_ASGN_DREGINDEX(cpu->ir));
 
 	if ( sourceReg != destReg )
 	{
@@ -145,7 +145,7 @@ bool Execute_ASGN(V2MP_CPURenameMe* cpu)
 	return true;
 }
 
-bool Execute_SHFT(V2MP_CPURenameMe* cpu)
+bool Execute_SHFT(V2MP_CPU* cpu)
 {
 	V2MP_Word* sourceReg;
 	V2MP_Word* destReg;
@@ -158,8 +158,8 @@ bool Execute_SHFT(V2MP_CPURenameMe* cpu)
 		return true;
 	}
 
-	sourceReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_SHFT_SREGINDEX(cpu->ir));
-	destReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_SHFT_DREGINDEX(cpu->ir));
+	sourceReg = V2MP_CPU_GetRegisterPtr(cpu, V2MP_OP_SHFT_SREGINDEX(cpu->ir));
+	destReg = V2MP_CPU_GetRegisterPtr(cpu, V2MP_OP_SHFT_DREGINDEX(cpu->ir));
 
 	if ( sourceReg != destReg )
 	{
@@ -223,7 +223,7 @@ bool Execute_SHFT(V2MP_CPURenameMe* cpu)
 	return true;
 }
 
-bool Execute_BITW(V2MP_CPURenameMe* cpu)
+bool Execute_BITW(V2MP_CPU* cpu)
 {
 	V2MP_Word* sourceReg;
 	V2MP_Word* destReg;
@@ -235,8 +235,8 @@ bool Execute_BITW(V2MP_CPURenameMe* cpu)
 		return true;
 	}
 
-	sourceReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_BITW_SREGINDEX(cpu->ir));
-	destReg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_BITW_DREGINDEX(cpu->ir));
+	sourceReg = V2MP_CPU_GetRegisterPtr(cpu, V2MP_OP_BITW_SREGINDEX(cpu->ir));
+	destReg = V2MP_CPU_GetRegisterPtr(cpu, V2MP_OP_BITW_DREGINDEX(cpu->ir));
 
 	if ( sourceReg != destReg )
 	{
@@ -303,7 +303,7 @@ bool Execute_BITW(V2MP_CPURenameMe* cpu)
 	return true;
 }
 
-bool Execute_CBX(V2MP_CPURenameMe* cpu)
+bool Execute_CBX(V2MP_CPU* cpu)
 {
 	bool shouldBranch;
 
@@ -348,7 +348,7 @@ bool Execute_CBX(V2MP_CPURenameMe* cpu)
 	return true;
 }
 
-bool Execute_LDST(V2MP_CPURenameMe* cpu)
+bool Execute_LDST(V2MP_CPU* cpu)
 {
 	V2MP_Word* reg;
 
@@ -364,7 +364,7 @@ bool Execute_LDST(V2MP_CPURenameMe* cpu)
 		return true;
 	}
 
-	reg = V2MP_CPURenameMe_GetRegisterPtr(cpu, V2MP_OP_LDST_REGINDEX(cpu->ir));
+	reg = V2MP_CPU_GetRegisterPtr(cpu, V2MP_OP_LDST_REGINDEX(cpu->ir));
 
 	if ( V2MP_OP_LDST_IS_STORE(cpu->ir) )
 	{
@@ -395,33 +395,33 @@ bool Execute_LDST(V2MP_CPURenameMe* cpu)
 	return true;
 }
 
-bool Execute_DPQ(V2MP_CPURenameMe* cpu)
+bool Execute_DPQ(V2MP_CPU* cpu)
 {
 	// TODO:
 	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
 	return true;
 }
 
-bool Execute_DPO(V2MP_CPURenameMe* cpu)
+bool Execute_DPO(V2MP_CPU* cpu)
 {
 	// TODO:
 	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
 	return true;
 }
 
-bool Execute_Unassigned(V2MP_CPURenameMe* cpu)
+bool Execute_Unassigned(V2MP_CPU* cpu)
 {
 	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
 	return true;
 }
 
-bool Execute_HCF(V2MP_CPURenameMe* cpu)
+bool Execute_HCF(V2MP_CPU* cpu)
 {
 	SetFault(cpu, V2MP_FAULT_HCF, cpu->ir);
 	return true;
 }
 
-bool V2MP_CPURenameMe_ExecuteInstructionInternal(V2MP_CPURenameMe* cpu)
+bool V2MP_CPU_ExecuteInstructionInternal(V2MP_CPU* cpu)
 {
 	InstructionCallback instructionToExecute = NULL;
 

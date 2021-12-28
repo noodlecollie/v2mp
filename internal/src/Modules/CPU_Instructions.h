@@ -5,6 +5,6 @@
 #include "V2MPInternal/Defs.h"
 #include "V2MPInternal/Modules/CPU.h"
 
-bool V2MP_CPURenameMe_ExecuteInstructionInternal(V2MP_CPURenameMe* cpu);
+bool V2MP_CPU_ExecuteInstructionInternal(V2MP_CPU* cpu);
 
 #endif // V2MP_MODULES_CPU_INSTRUCTIONS_H

@@ -8,7 +8,7 @@
 static bool LoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
 {
 	V2MP_MemoryStoreRenameMe* memoryStore;
-	V2MP_CPURenameMe* cpu;
+	V2MP_CPU* cpu;
 	size_t address;
 	V2MP_RegisterIndex destReg;
 	V2MP_Word loadedWord = 0;
@@ -42,7 +42,7 @@ static bool LoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action
 		return true;
 	}
 
-	V2MP_CPURenameMe_SetRegisterValueAndUpdateSR(cpu, destReg, loadedWord);
+	V2MP_CPU_SetRegisterValueAndUpdateSR(cpu, destReg, loadedWord);
 	return true;
 }
 

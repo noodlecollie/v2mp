@@ -6,7 +6,7 @@ V2MP_Word FetchInstructionWord(void* opaqueSv, V2MP_Word address, V2MP_Word* des
 void RequestLoadWordFromDS(void* opaqueSv, V2MP_Word address, V2MP_RegisterIndex destReg);
 void RequestStoreWordToDS(void* opaqueSv, V2MP_Word address, V2MP_Word wordToStore);
 
-void V2MP_Supervisor_CreateCPUInterface(V2MP_Supervisor* supervisor, V2MP_CPURenameMe_SupervisorInterface* interface)
+void V2MP_Supervisor_CreateCPUInterface(V2MP_Supervisor* supervisor, V2MP_CPU_SupervisorInterface* interface)
 {
 	if ( !supervisor || !interface )
 	{

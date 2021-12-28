@@ -8,7 +8,7 @@
 
 static void DetachFromMainboard(V2MP_Supervisor* supervisor)
 {
-	V2MP_CPURenameMe* cpu;
+	V2MP_CPU* cpu;
 
 	if ( !supervisor || !supervisor->mainboard )
 	{
@@ -19,13 +19,13 @@ static void DetachFromMainboard(V2MP_Supervisor* supervisor)
 
 	if ( cpu )
 	{
-		V2MP_CPURenameMe_ResetSupervisorInterface(cpu);
+		V2MP_CPU_ResetSupervisorInterface(cpu);
 	}
 }
 
 static void AttachToMainboard(V2MP_Supervisor* supervisor)
 {
-	V2MP_CPURenameMe* cpu;
+	V2MP_CPU* cpu;
 
 	if ( !supervisor || !supervisor->mainboard )
 	{
@@ -36,9 +36,9 @@ static void AttachToMainboard(V2MP_Supervisor* supervisor)
 
 	if ( cpu )
 	{
-		V2MP_CPURenameMe_SupervisorInterface interface;
+		V2MP_CPU_SupervisorInterface interface;
 		V2MP_Supervisor_CreateCPUInterface(supervisor, &interface);
-		V2MP_CPURenameMe_SetSupervisorInterface(cpu, &interface);
+		V2MP_CPU_SetSupervisorInterface(cpu, &interface);
 	}
 }
 
@@ -180,7 +180,7 @@ bool V2MP_Supervisor_LoadProgram(
 
 void V2MP_Supervisor_ClearProgram(V2MP_Supervisor* supervisor)
 {
-	V2MP_CPURenameMe* cpu;
+	V2MP_CPU* cpu;
 
 	if ( !supervisor )
 	{
@@ -191,7 +191,7 @@ void V2MP_Supervisor_ClearProgram(V2MP_Supervisor* supervisor)
 
 	if ( cpu )
 	{
-		V2MP_CPURenameMe_Reset(cpu);
+		V2MP_CPU_Reset(cpu);
 	}
 
 	ResetProgramMemorySegment(&supervisor->programCS);
@@ -205,7 +205,7 @@ bool V2MP_Supervisor_IsProgramLoaded(const V2MP_Supervisor* supervisor)
 
 bool V2MP_Supervisor_ExecuteClockCycle(V2MP_Supervisor* supervisor)
 {
-	V2MP_CPURenameMe* cpu;
+	V2MP_CPU* cpu;
 
 	if ( !supervisor || !supervisor->mainboard )
 	{
@@ -214,7 +214,7 @@ bool V2MP_Supervisor_ExecuteClockCycle(V2MP_Supervisor* supervisor)
 
 	cpu = V2MP_Mainboard_GetCPU(supervisor->mainboard);
 
-	if ( !cpu || !V2MP_CPURenameMe_ExecuteClockCycle(cpu) )
+	if ( !cpu || !V2MP_CPU_ExecuteClockCycle(cpu) )
 	{
 		return false;
 	}
@@ -230,7 +230,7 @@ bool V2MP_Supervisor_ExecuteClockCycle(V2MP_Supervisor* supervisor)
 
 bool V2MP_Supervisor_ExecuteSingleInstruction(V2MP_Supervisor* supervisor, V2MP_Word instruction)
 {
-	V2MP_CPURenameMe* cpu;
+	V2MP_CPU* cpu;
 
 	if ( !supervisor || !supervisor->mainboard )
 	{
@@ -239,7 +239,7 @@ bool V2MP_Supervisor_ExecuteSingleInstruction(V2MP_Supervisor* supervisor, V2MP_
 
 	cpu = V2MP_Mainboard_GetCPU(supervisor->mainboard);
 
-	if ( !cpu || !V2MP_CPURenameMe_ExecuteSingleInstruction(cpu, instruction) )
+	if ( !cpu || !V2MP_CPU_ExecuteSingleInstruction(cpu, instruction) )
 	{
 		return false;
 	}

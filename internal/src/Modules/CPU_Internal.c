@@ -1,12 +1,12 @@
 #include <stddef.h>
 #include "Modules/CPU_Internal.h"
 
-V2MP_Word* V2MP_CPURenameMe_GetRegisterPtr(V2MP_CPURenameMe* cpu, V2MP_Word regIndex)
+V2MP_Word* V2MP_CPU_GetRegisterPtr(V2MP_CPU* cpu, V2MP_Word regIndex)
 {
-	return (V2MP_Word*)V2MP_CPURenameMe_GetRegisterConstPtr(cpu, regIndex);
+	return (V2MP_Word*)V2MP_CPU_GetRegisterConstPtr(cpu, regIndex);
 }
 
-const V2MP_Word* V2MP_CPURenameMe_GetRegisterConstPtr(const V2MP_CPURenameMe* cpu, V2MP_Word regIndex)
+const V2MP_Word* V2MP_CPU_GetRegisterConstPtr(const V2MP_CPU* cpu, V2MP_Word regIndex)
 {
 	if ( !cpu )
 	{

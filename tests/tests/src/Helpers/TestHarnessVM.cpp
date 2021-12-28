@@ -41,12 +41,12 @@ const V2MP_Supervisor* TestHarnessVM::GetSupervisor() const
 	return m_Supervisor;
 }
 
-V2MP_CPURenameMe* TestHarnessVM::GetCPU()
+V2MP_CPU* TestHarnessVM::GetCPU()
 {
 	return V2MP_Mainboard_GetCPU(m_Mainboard);
 }
 
-const V2MP_CPURenameMe* TestHarnessVM::GetCPU() const
+const V2MP_CPU* TestHarnessVM::GetCPU() const
 {
 	return V2MP_Mainboard_GetCPU(m_Mainboard);
 }
@@ -76,72 +76,72 @@ bool TestHarnessVM::FillCSAndDS(V2MP_Word csWords, V2MP_Word csFill, V2MP_Word d
 
 V2MP_Word TestHarnessVM::GetCPUFaultWord() const
 {
-	return V2MP_CPURenameMe_GetFaultWord(GetCPU());
+	return V2MP_CPU_GetFaultWord(GetCPU());
 }
 
 bool TestHarnessVM::CPUHasFault() const
 {
-	return V2MP_CPURenameMe_HasFault(GetCPU());
+	return V2MP_CPU_HasFault(GetCPU());
 }
 
 V2MP_Word TestHarnessVM::GetR0() const
 {
-	return V2MP_CPURenameMe_GetR0(GetCPU());
+	return V2MP_CPU_GetR0(GetCPU());
 }
 
 void TestHarnessVM::SetR0(V2MP_Word value)
 {
-	V2MP_CPURenameMe_SetR0(GetCPU(), value);
+	V2MP_CPU_SetR0(GetCPU(), value);
 }
 
 V2MP_Word TestHarnessVM::GetR1() const
 {
-	return V2MP_CPURenameMe_GetR1(GetCPU());
+	return V2MP_CPU_GetR1(GetCPU());
 }
 
 void TestHarnessVM::SetR1(V2MP_Word value)
 {
-	V2MP_CPURenameMe_SetR1(GetCPU(), value);
+	V2MP_CPU_SetR1(GetCPU(), value);
 }
 
 V2MP_Word TestHarnessVM::GetLR() const
 {
-	return V2MP_CPURenameMe_GetLinkRegister(GetCPU());
+	return V2MP_CPU_GetLinkRegister(GetCPU());
 }
 
 void TestHarnessVM::SetLR(V2MP_Word value)
 {
-	V2MP_CPURenameMe_SetLinkRegister(GetCPU(), value);
+	V2MP_CPU_SetLinkRegister(GetCPU(), value);
 }
 
 V2MP_Word TestHarnessVM::GetPC() const
 {
-	return V2MP_CPURenameMe_GetProgramCounter(GetCPU());
+	return V2MP_CPU_GetProgramCounter(GetCPU());
 }
 
 void TestHarnessVM::SetPC(V2MP_Word value)
 {
-	V2MP_CPURenameMe_SetProgramCounter(GetCPU(), value);
+	V2MP_CPU_SetProgramCounter(GetCPU(), value);
 }
 
 V2MP_Word TestHarnessVM::GetSR() const
 {
-	return V2MP_CPURenameMe_GetStatusRegister(GetCPU());
+	return V2MP_CPU_GetStatusRegister(GetCPU());
 }
 
 void TestHarnessVM::SetSR(V2MP_Word value)
 {
-	V2MP_CPURenameMe_SetStatusRegister(GetCPU(), value);
+	V2MP_CPU_SetStatusRegister(GetCPU(), value);
 }
 
 V2MP_Word TestHarnessVM::GetIR() const
 {
-	return V2MP_CPURenameMe_GetInstructionRegister(GetCPU());
+	return V2MP_CPU_GetInstructionRegister(GetCPU());
 }
 
 void TestHarnessVM::ResetCPU()
 {
-	V2MP_CPURenameMe_Reset(GetCPU());
+	V2MP_CPU_Reset(GetCPU());
 	OnCPUReset();
 }
 

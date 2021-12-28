@@ -36,8 +36,8 @@ public:
 	V2MP_Supervisor* GetSupervisor();
 	const V2MP_Supervisor* GetSupervisor() const;
 
-	V2MP_CPURenameMe* GetCPU();
-	const V2MP_CPURenameMe* GetCPU() const;
+	V2MP_CPU* GetCPU();
+	const V2MP_CPU* GetCPU() const;
 
 	V2MP_MemoryStoreRenameMe* GetMemoryStore();
 	const V2MP_MemoryStoreRenameMe* GetMemoryStore() const;
