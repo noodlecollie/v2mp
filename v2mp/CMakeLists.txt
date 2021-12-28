@@ -2,10 +2,8 @@ include(win32_export)
 create_export_header(${TARGETNAME_V2MP})
 
 set(PUBLIC_HEADERS_GENERAL
-	include/${TARGETNAME_V2MP}/CPU.h
-	include/${TARGETNAME_V2MP}/Defs.h
+	include/${TARGETNAME_V2MP}/Dummy.h
 	include/${TARGETNAME_V2MP}/LibExport.h
-	include/${TARGETNAME_V2MP}/MemoryStore.h
 )
 
 set(PUBLIC_HEADERS_ALL
@@ -13,10 +11,7 @@ set(PUBLIC_HEADERS_ALL
 )
 
 set(SOURCES_ALL
-	src/CPU.c
-	src/DevicePort.c
-	src/DevicePortStore.c
-	src/MemoryStore.c
+	src/Dummy.c
 )
 
 if(BUILD_SHARED_LIBS)
