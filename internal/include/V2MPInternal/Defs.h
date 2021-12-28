@@ -69,6 +69,14 @@ typedef enum V2MP_DevicePortQueryType
 	V2MP_DPQT_CONTROLLED_BY_PROGRAM = 0x5,
 } V2MP_DevicePortQueryType;
 
+typedef enum V2MP_DevicePortOperationType
+{
+	V2MP_DPOT_USABLE_BYTE_COUNT = 0x0,
+	V2MP_DPOT_RELINQUISH_MAILBOX = 0x1,
+	V2MP_DPOT_READ = 0x2,
+	V2MP_DPOT_WRITE = 0x3
+} V2MP_DevicePortOperationType;
+
 #define V2MP_REGID_MASK(val) ((val) & 0x3)
 
 #define V2MP_CPU_SR_Z (1 << 0)

@@ -2,6 +2,8 @@ add_library(${TARGETNAME_V2MP_INTERNAL} STATIC
 	src/Components/CircularBuffer.c
 	src/Components/DoubleLinkedList.c
 	src/Components/HexTree.c
+
+	src/Modules/CPU_DevicePortOperations.c
 	src/Modules/CPU_Instructions.c
 	src/Modules/CPU_Internal.c
 	src/Modules/CPU.c
@@ -12,6 +14,7 @@ add_library(${TARGETNAME_V2MP_INTERNAL} STATIC
 	src/Modules/Supervisor_Internal.c
 	src/Modules/Supervisor.c
 	src/Modules/VirtualMachine.c
+
 	src/Util/Heap.c
 )
 

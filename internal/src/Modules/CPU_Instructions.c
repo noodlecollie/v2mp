@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "Modules/CPU_Instructions.h"
 #include "Modules/CPU_Internal.h"
+#include "Modules/CPU_DevicePortOperations.h"
 
 // Return value is false under exceptional circumstances
 // (eg. CPU was not set up with supervisor interface).
@@ -404,9 +405,40 @@ bool Execute_DPQ(V2MP_CPU* cpu)
 
 bool Execute_DPO(V2MP_CPU* cpu)
 {
-	// TODO:
-	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
-	return true;
+	if ( V2MP_OP_DPO_RESBITS(cpu->ir) != 0 )
+	{
+		SetFault(cpu, V2MP_FAULT_RES, 0);
+		return true;
+	}
+
+	switch ( V2MP_OP_DPO_OPERATION_TYPE(cpu->ir) )
+	{
+		case V2MP_DPOT_USABLE_BYTE_COUNT:
+		{
+			return V2MP_CPU_DPO_UsableByteCount(cpu);
+		}
+
+		case V2MP_DPOT_RELINQUISH_MAILBOX:
+		{
+			return V2MP_CPU_DPO_RelinquishMailbox(cpu);
+		}
+
+		case V2MP_DPOT_READ:
+		{
+			return V2MP_CPU_DPO_Read(cpu);
+		}
+
+		case V2MP_DPOT_WRITE:
+		{
+			return V2MP_CPU_DPO_Write(cpu);
+		}
+
+		default:
+		{
+			SetFault(cpu, V2MP_FAULT_RES, 0);
+			return true;
+		}
+	}
 }
 
 bool Execute_Unassigned(V2MP_CPU* cpu)
