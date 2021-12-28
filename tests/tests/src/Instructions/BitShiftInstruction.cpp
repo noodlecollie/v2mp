@@ -1,7 +1,5 @@
-#define OLD_TEST
-
 #include "catch2/catch.hpp"
-#include "Helpers/MinimalVirtualMachine.h"
+#include "Helpers/TestHarnessVM.h"
 #include "Helpers/Assembly.h"
 
 static constexpr V2MP_Word BIT_0 = 0x0001;
@@ -17,7 +15,7 @@ SCENARIO("SHFT: Shifting register bits left by the value in another register res
 {
 	GIVEN("A virtual machine")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		AND_GIVEN("The destination register is R0")
 		{
@@ -305,7 +303,7 @@ SCENARIO("SHFT: Shifting register bits right by the value in another register re
 {
 	GIVEN("A virtual machine")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		AND_GIVEN("The destination register is R0")
 		{
@@ -593,7 +591,7 @@ SCENARIO("SHFT: Shifting register bits left by a literal value results in the co
 {
 	GIVEN("A virtual machine")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		AND_GIVEN("The destination register is R0")
 		{
@@ -853,7 +851,7 @@ SCENARIO("SHFT: Shifting register bits right by a literal value results in the c
 {
 	GIVEN("A virtual machine")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		AND_GIVEN("The destination register is R0")
 		{
@@ -1169,7 +1167,7 @@ SCENARIO("SHFT: Performing a bit shift sets the status register appropriately", 
 {
 	GIVEN("A virtual machine")
 	{
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		AND_GIVEN("An empty register")
 		{
@@ -1358,7 +1356,7 @@ SCENARIO("SHFT: Setting any literal operand bit if the source and destination re
 		static constexpr V2MP_Word VAL_LR = 0xB00B;
 		static constexpr V2MP_Word VAL_PC = 0x1234;
 
-		MinimalVirtualMachine vm;
+		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
 		vm.SetR1(VAL_R1);
@@ -1374,7 +1372,7 @@ SCENARIO("SHFT: Setting any literal operand bit if the source and destination re
 				THEN("A RES fault is raised, and all registers are left unchanged")
 				{
 					CHECK(vm.CPUHasFault());
-					CHECK(Asm::FaultFromWord(vm.GetCPUFault()) == V2MP_FAULT_RES);
+					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == VAL_R0);
 					CHECK(vm.GetR1() == VAL_R1);
 					CHECK(vm.GetLR() == VAL_LR);
