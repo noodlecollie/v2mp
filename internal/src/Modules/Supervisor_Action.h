@@ -4,11 +4,17 @@
 #include "V2MPInternal/Defs.h"
 #include "V2MPInternal/Modules/Supervisor.h"
 
+#define V2MP_SUPERVISOR_ACTION_LIST \
+	LIST_ITEM(SVAT_LOAD_WORD = 0, V2MP_Supervisor_HandleLoadWord) \
+	LIST_ITEM(SVAT_STORE_WORD, V2MP_Supervisor_HandleStoreWord) \
+	LIST_ITEM(SVAT_INIT_DEVICE_DATA_TRANSFER, V2MP_Supervisor_HandleInitDeviceDataTransfer)
+
+#define LIST_ITEM(value, handler) value,
 typedef enum V2MP_Supervisor_ActionType
 {
-	SVAT_LOAD_WORD = 0,
-	SVAT_STORE_WORD
+	V2MP_SUPERVISOR_ACTION_LIST
 } V2MP_Supervisor_ActionType;
+#undef LIST_ITEM
 
 typedef struct V2MP_Supervisor_Action
 {

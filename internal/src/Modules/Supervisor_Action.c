@@ -4,8 +4,29 @@
 #include "V2MPInternal/Components/DoubleLinkedList.h"
 #include "V2MPInternal/Modules/MemoryStore.h"
 #include "V2MPInternal/Modules/CPU.h"
+#include "V2MPInternal/Util/Util.h"
 
-static bool LoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
+typedef enum ActionResult
+{
+	AR_FAILED = 0,
+	AR_COMPLETE,
+	AR_ONGOING
+} ActionResult;
+
+static ActionResult V2MP_Supervisor_HandleLoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
+static ActionResult V2MP_Supervisor_HandleStoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
+static ActionResult V2MP_Supervisor_HandleInitDeviceDataTransfer(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
+
+typedef ActionResult (*ActionHandler)(V2MP_Supervisor*, V2MP_Supervisor_Action*);
+
+#define LIST_ITEM(value, handler) handler,
+static const ActionHandler ACTION_HANDLERS[] =
+{
+	V2MP_SUPERVISOR_ACTION_LIST
+};
+#undef LIST_ITEM
+
+static ActionResult V2MP_Supervisor_HandleLoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
 {
 	V2MP_MemoryStore* memoryStore;
 	V2MP_CPU* cpu;
@@ -17,14 +38,14 @@ static bool LoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action
 
 	if ( !memoryStore )
 	{
-		return false;
+		return AR_FAILED;
 	}
 
 	cpu = V2MP_Mainboard_GetCPU(supervisor->mainboard);
 
 	if ( !cpu )
 	{
-		return false;
+		return AR_FAILED;
 	}
 
 	address = supervisor->programDS.base + SVACTION_LOAD_WORD_ARG_ADDRESS(action);
@@ -33,20 +54,20 @@ static bool LoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action
 	if ( address & 0x1 )
 	{
 		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_ALGN, 0));
-		return true;
+		return AR_COMPLETE;
 	}
 
 	if ( !V2MP_MemoryStore_LoadWord(memoryStore, address, &loadedWord) )
 	{
 		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
-		return true;
+		return AR_COMPLETE;
 	}
 
 	V2MP_CPU_SetRegisterValueAndUpdateSR(cpu, destReg, loadedWord);
-	return true;
+	return AR_COMPLETE;
 }
 
-static bool StoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
+static ActionResult V2MP_Supervisor_HandleStoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
 {
 	V2MP_MemoryStore* memoryStore;
 	size_t address;
@@ -56,7 +77,7 @@ static bool StoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* actio
 
 	if ( !memoryStore )
 	{
-		return false;
+		return AR_FAILED;
 	}
 
 	address = supervisor->programDS.base + SVACTION_STORE_WORD_ARG_ADDRESS(action);
@@ -65,7 +86,7 @@ static bool StoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* actio
 	if ( address & 0x1 )
 	{
 		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_ALGN, 0));
-		return true;
+		return AR_COMPLETE;
 	}
 
 	if ( !V2MP_MemoryStore_StoreWord(memoryStore, address, wordToStore) )
@@ -73,34 +94,31 @@ static bool StoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* actio
 		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
 	}
 
-	return true;
+	return AR_COMPLETE;
 }
 
-static bool ResolveAction(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
+static ActionResult V2MP_Supervisor_HandleInitDeviceDataTransfer(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
+{
+	// TODO
+	(void)supervisor;
+	(void)action;
+	return AR_FAILED;
+}
+
+static ActionResult ResolveAction(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
 {
 	if ( !action )
 	{
-		return false;
+		return AR_FAILED;
 	}
 
-	switch ( action->actionType )
+	if ( (size_t)action->actionType >= V2MP_ARRAY_SIZE(ACTION_HANDLERS) ||
+	     !ACTION_HANDLERS[(size_t)action->actionType] )
 	{
-		case SVAT_LOAD_WORD:
-		{
-			return LoadWord(supervisor, action);
-		}
-
-		case SVAT_STORE_WORD:
-		{
-			return StoreWord(supervisor, action);
-		}
-
-		default:
-		{
-			V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, action->actionType));
-			return false;
-		}
+		return AR_FAILED;
 	}
+
+	return ACTION_HANDLERS[(size_t)action->actionType](supervisor, action);
 }
 
 bool V2MP_Supervisor_CreateActionList(V2MP_Supervisor* supervisor)
@@ -165,14 +183,18 @@ bool V2MP_Supervisor_ResolveOutstandingActions(V2MP_Supervisor* supervisor)
 	while ( node )
 	{
 		V2MP_DoubleLL_Node* next;
-		bool success;
+		ActionResult result;
 
-		success = ResolveAction(supervisor, (V2MP_Supervisor_Action*)V2MP_DoubleLLNode_GetPayload(node));
+		result = ResolveAction(supervisor, (V2MP_Supervisor_Action*)V2MP_DoubleLLNode_GetPayload(node));
 
 		next = V2MP_DoubleLLNode_GetNext(node);
-		V2MP_DoubleLLNode_Destroy(node);
 
-		if ( !success )
+		if ( result != AR_ONGOING )
+		{
+			V2MP_DoubleLLNode_Destroy(node);
+		}
+
+		if ( result == AR_FAILED )
 		{
 			break;
 		}
