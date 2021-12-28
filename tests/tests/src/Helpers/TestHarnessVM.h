@@ -92,7 +92,7 @@ private:
 class TestHarnessVM_StartsInvalid : public TestHarnessVM
 {
 public:
-	static const V2MP_Word INVALID_WORD;
+	static constexpr V2MP_Word INVALID_WORD = 0xDEAD;
 
 	inline TestHarnessVM_StartsInvalid() :
 		TestHarnessVM()
