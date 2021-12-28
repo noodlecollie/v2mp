@@ -1,5 +1,7 @@
 #include "Modules/Supervisor_Internal.h"
 #include "V2MPInternal/Modules/CPU.h"
+#include "V2MPInternal/Modules/MemoryStore.h"
+#include "V2MPInternal/Modules/Mainboard.h"
 
 void V2MP_Supervisor_SetCPUFault(V2MP_Supervisor* supervisor, V2MP_Word fault)
 {
@@ -20,12 +22,26 @@ void V2MP_Supervisor_SetCPUFault(V2MP_Supervisor* supervisor, V2MP_Word fault)
 
 V2MP_Word V2MP_Supervisor_FetchInstructionWord(V2MP_Supervisor* supervisor, V2MP_Word address, V2MP_Word* destReg)
 {
-	// TODO
-	(void)supervisor;
-	(void)address;
-	(void)destReg;
+	V2MP_MemoryStoreRenameMe* memoryStore;
 
-	return V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, 0);
+	if ( !supervisor )
+	{
+		return V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, 0);
+	}
+
+	memoryStore = V2MP_Mainboard_GetMemoryStore(supervisor->mainboard);
+
+	if ( !memoryStore )
+	{
+		return V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, 0);
+	}
+
+	if ( !V2MP_MemoryStoreRenameMe_LoadWord(memoryStore, address, destReg) )
+	{
+		return V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0);
+	}
+
+	return V2MP_FAULT_NONE;
 }
 
 void V2MP_Supervisor_RequestLoadWordFromDS(V2MP_Supervisor* supervisor, V2MP_Word address, V2MP_RegisterIndex destReg)
