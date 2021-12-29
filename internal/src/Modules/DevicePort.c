@@ -1,9 +1,11 @@
 #include "V2MPInternal/Modules/DevicePort.h"
 #include "V2MPInternal/Util/Heap.h"
+#include "V2MPInternal/Components/CircularBuffer.h"
 
 struct V2MP_DevicePort
 {
 	V2MP_Word address;
+	V2MP_CircularBuffer* mailbox;
 };
 
 V2MP_DevicePort* V2MP_DevicePort_AllocateAndInit(void)
@@ -17,6 +19,8 @@ void V2MP_DevicePort_DeinitAndFree(V2MP_DevicePort* port)
 	{
 		return;
 	}
+
+	V2MP_CircularBuffer_DeinitAndFree(port->mailbox);
 
 	V2MP_FREE(port);
 }
@@ -34,4 +38,44 @@ void V2MP_DevicePort_SetAddress(V2MP_DevicePort* port, V2MP_Word address)
 	}
 
 	port->address = address;
+}
+
+bool V2MP_DevicePort_AllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes)
+{
+	if ( !port )
+	{
+		return false;
+	}
+
+	V2MP_CircularBuffer_DeinitAndFree(port->mailbox);
+	port->mailbox = NULL;
+
+	if ( sizeInBytes < 1 )
+	{
+		return true;
+	}
+
+	port->mailbox = V2MP_CircularBuffer_AllocateAndInit(sizeInBytes);
+
+	return port->mailbox != NULL;
+}
+
+void V2MP_DevicePort_DeallocateMailbox(V2MP_DevicePort* port)
+{
+	V2MP_DevicePort_AllocateMailbox(port, 0);
+}
+
+size_t V2MP_DevicePort_GetMailboxSize(const V2MP_DevicePort* port)
+{
+	return port ? V2MP_CircularBuffer_Capacity(port->mailbox) : 0;
+}
+
+size_t V2MP_DevicePort_GetMailboxUsedSpace(const V2MP_DevicePort* port)
+{
+	return port ? V2MP_CircularBuffer_BytesUsed(port->mailbox) : 0;
+}
+
+size_t V2MP_DevicePort_GetMailboxFreeSpace(const V2MP_DevicePort* port)
+{
+	return port ? V2MP_CircularBuffer_BytesFree(port->mailbox) : 0;
 }
