@@ -16,13 +16,8 @@ struct V2MP_DoubleLL
 	size_t numNodes;
 
 	size_t payloadSize;
-	V2MP_DoubleLL_PayloadFreeCallback payloadFreeCB;
+	V2MP_DoubleLL_OnDestroyPayloadCallback onDestroyPayloadCallback;
 };
-
-static void DefaultPayloadFreeCallback(void* payload)
-{
-	V2MP_FREE(payload);
-}
 
 static inline V2MP_DoubleLL_Node* AllocateNodeAndPayload(V2MP_DoubleLL* list)
 {
@@ -45,11 +40,12 @@ static inline V2MP_DoubleLL_Node* AllocateNodeAndPayload(V2MP_DoubleLL* list)
 	return node;
 }
 
-static inline void FreeNode(V2MP_DoubleLL_Node* node, V2MP_DoubleLL_PayloadFreeCallback freeCB)
+static inline void FreeNode(V2MP_DoubleLL_Node* node, V2MP_DoubleLL_OnDestroyPayloadCallback onDestroyPayloadCallback)
 {
-	if ( node->payload )
+	if ( onDestroyPayloadCallback )
 	{
-		freeCB(node->payload);
+		onDestroyPayloadCallback(node->payload);
+		V2MP_FREE(node->payload);
 	}
 
 	V2MP_FREE(node);
@@ -62,7 +58,7 @@ static void FreeAllNodes(V2MP_DoubleLL* list)
 	while ( node )
 	{
 		V2MP_DoubleLL_Node* next = node->next;
-		FreeNode(node, list->payloadFreeCB);
+		FreeNode(node, list->onDestroyPayloadCallback);
 		node = next;
 	}
 
@@ -71,7 +67,7 @@ static void FreeAllNodes(V2MP_DoubleLL* list)
 	list->numNodes = 0;
 }
 
-V2MP_DoubleLL* V2MP_DoubleLL_AllocateAndInit(size_t payloadSize, V2MP_DoubleLL_PayloadFreeCallback payloadFreeCB)
+V2MP_DoubleLL* V2MP_DoubleLL_AllocateAndInit(size_t payloadSize, V2MP_DoubleLL_OnDestroyPayloadCallback onDestroyPayloadCallback)
 {
 	if ( payloadSize < 1 )
 	{
@@ -86,7 +82,7 @@ V2MP_DoubleLL* V2MP_DoubleLL_AllocateAndInit(size_t payloadSize, V2MP_DoubleLL_P
 	}
 
 	list->payloadSize = payloadSize;
-	list->payloadFreeCB = payloadFreeCB ? payloadFreeCB : &DefaultPayloadFreeCallback;
+	list->onDestroyPayloadCallback = onDestroyPayloadCallback;
 
 	return list;
 }
@@ -314,5 +310,5 @@ void V2MP_DoubleLLNode_Destroy(V2MP_DoubleLL_Node* node)
 		node->next->prev = node->prev;
 	}
 
-	FreeNode(node, list->payloadFreeCB);
+	FreeNode(node, list->onDestroyPayloadCallback);
 }

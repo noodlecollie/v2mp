@@ -10,9 +10,15 @@ extern "C" {
 typedef struct V2MP_DoubleLL V2MP_DoubleLL;
 typedef struct V2MP_DoubleLL_Node V2MP_DoubleLL_Node;
 
-typedef void (*V2MP_DoubleLL_PayloadFreeCallback)(void* payload);
+// Signature for callback that is called when a linked list node
+// is about to be destroyed. After this the payload pointer is
+// freed internally - it should NOT be freed by the callback.
+// However, if the user of the linked list uses the payload structure
+// to store any dynamic data, this data should be freed by the
+// callback.
+typedef void (*V2MP_DoubleLL_OnDestroyPayloadCallback)(void* payload);
 
-V2MP_DoubleLL* V2MP_DoubleLL_AllocateAndInit(size_t payloadSize, V2MP_DoubleLL_PayloadFreeCallback payloadFreeCB);
+V2MP_DoubleLL* V2MP_DoubleLL_AllocateAndInit(size_t payloadSize, V2MP_DoubleLL_OnDestroyPayloadCallback onDestroyPayloadCallback);
 void V2MP_DoubleLL_DeinitAndFree(V2MP_DoubleLL* list);
 
 V2MP_DoubleLL_Node* V2MP_DoubleLL_GetHead(const V2MP_DoubleLL* list);
