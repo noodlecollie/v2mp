@@ -3,6 +3,7 @@
 #include "Modules/Supervisor_Internal.h"
 #include "V2MPInternal/Components/DoubleLinkedList.h"
 #include "V2MPInternal/Modules/MemoryStore.h"
+#include "V2MPInternal/Modules/DevicePortCollection.h"
 #include "V2MPInternal/Modules/CPU.h"
 #include "V2MPInternal/Util/Util.h"
 
@@ -99,8 +100,16 @@ static ActionResult V2MP_Supervisor_HandleStoreWord(V2MP_Supervisor* supervisor,
 
 static ActionResult V2MP_Supervisor_HandleInitDeviceDataTransfer(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
 {
+	V2MP_DevicePortCollection* ports;
+
+	ports = V2MP_Mainboard_GetDevicePortCollection(supervisor->mainboard);
+
+	if ( !ports )
+	{
+		return AR_FAILED;
+	}
+
 	// TODO
-	(void)supervisor;
 	(void)action;
 	return AR_FAILED;
 }

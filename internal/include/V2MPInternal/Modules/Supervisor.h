@@ -44,6 +44,13 @@ bool V2MP_Supervisor_FetchDSWord(
 	V2MP_Word* outWord
 );
 
+bool V2MP_Supervisor_ReadDSRange(
+	const V2MP_Supervisor* supervisor,
+	V2MP_Word address,
+	V2MP_Byte* outBuffer,
+	size_t numBytes
+);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

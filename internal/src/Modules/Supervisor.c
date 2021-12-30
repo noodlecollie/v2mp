@@ -51,7 +51,12 @@ static bool FetchWordFromSegment(
 {
 	V2MP_MemoryStore* memoryStore;
 
-	if ( !supervisor || !seg || seg->lengthInBytes < sizeof(V2MP_Word) )
+	// Check is specially constructed to avoid possibility of size_t overflow:
+	if ( !supervisor ||
+	     !seg ||
+	     address >= seg->lengthInBytes ||
+	     sizeof(V2MP_Word) > seg->lengthInBytes ||
+	     address > seg->lengthInBytes - sizeof(V2MP_Word) )
 	{
 		return false;
 	}
@@ -64,6 +69,45 @@ static bool FetchWordFromSegment(
 	}
 
 	return V2MP_MemoryStore_LoadWord(memoryStore, seg->base + address, outWord);
+}
+
+static bool ReadRangeFromSegment(
+	const V2MP_Supervisor* supervisor,
+	const MemorySegment* seg,
+	size_t address,
+	V2MP_Byte* outBuffer,
+	size_t numBytes
+)
+{
+	V2MP_MemoryStore* memoryStore;
+	const V2MP_Byte* rawData;
+
+	// Check is specially constructed to avoid possibility of size_t overflow:
+	if ( !supervisor ||
+	     !seg ||
+	     address >= seg->lengthInBytes ||
+	     numBytes > seg->lengthInBytes ||
+	     address > seg->lengthInBytes - numBytes )
+	{
+		return false;
+	}
+
+	memoryStore = V2MP_Mainboard_GetMemoryStore(supervisor->mainboard);
+
+	if ( !memoryStore )
+	{
+		return false;
+	}
+
+	rawData = V2MP_MemoryStore_GetConstPtrToRange(memoryStore, seg->base + address, numBytes);
+
+	if ( !rawData )
+	{
+		return false;
+	}
+
+	memcpy(outBuffer, rawData, numBytes);
+	return true;
 }
 
 V2MP_Supervisor* V2MP_Supervisor_AllocateAndInit(void)
@@ -279,4 +323,25 @@ bool V2MP_Supervisor_FetchDSWord(
 	}
 
 	return FetchWordFromSegment(supervisor, &supervisor->programDS, address, outWord);
+}
+
+bool V2MP_Supervisor_ReadDSRange(
+	const V2MP_Supervisor* supervisor,
+	V2MP_Word address,
+	V2MP_Byte* outBuffer,
+	size_t numBytes
+)
+{
+	if ( !supervisor || !outBuffer || numBytes < 1 )
+	{
+		return false;
+	}
+
+	return ReadRangeFromSegment(
+		supervisor,
+		&supervisor->programDS,
+		address,
+		outBuffer,
+		numBytes
+	);
 }

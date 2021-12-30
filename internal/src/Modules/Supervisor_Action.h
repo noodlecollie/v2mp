@@ -28,6 +28,11 @@ typedef struct V2MP_Supervisor_Action
 #define SVACTION_STORE_WORD_ARG_ADDRESS(actionPtr) ((actionPtr)->args[0])
 #define SVACTION_STORE_WORD_ARG_WORD(actionPtr) ((actionPtr)->args[1])
 
+#define SVACTION_INIT_DDT_ARG_PORT(actionPtr) ((actionPtr)->args[0])
+#define SVACTION_INIT_DDT_ARG_DS_ADDR(actionPtr) ((actionPtr)->args[1])
+#define SVACTION_INIT_DDT_ARG_DS_SIZE(actionPtr) ((actionPtr)->args[2])
+#define SVACTION_INIT_DDT_ARG_IS_MB_WRITE(actionPtr) ((actionPtr)->args[3])
+
 bool V2MP_Supervisor_CreateActionList(V2MP_Supervisor* supervisor);
 void V2MP_Supervisor_DestroyActionList(V2MP_Supervisor* supervisor);
 V2MP_Supervisor_Action* V2MP_Supervisor_CreateNewAction(V2MP_Supervisor* supervisor);

@@ -65,17 +65,7 @@ void V2MP_DevicePort_DeallocateMailbox(V2MP_DevicePort* port)
 	V2MP_DevicePort_AllocateMailbox(port, 0);
 }
 
-size_t V2MP_DevicePort_GetMailboxSize(const V2MP_DevicePort* port)
+struct V2MP_CircularBuffer* V2MP_DevicePort_GetMailbox(V2MP_DevicePort* port)
 {
-	return port ? V2MP_CircularBuffer_Capacity(port->mailbox) : 0;
-}
-
-size_t V2MP_DevicePort_GetMailboxUsedSpace(const V2MP_DevicePort* port)
-{
-	return port ? V2MP_CircularBuffer_BytesUsed(port->mailbox) : 0;
-}
-
-size_t V2MP_DevicePort_GetMailboxFreeSpace(const V2MP_DevicePort* port)
-{
-	return port ? V2MP_CircularBuffer_BytesFree(port->mailbox) : 0;
+	return port ? port->mailbox : NULL;
 }

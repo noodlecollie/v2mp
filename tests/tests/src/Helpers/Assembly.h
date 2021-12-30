@@ -20,6 +20,14 @@ namespace Asm
 		NOT = 0x3
 	};
 
+	enum class DevicePortOperation : uint8_t
+	{
+		USABLE_BYTE_COUNT = 0x0,
+		RELINQUISH_MAILBOX = 0x1,
+		READ = 0x2,
+		WRITE = 0x3
+	};
+
 	constexpr inline V2MP_Word FaultFromWord(V2MP_Word faultWord)
 	{
 		return (faultWord & 0xF000) >> 12;
@@ -147,5 +155,12 @@ namespace Asm
 		return (V2MP_OP_CBX << 12)
 			| static_cast<V2MP_Word>(1 << 10)
 			| (static_cast<V2MP_Word>(deltaWords) & 0x00FF);
+	}
+
+	constexpr inline V2MP_Word DPO(DevicePortOperation operation, bool useIndirectDataTransfer)
+	{
+		return (V2MP_OP_DPO) << 12
+			| (static_cast<V2MP_Word>(useIndirectDataTransfer ? 1 : 0) << 11)
+			| (static_cast<V2MP_Word>(operation) & 0x0003);
 	}
 }

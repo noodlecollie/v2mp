@@ -1,12 +1,15 @@
 #pragma once
 
 #include <stdexcept>
+#include <vector>
 #include "V2MPInternal/Defs.h"
 #include "V2MPInternal/Modules/VirtualMachine.h"
 #include "V2MPInternal/Modules/Mainboard.h"
 #include "V2MPInternal/Modules/Supervisor.h"
 #include "V2MPInternal/Modules/CPU.h"
 #include "V2MPInternal/Modules/MemoryStore.h"
+#include "V2MPInternal/Modules/DevicePortCollection.h"
+#include "V2MPInternal/Modules/DevicePort.h"
 
 class TestHarnessVM
 {
@@ -43,6 +46,9 @@ public:
 	V2MP_MemoryStore* GetMemoryStore();
 	const V2MP_MemoryStore* GetMemoryStore() const;
 
+	V2MP_DevicePortCollection* GetDevicePortCollection();
+	const V2MP_DevicePortCollection* GetDevicePortCollection() const;
+
 	bool SetCSAndDS(const V2MP_Word* cs, V2MP_Word csWords, const V2MP_Word* ds, V2MP_Word dsWords);
 	bool FillCSAndDS(V2MP_Word csWords, V2MP_Word csFill, V2MP_Word dsWords, V2MP_Word dsFill);
 
@@ -70,6 +76,10 @@ public:
 		return SetCSAndDS(csData, CSN, nullptr, 0);
 	}
 
+	V2MP_DevicePort* CreatePort(V2MP_Word address, size_t mailboxSize);
+	bool DestroyPort(V2MP_Word address);
+	size_t WriteToPortMailbox(V2MP_Word address, const char* string);
+
 	V2MP_Word GetCPUFaultWord() const;
 	bool CPUHasFault() const;
 
@@ -95,6 +105,8 @@ public:
 
 	bool GetCSWord(V2MP_Word address, V2MP_Word& outWord) const;
 	bool GetDSWord(V2MP_Word address, V2MP_Word& outWord) const;
+
+	bool GetDSData(V2MP_Word address, size_t length, std::vector<V2MP_Byte>& outData);
 
 protected:
 	virtual void OnCPUReset()
