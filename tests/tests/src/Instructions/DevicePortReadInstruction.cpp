@@ -44,7 +44,7 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 			{
 				vm.SetR0(PORT_ADDRESS);
 				vm.SetLR(DS_ADDRESS);
-				vm.SetR1(SEGMENT_SIZE_WORDS * sizeof(V2MP_Word));
+				vm.SetR1(static_cast<V2MP_Word>(SEGMENT_SIZE_WORDS * sizeof(V2MP_Word)));
 
 				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::READ, true)));
 				REQUIRE_FALSE(vm.CPUHasFault());

@@ -26,7 +26,7 @@ public:
 		}
 	};
 
-	TestHarnessVM(V2MP_Word totalRamInBytes = DEFAULT_RAM_BYTES);
+	TestHarnessVM(size_t totalRamInBytes = DEFAULT_RAM_BYTES);
 	virtual ~TestHarnessVM();
 
 	TestHarnessVM(const TestHarnessVM& other) = delete;
@@ -49,15 +49,15 @@ public:
 	V2MP_DevicePortCollection* GetDevicePortCollection();
 	const V2MP_DevicePortCollection* GetDevicePortCollection() const;
 
-	bool SetCSAndDS(const V2MP_Word* cs, V2MP_Word csWords, const V2MP_Word* ds, V2MP_Word dsWords);
-	bool FillCSAndDS(V2MP_Word csWords, V2MP_Word csFill, V2MP_Word dsWords, V2MP_Word dsFill);
+	bool SetCSAndDS(const V2MP_Word* cs, size_t csWords, const V2MP_Word* ds, size_t dsWords);
+	bool FillCSAndDS(size_t csWords, V2MP_Word csFill, size_t dsWords, V2MP_Word dsFill);
 
-	inline bool SetCS(const V2MP_Word* cs, V2MP_Word csWords)
+	inline bool SetCS(const V2MP_Word* cs, size_t csWords)
 	{
 		return SetCSAndDS(cs, csWords, nullptr, 0);
 	}
 
-	inline bool FillCS(V2MP_Word csWords, V2MP_Word csFill)
+	inline bool FillCS(size_t csWords, V2MP_Word csFill)
 	{
 		return FillCSAndDS(csWords, csFill, 0, 0);
 	}
@@ -114,7 +114,7 @@ protected:
 	}
 
 private:
-	void ThrowExceptionIfNotInitialisedCorrectly(V2MP_Word totalRamInBytes);
+	void ThrowExceptionIfNotInitialisedCorrectly(size_t totalRamInBytes);
 
 	V2MP_VirtualMachine* m_VM;
 };

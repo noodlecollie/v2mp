@@ -5,7 +5,7 @@
 
 const V2MP_Word TestHarnessVM_StartsInvalid::INVALID_WORD = 0xDEAD;
 
-TestHarnessVM::TestHarnessVM(V2MP_Word totalRamInBytes)
+TestHarnessVM::TestHarnessVM(size_t totalRamInBytes)
 {
 	m_VM = V2MP_VirtualMachine_AllocateAndInit();
 	V2MP_VirtualMachine_AllocateTotalMemory(m_VM, totalRamInBytes);
@@ -69,12 +69,12 @@ const V2MP_DevicePortCollection* TestHarnessVM::GetDevicePortCollection() const
 	return V2MP_Mainboard_GetDevicePortCollection(GetMainboard());
 }
 
-bool TestHarnessVM::SetCSAndDS(const V2MP_Word* cs, V2MP_Word csWords, const V2MP_Word* ds, V2MP_Word dsWords)
+bool TestHarnessVM::SetCSAndDS(const V2MP_Word* cs, size_t csWords, const V2MP_Word* ds, size_t dsWords)
 {
 	return V2MP_VirtualMachine_LoadProgram(m_VM, cs, csWords, ds, dsWords);
 }
 
-bool TestHarnessVM::FillCSAndDS(V2MP_Word csWords, V2MP_Word csFill, V2MP_Word dsWords, V2MP_Word dsFill)
+bool TestHarnessVM::FillCSAndDS(size_t csWords, V2MP_Word csFill, size_t dsWords, V2MP_Word dsFill)
 {
 	const std::vector<V2MP_Word> cs(static_cast<size_t>(csWords), csFill);
 	const std::vector<V2MP_Word> ds(static_cast<size_t>(dsWords), dsFill);
@@ -218,7 +218,7 @@ bool TestHarnessVM::GetDSData(V2MP_Word address, size_t length, std::vector<V2MP
 	return V2MP_Supervisor_ReadDSRange(GetSupervisor(), address, outData.data(), outData.size());
 }
 
-void TestHarnessVM::ThrowExceptionIfNotInitialisedCorrectly(V2MP_Word totalRamInBytes)
+void TestHarnessVM::ThrowExceptionIfNotInitialisedCorrectly(size_t totalRamInBytes)
 {
 	if ( !GetMainboard() )
 	{
