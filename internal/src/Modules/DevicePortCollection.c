@@ -106,7 +106,6 @@ struct V2MP_DevicePort* V2MP_DevicePortCollection_CreatePort(V2MP_DevicePortColl
 bool V2MP_DevicePortCollection_DestroyPort(V2MP_DevicePortCollection* dpc, V2MP_Word address)
 {
 	V2MP_DoubleLL_Node* node = NULL;
-	DevicePortEntry* entry = NULL;
 
 	if ( !dpc )
 	{
@@ -120,9 +119,7 @@ bool V2MP_DevicePortCollection_DestroyPort(V2MP_DevicePortCollection* dpc, V2MP_
 		return false;
 	}
 
-	entry = (DevicePortEntry*)V2MP_DoubleLLNode_GetPayload(node);
-
-	V2MP_DevicePort_DeinitAndFree(entry->port);
+	// The contents of the node are cleaned up when the node is destroyed.
 	V2MP_DoubleLLNode_Destroy(node);
 
 	return true;

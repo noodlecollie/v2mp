@@ -9,14 +9,10 @@ extern "C" {
 #endif
 
 typedef struct V2MP_Device V2MP_Device;
-
-V2MP_Device* V2MP_Device_AllocateAndInit(void);
-void V2MP_Device_DeinitAndFree(V2MP_Device* device);
+struct V2MP_DevicePort;
 
 bool V2MP_Device_IsConnectedToPort(const V2MP_Device* device);
-
-// Only valid if the device is connected to a port.
-V2MP_Word V2MP_Device_ConnectedPortAddress(const V2MP_Device* device);
+struct V2MP_DevicePort* V2MP_Device_GetConnectedPort(const V2MP_Device* device);
 
 #ifdef __cplusplus
 } // extern "C"

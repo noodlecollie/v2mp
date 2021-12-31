@@ -1,25 +1,7 @@
 #include "V2MPInternal/Modules/DevicePort.h"
-#include "V2MPInternal/Util/Heap.h"
 #include "V2MPInternal/Components/CircularBuffer.h"
 #include "Modules/DevicePort_Internal.h"
 #include "Modules/Device_Internal.h"
-
-V2MP_DevicePort* V2MP_DevicePort_AllocateAndInit(void)
-{
-	return V2MP_CALLOC_STRUCT(V2MP_DevicePort);
-}
-
-void V2MP_DevicePort_DeinitAndFree(V2MP_DevicePort* port)
-{
-	if ( !port )
-	{
-		return;
-	}
-
-	V2MP_CircularBuffer_DeinitAndFree(port->mailbox);
-
-	V2MP_FREE(port);
-}
 
 V2MP_Word V2MP_DevicePort_GetAddress(const V2MP_DevicePort* port)
 {
@@ -64,7 +46,7 @@ bool V2MP_DevicePort_ConnectDevice(V2MP_DevicePort* port, struct V2MP_Device* de
 	}
 
 	port->connectedDevice = device;
-	V2MP_Device_NotifyConnectedToPort(device, port->address);
+	V2MP_Device_NotifyConnectedToPort(device, port);
 
 	return true;
 }
@@ -82,12 +64,12 @@ bool V2MP_DevicePort_DisconnectDevice(V2MP_DevicePort* port)
 	return true;
 }
 
-bool V2MP_DevicePort_IsDeviceConnected(const V2MP_DevicePort* port)
+bool V2MP_DevicePort_HasConnectedDevice(const V2MP_DevicePort* port)
 {
 	return port ? port->connectedDevice != NULL : false;
 }
 
-struct V2MP_Device* V2MP_DevicePort_ConnectedDevice(const V2MP_DevicePort* port)
+struct V2MP_Device* V2MP_DevicePort_GetConnectedDevice(const V2MP_DevicePort* port)
 {
 	return port ? port->connectedDevice : NULL;
 }

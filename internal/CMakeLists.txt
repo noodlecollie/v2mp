@@ -9,6 +9,7 @@ add_library(${TARGETNAME_V2MP_INTERNAL} STATIC
 	src/Modules/CPU.c
 	src/Modules/Device_Internal.c
 	src/Modules/Device.c
+	src/Modules/DeviceCollection.c
 	src/Modules/DevicePort_Internal.c
 	src/Modules/DevicePort.c
 	src/Modules/DevicePortCollection.c

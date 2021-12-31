@@ -125,7 +125,7 @@ static ActionResult V2MP_Supervisor_HandleInitDeviceDataTransfer(V2MP_Supervisor
 
 	port = V2MP_DevicePortCollection_GetPort(ports, SVACTION_INIT_DDT_ARG_PORT(action));
 
-	if ( !port || !V2MP_DevicePort_IsDeviceConnected(port) )
+	if ( !port || !V2MP_DevicePort_HasConnectedDevice(port) )
 	{
 		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_IDO, 0));
 		return AR_COMPLETE;

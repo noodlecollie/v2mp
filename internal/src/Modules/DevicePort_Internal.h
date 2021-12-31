@@ -13,6 +13,10 @@ struct V2MP_DevicePort
 	V2MP_Device* connectedDevice;
 };
 
+V2MP_DevicePort* V2MP_DevicePort_AllocateAndInit(void);
+void V2MP_DevicePort_DeinitAndFree(V2MP_DevicePort* port);
+
 void V2MP_DevicePort_SetAddress(V2MP_DevicePort* port, V2MP_Word address);
+void V2MP_DevicePort_NotifyDeviceDisconnected(V2MP_DevicePort* port);
 
 #endif // V2MP_MODULES_DEVICEPORT_INTERNAL_H

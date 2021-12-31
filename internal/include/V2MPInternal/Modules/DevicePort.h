@@ -13,9 +13,6 @@ typedef struct V2MP_DevicePort V2MP_DevicePort;
 struct V2MP_CircularBuffer;
 struct V2MP_Device;
 
-V2MP_DevicePort* V2MP_DevicePort_AllocateAndInit(void);
-void V2MP_DevicePort_DeinitAndFree(V2MP_DevicePort* port);
-
 V2MP_Word V2MP_DevicePort_GetAddress(const V2MP_DevicePort* port);
 
 // If any mailbox already exists, its contents are discarded.
@@ -32,8 +29,8 @@ bool V2MP_DevicePort_ConnectDevice(V2MP_DevicePort* port, struct V2MP_Device* de
 // was no device connected to the port.
 bool V2MP_DevicePort_DisconnectDevice(V2MP_DevicePort* port);
 
-bool V2MP_DevicePort_IsDeviceConnected(const V2MP_DevicePort* port);
-struct V2MP_Device* V2MP_DevicePort_ConnectedDevice(const V2MP_DevicePort* port);
+bool V2MP_DevicePort_HasConnectedDevice(const V2MP_DevicePort* port);
+struct V2MP_Device* V2MP_DevicePort_GetConnectedDevice(const V2MP_DevicePort* port);
 
 #ifdef __cplusplus
 } // extern "C"

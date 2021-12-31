@@ -311,4 +311,5 @@ void V2MP_DoubleLLNode_Destroy(V2MP_DoubleLL_Node* node)
 	}
 
 	FreeNode(node, list->onDestroyPayloadCallback);
+	--list->numNodes;
 }

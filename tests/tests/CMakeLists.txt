@@ -16,6 +16,8 @@ add_executable(V2MP_Tests
 	src/Instructions/LoadStoreInstruction.cpp
 	src/Instructions/SubtractInstruction.cpp
 
+	src/Modules/DevicePorts.cpp
+
 	src/Main.cpp
 )
 
