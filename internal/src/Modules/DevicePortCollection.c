@@ -3,6 +3,7 @@
 #include "V2MPInternal/Components/DoubleLinkedList.h"
 #include "V2MPInternal/Components/HexTree.h"
 #include "V2MPInternal/Util/Heap.h"
+#include "Modules/DevicePort_Internal.h"
 
 typedef struct DevicePortEntry
 {
