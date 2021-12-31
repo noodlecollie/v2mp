@@ -1,7 +1,7 @@
 #include <cstring>
 #include "catch2/catch.hpp"
 #include "Helpers/TestHarnessVM.h"
-#include "Helpers/MockDevice.h"
+#include "Helpers/EmitterMockDevice.h"
 #include "Helpers/Assembly.h"
 
 static constexpr V2MP_Byte SEGMENT_SENTRY_BYTE = 0xAA;
@@ -47,10 +47,12 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 			V2MP_DevicePort* port = vm.CreatePort(PORT_ADDRESS, 64);
 			REQUIRE(port);
 
-			std::shared_ptr<MockDevice> mockDevice = vm.ConnectMockDeviceToPort<MockDevice>(PORT_ADDRESS);
-			REQUIRE(mockDevice);
+			std::shared_ptr<EmitterMockDevice> device = vm.ConnectMockDeviceToPort<EmitterMockDevice>(PORT_ADDRESS);
+			REQUIRE(device);
 
-			REQUIRE(vm.WriteToPortMailbox(PORT_ADDRESS, MESSAGE) == sizeof(MESSAGE));
+			REQUIRE(device->AllocateMailbox(128));
+			REQUIRE(device->WriteToMailbox(MESSAGE) == sizeof(MESSAGE));
+			device->RelinquishMailbox();
 
 			WHEN("A DPO instruction is executed to perform an IDT read from the mailbox")
 			{

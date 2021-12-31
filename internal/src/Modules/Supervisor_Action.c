@@ -131,11 +131,15 @@ static ActionResult V2MP_Supervisor_HandleInitDeviceDataTransfer(V2MP_Supervisor
 		return AR_COMPLETE;
 	}
 
-	// TODO: Check if the port is controlled by the program, and whether it's in the correct state.
-
 	mailbox = V2MP_DevicePort_GetMailbox(port);
 
 	if ( !mailbox )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_IDO, 0));
+		return AR_COMPLETE;
+	}
+
+	if ( V2MP_DevicePort_GetMailboxController(port) != V2MP_MBC_PROGRAM )
 	{
 		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_IDO, 0));
 		return AR_COMPLETE;

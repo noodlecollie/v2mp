@@ -101,7 +101,7 @@ V2MP_DevicePort* TestHarnessVM::CreatePort(V2MP_Word address, size_t mailboxSize
 		return nullptr;
 	}
 
-	if ( !V2MP_DevicePort_AllocateMailbox(port, mailboxSize) )
+	if ( !V2MP_DevicePort_DeviceAllocateMailbox(port, mailboxSize) )
 	{
 		V2MP_DevicePortCollection_DestroyPort(GetDevicePortCollection(), address);
 		port = nullptr;
@@ -113,25 +113,6 @@ V2MP_DevicePort* TestHarnessVM::CreatePort(V2MP_Word address, size_t mailboxSize
 bool TestHarnessVM::DestroyPort(V2MP_Word address)
 {
 	return V2MP_DevicePortCollection_DestroyPort(GetDevicePortCollection(), address);
-}
-
-size_t TestHarnessVM::WriteToPortMailbox(V2MP_Word address, const char* string)
-{
-	if ( !string )
-	{
-		return 0;
-	}
-
-	V2MP_DevicePort* port = V2MP_DevicePortCollection_GetPort(GetDevicePortCollection(), address);
-
-	if ( !port )
-	{
-		return 0;
-	}
-
-	V2MP_CircularBuffer* mailbox = V2MP_DevicePort_GetMailbox(port);
-
-	return V2MP_CircularBuffer_WriteData(mailbox, reinterpret_cast<const uint8_t*>(string), strlen(string) + 1);
 }
 
 V2MP_Word TestHarnessVM::GetCPUFaultWord() const
@@ -228,6 +209,12 @@ bool TestHarnessVM::GetDSData(V2MP_Word address, size_t length, std::vector<V2MP
 	return V2MP_Supervisor_ReadDSRange(GetSupervisor(), address, outData.data(), outData.size());
 }
 
+std::shared_ptr<BaseMockDevice> TestHarnessVM::GetBaseMockDevice(V2MP_Word address) const
+{
+	const auto it = m_MockDevices.find(address);
+	return it != m_MockDevices.end() ? it->second : std::shared_ptr<BaseMockDevice>();
+}
+
 void TestHarnessVM::ThrowExceptionIfNotInitialisedCorrectly(size_t totalRamInBytes)
 {
 	if ( !GetMainboard() )
@@ -256,7 +243,7 @@ void TestHarnessVM::ThrowExceptionIfNotInitialisedCorrectly(size_t totalRamInByt
 	}
 }
 
-bool TestHarnessVM::ConnectMockDeviceToPortInternal(std::shared_ptr<MockDevice> mockDevice, V2MP_Word address)
+bool TestHarnessVM::ConnectMockDeviceToPortInternal(std::shared_ptr<BaseMockDevice> mockDevice, V2MP_Word address)
 {
 	if ( !mockDevice || m_MockDevices.find(address) != m_MockDevices.end() )
 	{

@@ -17,9 +17,12 @@ V2MP_Word V2MP_DevicePort_GetAddress(const V2MP_DevicePort* port);
 
 // If any mailbox already exists, its contents are discarded.
 // Specifiying a mailbox of 0 bytes simply deallocates its memory.
-bool V2MP_DevicePort_AllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes);
-void V2MP_DevicePort_DeallocateMailbox(V2MP_DevicePort* port);
+// The port must be controlled by the device for the mailbox to be allocated.
+bool V2MP_DevicePort_DeviceAllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes);
+bool V2MP_DevicePort_DeviceDeallocateMailbox(V2MP_DevicePort* port);
+
 struct V2MP_CircularBuffer* V2MP_DevicePort_GetMailbox(V2MP_DevicePort* port);
+const struct V2MP_CircularBuffer* V2MP_DevicePort_GetConstMailbox(const V2MP_DevicePort* port);
 
 // Returns true if the device was connected, or false if there was already
 // a different device connected to the port.
@@ -31,6 +34,9 @@ bool V2MP_DevicePort_DisconnectDevice(V2MP_DevicePort* port);
 
 bool V2MP_DevicePort_HasConnectedDevice(const V2MP_DevicePort* port);
 struct V2MP_Device* V2MP_DevicePort_GetConnectedDevice(const V2MP_DevicePort* port);
+
+V2MP_MailboxController V2MP_DevicePort_GetMailboxController(const V2MP_DevicePort* port);
+void V2MP_DevicePort_SetMailboxController(V2MP_DevicePort* port, V2MP_MailboxController controller);
 
 #ifdef __cplusplus
 } // extern "C"

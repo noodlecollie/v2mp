@@ -8,9 +8,9 @@ V2MP_Word V2MP_DevicePort_GetAddress(const V2MP_DevicePort* port)
 	return port ? port->address : 0;
 }
 
-bool V2MP_DevicePort_AllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes)
+bool V2MP_DevicePort_DeviceAllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes)
 {
-	if ( !port )
+	if ( !port || port->mailboxController != V2MP_MBC_DEVICE )
 	{
 		return false;
 	}
@@ -28,12 +28,17 @@ bool V2MP_DevicePort_AllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes)
 	return port->mailbox != NULL;
 }
 
-void V2MP_DevicePort_DeallocateMailbox(V2MP_DevicePort* port)
+bool V2MP_DevicePort_DeviceDeallocateMailbox(V2MP_DevicePort* port)
 {
-	V2MP_DevicePort_AllocateMailbox(port, 0);
+	return V2MP_DevicePort_DeviceAllocateMailbox(port, 0);
 }
 
 struct V2MP_CircularBuffer* V2MP_DevicePort_GetMailbox(V2MP_DevicePort* port)
+{
+	return (struct V2MP_CircularBuffer*)V2MP_DevicePort_GetConstMailbox(port);
+}
+
+const struct V2MP_CircularBuffer* V2MP_DevicePort_GetConstMailbox(const V2MP_DevicePort* port)
 {
 	return port ? port->mailbox : NULL;
 }
@@ -72,4 +77,19 @@ bool V2MP_DevicePort_HasConnectedDevice(const V2MP_DevicePort* port)
 struct V2MP_Device* V2MP_DevicePort_GetConnectedDevice(const V2MP_DevicePort* port)
 {
 	return port ? port->connectedDevice : NULL;
+}
+
+V2MP_MailboxController V2MP_DevicePort_GetMailboxController(const V2MP_DevicePort* port)
+{
+	return port ? port->mailboxController : V2MP_MBC_DEVICE;
+}
+
+void V2MP_DevicePort_SetMailboxController(V2MP_DevicePort* port, V2MP_MailboxController controller)
+{
+	if ( !port )
+	{
+		return;
+	}
+
+	port->mailboxController = controller;
 }

@@ -52,6 +52,13 @@ typedef enum V2MP_RegisterIndex
 	V2MP_REGID_PC = 0x3
 } V2MP_RegisterIndex;
 
+typedef enum V2MP_MailboxController
+{
+	V2MP_MBC_DEVICE = 0,
+	V2MP_MBC_PROGRAM,
+	V2MP_MBC_SUPERVISOR
+} V2MP_MailboxController;
+
 typedef enum V2MP_BitwiseOp
 {
 	V2MP_BITOP_AND = 0x0,

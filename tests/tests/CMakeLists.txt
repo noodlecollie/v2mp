@@ -1,7 +1,8 @@
 add_executable(V2MP_Tests
 	src/Components/CircularBuffer.cpp
 
-	src/Helpers/MockDevice.cpp
+	src/Helpers/BaseMockDevice.cpp
+	src/Helpers/EmitterMockDevice.cpp
 	src/Helpers/TestHarnessVM.cpp
 
 	src/Instructions/AddInstruction.cpp

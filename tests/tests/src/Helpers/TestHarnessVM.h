@@ -15,7 +15,7 @@
 #include "V2MPInternal/Modules/DevicePort.h"
 #include "V2MPInternal/Modules/DeviceCollection.h"
 #include "V2MPInternal/Modules/Device.h"
-#include "Helpers/MockDevice.h"
+#include "Helpers/BaseMockDevice.h"
 
 class TestHarnessVM
 {
@@ -87,7 +87,6 @@ public:
 
 	V2MP_DevicePort* CreatePort(V2MP_Word address, size_t mailboxSize);
 	bool DestroyPort(V2MP_Word address);
-	size_t WriteToPortMailbox(V2MP_Word address, const char* string);
 
 	V2MP_Word GetCPUFaultWord() const;
 	bool CPUHasFault() const;
@@ -118,14 +117,22 @@ public:
 	bool GetDSData(V2MP_Word address, size_t length, std::vector<V2MP_Byte>& outData);
 
 	template<typename T>
-	inline typename std::enable_if<std::is_base_of<MockDevice, T>::value, std::shared_ptr<T>>::type
+	inline typename std::enable_if<std::is_base_of<BaseMockDevice, T>::value, std::shared_ptr<T>>::type
 	ConnectMockDeviceToPort(V2MP_Word address)
 	{
 		std::shared_ptr<T> mockDeviceSubclass = std::make_shared<T>();
 
-		return ConnectMockDeviceToPortInternal(std::static_pointer_cast<MockDevice>(mockDeviceSubclass), address)
+		return ConnectMockDeviceToPortInternal(std::static_pointer_cast<BaseMockDevice>(mockDeviceSubclass), address)
 			? mockDeviceSubclass
 			: std::shared_ptr<T>();
+	}
+
+	std::shared_ptr<BaseMockDevice> GetBaseMockDevice(V2MP_Word address) const;
+
+	template<typename T>
+	inline std::shared_ptr<T> GetMockDevice(V2MP_Word address) const
+	{
+		return std::dynamic_pointer_cast<T>(GetBaseMockDevice(address));
 	}
 
 protected:
@@ -135,10 +142,10 @@ protected:
 
 private:
 	void ThrowExceptionIfNotInitialisedCorrectly(size_t totalRamInBytes);
-	bool ConnectMockDeviceToPortInternal(std::shared_ptr<MockDevice> mockDevice, V2MP_Word address);
+	bool ConnectMockDeviceToPortInternal(std::shared_ptr<BaseMockDevice> mockDevice, V2MP_Word address);
 
 	V2MP_VirtualMachine* m_VM;
-	std::unordered_map<V2MP_Word, std::shared_ptr<MockDevice>> m_MockDevices;
+	std::unordered_map<V2MP_Word, std::shared_ptr<BaseMockDevice>> m_MockDevices;
 };
 
 class TestHarnessVM_StartsInvalid : public TestHarnessVM

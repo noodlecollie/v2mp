@@ -99,11 +99,6 @@ SCENARIO("Creating and destroying devices and ports automatically disconnects th
 					{
 						REQUIRE_FALSE(V2MP_Device_IsConnectedToPort(device));
 					}
-
-					AND_THEN("Getting the connected device port returns null")
-					{
-						REQUIRE(V2MP_Device_GetConnectedPort(device) == nullptr);
-					}
 				}
 
 				AND_WHEN("The port collection is destroyed")
@@ -115,11 +110,6 @@ SCENARIO("Creating and destroying devices and ports automatically disconnects th
 					THEN("The device reports that it is not connected to a port")
 					{
 						REQUIRE_FALSE(V2MP_Device_IsConnectedToPort(device));
-					}
-
-					AND_THEN("Getting the connected device port returns null")
-					{
-						REQUIRE(V2MP_Device_GetConnectedPort(device) == nullptr);
 					}
 				}
 			}
