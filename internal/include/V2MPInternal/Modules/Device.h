@@ -11,8 +11,20 @@ extern "C" {
 typedef struct V2MP_Device V2MP_Device;
 struct V2MP_DevicePort;
 
+typedef struct V2MP_Device_ExtInterface
+{
+	void* userData;
+
+	void (*poll)(void* userData, V2MP_Device* device);
+} V2MP_Device_ExtInterface;
+
 bool V2MP_Device_IsConnectedToPort(const V2MP_Device* device);
 struct V2MP_DevicePort* V2MP_Device_GetConnectedPort(const V2MP_Device* device);
+
+void V2MP_Device_SetExtInterface(V2MP_Device* device, const V2MP_Device_ExtInterface* interface);
+void V2MP_Device_ClearExtInterface(V2MP_Device* device);
+
+void V2MP_Device_Poll(V2MP_Device* device);
 
 #ifdef __cplusplus
 } // extern "C"

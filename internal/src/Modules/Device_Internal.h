@@ -12,6 +12,7 @@ struct V2MP_Device
 {
 	V2MP_DoubleLL_Node* ownerNode;
 	struct V2MP_DevicePort* connectedPort;
+	V2MP_Device_ExtInterface extInterface;
 };
 
 V2MP_Device* V2MP_Device_AllocateAndInit(void);

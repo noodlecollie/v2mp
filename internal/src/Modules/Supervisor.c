@@ -2,6 +2,8 @@
 #include "V2MPInternal/Modules/Supervisor.h"
 #include "V2MPInternal/Modules/CPU.h"
 #include "V2MPInternal/Modules/MemoryStore.h"
+#include "V2MPInternal/Modules/DeviceCollection.h"
+#include "V2MPInternal/Modules/Device.h"
 #include "V2MPInternal/Util/Heap.h"
 #include "Modules/Supervisor_Internal.h"
 #include "Modules/Supervisor_CPUInterface.h"
@@ -40,6 +42,28 @@ static void AttachToMainboard(V2MP_Supervisor* supervisor)
 		V2MP_Supervisor_CreateCPUInterface(supervisor, &interface);
 		V2MP_CPU_SetSupervisorInterface(cpu, &interface);
 	}
+}
+
+static bool PollAllDevices(V2MP_Supervisor* supervisor)
+{
+	V2MP_DeviceCollection* devices;
+	V2MP_Device* device;
+
+	devices = V2MP_Mainboard_GetDeviceCollection(supervisor->mainboard);
+
+	if ( !devices )
+	{
+		return false;
+	}
+
+	for ( device = V2MP_DeviceCollection_GetFirstDevice(devices);
+	      device;
+	      device = V2MP_DeviceCollection_GetNext(devices, device) )
+	{
+		V2MP_Device_Poll(device);
+	}
+
+	return true;
 }
 
 V2MP_Supervisor* V2MP_Supervisor_AllocateAndInit(void)
@@ -221,6 +245,11 @@ bool V2MP_Supervisor_ExecuteSingleInstruction(V2MP_Supervisor* supervisor, V2MP_
 	}
 
 	if ( !V2MP_Supervisor_ResolveOutstandingActions(supervisor) )
+	{
+		return false;
+	}
+
+	if ( !PollAllDevices(supervisor) )
 	{
 		return false;
 	}

@@ -19,6 +19,9 @@ bool V2MP_DeviceCollection_DestroyDevice(V2MP_DeviceCollection* dc, struct V2MP_
 
 size_t V2MP_DeviceCollection_GetDeviceCount(const V2MP_DeviceCollection* dc);
 
+struct V2MP_Device* V2MP_DeviceCollection_GetFirstDevice(const V2MP_DeviceCollection* dc);
+struct V2MP_Device* V2MP_DeviceCollection_GetNext(const V2MP_DeviceCollection* dc, struct V2MP_Device* device);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

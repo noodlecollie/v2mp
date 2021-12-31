@@ -20,6 +20,33 @@ static void DeinitDeviceEntry(void* ptr)
 	V2MP_Device_DeinitAndFree(entry->device);
 }
 
+static V2MP_Device* GetNextDevice(const V2MP_DeviceCollection* dc, V2MP_Device* device)
+{
+	V2MP_DoubleLL_Node* node;
+	DeviceEntry* entry;
+
+	if ( !dc )
+	{
+		return NULL;
+	}
+
+	node = device ? V2MP_DoubleLLNode_GetNext(device->ownerNode) : V2MP_DoubleLL_GetHead(dc->deviceList);
+
+	if ( !node )
+	{
+		return NULL;
+	}
+
+	entry = (DeviceEntry*)V2MP_DoubleLLNode_GetPayload(node);
+
+	if ( !entry )
+	{
+		return NULL;
+	}
+
+	return entry->device;
+}
+
 V2MP_DeviceCollection* V2MP_DeviceCollection_AllocateAndInit(void)
 {
 	V2MP_DeviceCollection* dc = V2MP_CALLOC_STRUCT(V2MP_DeviceCollection);
@@ -119,4 +146,24 @@ bool V2MP_DeviceCollection_DestroyDevice(V2MP_DeviceCollection* dc, struct V2MP_
 size_t V2MP_DeviceCollection_GetDeviceCount(const V2MP_DeviceCollection* dc)
 {
 	return dc ? V2MP_DoubleLL_GetNodeCount(dc->deviceList) : 0;
+}
+
+struct V2MP_Device* V2MP_DeviceCollection_GetFirstDevice(const V2MP_DeviceCollection* dc)
+{
+	if ( !dc )
+	{
+		return NULL;
+	}
+
+	return GetNextDevice(dc, NULL);
+}
+
+struct V2MP_Device* V2MP_DeviceCollection_GetNext(const V2MP_DeviceCollection* dc, struct V2MP_Device* device)
+{
+	if ( !dc || !device )
+	{
+		return NULL;
+	}
+
+	return GetNextDevice(dc, device);
 }
