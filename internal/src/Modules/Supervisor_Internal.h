@@ -28,10 +28,63 @@ static inline void ResetProgramMemorySegment(MemorySegment* seg)
 	seg->lengthInBytes = 0;
 }
 
+static inline bool DataRangeIsInSegment(const MemorySegment* seg, size_t address, size_t numBytes)
+{
+	// Check is specially constructed to avoid possibility of a size_t overflow.
+	return
+		seg &&
+		address < seg->lengthInBytes &&
+		numBytes <= seg->lengthInBytes &&
+		address <= seg->lengthInBytes - numBytes;
+}
+
+V2MP_Byte* V2MP_Supervisor_GetDataRangeFromSegment(
+	const V2MP_Supervisor* supervisor,
+	const MemorySegment* seg,
+	size_t address,
+	size_t numBytes
+);
+
+const V2MP_Byte* V2MP_Supervisor_GetConstDataRangeFromSegment(
+	const V2MP_Supervisor* supervisor,
+	const MemorySegment* seg,
+	size_t address,
+	size_t numBytes
+);
+
+bool V2MP_Supervisor_FetchWordFromSegment(
+	const V2MP_Supervisor* supervisor,
+	const MemorySegment* seg,
+	size_t address,
+	V2MP_Word* outWord
+);
+
+bool V2MP_Supervisor_ReadRangeFromSegment(
+	const V2MP_Supervisor* supervisor,
+	const MemorySegment* seg,
+	size_t address,
+	V2MP_Byte* outBuffer,
+	size_t numBytes
+);
+
 void V2MP_Supervisor_SetCPUFault(V2MP_Supervisor* supervisor, V2MP_Word fault);
 
 V2MP_Word V2MP_Supervisor_FetchInstructionWord(V2MP_Supervisor* supervisor, V2MP_Word address, V2MP_Word* destReg);
 void V2MP_Supervisor_RequestLoadWordFromDS(V2MP_Supervisor* supervisor, V2MP_Word address, V2MP_RegisterIndex destReg);
 void V2MP_Supervisor_RequestStoreWordToDS(V2MP_Supervisor* supervisor, V2MP_Word address, V2MP_Word wordToStore);
+
+void V2MP_Supervisor_RequestDevicePortIndirectRead(
+	V2MP_Supervisor* supervisor,
+	V2MP_Word port,
+	V2MP_Word dsSrcAddress,
+	V2MP_Word dsMaxBytes
+);
+
+void V2MP_Supervisor_RequestDevicePortIndirectWrite(
+	V2MP_Supervisor* supervisor,
+	V2MP_Word port,
+	V2MP_Word dsDestAddress,
+	V2MP_Word dsMaxBytes
+);
 
 #endif // V2MP_MODULES_SUPERVISOR_INTERNAL_H

@@ -21,8 +21,13 @@ bool V2MP_CPU_DPO_Read(V2MP_CPU* cpu)
 		return false;
 	}
 
-	// TODO
-	V2MP_CPU_NotifyFault(cpu, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_INI, V2MP_OP_DPO_OPERATION_TYPE(cpu->ir)));
+	cpu->supervisorInterface.requestDevicePortIndirectRead(
+		cpu->supervisorInterface.supervisor,
+		cpu->r0,
+		cpu->lr,
+		cpu->r1
+	);
+
 	return true;
 }
 

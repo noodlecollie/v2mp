@@ -2,8 +2,10 @@
 #include "Modules/Supervisor_Action.h"
 #include "Modules/Supervisor_Internal.h"
 #include "V2MPInternal/Components/DoubleLinkedList.h"
+#include "V2MPInternal/Components/CircularBuffer.h"
 #include "V2MPInternal/Modules/MemoryStore.h"
 #include "V2MPInternal/Modules/DevicePortCollection.h"
+#include "V2MPInternal/Modules/DevicePort.h"
 #include "V2MPInternal/Modules/CPU.h"
 #include "V2MPInternal/Util/Util.h"
 
@@ -101,6 +103,18 @@ static ActionResult V2MP_Supervisor_HandleStoreWord(V2MP_Supervisor* supervisor,
 static ActionResult V2MP_Supervisor_HandleInitDeviceDataTransfer(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
 {
 	V2MP_DevicePortCollection* ports;
+	V2MP_DevicePort* port;
+	V2MP_CircularBuffer* mailbox;
+	V2MP_CPU* cpu;
+	V2MP_Word dsAddress;
+	V2MP_Word dsSize;
+
+	cpu = V2MP_Mainboard_GetCPU(supervisor->mainboard);
+
+	if ( !cpu )
+	{
+		return AR_FAILED;
+	}
 
 	ports = V2MP_Mainboard_GetDevicePortCollection(supervisor->mainboard);
 
@@ -109,9 +123,105 @@ static ActionResult V2MP_Supervisor_HandleInitDeviceDataTransfer(V2MP_Supervisor
 		return AR_FAILED;
 	}
 
-	// TODO
-	(void)action;
-	return AR_FAILED;
+	port = V2MP_DevicePortCollection_GetPort(ports, SVACTION_INIT_DDT_ARG_PORT(action));
+
+	if ( !port )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_IDO, 0));
+		return AR_COMPLETE;
+	}
+
+	// TODO: Check if the port is controlled by the program, and whether it's in the correct state.
+
+	mailbox = V2MP_DevicePort_GetMailbox(port);
+
+	if ( !mailbox )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_IDO, 0));
+		return AR_COMPLETE;
+	}
+
+	dsAddress = SVACTION_INIT_DDT_ARG_DS_ADDR(action);
+	dsSize = SVACTION_INIT_DDT_ARG_DS_SIZE(action);
+
+	if ( dsSize < 1 )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_IDO, 0));
+		return AR_COMPLETE;
+	}
+
+	// We will want to do this over multiple clock cycles eventually,
+	// depending on the data transfer speed of the device.
+	if ( SVACTION_INIT_DDT_ARG_IS_MB_WRITE(action) )
+	{
+		const V2MP_Byte* dsData;
+
+		dsData = V2MP_Supervisor_GetConstDataRangeFromSegment(supervisor, &supervisor->programDS, dsAddress, dsSize);
+
+		if ( dsData )
+		{
+			size_t bytesWrittenToMailbox;
+			size_t freeBytesInMailbox;
+			V2MP_Word sr = 0;
+
+			freeBytesInMailbox = V2MP_CircularBuffer_BytesFree(mailbox);
+			bytesWrittenToMailbox = V2MP_CircularBuffer_WriteData(mailbox, dsData, dsSize);
+
+			if ( V2MP_CircularBuffer_IsFull(mailbox) )
+			{
+				sr |= V2MP_CPU_SR_Z;
+			}
+
+			if ( freeBytesInMailbox < dsSize )
+			{
+				sr |= V2MP_CPU_SR_C;
+			}
+
+			V2MP_CPU_SetR1(cpu, (V2MP_Word)bytesWrittenToMailbox);
+			V2MP_CPU_SetStatusRegister(cpu, sr);
+		}
+		else
+		{
+			// TODO: Determine how many bytes we can write, and write those instead?
+			V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
+		}
+	}
+	else
+	{
+		V2MP_Byte* dsData;
+
+		dsData = V2MP_Supervisor_GetDataRangeFromSegment(supervisor, &supervisor->programDS, dsAddress, dsSize);
+
+		if ( dsData )
+		{
+			size_t bytesReadFromMailbox;
+			size_t origBytesInMailbox;
+			V2MP_Word sr = 0;
+
+			origBytesInMailbox = V2MP_CircularBuffer_BytesUsed(mailbox);
+			bytesReadFromMailbox = V2MP_CircularBuffer_ReadData(mailbox, dsData, dsSize);
+
+			if ( bytesReadFromMailbox < dsSize )
+			{
+				sr |= V2MP_CPU_SR_C;
+			}
+
+			if ( bytesReadFromMailbox >= origBytesInMailbox )
+			{
+				sr |= V2MP_CPU_SR_Z;
+			}
+
+			V2MP_CPU_SetR1(cpu, (V2MP_Word)bytesReadFromMailbox);
+			V2MP_CPU_SetStatusRegister(cpu, sr);
+		}
+		else
+		{
+			// TODO: Determine how many bytes we can write, and write those instead?
+			V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
+		}
+	}
+
+	return AR_COMPLETE;
 }
 
 static ActionResult ResolveAction(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)

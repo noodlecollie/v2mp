@@ -42,74 +42,6 @@ static void AttachToMainboard(V2MP_Supervisor* supervisor)
 	}
 }
 
-static bool FetchWordFromSegment(
-	const V2MP_Supervisor* supervisor,
-	const MemorySegment* seg,
-	size_t address,
-	V2MP_Word* outWord
-)
-{
-	V2MP_MemoryStore* memoryStore;
-
-	// Check is specially constructed to avoid possibility of size_t overflow:
-	if ( !supervisor ||
-	     !seg ||
-	     address >= seg->lengthInBytes ||
-	     sizeof(V2MP_Word) > seg->lengthInBytes ||
-	     address > seg->lengthInBytes - sizeof(V2MP_Word) )
-	{
-		return false;
-	}
-
-	memoryStore = V2MP_Mainboard_GetMemoryStore(supervisor->mainboard);
-
-	if ( !memoryStore )
-	{
-		return false;
-	}
-
-	return V2MP_MemoryStore_LoadWord(memoryStore, seg->base + address, outWord);
-}
-
-static bool ReadRangeFromSegment(
-	const V2MP_Supervisor* supervisor,
-	const MemorySegment* seg,
-	size_t address,
-	V2MP_Byte* outBuffer,
-	size_t numBytes
-)
-{
-	V2MP_MemoryStore* memoryStore;
-	const V2MP_Byte* rawData;
-
-	// Check is specially constructed to avoid possibility of size_t overflow:
-	if ( !supervisor ||
-	     !seg ||
-	     address >= seg->lengthInBytes ||
-	     numBytes > seg->lengthInBytes ||
-	     address > seg->lengthInBytes - numBytes )
-	{
-		return false;
-	}
-
-	memoryStore = V2MP_Mainboard_GetMemoryStore(supervisor->mainboard);
-
-	if ( !memoryStore )
-	{
-		return false;
-	}
-
-	rawData = V2MP_MemoryStore_GetConstPtrToRange(memoryStore, seg->base + address, numBytes);
-
-	if ( !rawData )
-	{
-		return false;
-	}
-
-	memcpy(outBuffer, rawData, numBytes);
-	return true;
-}
-
 V2MP_Supervisor* V2MP_Supervisor_AllocateAndInit(void)
 {
 	V2MP_Supervisor* supervisor = V2MP_CALLOC_STRUCT(V2MP_Supervisor);
@@ -308,7 +240,7 @@ bool V2MP_Supervisor_FetchCSWord(
 		return false;
 	}
 
-	return FetchWordFromSegment(supervisor, &supervisor->programCS, address, outWord);
+	return V2MP_Supervisor_FetchWordFromSegment(supervisor, &supervisor->programCS, address, outWord);
 }
 
 bool V2MP_Supervisor_FetchDSWord(
@@ -322,7 +254,7 @@ bool V2MP_Supervisor_FetchDSWord(
 		return false;
 	}
 
-	return FetchWordFromSegment(supervisor, &supervisor->programDS, address, outWord);
+	return V2MP_Supervisor_FetchWordFromSegment(supervisor, &supervisor->programDS, address, outWord);
 }
 
 bool V2MP_Supervisor_ReadDSRange(
@@ -337,7 +269,7 @@ bool V2MP_Supervisor_ReadDSRange(
 		return false;
 	}
 
-	return ReadRangeFromSegment(
+	return V2MP_Supervisor_ReadRangeFromSegment(
 		supervisor,
 		&supervisor->programDS,
 		address,
