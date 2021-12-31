@@ -69,6 +69,16 @@ const V2MP_DevicePortCollection* TestHarnessVM::GetDevicePortCollection() const
 	return V2MP_Mainboard_GetDevicePortCollection(GetMainboard());
 }
 
+V2MP_DeviceCollection* TestHarnessVM::GetDeviceCollection()
+{
+	return V2MP_Mainboard_GetDeviceCollection(GetMainboard());
+}
+
+const V2MP_DeviceCollection* TestHarnessVM::GetDeviceCollection() const
+{
+	return V2MP_Mainboard_GetDeviceCollection(GetMainboard());
+}
+
 bool TestHarnessVM::SetCSAndDS(const V2MP_Word* cs, size_t csWords, const V2MP_Word* ds, size_t dsWords)
 {
 	return V2MP_VirtualMachine_LoadProgram(m_VM, cs, csWords, ds, dsWords);
@@ -244,4 +254,76 @@ void TestHarnessVM::ThrowExceptionIfNotInitialisedCorrectly(size_t totalRamInByt
 	{
 		throw InitException("Memory store internal memory bank could not be allocated");
 	}
+}
+
+bool TestHarnessVM::ConnectMockDeviceToPortInternal(std::shared_ptr<MockDevice> mockDevice, V2MP_Word address)
+{
+	if ( !mockDevice || m_MockDevices.find(address) != m_MockDevices.end() )
+	{
+		return false;
+	}
+
+	V2MP_DevicePort* port = nullptr;
+	V2MP_Device* device = nullptr;
+	bool createdPort = false;
+
+	do
+	{
+		V2MP_DevicePortCollection* dpc = GetDevicePortCollection();
+
+		if ( !dpc )
+		{
+			break;
+		}
+
+		V2MP_DeviceCollection* dc = GetDeviceCollection();
+
+		if ( !dc )
+		{
+			break;
+		}
+
+		port = V2MP_DevicePortCollection_GetPort(dpc, address);
+
+		if ( !port )
+		{
+			port = V2MP_DevicePortCollection_CreatePort(dpc, address);
+			createdPort = true;
+
+			if ( !port )
+			{
+				break;
+			}
+		}
+
+		if ( V2MP_DevicePort_HasConnectedDevice(port) )
+		{
+			break;
+		}
+
+		device = V2MP_DeviceCollection_CreateDevice(dc);
+
+		if ( !device || !V2MP_DevicePort_ConnectDevice(port, device) )
+		{
+			break;
+		}
+
+		mockDevice->AttachToV2MPDevice(device);
+		m_MockDevices[address] = mockDevice;
+
+		return true;
+	}
+	while ( false );
+
+	if ( device )
+	{
+		V2MP_DeviceCollection_DestroyDevice(GetDeviceCollection(), device);
+	}
+
+	if ( port && createdPort )
+	{
+		V2MP_DevicePortCollection_DestroyPort(GetDevicePortCollection(), address);
+	}
+
+	return false;
 }

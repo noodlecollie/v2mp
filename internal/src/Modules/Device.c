@@ -34,12 +34,13 @@ void V2MP_Device_ClearExtInterface(V2MP_Device* device)
 	V2MP_Device_SetExtInterface(device, NULL);
 }
 
-void V2MP_Device_Poll(V2MP_Device* device)
+bool V2MP_Device_Poll(V2MP_Device* device)
 {
-	if ( !device || !device->extInterface.poll )
+	if ( !device || !device->extInterface.onPoll )
 	{
-		return;
+		return false;
 	}
 
-	device->extInterface.poll(device->extInterface.userData, device);
+	device->extInterface.onPoll(device->extInterface.userData, device);
+	return true;
 }

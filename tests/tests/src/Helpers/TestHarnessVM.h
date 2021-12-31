@@ -2,6 +2,9 @@
 
 #include <stdexcept>
 #include <vector>
+#include <memory>
+#include <type_traits>
+#include <unordered_map>
 #include "V2MPInternal/Defs.h"
 #include "V2MPInternal/Modules/VirtualMachine.h"
 #include "V2MPInternal/Modules/Mainboard.h"
@@ -10,6 +13,9 @@
 #include "V2MPInternal/Modules/MemoryStore.h"
 #include "V2MPInternal/Modules/DevicePortCollection.h"
 #include "V2MPInternal/Modules/DevicePort.h"
+#include "V2MPInternal/Modules/DeviceCollection.h"
+#include "V2MPInternal/Modules/Device.h"
+#include "Helpers/MockDevice.h"
 
 class TestHarnessVM
 {
@@ -48,6 +54,9 @@ public:
 
 	V2MP_DevicePortCollection* GetDevicePortCollection();
 	const V2MP_DevicePortCollection* GetDevicePortCollection() const;
+
+	V2MP_DeviceCollection* GetDeviceCollection();
+	const V2MP_DeviceCollection* GetDeviceCollection() const;
 
 	bool SetCSAndDS(const V2MP_Word* cs, size_t csWords, const V2MP_Word* ds, size_t dsWords);
 	bool FillCSAndDS(size_t csWords, V2MP_Word csFill, size_t dsWords, V2MP_Word dsFill);
@@ -108,6 +117,17 @@ public:
 
 	bool GetDSData(V2MP_Word address, size_t length, std::vector<V2MP_Byte>& outData);
 
+	template<typename T>
+	inline typename std::enable_if<std::is_base_of<MockDevice, T>::value, std::shared_ptr<T>>::type
+	ConnectMockDeviceToPort(V2MP_Word address)
+	{
+		std::shared_ptr<T> mockDeviceSubclass = std::make_shared<T>();
+
+		return ConnectMockDeviceToPortInternal(std::static_pointer_cast<MockDevice>(mockDeviceSubclass), address)
+			? mockDeviceSubclass
+			: std::shared_ptr<T>();
+	}
+
 protected:
 	virtual void OnCPUReset()
 	{
@@ -115,8 +135,10 @@ protected:
 
 private:
 	void ThrowExceptionIfNotInitialisedCorrectly(size_t totalRamInBytes);
+	bool ConnectMockDeviceToPortInternal(std::shared_ptr<MockDevice> mockDevice, V2MP_Word address);
 
 	V2MP_VirtualMachine* m_VM;
+	std::unordered_map<V2MP_Word, std::shared_ptr<MockDevice>> m_MockDevices;
 };
 
 class TestHarnessVM_StartsInvalid : public TestHarnessVM
@@ -126,8 +148,8 @@ public:
 	// even it it's constexpr... Dammit, GCC.
 	static const V2MP_Word INVALID_WORD;
 
-	inline TestHarnessVM_StartsInvalid() :
-		TestHarnessVM()
+	inline TestHarnessVM_StartsInvalid(size_t totalRamInBytes = TestHarnessVM::DEFAULT_RAM_BYTES) :
+		TestHarnessVM(totalRamInBytes)
 	{
 		SetUpRegisters();
 	}

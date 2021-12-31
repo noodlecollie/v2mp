@@ -576,6 +576,7 @@ The possible faults raised by the processor are described below.
 | `06h` | `INI` | Invalid Instruction | Raised when an unrecognised instruction opcode is decoded. | Decoding of an instruction |
 | `07h` | `INO` | Invalid Operand | Raised when an invalid combination of operands is provided on an instruction. | Execution of any instruction |
 | `08h` | `SPV` | Supervisor Error | Raised if the supervisor encounters an internal error. This fault indicates an exceptional issue with the supervisor code itself, and is not expected to be accommodated by a program. Under normal operation, this fault should never be raised. | Supervisor |
+| `09h` | `DEV` | Device Error | Raised if a device encounters an internal error. This fault indicates an exceptional issue with a device in the system, and is not expected to be accommodated by a program. Under normal operation, this fault should never be raised. | Supervisor, when interacting with a device |
 
 ## Todo Notes
 

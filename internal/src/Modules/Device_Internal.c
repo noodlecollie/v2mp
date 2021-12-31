@@ -1,6 +1,7 @@
 #include "Modules/Device_Internal.h"
 #include "Modules/DevicePort_Internal.h"
 #include "V2MPInternal/Util/Heap.h"
+#include "V2MPInternal/Util/Util.h"
 
 V2MP_Device* V2MP_Device_AllocateAndInit(void)
 {
@@ -12,6 +13,12 @@ void V2MP_Device_DeinitAndFree(V2MP_Device* device)
 	if ( !device )
 	{
 		return;
+	}
+
+	if ( device->extInterface.onDeviceAboutToBeDestroyed )
+	{
+		device->extInterface.onDeviceAboutToBeDestroyed(device->extInterface.userData, device);
+		V2MP_ZERO_STRUCT_PTR(&device->extInterface);
 	}
 
 	if ( device->connectedPort )

@@ -48,6 +48,7 @@ static bool PollAllDevices(V2MP_Supervisor* supervisor)
 {
 	V2MP_DeviceCollection* devices;
 	V2MP_Device* device;
+	bool allSuccessful = true;
 
 	devices = V2MP_Mainboard_GetDeviceCollection(supervisor->mainboard);
 
@@ -60,7 +61,15 @@ static bool PollAllDevices(V2MP_Supervisor* supervisor)
 	      device;
 	      device = V2MP_DeviceCollection_GetNext(devices, device) )
 	{
-		V2MP_Device_Poll(device);
+		if ( !V2MP_Device_Poll(device) )
+		{
+			allSuccessful = false;
+		}
+	}
+
+	if ( !allSuccessful )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_DEV, 0));
 	}
 
 	return true;
