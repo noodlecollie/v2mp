@@ -40,18 +40,6 @@ bool BaseMockDevice::IsAttachedToDevice() const
 	return m_Device != nullptr;
 }
 
-void BaseMockDevice::Ifc_OnDeviceAboutToBeDestroyed()
-{
-	// Should never happen anyway:
-	if ( !m_Device )
-	{
-		return;
-	}
-
-	OnDeviceAboutToBeDestroyed();
-	m_Device = nullptr;
-}
-
 V2MP_Device* BaseMockDevice::WrappedDevice()
 {
 	return m_Device;
@@ -75,6 +63,23 @@ bool BaseMockDevice::DeallocateMailbox()
 void BaseMockDevice::RelinquishMailbox()
 {
 	V2MP_Device_RelinquishConnectedMailbox(m_Device);
+}
+
+void BaseMockDevice::Ifc_OnDeviceAboutToBeDestroyed()
+{
+	// Should never happen anyway:
+	if ( !m_Device )
+	{
+		return;
+	}
+
+	OnDeviceAboutToBeDestroyed();
+	m_Device = nullptr;
+}
+
+void BaseMockDevice::Ifc_OnMailboxControlAcquired()
+{
+	OnMailboxControlAcquired();
 }
 
 void BaseMockDevice::Ifc_OnPoll()
@@ -109,6 +114,11 @@ void BaseMockDevice::ConstructAndSetExternalInterface()
 		reinterpret_cast<BaseMockDevice*>(userData)->Ifc_OnPoll();
 	};
 
+	interface.onMailboxControlAcquired = [](void* userData, V2MP_Device*)
+	{
+		reinterpret_cast<BaseMockDevice*>(userData)->Ifc_OnMailboxControlAcquired();
+	};
+
 	V2MP_Device_SetExtInterface(m_Device, &interface);
 }
 
@@ -128,6 +138,11 @@ void BaseMockDevice::OnDeviceAboutToBeDestroyed()
 }
 
 void BaseMockDevice::OnPoll()
+{
+	// Default implementation does nothing.
+}
+
+void BaseMockDevice::OnMailboxControlAcquired()
 {
 	// Default implementation does nothing.
 }

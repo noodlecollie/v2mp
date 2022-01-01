@@ -31,10 +31,12 @@ protected:
 	virtual void OnDeviceAboutToBeDetached();
 	virtual void OnDeviceAboutToBeDestroyed();
 	virtual void OnPoll();
+	virtual void OnMailboxControlAcquired();
 
 private:
 	void Ifc_OnDeviceAboutToBeDestroyed();
 	void Ifc_OnPoll();
+	void Ifc_OnMailboxControlAcquired();
 
 	void ConstructAndSetExternalInterface();
 

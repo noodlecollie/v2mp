@@ -50,6 +50,17 @@ void V2MP_Device_NotifyDisconnectedFromPort(V2MP_Device* device)
 	device->connectedPort = NULL;
 }
 
+bool V2MP_Device_NotifyMailboxControlAcquired(V2MP_Device* device)
+{
+	if ( !device || !device->extInterface.onMailboxControlAcquired )
+	{
+		return false;
+	}
+
+	device->extInterface.onMailboxControlAcquired(device->extInterface.userData, device);
+	return true;
+}
+
 V2MP_DoubleLL_Node* V2MP_Device_GetOwnerNode(const V2MP_Device* device)
 {
 	return device ? device->ownerNode : NULL;

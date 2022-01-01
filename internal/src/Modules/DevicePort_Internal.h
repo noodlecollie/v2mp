@@ -26,7 +26,8 @@ void V2MP_DevicePort_NotifyDeviceDisconnected(V2MP_DevicePort* port);
 bool V2MP_DevicePort_DeviceAllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes);
 bool V2MP_DevicePort_DeviceDeallocateMailbox(V2MP_DevicePort* port);
 
-void V2MP_DevicePort_SetMailboxController(V2MP_DevicePort* port, V2MP_MailboxController controller);
+void V2MP_DevicePort_DeviceRelinquishMailbox(V2MP_DevicePort* port);
+bool V2MP_DevicePort_PassMailboxControlToDevice(V2MP_DevicePort* port);
 
 struct V2MP_CircularBuffer* V2MP_DevicePort_GetMailbox(V2MP_DevicePort* port);
 const struct V2MP_CircularBuffer* V2MP_DevicePort_GetConstMailbox(const V2MP_DevicePort* port);

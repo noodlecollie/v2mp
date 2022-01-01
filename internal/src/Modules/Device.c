@@ -92,5 +92,5 @@ void V2MP_Device_RelinquishConnectedMailbox(V2MP_Device* device)
 		return;
 	}
 
-	V2MP_DevicePort_SetMailboxController(device->connectedPort, V2MP_MBC_PROGRAM);
+	V2MP_DevicePort_DeviceRelinquishMailbox(device->connectedPort);
 }

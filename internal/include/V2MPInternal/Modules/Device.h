@@ -18,6 +18,7 @@ typedef struct V2MP_Device_ExtInterface
 
 	void (*onDeviceAboutToBeDestroyed)(void* userData, V2MP_Device* device);
 	void (*onPoll)(void* userData, V2MP_Device* device);
+	void (*onMailboxControlAcquired)(void* userData, V2MP_Device* device);
 } V2MP_Device_ExtInterface;
 
 bool V2MP_Device_IsConnectedToPort(const V2MP_Device* device);
