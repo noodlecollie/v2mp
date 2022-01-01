@@ -92,22 +92,9 @@ bool TestHarnessVM::FillCSAndDS(size_t csWords, V2MP_Word csFill, size_t dsWords
 	return V2MP_VirtualMachine_LoadProgram(m_VM, cs.data(), cs.size(), ds.data(), ds.size());
 }
 
-V2MP_DevicePort* TestHarnessVM::CreatePort(V2MP_Word address, size_t mailboxSize)
+V2MP_DevicePort* TestHarnessVM::CreatePort(V2MP_Word address)
 {
-	V2MP_DevicePort* port = V2MP_DevicePortCollection_CreatePort(GetDevicePortCollection(), address);
-
-	if ( !port )
-	{
-		return nullptr;
-	}
-
-	if ( !V2MP_DevicePort_DeviceAllocateMailbox(port, mailboxSize) )
-	{
-		V2MP_DevicePortCollection_DestroyPort(GetDevicePortCollection(), address);
-		port = nullptr;
-	}
-
-	return port;
+	return V2MP_DevicePortCollection_CreatePort(GetDevicePortCollection(), address);
 }
 
 bool TestHarnessVM::DestroyPort(V2MP_Word address)

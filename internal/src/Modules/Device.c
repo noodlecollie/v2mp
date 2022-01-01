@@ -3,6 +3,7 @@
 #include "V2MPInternal/Components/CircularBuffer.h"
 #include "V2MPInternal/Util/Util.h"
 #include "Modules/Device_Internal.h"
+#include "Modules/DevicePort_Internal.h"
 
 bool V2MP_Device_IsConnectedToPort(const V2MP_Device* device)
 {
@@ -56,21 +57,11 @@ bool V2MP_Device_Poll(V2MP_Device* device)
 
 bool V2MP_Device_AllocateConnectedMailbox(V2MP_Device* device, size_t sizeInBytes)
 {
-	if ( !V2MP_Device_ControlsConnectedMailbox(device) )
-	{
-		return false;
-	}
-
 	return V2MP_DevicePort_DeviceAllocateMailbox(device->connectedPort, sizeInBytes);
 }
 
 bool V2MP_Device_DeallocateConnectedMailbox(V2MP_Device* device)
 {
-	if ( !V2MP_Device_ControlsConnectedMailbox(device) )
-	{
-		return false;
-	}
-
 	return V2MP_DevicePort_DeviceDeallocateMailbox(device->connectedPort);
 }
 

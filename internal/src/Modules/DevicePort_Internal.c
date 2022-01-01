@@ -43,3 +43,28 @@ void V2MP_DevicePort_NotifyDeviceDisconnected(V2MP_DevicePort* port)
 
 	port->connectedDevice = NULL;
 }
+
+bool V2MP_DevicePort_DeviceAllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes)
+{
+	if ( !port || port->mailboxController != V2MP_MBC_DEVICE )
+	{
+		return false;
+	}
+
+	V2MP_CircularBuffer_DeinitAndFree(port->mailbox);
+	port->mailbox = NULL;
+
+	if ( sizeInBytes < 1 )
+	{
+		return true;
+	}
+
+	port->mailbox = V2MP_CircularBuffer_AllocateAndInit(sizeInBytes);
+
+	return port->mailbox != NULL;
+}
+
+bool V2MP_DevicePort_DeviceDeallocateMailbox(V2MP_DevicePort* port)
+{
+	return V2MP_DevicePort_DeviceAllocateMailbox(port, 0);
+}

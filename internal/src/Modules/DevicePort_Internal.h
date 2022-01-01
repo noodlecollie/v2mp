@@ -20,4 +20,10 @@ void V2MP_DevicePort_DeinitAndFree(V2MP_DevicePort* port);
 void V2MP_DevicePort_SetAddress(V2MP_DevicePort* port, V2MP_Word address);
 void V2MP_DevicePort_NotifyDeviceDisconnected(V2MP_DevicePort* port);
 
+// If any mailbox already exists, its contents are discarded.
+// Specifiying a mailbox of 0 bytes simply deallocates its memory.
+// The port must be controlled by the device for the mailbox to be allocated.
+bool V2MP_DevicePort_DeviceAllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes);
+bool V2MP_DevicePort_DeviceDeallocateMailbox(V2MP_DevicePort* port);
+
 #endif // V2MP_MODULES_DEVICEPORT_INTERNAL_H

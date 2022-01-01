@@ -15,12 +15,6 @@ struct V2MP_Device;
 
 V2MP_Word V2MP_DevicePort_GetAddress(const V2MP_DevicePort* port);
 
-// If any mailbox already exists, its contents are discarded.
-// Specifiying a mailbox of 0 bytes simply deallocates its memory.
-// The port must be controlled by the device for the mailbox to be allocated.
-bool V2MP_DevicePort_DeviceAllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes);
-bool V2MP_DevicePort_DeviceDeallocateMailbox(V2MP_DevicePort* port);
-
 struct V2MP_CircularBuffer* V2MP_DevicePort_GetMailbox(V2MP_DevicePort* port);
 const struct V2MP_CircularBuffer* V2MP_DevicePort_GetConstMailbox(const V2MP_DevicePort* port);
 

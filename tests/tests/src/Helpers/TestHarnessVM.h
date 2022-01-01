@@ -85,7 +85,7 @@ public:
 		return SetCSAndDS(csData, CSN, nullptr, 0);
 	}
 
-	V2MP_DevicePort* CreatePort(V2MP_Word address, size_t mailboxSize);
+	V2MP_DevicePort* CreatePort(V2MP_Word address);
 	bool DestroyPort(V2MP_Word address);
 
 	V2MP_Word GetCPUFaultWord() const;

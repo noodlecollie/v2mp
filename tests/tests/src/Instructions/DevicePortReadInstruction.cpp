@@ -44,13 +44,13 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 		{
 			static constexpr const char MESSAGE[] = "Mailbox message";
 
-			V2MP_DevicePort* port = vm.CreatePort(PORT_ADDRESS, 64);
+			V2MP_DevicePort* port = vm.CreatePort(PORT_ADDRESS);
 			REQUIRE(port);
 
 			std::shared_ptr<EmitterMockDevice> device = vm.ConnectMockDeviceToPort<EmitterMockDevice>(PORT_ADDRESS);
 			REQUIRE(device);
 
-			REQUIRE(device->AllocateMailbox(128));
+			REQUIRE(device->AllocateMailbox(64));
 			REQUIRE(device->WriteToMailbox(MESSAGE) == sizeof(MESSAGE));
 			device->RelinquishMailbox();
 
