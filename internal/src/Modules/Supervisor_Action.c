@@ -8,6 +8,7 @@
 #include "V2MPInternal/Modules/DevicePort.h"
 #include "V2MPInternal/Modules/CPU.h"
 #include "V2MPInternal/Util/Util.h"
+#include "Modules/DevicePort_Internal.h"
 
 typedef enum ActionResult
 {

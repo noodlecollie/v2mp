@@ -8,16 +8,6 @@ V2MP_Word V2MP_DevicePort_GetAddress(const V2MP_DevicePort* port)
 	return port ? port->address : 0;
 }
 
-struct V2MP_CircularBuffer* V2MP_DevicePort_GetMailbox(V2MP_DevicePort* port)
-{
-	return (struct V2MP_CircularBuffer*)V2MP_DevicePort_GetConstMailbox(port);
-}
-
-const struct V2MP_CircularBuffer* V2MP_DevicePort_GetConstMailbox(const V2MP_DevicePort* port)
-{
-	return port ? port->mailbox : NULL;
-}
-
 bool V2MP_DevicePort_ConnectDevice(V2MP_DevicePort* port, struct V2MP_Device* device)
 {
 	if ( !port || !device || port->connectedDevice )
@@ -57,14 +47,4 @@ struct V2MP_Device* V2MP_DevicePort_GetConnectedDevice(const V2MP_DevicePort* po
 V2MP_MailboxController V2MP_DevicePort_GetMailboxController(const V2MP_DevicePort* port)
 {
 	return port ? port->mailboxController : V2MP_MBC_DEVICE;
-}
-
-void V2MP_DevicePort_SetMailboxController(V2MP_DevicePort* port, V2MP_MailboxController controller)
-{
-	if ( !port )
-	{
-		return;
-	}
-
-	port->mailboxController = controller;
 }
