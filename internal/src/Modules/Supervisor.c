@@ -7,6 +7,7 @@
 #include "V2MPInternal/Util/Heap.h"
 #include "Modules/Supervisor_Internal.h"
 #include "Modules/Supervisor_CPUInterface.h"
+#include "Modules/Device_Internal.h"
 
 static void DetachFromMainboard(V2MP_Supervisor* supervisor)
 {

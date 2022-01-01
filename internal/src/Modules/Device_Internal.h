@@ -12,7 +12,7 @@ struct V2MP_Device
 {
 	V2MP_DoubleLL_Node* ownerNode;
 	struct V2MP_DevicePort* connectedPort;
-	V2MP_Device_ExtInterface extInterface;
+	V2MP_Device_Callbacks callbacks;
 };
 
 V2MP_Device* V2MP_Device_AllocateAndInit(void);
@@ -24,5 +24,7 @@ bool V2MP_Device_NotifyMailboxControlAcquired(V2MP_Device* device);
 
 V2MP_DoubleLL_Node* V2MP_Device_GetOwnerNode(const V2MP_Device* device);
 void V2MP_Device_SetOwnerNode(V2MP_Device* device, V2MP_DoubleLL_Node* node);
+
+bool V2MP_Device_Poll(V2MP_Device* device);
 
 #endif // V2MP_MODULES_DEVICE_INTERNAL_H

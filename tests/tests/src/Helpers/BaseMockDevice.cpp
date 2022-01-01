@@ -21,7 +21,7 @@ void BaseMockDevice::AttachToV2MPDevice(V2MP_Device* device)
 		return;
 	}
 
-	ConstructAndSetExternalInterface();
+	ConstructAndSetCallbacks();
 	OnDeviceAttached();
 }
 
@@ -30,7 +30,7 @@ void BaseMockDevice::DetachFromV2MPDevice()
 	if ( m_Device )
 	{
 		OnDeviceAboutToBeDetached();
-		V2MP_Device_ClearExtInterface(m_Device);
+		V2MP_Device_ClearCallbacks(m_Device);
 		m_Device = nullptr;
 	}
 }
@@ -92,34 +92,34 @@ void BaseMockDevice::Ifc_OnPoll()
 	OnPoll();
 }
 
-void BaseMockDevice::ConstructAndSetExternalInterface()
+void BaseMockDevice::ConstructAndSetCallbacks()
 {
 	if ( !m_Device )
 	{
 		return;
 	}
 
-	V2MP_Device_ExtInterface interface;
-	memset(&interface, 0, sizeof(interface));
+	V2MP_Device_Callbacks callbacks;
+	memset(&callbacks, 0, sizeof(callbacks));
 
-	interface.userData = reinterpret_cast<void*>(this);
+	callbacks.userData = reinterpret_cast<void*>(this);
 
-	interface.onDeviceAboutToBeDestroyed = [](void* userData, V2MP_Device*)
+	callbacks.onDeviceAboutToBeDestroyed = [](void* userData, V2MP_Device*)
 	{
 		reinterpret_cast<BaseMockDevice*>(userData)->Ifc_OnDeviceAboutToBeDestroyed();
 	};
 
-	interface.onPoll = [](void* userData, V2MP_Device*)
+	callbacks.onPoll = [](void* userData, V2MP_Device*)
 	{
 		reinterpret_cast<BaseMockDevice*>(userData)->Ifc_OnPoll();
 	};
 
-	interface.onMailboxControlAcquired = [](void* userData, V2MP_Device*)
+	callbacks.onMailboxControlAcquired = [](void* userData, V2MP_Device*)
 	{
 		reinterpret_cast<BaseMockDevice*>(userData)->Ifc_OnMailboxControlAcquired();
 	};
 
-	V2MP_Device_SetExtInterface(m_Device, &interface);
+	V2MP_Device_SetCallbacks(m_Device, &callbacks);
 }
 
 void BaseMockDevice::OnDeviceAttached()

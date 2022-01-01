@@ -22,37 +22,26 @@ V2MP_Word V2MP_Device_AddressOfConnectedPort(const V2MP_Device* device)
 	return (device && device->connectedPort) ? V2MP_DevicePort_GetAddress(device->connectedPort) : 0;
 }
 
-void V2MP_Device_SetExtInterface(V2MP_Device* device, const V2MP_Device_ExtInterface* interface)
+void V2MP_Device_SetCallbacks(V2MP_Device* device, const V2MP_Device_Callbacks* callbacks)
 {
 	if ( !device )
 	{
 		return;
 	}
 
-	if ( interface )
+	if ( callbacks )
 	{
-		device->extInterface = *interface;
+		device->callbacks = *callbacks;
 	}
 	else
 	{
-		V2MP_ZERO_STRUCT_PTR(&device->extInterface);
+		V2MP_ZERO_STRUCT_PTR(&device->callbacks);
 	}
 }
 
-void V2MP_Device_ClearExtInterface(V2MP_Device* device)
+void V2MP_Device_ClearCallbacks(V2MP_Device* device)
 {
-	V2MP_Device_SetExtInterface(device, NULL);
-}
-
-bool V2MP_Device_Poll(V2MP_Device* device)
-{
-	if ( !device || !device->extInterface.onPoll )
-	{
-		return false;
-	}
-
-	device->extInterface.onPoll(device->extInterface.userData, device);
-	return true;
+	V2MP_Device_SetCallbacks(device, NULL);
 }
 
 bool V2MP_Device_AllocateConnectedMailbox(V2MP_Device* device, size_t sizeInBytes)

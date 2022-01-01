@@ -38,7 +38,7 @@ private:
 	void Ifc_OnPoll();
 	void Ifc_OnMailboxControlAcquired();
 
-	void ConstructAndSetExternalInterface();
+	void ConstructAndSetCallbacks();
 
 	V2MP_Device* m_Device = nullptr;
 };

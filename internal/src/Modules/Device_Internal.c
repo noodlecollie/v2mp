@@ -15,10 +15,10 @@ void V2MP_Device_DeinitAndFree(V2MP_Device* device)
 		return;
 	}
 
-	if ( device->extInterface.onDeviceAboutToBeDestroyed )
+	if ( device->callbacks.onDeviceAboutToBeDestroyed )
 	{
-		device->extInterface.onDeviceAboutToBeDestroyed(device->extInterface.userData, device);
-		V2MP_ZERO_STRUCT_PTR(&device->extInterface);
+		device->callbacks.onDeviceAboutToBeDestroyed(device->callbacks.userData, device);
+		V2MP_ZERO_STRUCT_PTR(&device->callbacks);
 	}
 
 	if ( device->connectedPort )
@@ -52,12 +52,12 @@ void V2MP_Device_NotifyDisconnectedFromPort(V2MP_Device* device)
 
 bool V2MP_Device_NotifyMailboxControlAcquired(V2MP_Device* device)
 {
-	if ( !device || !device->extInterface.onMailboxControlAcquired )
+	if ( !device || !device->callbacks.onMailboxControlAcquired )
 	{
 		return false;
 	}
 
-	device->extInterface.onMailboxControlAcquired(device->extInterface.userData, device);
+	device->callbacks.onMailboxControlAcquired(device->callbacks.userData, device);
 	return true;
 }
 
@@ -74,4 +74,15 @@ void V2MP_Device_SetOwnerNode(V2MP_Device* device, V2MP_DoubleLL_Node* node)
 	}
 
 	device->ownerNode = node;
+}
+
+bool V2MP_Device_Poll(V2MP_Device* device)
+{
+	if ( !device || !device->callbacks.onPoll )
+	{
+		return false;
+	}
+
+	device->callbacks.onPoll(device->callbacks.userData, device);
+	return true;
 }
