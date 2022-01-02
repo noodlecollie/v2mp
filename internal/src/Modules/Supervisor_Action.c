@@ -218,45 +218,98 @@ static ActionResult HandleDataTransferRead(DataTransferContext* context)
 
 static ActionResult HandleDataTransferWrite(DataTransferContext* context)
 {
-	// TODO: Update this whole function
+	V2MP_Word oldActionFlags;
+	size_t bytesToWrite;
 	const V2MP_Byte* dsData;
+	size_t origBytesFreeInMailbox;
+	size_t bytesWrittenToMailbox;
+	bool exceededSegment = false;
+
+	oldActionFlags = SVACTION_DDT_ARG_FLAGS(context->action);
+	bytesToWrite = V2MP_Device_GetDataTransferSpeed(context->device);
+
+	if ( bytesToWrite < 1 || bytesToWrite > SVACTION_DDT_ARG_DS_SIZE(context->action) )
+	{
+		bytesToWrite = SVACTION_DDT_ARG_DS_SIZE(context->action);
+	}
 
 	dsData = V2MP_Supervisor_GetConstDataRangeFromSegment(
 		context->supervisor,
 		&context->supervisor->programDS,
 		SVACTION_DDT_ARG_DS_ADDR(context->action),
-		SVACTION_DDT_ARG_DS_SIZE(context->action)
+		bytesToWrite
 	);
 
-	if ( dsData )
+	if ( !dsData )
 	{
-		size_t bytesWrittenToMailbox;
-		size_t freeBytesInMailbox;
-		V2MP_Word sr = 0;
+		exceededSegment = true;
 
-		freeBytesInMailbox = V2MP_CircularBuffer_BytesFree(context->mailbox);
-		bytesWrittenToMailbox = V2MP_CircularBuffer_WriteData(context->mailbox, dsData, SVACTION_DDT_ARG_DS_SIZE(context->action));
+		bytesToWrite = V2MP_Supervisor_GetMaxDSBytesAvailableAtAddress(
+			context->supervisor,
+			SVACTION_DDT_ARG_DS_ADDR(context->action)
+		);
 
-		if ( V2MP_CircularBuffer_IsFull(context->mailbox) )
+		dsData = V2MP_Supervisor_GetConstDataRangeFromSegment(
+			context->supervisor,
+			&context->supervisor->programDS,
+			SVACTION_DDT_ARG_DS_ADDR(context->action),
+			bytesToWrite
+		);
+
+		// Should never happen:
+		if ( !dsData )
 		{
-			sr |= V2MP_CPU_SR_Z;
+			return AR_FAILED;
 		}
+	}
 
-		if ( freeBytesInMailbox < SVACTION_DDT_ARG_DS_SIZE(context->action) )
-		{
-			sr |= V2MP_CPU_SR_C;
-		}
+	origBytesFreeInMailbox = V2MP_CircularBuffer_BytesFree(context->mailbox);
+	bytesWrittenToMailbox = V2MP_CircularBuffer_WriteData(context->mailbox, dsData, bytesToWrite);
 
-		V2MP_CPU_SetR1(context->cpu, (V2MP_Word)bytesWrittenToMailbox);
-		V2MP_CPU_SetStatusRegister(context->cpu, sr);
+	if ( exceededSegment )
+	{
+		V2MP_Supervisor_SetCPUFault(context->supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
+
+		SVACTION_DDT_ARG_DS_SIZE(context->action) = 0;
+		SVACTION_DDT_ARG_FLAGS(context->action) &= ~SVACTION_DDT_FLAG_IS_IN_PROGRESS;
 	}
 	else
 	{
-		// TODO: Determine how many bytes we can write, and write those instead?
-		V2MP_Supervisor_SetCPUFault(context->supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
+		// If this was the first transfer, update the CPU Registers.
+		if ( !(oldActionFlags & SVACTION_DDT_FLAG_IS_IN_PROGRESS) )
+		{
+			V2MP_Word sr = 0;
+
+			if ( origBytesFreeInMailbox < SVACTION_DDT_ARG_DS_SIZE(context->action) )
+			{
+				sr |= V2MP_CPU_SR_C;
+			}
+
+			if ( origBytesFreeInMailbox <= SVACTION_DDT_ARG_DS_SIZE(context->action) )
+			{
+				sr |= V2MP_CPU_SR_Z;
+			}
+
+			V2MP_CPU_SetR1(context->cpu, (V2MP_Word)V2MP_MIN(origBytesFreeInMailbox, SVACTION_DDT_ARG_DS_SIZE(context->action)));
+			V2MP_CPU_SetStatusRegister(context->cpu, sr);
+		}
+
+		SVACTION_DDT_ARG_DS_ADDR(context->action) += (V2MP_Word)bytesWrittenToMailbox;
+		SVACTION_DDT_ARG_DS_SIZE(context->action) -= (V2MP_Word)bytesWrittenToMailbox;
+
+		if ( SVACTION_DDT_ARG_DS_SIZE(context->action) < 1 || V2MP_CircularBuffer_IsFull(context->mailbox) )
+		{
+			SVACTION_DDT_ARG_FLAGS(context->action) &= ~SVACTION_DDT_FLAG_IS_IN_PROGRESS;
+		}
+		else
+		{
+			SVACTION_DDT_ARG_FLAGS(context->action) |= SVACTION_DDT_FLAG_IS_IN_PROGRESS;
+		}
 	}
 
-	return AR_COMPLETE;
+	return (SVACTION_DDT_ARG_FLAGS(context->action) & SVACTION_DDT_FLAG_IS_IN_PROGRESS)
+		? AR_ONGOING
+		: AR_COMPLETE;
 }
 
 static ActionResult V2MP_Supervisor_HandleLoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
