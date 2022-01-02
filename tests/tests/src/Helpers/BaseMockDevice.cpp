@@ -65,6 +65,16 @@ void BaseMockDevice::RelinquishMailbox()
 	V2MP_Device_RelinquishConnectedMailbox(m_Device);
 }
 
+size_t BaseMockDevice::DataTransferSpeed() const
+{
+	return V2MP_Device_GetDataTransferSpeed(WrappedDevice());
+}
+
+void BaseMockDevice::SetDataTransferSpeed(size_t bytesPerClockCycle)
+{
+	V2MP_Device_SetDataTransferSpeed(WrappedDevice(), bytesPerClockCycle);
+}
+
 void BaseMockDevice::Ifc_OnDeviceAboutToBeDestroyed()
 {
 	// Should never happen anyway:

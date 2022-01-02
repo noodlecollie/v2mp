@@ -26,6 +26,9 @@ public:
 	bool DeallocateMailbox();
 	void RelinquishMailbox();
 
+	size_t DataTransferSpeed() const;
+	void SetDataTransferSpeed(size_t bytesPerClockCycle);
+
 protected:
 	virtual void OnDeviceAttached();
 	virtual void OnDeviceAboutToBeDetached();

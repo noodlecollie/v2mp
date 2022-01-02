@@ -38,6 +38,11 @@ namespace Asm
 		return faultWord & 0x0FFF;
 	}
 
+	constexpr inline V2MP_Word NOP()
+	{
+		return 0;
+	}
+
 	constexpr inline V2MP_Word HCF(V2MP_Word args = 0)
 	{
 		return (V2MP_OP_HCF << 12) | (args & 0x0FFF);
