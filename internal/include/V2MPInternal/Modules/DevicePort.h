@@ -28,6 +28,7 @@ struct V2MP_Device* V2MP_DevicePort_GetConnectedDevice(const V2MP_DevicePort* po
 
 V2MP_MailboxController V2MP_DevicePort_GetMailboxController(const V2MP_DevicePort* port);
 bool V2MP_DevicePort_IsMailboxBusy(const V2MP_DevicePort* port);
+V2MP_DevicePortMailboxState V2MP_DevicePort_GetMailboxState(const V2MP_DevicePort* port);
 
 #ifdef __cplusplus
 } // extern "C"

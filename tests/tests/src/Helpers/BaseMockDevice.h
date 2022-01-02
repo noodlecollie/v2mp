@@ -22,9 +22,9 @@ public:
 	V2MP_Device* WrappedDevice();
 	const V2MP_Device* WrappedDevice() const;
 
-	bool AllocateMailbox(size_t sizeInBytes);
-	bool DeallocateMailbox();
-	void RelinquishMailbox();
+	bool AllocateConnectedMailbox(size_t sizeInBytes);
+	bool DeallocateConnectedMailbox();
+	bool RelinquishConnectedMailbox();
 
 	size_t DataTransferSpeed() const;
 	void SetDataTransferSpeed(size_t bytesPerClockCycle);

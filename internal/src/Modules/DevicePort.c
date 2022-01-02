@@ -53,3 +53,24 @@ bool V2MP_DevicePort_IsMailboxBusy(const V2MP_DevicePort* port)
 {
 	return port ? port->mailboxController == V2MP_MBC_SUPERVISOR : false;
 }
+
+V2MP_DevicePortMailboxState V2MP_DevicePort_GetMailboxState(const V2MP_DevicePort* port)
+{
+	if ( !port || !port->mailbox || port->mailboxController == V2MP_MBC_DEVICE )
+	{
+		return V2MP_DPMS_UNAVAILABLE;
+	}
+
+	if ( port->mailboxWasReadableWhenDeviceTookControl )
+	{
+		return V2MP_CircularBuffer_IsEmpty(port->mailbox)
+			? V2MP_DPMS_EXHAUSTED
+			: V2MP_DPMS_READABLE;
+	}
+	else
+	{
+		return V2MP_CircularBuffer_IsFull(port->mailbox)
+			? V2MP_DPMS_EXHAUSTED
+			: V2MP_DPMS_WRITEABLE;
+	}
+}

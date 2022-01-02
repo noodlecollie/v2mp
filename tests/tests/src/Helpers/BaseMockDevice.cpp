@@ -50,19 +50,19 @@ const V2MP_Device* BaseMockDevice::WrappedDevice() const
 	return m_Device;
 }
 
-bool BaseMockDevice::AllocateMailbox(size_t sizeInBytes)
+bool BaseMockDevice::AllocateConnectedMailbox(size_t sizeInBytes)
 {
 	return V2MP_Device_AllocateConnectedMailbox(m_Device, sizeInBytes);
 }
 
-bool BaseMockDevice::DeallocateMailbox()
+bool BaseMockDevice::DeallocateConnectedMailbox()
 {
 	return V2MP_Device_DeallocateConnectedMailbox(m_Device);
 }
 
-void BaseMockDevice::RelinquishMailbox()
+bool BaseMockDevice::RelinquishConnectedMailbox()
 {
-	V2MP_Device_RelinquishConnectedMailbox(m_Device);
+	return V2MP_Device_RelinquishConnectedMailbox(m_Device);
 }
 
 size_t BaseMockDevice::DataTransferSpeed() const

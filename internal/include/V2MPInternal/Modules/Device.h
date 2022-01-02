@@ -23,7 +23,7 @@ typedef struct V2MP_Device_Callbacks
 
 bool V2MP_Device_IsConnectedToPort(const V2MP_Device* device);
 bool V2MP_Device_ControlsConnectedMailbox(const V2MP_Device* device);
-void V2MP_Device_RelinquishConnectedMailbox(V2MP_Device* device);
+bool V2MP_Device_RelinquishConnectedMailbox(V2MP_Device* device);
 
 // Only valid if the device is connected to a port.
 V2MP_Word V2MP_Device_AddressOfConnectedPort(const V2MP_Device* device);

@@ -1,6 +1,6 @@
 #include "Helpers/EmitterMockDevice.h"
 
-size_t EmitterMockDevice::WriteToMailbox(const std::string& message)
+size_t EmitterMockDevice::WriteToConnectedMailbox(const std::string& message)
 {
 	return V2MP_Device_WriteToConnectedMailbox(
 		WrappedDevice(),

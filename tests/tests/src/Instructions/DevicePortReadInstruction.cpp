@@ -50,9 +50,9 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 			std::shared_ptr<EmitterMockDevice> device = vm.ConnectMockDeviceToPort<EmitterMockDevice>(PORT_ADDRESS);
 			REQUIRE(device);
 
-			REQUIRE(device->AllocateMailbox(64));
-			REQUIRE(device->WriteToMailbox(MESSAGE) == sizeof(MESSAGE));
-			device->RelinquishMailbox();
+			REQUIRE(device->AllocateConnectedMailbox(64));
+			REQUIRE(device->WriteToConnectedMailbox(MESSAGE) == sizeof(MESSAGE));
+			REQUIRE(device->RelinquishConnectedMailbox());
 
 			AND_GIVEN("The data transfer speed is unlimited")
 			{

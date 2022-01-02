@@ -74,14 +74,14 @@ size_t V2MP_Device_ReadFromConnectedMailbox(V2MP_Device* device, V2MP_Byte* outB
 	return V2MP_CircularBuffer_ReadData(V2MP_DevicePort_GetMailbox(device->connectedPort), outBuffer, outBufferSize);
 }
 
-void V2MP_Device_RelinquishConnectedMailbox(V2MP_Device* device)
+bool V2MP_Device_RelinquishConnectedMailbox(V2MP_Device* device)
 {
 	if ( !V2MP_Device_ControlsConnectedMailbox(device) )
 	{
-		return;
+		return false;
 	}
 
-	V2MP_DevicePort_DeviceRelinquishMailbox(device->connectedPort);
+	return V2MP_DevicePort_DeviceRelinquishMailbox(device->connectedPort);
 }
 
 size_t V2MP_Device_GetDataTransferSpeed(const V2MP_Device* device)

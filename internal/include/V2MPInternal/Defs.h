@@ -85,6 +85,14 @@ typedef enum V2MP_DevicePortOperationType
 	V2MP_DPOT_WRITE = 0x3
 } V2MP_DevicePortOperationType;
 
+typedef enum V2MP_DevicePortMailboxState
+{
+	V2MP_DPMS_UNAVAILABLE = 0,
+	V2MP_DPMS_READABLE,
+	V2MP_DPMS_WRITEABLE,
+	V2MP_DPMS_EXHAUSTED
+} V2MP_DevicePortMailboxState;
+
 #define V2MP_REGID_MASK(val) ((val) & 0x3)
 
 #define V2MP_CPU_SR_Z (1 << 0)

@@ -6,5 +6,5 @@
 class EmitterMockDevice : public BaseMockDevice
 {
 public:
-	size_t WriteToMailbox(const std::string& message);
+	size_t WriteToConnectedMailbox(const std::string& message);
 };

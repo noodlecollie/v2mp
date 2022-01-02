@@ -69,14 +69,16 @@ bool V2MP_DevicePort_DeviceDeallocateMailbox(V2MP_DevicePort* port)
 	return V2MP_DevicePort_DeviceAllocateMailbox(port, 0);
 }
 
-void V2MP_DevicePort_DeviceRelinquishMailbox(V2MP_DevicePort* port)
+bool V2MP_DevicePort_DeviceRelinquishMailbox(V2MP_DevicePort* port)
 {
-	if ( !port || port->mailboxController != V2MP_MBC_DEVICE )
+	if ( !port || !port->mailbox || port->mailboxController != V2MP_MBC_DEVICE )
 	{
-		return;
+		return false;
 	}
 
+	port->mailboxWasReadableWhenDeviceTookControl = !V2MP_CircularBuffer_IsEmpty(port->mailbox);
 	port->mailboxController = V2MP_MBC_PROGRAM;
+	return true;
 }
 
 bool V2MP_DevicePort_PassMailboxControlToDevice(V2MP_DevicePort* port)
