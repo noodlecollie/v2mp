@@ -92,6 +92,11 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 					{
 						REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_MBC_PROGRAM);
 					}
+
+					AND_THEN("The port's mailbox should not be considered busy")
+					{
+						REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+					}
 				}
 			}
 
@@ -137,6 +142,11 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 						REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_MBC_SUPERVISOR);
 					}
 
+					AND_THEN("The port's mailbox should be considered busy")
+					{
+						REQUIRE(V2MP_DevicePort_IsMailboxBusy(port));
+					}
+
 					AND_WHEN("A subsequent clock cycle is executed to transfer the rest of the message")
 					{
 						REQUIRE(vm.Execute(Asm::NOP()));
@@ -165,6 +175,11 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 						AND_THEN("The port's mailbox should be controlled by the program")
 						{
 							REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_MBC_PROGRAM);
+						}
+
+						AND_THEN("The port's mailbox should not be considered busy")
+						{
+							REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 						}
 					}
 				}

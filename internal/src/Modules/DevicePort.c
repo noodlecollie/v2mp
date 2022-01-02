@@ -48,3 +48,8 @@ V2MP_MailboxController V2MP_DevicePort_GetMailboxController(const V2MP_DevicePor
 {
 	return port ? port->mailboxController : V2MP_MBC_DEVICE;
 }
+
+bool V2MP_DevicePort_IsMailboxBusy(const V2MP_DevicePort* port)
+{
+	return port ? port->mailboxController == V2MP_MBC_SUPERVISOR : false;
+}
