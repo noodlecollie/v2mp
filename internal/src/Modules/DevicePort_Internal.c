@@ -107,6 +107,16 @@ void V2MP_DevicePort_PassMailboxControlToSupervisor(V2MP_DevicePort* port)
 	port->mailboxController = V2MP_MBC_SUPERVISOR;
 }
 
+void V2MP_DevicePort_PassMailboxControlToProgram(V2MP_DevicePort* port)
+{
+	if ( !port )
+	{
+		return;
+	}
+
+	port->mailboxController = V2MP_MBC_PROGRAM;
+}
+
 struct V2MP_CircularBuffer* V2MP_DevicePort_GetMailbox(V2MP_DevicePort* port)
 {
 	return (struct V2MP_CircularBuffer*)V2MP_DevicePort_GetConstMailbox(port);

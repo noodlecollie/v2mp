@@ -114,6 +114,21 @@ void V2MP_Supervisor_SetCPUFault(V2MP_Supervisor* supervisor, V2MP_Word fault)
 	}
 }
 
+size_t V2MP_Supervisor_GetMaxDSBytesAvailableAtAddress(V2MP_Supervisor* supervisor, V2MP_Word address)
+{
+	if ( !supervisor )
+	{
+		return 0;
+	}
+
+	if ( address >= supervisor->programDS.lengthInBytes )
+	{
+		return 0;
+	}
+
+	return supervisor->programDS.lengthInBytes - address;
+}
+
 V2MP_Word V2MP_Supervisor_FetchInstructionWord(V2MP_Supervisor* supervisor, V2MP_Word address, V2MP_Word* destReg)
 {
 	V2MP_MemoryStore* memoryStore;
