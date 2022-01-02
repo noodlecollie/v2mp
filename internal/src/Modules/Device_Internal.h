@@ -13,6 +13,7 @@ struct V2MP_Device
 	V2MP_DoubleLL_Node* ownerNode;
 	struct V2MP_DevicePort* connectedPort;
 	V2MP_Device_Callbacks callbacks;
+	size_t dataTransferSpeed;
 };
 
 V2MP_Device* V2MP_Device_AllocateAndInit(void);

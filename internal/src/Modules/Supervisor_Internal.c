@@ -189,11 +189,11 @@ void V2MP_Supervisor_RequestDevicePortIndirectRead(
 		return;
 	}
 
-	action->actionType = SVAT_INIT_DEVICE_DATA_TRANSFER;
-	SVACTION_INIT_DDT_ARG_PORT(action) = port;
-	SVACTION_INIT_DDT_ARG_DS_ADDR(action) = dsDestAddress;
-	SVACTION_INIT_DDT_ARG_DS_SIZE(action) = dsMaxBytes;
-	SVACTION_INIT_DDT_ARG_IS_MB_WRITE(action) = false;
+	action->actionType = SVAT_DEVICE_DATA_TRANSFER;
+	SVACTION_DDT_ARG_PORT(action) = port;
+	SVACTION_DDT_ARG_DS_ADDR(action) = dsDestAddress;
+	SVACTION_DDT_ARG_DS_SIZE(action) = dsMaxBytes;
+	SVACTION_DDT_ARG_FLAGS(action) = 0;
 }
 
 void V2MP_Supervisor_RequestDevicePortIndirectWrite(
@@ -213,9 +213,9 @@ void V2MP_Supervisor_RequestDevicePortIndirectWrite(
 		return;
 	}
 
-	action->actionType = SVAT_INIT_DEVICE_DATA_TRANSFER;
-	SVACTION_INIT_DDT_ARG_PORT(action) = port;
-	SVACTION_INIT_DDT_ARG_DS_ADDR(action) = dsSrcAddress;
-	SVACTION_INIT_DDT_ARG_DS_SIZE(action) = dsMaxBytes;
-	SVACTION_INIT_DDT_ARG_IS_MB_WRITE(action) = true;
+	action->actionType = SVAT_DEVICE_DATA_TRANSFER;
+	SVACTION_DDT_ARG_PORT(action) = port;
+	SVACTION_DDT_ARG_DS_ADDR(action) = dsSrcAddress;
+	SVACTION_DDT_ARG_DS_SIZE(action) = dsMaxBytes;
+	SVACTION_DDT_ARG_FLAGS(action) = SVACTION_DDT_FLAG_IS_MB_WRITE;
 }

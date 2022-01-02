@@ -37,6 +37,14 @@ bool V2MP_Device_DeallocateConnectedMailbox(V2MP_Device* device);
 size_t V2MP_Device_WriteToConnectedMailbox(V2MP_Device* device, const V2MP_Byte* data, size_t dataSize);
 size_t V2MP_Device_ReadFromConnectedMailbox(V2MP_Device* device, V2MP_Byte* outBuffer, size_t outBufferSize);
 
+// Data transfer speed is bytes per clock cycle.
+// A data transfer speed of 0 means that there is no limit (ie. any
+// amount of data can be transferred in one clock cycle).
+// Note that this speed only applies to indirect data transfers;
+// a direct data transfer always results in a single word being transferred.
+size_t V2MP_Device_GetDataTransferSpeed(const V2MP_Device* device);
+void V2MP_Device_SetDataTransferSpeed(V2MP_Device* device, size_t bytesPerClockCycle);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

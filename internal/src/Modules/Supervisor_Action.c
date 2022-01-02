@@ -17,9 +17,29 @@ typedef enum ActionResult
 	AR_ONGOING
 } ActionResult;
 
+typedef enum DataTransferContextResult
+{
+	DTCR_SUCCESSFUL = 0,
+	DTCR_FAILED,
+	DTCR_NO_PORT,
+	DTCR_NO_DEVICE,
+	DTCR_NO_MAILBOX,
+	DTCR_INVALID_CONTROLLER,
+	DTCR_EMPTY_DS_BUFFER
+} DataTransferContextResult;
+
+typedef struct DataTransferContext
+{
+	V2MP_Supervisor* supervisor;
+	V2MP_DevicePort* port;
+	V2MP_CircularBuffer* mailbox;
+	V2MP_CPU* cpu;
+	V2MP_Supervisor_Action* action;
+} DataTransferContext;
+
 static ActionResult V2MP_Supervisor_HandleLoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 static ActionResult V2MP_Supervisor_HandleStoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
-static ActionResult V2MP_Supervisor_HandleInitDeviceDataTransfer(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
+static ActionResult V2MP_Supervisor_HandleDeviceDataTransfer(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 
 typedef ActionResult (*ActionHandler)(V2MP_Supervisor*, V2MP_Supervisor_Action*);
 
@@ -29,6 +49,157 @@ static const ActionHandler ACTION_HANDLERS[] =
 	V2MP_SUPERVISOR_ACTION_LIST
 };
 #undef LIST_ITEM
+
+static DataTransferContextResult ConstructDataTransferContext(
+	V2MP_Supervisor* supervisor,
+	V2MP_Supervisor_Action* action,
+	DataTransferContext* context)
+{
+	V2MP_DevicePortCollection* ports;
+	V2MP_Word flags;
+
+	if ( !supervisor || !action || !context )
+	{
+		return DTCR_FAILED;
+	}
+
+	V2MP_ZERO_STRUCT_PTR(context);
+
+	context->supervisor = supervisor;
+	context->action = action;
+
+	context->cpu = V2MP_Mainboard_GetCPU(supervisor->mainboard);
+
+	if ( !context->cpu )
+	{
+		return DTCR_FAILED;
+	}
+
+	ports = V2MP_Mainboard_GetDevicePortCollection(supervisor->mainboard);
+
+	if ( !ports )
+	{
+		return DTCR_FAILED;
+	}
+
+	context->port = V2MP_DevicePortCollection_GetPort(ports, SVACTION_DDT_ARG_PORT(action));
+
+	if ( !context->port )
+	{
+		return DTCR_NO_PORT;
+	}
+
+	if ( !V2MP_DevicePort_HasConnectedDevice(context->port) )
+	{
+		return DTCR_NO_DEVICE;
+	}
+
+	context->mailbox = V2MP_DevicePort_GetMailbox(context->port);
+
+	if ( !context->mailbox )
+	{
+		return DTCR_NO_MAILBOX;
+	}
+
+	flags = SVACTION_DDT_ARG_FLAGS(context->action);
+
+	if ( (!(flags & SVACTION_DDT_FLAG_IS_IN_PROGRESS) && V2MP_DevicePort_GetMailboxController(context->port) != V2MP_MBC_PROGRAM) ||
+	     (flags * SVACTION_DDT_FLAG_IS_IN_PROGRESS) && V2MP_DevicePort_GetMailboxController(context->port) != V2MP_MBC_SUPERVISOR )
+	{
+		return DTCR_INVALID_CONTROLLER;
+	}
+
+	if ( SVACTION_DDT_ARG_DS_SIZE(context->action) < 1 )
+	{
+		return DTCR_EMPTY_DS_BUFFER;
+	}
+
+	return DTCR_SUCCESSFUL;
+}
+
+static ActionResult HandleDataTransferRead(DataTransferContext* context)
+{
+	V2MP_Byte* dsData;
+
+	dsData = V2MP_Supervisor_GetDataRangeFromSegment(
+		context->supervisor,
+		&context->supervisor->programDS,
+		SVACTION_DDT_ARG_DS_ADDR(context->action),
+		SVACTION_DDT_ARG_DS_SIZE(context->action)
+	);
+
+	if ( dsData )
+	{
+		size_t bytesReadFromMailbox;
+		size_t origBytesInMailbox;
+		V2MP_Word sr = 0;
+
+		origBytesInMailbox = V2MP_CircularBuffer_BytesUsed(context->mailbox);
+		bytesReadFromMailbox = V2MP_CircularBuffer_ReadData(context->mailbox, dsData, SVACTION_DDT_ARG_DS_SIZE(context->action));
+
+		if ( bytesReadFromMailbox < SVACTION_DDT_ARG_DS_SIZE(context->action) )
+		{
+			sr |= V2MP_CPU_SR_C;
+		}
+
+		if ( bytesReadFromMailbox >= origBytesInMailbox )
+		{
+			sr |= V2MP_CPU_SR_Z;
+		}
+
+		V2MP_CPU_SetR1(context->cpu, (V2MP_Word)bytesReadFromMailbox);
+		V2MP_CPU_SetStatusRegister(context->cpu, sr);
+	}
+	else
+	{
+		// TODO: Determine how many bytes we can write, and write those instead?
+		V2MP_Supervisor_SetCPUFault(context->supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
+	}
+
+	return AR_COMPLETE;
+}
+
+static ActionResult HandleDataTransferWrite(DataTransferContext* context)
+{
+	const V2MP_Byte* dsData;
+
+	dsData = V2MP_Supervisor_GetConstDataRangeFromSegment(
+		context->supervisor,
+		&context->supervisor->programDS,
+		SVACTION_DDT_ARG_DS_ADDR(context->action),
+		SVACTION_DDT_ARG_DS_SIZE(context->action)
+	);
+
+	if ( dsData )
+	{
+		size_t bytesWrittenToMailbox;
+		size_t freeBytesInMailbox;
+		V2MP_Word sr = 0;
+
+		freeBytesInMailbox = V2MP_CircularBuffer_BytesFree(context->mailbox);
+		bytesWrittenToMailbox = V2MP_CircularBuffer_WriteData(context->mailbox, dsData, SVACTION_DDT_ARG_DS_SIZE(context->action));
+
+		if ( V2MP_CircularBuffer_IsFull(context->mailbox) )
+		{
+			sr |= V2MP_CPU_SR_Z;
+		}
+
+		if ( freeBytesInMailbox < SVACTION_DDT_ARG_DS_SIZE(context->action) )
+		{
+			sr |= V2MP_CPU_SR_C;
+		}
+
+		V2MP_CPU_SetR1(context->cpu, (V2MP_Word)bytesWrittenToMailbox);
+		V2MP_CPU_SetStatusRegister(context->cpu, sr);
+	}
+	else
+	{
+		// TODO: Determine how many bytes we can write, and write those instead?
+		V2MP_Supervisor_SetCPUFault(context->supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
+	}
+
+	return AR_COMPLETE;
+}
 
 static ActionResult V2MP_Supervisor_HandleLoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
 {
@@ -101,132 +272,43 @@ static ActionResult V2MP_Supervisor_HandleStoreWord(V2MP_Supervisor* supervisor,
 	return AR_COMPLETE;
 }
 
-static ActionResult V2MP_Supervisor_HandleInitDeviceDataTransfer(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
+static ActionResult V2MP_Supervisor_HandleDeviceDataTransfer(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
 {
-	V2MP_DevicePortCollection* ports;
-	V2MP_DevicePort* port;
-	V2MP_CircularBuffer* mailbox;
-	V2MP_CPU* cpu;
-	V2MP_Word dsAddress;
-	V2MP_Word dsSize;
+	DataTransferContext context;
+	DataTransferContextResult contextResult;
 
-	cpu = V2MP_Mainboard_GetCPU(supervisor->mainboard);
+	contextResult = ConstructDataTransferContext(supervisor, action, &context);
 
-	if ( !cpu )
+	switch ( contextResult )
 	{
-		return AR_FAILED;
-	}
-
-	ports = V2MP_Mainboard_GetDevicePortCollection(supervisor->mainboard);
-
-	if ( !ports )
-	{
-		return AR_FAILED;
-	}
-
-	port = V2MP_DevicePortCollection_GetPort(ports, SVACTION_INIT_DDT_ARG_PORT(action));
-
-	if ( !port || !V2MP_DevicePort_HasConnectedDevice(port) )
-	{
-		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_IDO, 0));
-		return AR_COMPLETE;
-	}
-
-	mailbox = V2MP_DevicePort_GetMailbox(port);
-
-	if ( !mailbox )
-	{
-		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_IDO, 0));
-		return AR_COMPLETE;
-	}
-
-	if ( V2MP_DevicePort_GetMailboxController(port) != V2MP_MBC_PROGRAM )
-	{
-		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_IDO, 0));
-		return AR_COMPLETE;
-	}
-
-	dsAddress = SVACTION_INIT_DDT_ARG_DS_ADDR(action);
-	dsSize = SVACTION_INIT_DDT_ARG_DS_SIZE(action);
-
-	if ( dsSize < 1 )
-	{
-		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_IDO, 0));
-		return AR_COMPLETE;
-	}
-
-	// We will want to do this over multiple clock cycles eventually,
-	// depending on the data transfer speed of the device.
-	if ( SVACTION_INIT_DDT_ARG_IS_MB_WRITE(action) )
-	{
-		const V2MP_Byte* dsData;
-
-		dsData = V2MP_Supervisor_GetConstDataRangeFromSegment(supervisor, &supervisor->programDS, dsAddress, dsSize);
-
-		if ( dsData )
+		case DTCR_SUCCESSFUL:
 		{
-			size_t bytesWrittenToMailbox;
-			size_t freeBytesInMailbox;
-			V2MP_Word sr = 0;
-
-			freeBytesInMailbox = V2MP_CircularBuffer_BytesFree(mailbox);
-			bytesWrittenToMailbox = V2MP_CircularBuffer_WriteData(mailbox, dsData, dsSize);
-
-			if ( V2MP_CircularBuffer_IsFull(mailbox) )
-			{
-				sr |= V2MP_CPU_SR_Z;
-			}
-
-			if ( freeBytesInMailbox < dsSize )
-			{
-				sr |= V2MP_CPU_SR_C;
-			}
-
-			V2MP_CPU_SetR1(cpu, (V2MP_Word)bytesWrittenToMailbox);
-			V2MP_CPU_SetStatusRegister(cpu, sr);
+			// All fine, so continue.
+			break;
 		}
-		else
+
+		case DTCR_FAILED:
 		{
-			// TODO: Determine how many bytes we can write, and write those instead?
-			V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
+			// Something was fundementally wrong.
+			return AR_FAILED;
 		}
+
+		default:
+		{
+			// Some other error which should result in a fault.
+			V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_IDO, 0));
+			return AR_COMPLETE;
+		}
+	}
+
+	if ( SVACTION_DDT_ARG_FLAGS(action) & SVACTION_DDT_FLAG_IS_MB_WRITE )
+	{
+		return HandleDataTransferWrite(&context);
 	}
 	else
 	{
-		V2MP_Byte* dsData;
-
-		dsData = V2MP_Supervisor_GetDataRangeFromSegment(supervisor, &supervisor->programDS, dsAddress, dsSize);
-
-		if ( dsData )
-		{
-			size_t bytesReadFromMailbox;
-			size_t origBytesInMailbox;
-			V2MP_Word sr = 0;
-
-			origBytesInMailbox = V2MP_CircularBuffer_BytesUsed(mailbox);
-			bytesReadFromMailbox = V2MP_CircularBuffer_ReadData(mailbox, dsData, dsSize);
-
-			if ( bytesReadFromMailbox < dsSize )
-			{
-				sr |= V2MP_CPU_SR_C;
-			}
-
-			if ( bytesReadFromMailbox >= origBytesInMailbox )
-			{
-				sr |= V2MP_CPU_SR_Z;
-			}
-
-			V2MP_CPU_SetR1(cpu, (V2MP_Word)bytesReadFromMailbox);
-			V2MP_CPU_SetStatusRegister(cpu, sr);
-		}
-		else
-		{
-			// TODO: Determine how many bytes we can write, and write those instead?
-			V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
-		}
+		return HandleDataTransferRead(&context);
 	}
-
-	return AR_COMPLETE;
 }
 
 static ActionResult ResolveAction(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)

@@ -83,3 +83,18 @@ void V2MP_Device_RelinquishConnectedMailbox(V2MP_Device* device)
 
 	V2MP_DevicePort_DeviceRelinquishMailbox(device->connectedPort);
 }
+
+size_t V2MP_Device_GetDataTransferSpeed(const V2MP_Device* device)
+{
+	return device ? device->dataTransferSpeed : 0;
+}
+
+void V2MP_Device_SetDataTransferSpeed(V2MP_Device* device, size_t bytesPerClockCycle)
+{
+	if ( !device )
+	{
+		return;
+	}
+
+	device->dataTransferSpeed = bytesPerClockCycle;
+}

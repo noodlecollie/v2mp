@@ -76,6 +76,22 @@ static bool PollAllDevices(V2MP_Supervisor* supervisor)
 	return true;
 }
 
+static bool HandlePostInstructionTasks(V2MP_Supervisor* supervisor)
+{
+	if ( !V2MP_Supervisor_ResolveOutstandingActions(supervisor) )
+	{
+		return false;
+	}
+
+	if ( !PollAllDevices(supervisor) )
+	{
+		return false;
+	}
+
+	// TODO: Handle fault if one was set?
+	return true;
+}
+
 V2MP_Supervisor* V2MP_Supervisor_AllocateAndInit(void)
 {
 	V2MP_Supervisor* supervisor = V2MP_CALLOC_STRUCT(V2MP_Supervisor);
@@ -229,13 +245,7 @@ bool V2MP_Supervisor_ExecuteClockCycle(V2MP_Supervisor* supervisor)
 		return false;
 	}
 
-	if ( !V2MP_Supervisor_ResolveOutstandingActions(supervisor) )
-	{
-		return false;
-	}
-
-	// TODO: Handle fault if one was set?
-	return true;
+	return HandlePostInstructionTasks(supervisor);
 }
 
 bool V2MP_Supervisor_ExecuteSingleInstruction(V2MP_Supervisor* supervisor, V2MP_Word instruction)
@@ -254,18 +264,7 @@ bool V2MP_Supervisor_ExecuteSingleInstruction(V2MP_Supervisor* supervisor, V2MP_
 		return false;
 	}
 
-	if ( !V2MP_Supervisor_ResolveOutstandingActions(supervisor) )
-	{
-		return false;
-	}
-
-	if ( !PollAllDevices(supervisor) )
-	{
-		return false;
-	}
-
-	// TODO: Handle fault if one was set?
-	return true;
+	return HandlePostInstructionTasks(supervisor);
 }
 
 bool V2MP_Supervisor_FetchCSWord(

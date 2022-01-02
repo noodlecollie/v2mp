@@ -71,7 +71,7 @@ bool V2MP_DevicePort_DeviceDeallocateMailbox(V2MP_DevicePort* port)
 
 void V2MP_DevicePort_DeviceRelinquishMailbox(V2MP_DevicePort* port)
 {
-	if ( !port )
+	if ( !port || port->mailboxController != V2MP_MBC_DEVICE )
 	{
 		return;
 	}
@@ -95,6 +95,16 @@ bool V2MP_DevicePort_PassMailboxControlToDevice(V2MP_DevicePort* port)
 	V2MP_Device_NotifyMailboxControlAcquired(port->connectedDevice);
 
 	return true;
+}
+
+void V2MP_DevicePort_PassMailboxControlToSupervisor(V2MP_DevicePort* port)
+{
+	if ( !port )
+	{
+		return;
+	}
+
+	port->mailboxController = V2MP_MBC_SUPERVISOR;
 }
 
 struct V2MP_CircularBuffer* V2MP_DevicePort_GetMailbox(V2MP_DevicePort* port)
