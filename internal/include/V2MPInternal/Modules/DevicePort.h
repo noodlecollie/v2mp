@@ -26,6 +26,12 @@ bool V2MP_DevicePort_DisconnectDevice(V2MP_DevicePort* port);
 bool V2MP_DevicePort_HasConnectedDevice(const V2MP_DevicePort* port);
 struct V2MP_Device* V2MP_DevicePort_GetConnectedDevice(const V2MP_DevicePort* port);
 
+bool V2MP_DevicePort_HasMailbox(const V2MP_DevicePort* port);
+bool V2MP_DevicePort_IsMailboxEmpty(const V2MP_DevicePort* port);
+bool V2MP_DevicePort_IsMailboxFull(const V2MP_DevicePort* port);
+size_t V2MP_DevicePort_MailboxCapacity(const V2MP_DevicePort* port);
+size_t V2MP_DevicePort_MailboxBytesFree(const V2MP_DevicePort* port);
+size_t V2MP_DevicePort_MailboxBytesUsed(const V2MP_DevicePort* port);
 V2MP_MailboxController V2MP_DevicePort_GetMailboxController(const V2MP_DevicePort* port);
 bool V2MP_DevicePort_IsMailboxBusy(const V2MP_DevicePort* port);
 V2MP_DevicePortMailboxState V2MP_DevicePort_GetMailboxState(const V2MP_DevicePort* port);

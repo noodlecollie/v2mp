@@ -158,6 +158,14 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 			{
 				REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 			}
+
+			AND_THEN("The mailbox is considered empty")
+			{
+				REQUIRE(V2MP_DevicePort_IsMailboxEmpty(port));
+				REQUIRE_FALSE(V2MP_DevicePort_IsMailboxFull(port));
+				REQUIRE(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
+				REQUIRE(V2MP_DevicePort_MailboxBytesFree(port) == 0);
+			}
 		}
 
 		AND_WHEN("The port is connected to a device")
@@ -184,6 +192,18 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 			AND_THEN("The mailbox is considered unavailable")
 			{
 				REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
+			}
+
+			AND_THEN("The mailbox is considered empty")
+			{
+				REQUIRE(V2MP_DevicePort_IsMailboxEmpty(port));
+				REQUIRE_FALSE(V2MP_DevicePort_IsMailboxFull(port));
+				REQUIRE(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
+				REQUIRE(V2MP_DevicePort_MailboxBytesFree(port) == 0);
+				REQUIRE(V2MP_Device_IsConnectedMailboxEmpty(device));
+				REQUIRE_FALSE(V2MP_Device_IsConnectedMailboxFull(device));
+				REQUIRE(V2MP_Device_UsedBytesInConnectedMailbox(device) == 0);
+				REQUIRE(V2MP_Device_FreeBytesInConnectedMailbox(device) == 0);
 			}
 
 			AND_WHEN("The device tries to write to the mailbox before it has been allocated")
@@ -219,6 +239,18 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 					REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 				}
 
+				AND_THEN("The mailbox is considered empty")
+				{
+					REQUIRE(V2MP_DevicePort_IsMailboxEmpty(port));
+					REQUIRE_FALSE(V2MP_DevicePort_IsMailboxFull(port));
+					REQUIRE(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
+					REQUIRE(V2MP_DevicePort_MailboxBytesFree(port) == MAILBOX_SIZE);
+					REQUIRE(V2MP_Device_IsConnectedMailboxEmpty(device));
+					REQUIRE_FALSE(V2MP_Device_IsConnectedMailboxFull(device));
+					REQUIRE(V2MP_Device_UsedBytesInConnectedMailbox(device) == 0);
+					REQUIRE(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE);
+				}
+
 				AND_WHEN("The device writes to the mailbox")
 				{
 					const size_t written = V2MP_Device_WriteToConnectedMailbox(
@@ -230,6 +262,17 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 					THEN("The correct number of bytes is written to the mailbox")
 					{
 						REQUIRE(written == sizeof(MAILBOX_MESSAGE));
+					}
+
+					AND_THEN("The mailbox is considered partially filled")
+					{
+						REQUIRE_FALSE(V2MP_DevicePort_IsMailboxEmpty(port));
+						REQUIRE_FALSE(V2MP_DevicePort_IsMailboxFull(port));
+						REQUIRE(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MAILBOX_MESSAGE));
+						REQUIRE(V2MP_DevicePort_MailboxBytesFree(port) == MAILBOX_SIZE - sizeof(MAILBOX_MESSAGE));
+						REQUIRE_FALSE(V2MP_Device_IsConnectedMailboxEmpty(device));
+						REQUIRE(V2MP_Device_UsedBytesInConnectedMailbox(device) == sizeof(MAILBOX_MESSAGE));
+						REQUIRE(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE - sizeof(MAILBOX_MESSAGE));
 					}
 
 					AND_WHEN("The device relinquishes the mailbox")
@@ -249,6 +292,18 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 						AND_THEN("The mailbox is considered readable")
 						{
 							REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
+						}
+
+						AND_THEN("The mailbox is considered partially filled")
+						{
+							REQUIRE_FALSE(V2MP_DevicePort_IsMailboxEmpty(port));
+							REQUIRE_FALSE(V2MP_DevicePort_IsMailboxFull(port));
+							REQUIRE(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MAILBOX_MESSAGE));
+							REQUIRE(V2MP_DevicePort_MailboxBytesFree(port) == MAILBOX_SIZE - sizeof(MAILBOX_MESSAGE));
+							REQUIRE_FALSE(V2MP_Device_IsConnectedMailboxEmpty(device));
+							REQUIRE_FALSE(V2MP_Device_IsConnectedMailboxFull(device));
+							REQUIRE(V2MP_Device_UsedBytesInConnectedMailbox(device) == sizeof(MAILBOX_MESSAGE));
+							REQUIRE(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE - sizeof(MAILBOX_MESSAGE));
 						}
 					}
 				}

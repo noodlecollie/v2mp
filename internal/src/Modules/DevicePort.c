@@ -44,6 +44,36 @@ struct V2MP_Device* V2MP_DevicePort_GetConnectedDevice(const V2MP_DevicePort* po
 	return port ? port->connectedDevice : NULL;
 }
 
+bool V2MP_DevicePort_HasMailbox(const V2MP_DevicePort* port)
+{
+	return port ? port->mailbox != NULL : false;
+}
+
+bool V2MP_DevicePort_IsMailboxEmpty(const V2MP_DevicePort* port)
+{
+	return (port && port->mailbox) ? V2MP_CircularBuffer_IsEmpty(port->mailbox) : true;
+}
+
+bool V2MP_DevicePort_IsMailboxFull(const V2MP_DevicePort* port)
+{
+	return (port && port->mailbox) ? V2MP_CircularBuffer_IsFull(port->mailbox) : false;
+}
+
+size_t V2MP_DevicePort_MailboxCapacity(const V2MP_DevicePort* port)
+{
+	return (port && port->mailbox) ? V2MP_CircularBuffer_Capacity(port->mailbox) : 0;
+}
+
+size_t V2MP_DevicePort_MailboxBytesFree(const V2MP_DevicePort* port)
+{
+	return (port && port->mailbox) ? V2MP_CircularBuffer_BytesFree(port->mailbox) : 0;
+}
+
+size_t V2MP_DevicePort_MailboxBytesUsed(const V2MP_DevicePort* port)
+{
+	return (port && port->mailbox) ? V2MP_CircularBuffer_BytesUsed(port->mailbox) : 0;
+}
+
 V2MP_MailboxController V2MP_DevicePort_GetMailboxController(const V2MP_DevicePort* port)
 {
 	return port ? port->mailboxController : V2MP_DMBC_DEVICE;

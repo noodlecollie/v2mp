@@ -74,6 +74,31 @@ size_t V2MP_Device_ReadFromConnectedMailbox(V2MP_Device* device, V2MP_Byte* outB
 	return V2MP_CircularBuffer_ReadData(V2MP_DevicePort_GetMailbox(device->connectedPort), outBuffer, outBufferSize);
 }
 
+bool V2MP_Device_HasConnectedMailbox(const V2MP_Device* device)
+{
+	return (device && device->connectedPort) ? V2MP_DevicePort_HasMailbox(device->connectedPort) : false;
+}
+
+size_t V2MP_Device_FreeBytesInConnectedMailbox(const V2MP_Device* device)
+{
+	return (device && device->connectedPort) ? V2MP_DevicePort_MailboxBytesFree(device->connectedPort) : 0;
+}
+
+size_t V2MP_Device_UsedBytesInConnectedMailbox(const V2MP_Device* device)
+{
+	return (device && device->connectedPort) ? V2MP_DevicePort_MailboxBytesUsed(device->connectedPort) : 0;
+}
+
+bool V2MP_Device_IsConnectedMailboxEmpty(const V2MP_Device* device)
+{
+	return (device && device->connectedPort) ? V2MP_DevicePort_IsMailboxEmpty(device->connectedPort) : true;
+}
+
+bool V2MP_Device_IsConnectedMailboxFull(const V2MP_Device* device)
+{
+	return (device && device->connectedPort) ? V2MP_DevicePort_IsMailboxFull(device->connectedPort) : false;
+}
+
 bool V2MP_Device_RelinquishConnectedMailbox(V2MP_Device* device)
 {
 	if ( !V2MP_Device_ControlsConnectedMailbox(device) )
