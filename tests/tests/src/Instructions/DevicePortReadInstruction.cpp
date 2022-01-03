@@ -97,6 +97,11 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 					{
 						REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					}
+
+					AND_THEN("The port's mailbox should be exhausted")
+					{
+						REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
+					}
 				}
 			}
 
@@ -147,6 +152,11 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 						REQUIRE(V2MP_DevicePort_IsMailboxBusy(port));
 					}
 
+					AND_THEN("The port's mailbox should still be readable")
+					{
+						REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
+					}
+
 					AND_WHEN("A subsequent clock cycle is executed to transfer the rest of the message")
 					{
 						REQUIRE(vm.Execute(Asm::NOP()));
@@ -180,6 +190,11 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 						AND_THEN("The port's mailbox should not be considered busy")
 						{
 							REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+						}
+
+						AND_THEN("The port's mailbox should be exhausted")
+						{
+							REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 						}
 					}
 				}
