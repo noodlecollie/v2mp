@@ -146,7 +146,7 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 			THEN("The mailbox is still considered controlled by a device")
 			{
-				REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_MBC_DEVICE);
+				REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
 			}
 
 			AND_THEN("The mailbox is not considered busy")
@@ -172,7 +172,7 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 			THEN("The mailbox is considered controlled by the device")
 			{
-				REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_MBC_DEVICE);
+				REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
 				REQUIRE(V2MP_Device_ControlsConnectedMailbox(device));
 			}
 
@@ -206,7 +206,7 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 				THEN("The mailbox is considered controlled by the device")
 				{
-					REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_MBC_DEVICE);
+					REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
 				}
 
 				AND_THEN("The mailbox is not considered busy")
@@ -238,7 +238,7 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 						THEN("The mailbox is considered controlled by the program")
 						{
-							REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_MBC_PROGRAM);
+							REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
 						}
 
 						AND_THEN("The mailbox is not considered busy")

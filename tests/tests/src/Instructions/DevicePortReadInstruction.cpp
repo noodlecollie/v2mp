@@ -90,7 +90,7 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 
 					AND_THEN("The port's mailbox should be controlled by the program")
 					{
-						REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_MBC_PROGRAM);
+						REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
 					}
 
 					AND_THEN("The port's mailbox should not be considered busy")
@@ -144,7 +144,7 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 
 					AND_THEN("The port's mailbox should be controlled by the supervisor")
 					{
-						REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_MBC_SUPERVISOR);
+						REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_SUPERVISOR);
 					}
 
 					AND_THEN("The port's mailbox should be considered busy")
@@ -184,7 +184,7 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 
 						AND_THEN("The port's mailbox should be controlled by the program")
 						{
-							REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_MBC_PROGRAM);
+							REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
 						}
 
 						AND_THEN("The port's mailbox should not be considered busy")

@@ -46,17 +46,17 @@ struct V2MP_Device* V2MP_DevicePort_GetConnectedDevice(const V2MP_DevicePort* po
 
 V2MP_MailboxController V2MP_DevicePort_GetMailboxController(const V2MP_DevicePort* port)
 {
-	return port ? port->mailboxController : V2MP_MBC_DEVICE;
+	return port ? port->mailboxController : V2MP_DMBC_DEVICE;
 }
 
 bool V2MP_DevicePort_IsMailboxBusy(const V2MP_DevicePort* port)
 {
-	return port ? port->mailboxController == V2MP_MBC_SUPERVISOR : false;
+	return port ? port->mailboxController == V2MP_DMBC_SUPERVISOR : false;
 }
 
 V2MP_DevicePortMailboxState V2MP_DevicePort_GetMailboxState(const V2MP_DevicePort* port)
 {
-	if ( !port || !port->mailbox || port->mailboxController == V2MP_MBC_DEVICE )
+	if ( !port || !port->mailbox || port->mailboxController == V2MP_DMBC_DEVICE )
 	{
 		return V2MP_DPMS_UNAVAILABLE;
 	}

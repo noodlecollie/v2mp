@@ -54,9 +54,9 @@ typedef enum V2MP_RegisterIndex
 
 typedef enum V2MP_MailboxController
 {
-	V2MP_MBC_DEVICE = 0,
-	V2MP_MBC_PROGRAM,
-	V2MP_MBC_SUPERVISOR
+	V2MP_DMBC_DEVICE = 0,
+	V2MP_DMBC_PROGRAM,
+	V2MP_DMBC_SUPERVISOR
 } V2MP_MailboxController;
 
 typedef enum V2MP_BitwiseOp

@@ -14,7 +14,7 @@ bool V2MP_Device_ControlsConnectedMailbox(const V2MP_Device* device)
 {
 	return
 		V2MP_Device_IsConnectedToPort(device) &&
-		V2MP_DevicePort_GetMailboxController(device->connectedPort) == V2MP_MBC_DEVICE;
+		V2MP_DevicePort_GetMailboxController(device->connectedPort) == V2MP_DMBC_DEVICE;
 }
 
 V2MP_Word V2MP_Device_AddressOfConnectedPort(const V2MP_Device* device)
