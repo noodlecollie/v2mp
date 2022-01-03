@@ -305,6 +305,84 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 							REQUIRE(V2MP_Device_UsedBytesInConnectedMailbox(device) == sizeof(MAILBOX_MESSAGE));
 							REQUIRE(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE - sizeof(MAILBOX_MESSAGE));
 						}
+
+						AND_WHEN("The device relinquishes the mailbox without having control of it")
+						{
+							const bool secondRelinquish = V2MP_Device_RelinquishConnectedMailbox(device);
+
+							THEN("The result of the function should be false")
+							{
+								REQUIRE_FALSE(secondRelinquish);
+							}
+						}
+					}
+				}
+
+				AND_WHEN("The device relinquishes the mailbox without having written to it")
+				{
+					REQUIRE(V2MP_Device_RelinquishConnectedMailbox(device));
+
+					THEN("The mailbox is considered controlled by the program")
+					{
+						REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+					}
+
+					AND_THEN("The mailbox is not considered busy")
+					{
+						REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+					}
+
+					AND_THEN("The mailbox is considered writeable")
+					{
+						REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE);
+					}
+
+					AND_THEN("The mailbox is considered empty")
+					{
+						REQUIRE(V2MP_DevicePort_IsMailboxEmpty(port));
+						REQUIRE_FALSE(V2MP_DevicePort_IsMailboxFull(port));
+						REQUIRE(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
+						REQUIRE(V2MP_DevicePort_MailboxBytesFree(port) == MAILBOX_SIZE);
+						REQUIRE(V2MP_Device_IsConnectedMailboxEmpty(device));
+						REQUIRE_FALSE(V2MP_Device_IsConnectedMailboxFull(device));
+						REQUIRE(V2MP_Device_UsedBytesInConnectedMailbox(device) == 0);
+						REQUIRE(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE);
+					}
+
+					AND_WHEN("The device relinquishes the mailbox without having control of it")
+					{
+						const bool secondRelinquish = V2MP_Device_RelinquishConnectedMailbox(device);
+
+						THEN("The result of the function is false")
+						{
+							REQUIRE_FALSE(secondRelinquish);
+						}
+					}
+
+					AND_WHEN("The devite attempts to write to the mailbox without having control of it")
+					{
+						const size_t written = V2MP_Device_WriteToConnectedMailbox(
+							device,
+							reinterpret_cast<const V2MP_Byte*>(MAILBOX_MESSAGE),
+							sizeof(MAILBOX_MESSAGE)
+						);
+
+						THEN("No bytes are written to the mailbox")
+						{
+							REQUIRE(written == 0);
+						}
+
+						AND_THEN("The mailbox is considered empty")
+						{
+							REQUIRE(V2MP_DevicePort_IsMailboxEmpty(port));
+							REQUIRE_FALSE(V2MP_DevicePort_IsMailboxFull(port));
+							REQUIRE(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
+							REQUIRE(V2MP_DevicePort_MailboxBytesFree(port) == MAILBOX_SIZE);
+							REQUIRE(V2MP_Device_IsConnectedMailboxEmpty(device));
+							REQUIRE_FALSE(V2MP_Device_IsConnectedMailboxFull(device));
+							REQUIRE(V2MP_Device_UsedBytesInConnectedMailbox(device) == 0);
+							REQUIRE(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE);
+						}
 					}
 				}
 			}
