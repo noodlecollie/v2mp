@@ -68,37 +68,37 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 					REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::READ, true)));
 					REQUIRE_FALSE(vm.CPUHasFault());
 
-					THEN("The DS segment should contain the entire message")
+					THEN("The DS segment contains the entire message")
 					{
 						std::vector<V2MP_Byte> dsData;
 
-						REQUIRE(vm.GetDSData(0, SEGMENT_SIZE_WORDS * sizeof(V2MP_Word), dsData));
-						CHECK(dsData.size() == SEGMENT_SIZE_WORDS * sizeof(V2MP_Word));
+						REQUIRE(vm.GetDSData(0, SEGMENT_SIZE_BYTES, dsData));
+						CHECK(dsData.size() == SEGMENT_SIZE_BYTES);
 						CHECK(memcmp(dsData.data() + DS_ADDRESS, MESSAGE, sizeof(MESSAGE)) == 0);
 
 						CHECK(MemoryMatches(
 							dsData.data() + DS_ADDRESS + sizeof(MESSAGE),
-							(SEGMENT_SIZE_WORDS * sizeof(V2MP_Word)) - sizeof(MESSAGE),
+							SEGMENT_SIZE_BYTES - sizeof(MESSAGE),
 							SEGMENT_SENTRY_BYTE
 						));
 					}
 
-					AND_THEN("R1 should hold the length of the entire message")
+					AND_THEN("R1 holds the length of the entire message")
 					{
 						CHECK(vm.GetR1() == sizeof(MESSAGE));
 					}
 
-					AND_THEN("The port's mailbox should be controlled by the program")
+					AND_THEN("The port's mailbox is controlled by the program")
 					{
 						REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
 					}
 
-					AND_THEN("The port's mailbox should not be considered busy")
+					AND_THEN("The port's mailbox is not considered busy")
 					{
 						REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					}
 
-					AND_THEN("The port's mailbox should be exhausted")
+					AND_THEN("The port's mailbox is exhausted")
 					{
 						REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 					}
@@ -122,37 +122,37 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 					REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::READ, true)));
 					REQUIRE_FALSE(vm.CPUHasFault());
 
-					THEN("The DS segment should contain as many bytes as were transferred in that clock cycle")
+					THEN("The DS segment contains as many bytes as were transferred in that clock cycle")
 					{
 						std::vector<V2MP_Byte> dsData;
 
-						REQUIRE(vm.GetDSData(0, SEGMENT_SIZE_WORDS * sizeof(V2MP_Word), dsData));
-						CHECK(dsData.size() == SEGMENT_SIZE_WORDS * sizeof(V2MP_Word));
+						REQUIRE(vm.GetDSData(0, SEGMENT_SIZE_BYTES, dsData));
+						CHECK(dsData.size() == SEGMENT_SIZE_BYTES);
 						CHECK(memcmp(dsData.data() + DS_ADDRESS, MESSAGE, BYTES_PER_CYCLE) == 0);
 
 						CHECK(MemoryMatches(
 							dsData.data() + DS_ADDRESS + BYTES_PER_CYCLE,
-							(SEGMENT_SIZE_WORDS * sizeof(V2MP_Word)) - BYTES_PER_CYCLE,
+							SEGMENT_SIZE_BYTES - BYTES_PER_CYCLE,
 							SEGMENT_SENTRY_BYTE
 						));
 					}
 
-					AND_THEN("R1 should hold the length of the entire message")
+					AND_THEN("R1 holds the length of the entire message")
 					{
 						CHECK(vm.GetR1() == sizeof(MESSAGE));
 					}
 
-					AND_THEN("The port's mailbox should be controlled by the supervisor")
+					AND_THEN("The port's mailbox is controlled by the supervisor")
 					{
 						REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_SUPERVISOR);
 					}
 
-					AND_THEN("The port's mailbox should be considered busy")
+					AND_THEN("The port's mailbox is considered busy")
 					{
 						REQUIRE(V2MP_DevicePort_IsMailboxBusy(port));
 					}
 
-					AND_THEN("The port's mailbox should still be readable")
+					AND_THEN("The port's mailbox is still readable")
 					{
 						REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
 					}
@@ -162,41 +162,99 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 						REQUIRE(vm.Execute(Asm::NOP()));
 						REQUIRE_FALSE(vm.CPUHasFault());
 
-						THEN("The DS segment should contain the entire message")
+						THEN("The DS segment contains the entire message")
 						{
 							std::vector<V2MP_Byte> dsData;
 
-							REQUIRE(vm.GetDSData(0, SEGMENT_SIZE_WORDS * sizeof(V2MP_Word), dsData));
-							CHECK(dsData.size() == SEGMENT_SIZE_WORDS * sizeof(V2MP_Word));
+							REQUIRE(vm.GetDSData(0, SEGMENT_SIZE_BYTES, dsData));
+							CHECK(dsData.size() == SEGMENT_SIZE_BYTES);
 							CHECK(memcmp(dsData.data() + DS_ADDRESS, MESSAGE, sizeof(MESSAGE)) == 0);
 
 							CHECK(MemoryMatches(
 								dsData.data() + DS_ADDRESS + sizeof(MESSAGE),
-								(SEGMENT_SIZE_WORDS * sizeof(V2MP_Word)) - sizeof(MESSAGE),
+								SEGMENT_SIZE_BYTES - sizeof(MESSAGE),
 								SEGMENT_SENTRY_BYTE
 							));
 						}
 
-						AND_THEN("R1 should still hold the length of the entire message")
+						AND_THEN("R1 still holds the length of the entire message")
 						{
 							CHECK(vm.GetR1() == sizeof(MESSAGE));
 						}
 
-						AND_THEN("The port's mailbox should be controlled by the program")
+						AND_THEN("The port's mailbox is controlled by the program")
 						{
 							REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
 						}
 
-						AND_THEN("The port's mailbox should not be considered busy")
+						AND_THEN("The port's mailbox is not busy")
 						{
 							REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 						}
 
-						AND_THEN("The port's mailbox should be exhausted")
+						AND_THEN("The port's mailbox is exhausted")
 						{
 							REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 						}
 					}
+				}
+			}
+		}
+	}
+}
+
+SCENARIO("DPO: Performing an IDT read from a device mailbox into a memory buffer that's too small should raise a SEG fault", "[instructions]")
+{
+	GIVEN("A virtual machine with a small amount of memory")
+	{
+		static constexpr V2MP_Word PORT_ADDRESS = 1234;
+		static constexpr size_t SEGMENT_SIZE_WORDS = 1;
+		static constexpr size_t SEGMENT_SIZE_BYTES = SEGMENT_SIZE_WORDS * sizeof(V2MP_Word);
+		static constexpr V2MP_Word DS_ADDRESS = 0;
+
+		// Enough memory for two segments of equal size.
+		TestHarnessVM vm(2 * SEGMENT_SIZE_BYTES);
+
+		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD));
+
+		AND_GIVEN("A port with a message in its mailbox")
+		{
+			static constexpr const char MESSAGE[] = "This message is too large for the DS segment";
+
+			V2MP_DevicePort* port = vm.CreatePort(PORT_ADDRESS);
+			REQUIRE(port);
+
+			std::shared_ptr<EmitterMockDevice> device = vm.ConnectMockDeviceToPort<EmitterMockDevice>(PORT_ADDRESS);
+			REQUIRE(device);
+
+			REQUIRE(device->AllocateConnectedMailbox(128));
+			REQUIRE(device->WriteToConnectedMailbox(MESSAGE) == sizeof(MESSAGE));
+			REQUIRE(device->RelinquishConnectedMailbox());
+
+			device->SetDataTransferSpeed(0);
+			REQUIRE(device->DataTransferSpeed() == 0);
+
+			WHEN("A DPO instruction is executed to read the entire message from the mailbox")
+			{
+				vm.SetR0(PORT_ADDRESS);
+				vm.SetLR(DS_ADDRESS);
+				vm.SetR1(static_cast<V2MP_Word>(sizeof(MESSAGE)));
+
+				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::READ, true)));
+
+				THEN("The CPU contains a SEG fault")
+				{
+					REQUIRE(vm.CPUHasFault());
+					REQUIRE(V2MP_CPU_FAULT_CODE(vm.GetCPUFaultWord()) == V2MP_FAULT_SEG);
+				}
+
+				AND_THEN("The data segment contains as much of the original message as would fit")
+				{
+					std::vector<V2MP_Byte> dsData;
+
+						REQUIRE(vm.GetDSData(0, SEGMENT_SIZE_BYTES, dsData));
+						CHECK(dsData.size() == SEGMENT_SIZE_BYTES);
+						CHECK(memcmp(dsData.data() + DS_ADDRESS, MESSAGE, SEGMENT_SIZE_BYTES - DS_ADDRESS) == 0);
 				}
 			}
 		}
