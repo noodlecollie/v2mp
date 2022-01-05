@@ -106,8 +106,8 @@ static DataTransferContextResult ConstructDataTransferContext(
 
 	flags = SVACTION_DDT_ARG_FLAGS(context->action);
 
-	if ( (!(flags & SVACTION_DDT_FLAG_IS_IN_PROGRESS) && V2MP_DevicePort_GetMailboxController(context->port) != V2MP_DMBC_PROGRAM) ||
-	     (flags & SVACTION_DDT_FLAG_IS_IN_PROGRESS) && V2MP_DevicePort_GetMailboxController(context->port) != V2MP_DMBC_SUPERVISOR )
+	if ( ((!(flags & SVACTION_DDT_FLAG_IS_IN_PROGRESS) && V2MP_DevicePort_GetMailboxController(context->port) != V2MP_DMBC_PROGRAM)) ||
+	     ((flags & SVACTION_DDT_FLAG_IS_IN_PROGRESS) && V2MP_DevicePort_GetMailboxController(context->port) != V2MP_DMBC_SUPERVISOR) )
 	{
 		return DTCR_INVALID_CONTROLLER;
 	}

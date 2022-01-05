@@ -2,6 +2,7 @@
 #include "Modules/CPU_Instructions.h"
 #include "Modules/CPU_Internal.h"
 #include "Modules/CPU_DevicePortOperations.h"
+#include "Modules/CPU_DevicePortQueries.h"
 
 // Return value is false under exceptional circumstances
 // (eg. CPU was not set up with supervisor interface).
@@ -398,9 +399,50 @@ bool Execute_LDST(V2MP_CPU* cpu)
 
 bool Execute_DPQ(V2MP_CPU* cpu)
 {
-	// TODO:
-	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
-	return true;
+	if ( V2MP_OP_DPQ_RESBITS(cpu->ir) != 0 )
+	{
+		SetFault(cpu, V2MP_FAULT_RES, 0);
+		return true;
+	}
+
+	switch ( V2MP_OP_DPQ_QUERY_TYPE(cpu->ir) )
+	{
+		case V2MP_DPQT_CONNECTED:
+		{
+			return V2MP_CPU_DPQ_PortIsConnected(cpu);
+		}
+
+		case V2MP_DPQT_READABLE_NOT_BUSY:
+		{
+			return V2MP_CPU_DPQ_PortIsReadableAndNotBusy(cpu);
+		}
+
+		case V2MP_DPQT_WRITEABLE_NOT_BUSY:
+		{
+			return V2MP_CPU_DPQ_PortIsWriteableAndNotBusy(cpu);
+		}
+
+		case V2MP_DPQT_EXHAUSTED:
+		{
+			return V2MP_CPU_DPQ_PortIsExhausted(cpu);
+		}
+
+		case V2MP_DPQT_BUSY:
+		{
+			return V2MP_CPU_DPQ_PortIsBusy(cpu);
+		}
+
+		case V2MP_DPQT_CONTROLLED_BY_PROGRAM:
+		{
+			return V2MP_CPU_DPQ_PortIsControlledByProgram(cpu);
+		}
+
+		default:
+		{
+			SetFault(cpu, V2MP_FAULT_RES, 0);
+			return true;
+		}
+	}
 }
 
 bool Execute_DPO(V2MP_CPU* cpu)

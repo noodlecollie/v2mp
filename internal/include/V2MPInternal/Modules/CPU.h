@@ -53,8 +53,6 @@ V2MP_Word V2MP_CPU_GetFaultWord(const V2MP_CPU* cpu);
 bool V2MP_CPU_SetRegisterValueAndUpdateSR(V2MP_CPU* cpu, V2MP_RegisterIndex regIndex, V2MP_Word value);
 bool V2MP_CPU_GetRegisterValue(const V2MP_CPU* cpu, V2MP_RegisterIndex regIndex, V2MP_Word* outValue);
 
-// The functions below are for debugging/introspection. They should not be used in normal operation.
-
 bool V2MP_CPU_ExecuteSingleInstruction(V2MP_CPU* cpu, V2MP_Word instruction);
 
 V2MP_Word V2MP_CPU_GetProgramCounter(const V2MP_CPU* cpu);
