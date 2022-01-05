@@ -9,6 +9,7 @@
 #include "V2MPInternal/Modules/CPU.h"
 #include "V2MPInternal/Util/Util.h"
 #include "Modules/DevicePort_Internal.h"
+#include "Modules/Supervisor_Action_DPQ.h"
 
 typedef enum ActionResult
 {
@@ -393,10 +394,15 @@ static ActionResult V2MP_Supervisor_HandleStoreWord(V2MP_Supervisor* supervisor,
 
 static ActionResult V2MP_Supervisor_HandlePerformDevicePortQuery(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
 {
-	// TODO
-	(void)supervisor;
-	(void)action;
-	return AR_FAILED;
+	bool result;
+
+	result = V2MP_Supervisor_HandlePerformDevicePortQueryImpl(
+		supervisor,
+		SVACTION_DPQ_ARG_PORT(action),
+		(V2MP_DevicePortQueryType)SVACTION_DPQ_ARG_QUERY_TYPE(action)
+	);
+
+	return result ? AR_COMPLETE : AR_FAILED;
 }
 
 static ActionResult V2MP_Supervisor_HandleDeviceDataTransfer(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
