@@ -40,6 +40,7 @@ typedef struct DataTransferContext
 
 static ActionResult V2MP_Supervisor_HandleLoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 static ActionResult V2MP_Supervisor_HandleStoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
+static ActionResult V2MP_Supervisor_HandlePerformDevicePortQuery(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 static ActionResult V2MP_Supervisor_HandleDeviceDataTransfer(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 
 typedef ActionResult (*ActionHandler)(V2MP_Supervisor*, V2MP_Supervisor_Action*);
@@ -388,6 +389,14 @@ static ActionResult V2MP_Supervisor_HandleStoreWord(V2MP_Supervisor* supervisor,
 	}
 
 	return AR_COMPLETE;
+}
+
+static ActionResult V2MP_Supervisor_HandlePerformDevicePortQuery(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
+{
+	// TODO
+	(void)supervisor;
+	(void)action;
+	return AR_FAILED;
 }
 
 static ActionResult V2MP_Supervisor_HandleDeviceDataTransfer(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)

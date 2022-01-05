@@ -74,6 +74,8 @@ V2MP_Word V2MP_Supervisor_FetchInstructionWord(V2MP_Supervisor* supervisor, V2MP
 void V2MP_Supervisor_RequestLoadWordFromDS(V2MP_Supervisor* supervisor, V2MP_Word address, V2MP_RegisterIndex destReg);
 void V2MP_Supervisor_RequestStoreWordToDS(V2MP_Supervisor* supervisor, V2MP_Word address, V2MP_Word wordToStore);
 
+void V2MP_Supervisor_PerformDevicePortQuery(V2MP_Supervisor* supervisor, V2MP_Word port, V2MP_Word queryType);
+
 void V2MP_Supervisor_RequestDevicePortIndirectRead(
 	V2MP_Supervisor* supervisor,
 	V2MP_Word port,

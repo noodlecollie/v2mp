@@ -21,6 +21,9 @@ typedef struct V2MP_CPU_SupervisorInterface
 	void (*requestLoadWordFromDS)(void* supervisor, V2MP_Word address, V2MP_RegisterIndex destReg);
 	void (*requestStoreWordToDS)(void* supervisor, V2MP_Word address, V2MP_Word wordToStore);
 
+	// DPQ
+	void (*performDevicePortQuery)(void* supervisor, V2MP_Word port, V2MP_Word queryType);
+
 	// DPO
 	void (*requestDevicePortIndirectRead)(
 		void* supervisor,

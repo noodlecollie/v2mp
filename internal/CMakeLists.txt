@@ -4,7 +4,6 @@ add_library(${TARGETNAME_V2MP_INTERNAL} STATIC
 	src/Components/HexTree.c
 
 	src/Modules/CPU_DevicePortOperations.c
-	src/Modules/CPU_DevicePortQueries.c
 	src/Modules/CPU_Instructions.c
 	src/Modules/CPU_Internal.c
 	src/Modules/CPU.c

@@ -7,6 +7,7 @@
 #define V2MP_SUPERVISOR_ACTION_LIST \
 	LIST_ITEM(SVAT_LOAD_WORD = 0, V2MP_Supervisor_HandleLoadWord) \
 	LIST_ITEM(SVAT_STORE_WORD, V2MP_Supervisor_HandleStoreWord) \
+	LIST_ITEM(SVAT_DEVICE_PORT_QUERY, V2MP_Supervisor_HandlePerformDevicePortQuery) \
 	LIST_ITEM(SVAT_DEVICE_DATA_TRANSFER, V2MP_Supervisor_HandleDeviceDataTransfer)
 
 #define LIST_ITEM(value, handler) value,
@@ -27,6 +28,9 @@ typedef struct V2MP_Supervisor_Action
 
 #define SVACTION_STORE_WORD_ARG_ADDRESS(actionPtr) ((actionPtr)->args[0])
 #define SVACTION_STORE_WORD_ARG_WORD(actionPtr) ((actionPtr)->args[1])
+
+#define SVACTION_DPQ_ARG_PORT(actionPtr) ((actionPtr)->args[0])
+#define SVACTION_DPQ_ARG_QUERY_TYPE(actionPtr) ((actionPtr)->args[1])
 
 #define SVACTION_DDT_ARG_PORT(actionPtr) ((actionPtr)->args[0])
 #define SVACTION_DDT_ARG_DS_ADDR(actionPtr) ((actionPtr)->args[1])

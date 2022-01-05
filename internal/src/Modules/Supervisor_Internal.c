@@ -187,6 +187,23 @@ void V2MP_Supervisor_RequestStoreWordToDS(V2MP_Supervisor* supervisor, V2MP_Word
 	SVACTION_STORE_WORD_ARG_WORD(action) = wordToStore;
 }
 
+void V2MP_Supervisor_PerformDevicePortQuery(V2MP_Supervisor* supervisor, V2MP_Word port, V2MP_Word queryType)
+{
+	V2MP_Supervisor_Action* action;
+
+	action = V2MP_Supervisor_CreateNewAction(supervisor);
+
+	if ( !action )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, SVAT_STORE_WORD));
+		return;
+	}
+
+	action->actionType = SVAT_DEVICE_PORT_QUERY;
+	SVACTION_DPQ_ARG_PORT(action) = port;
+	SVACTION_DPQ_ARG_QUERY_TYPE(action) = queryType;
+}
+
 void V2MP_Supervisor_RequestDevicePortIndirectRead(
 	V2MP_Supervisor* supervisor,
 	V2MP_Word port,
