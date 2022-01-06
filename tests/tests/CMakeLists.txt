@@ -13,6 +13,7 @@ add_executable(V2MP_Tests
 	src/Instructions/BitwiseORInstruction.cpp
 	src/Instructions/BitwiseXORInstruction.cpp
 	src/Instructions/ConditionalBranchInstruction.cpp
+	src/Instructions/DevicePortQueryInstruction.cpp
 	src/Instructions/DevicePortReadInstruction.cpp
 	src/Instructions/HaltInstruction.cpp
 	src/Instructions/LoadStoreInstruction.cpp

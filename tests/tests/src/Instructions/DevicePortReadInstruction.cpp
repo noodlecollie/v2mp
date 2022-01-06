@@ -260,3 +260,6 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox into a memory buffer
 		}
 	}
 }
+
+// TODO: Reserved bits
+// TODO: Status register checks

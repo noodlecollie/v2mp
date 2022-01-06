@@ -20,6 +20,16 @@ namespace Asm
 		NOT = 0x3
 	};
 
+	enum class DevicePortQuery : uint8_t
+	{
+		CONNECTED = 0x0,
+		READABLE_NOT_BUSY = 0x1,
+		WRITEABLE_NOT_BUSY = 0x2,
+		EXHAUSTED = 0x3,
+		BUSY = 0x4,
+		CONTROLLED_BY_PROGRAM = 0x5
+	};
+
 	enum class DevicePortOperation : uint8_t
 	{
 		USABLE_BYTE_COUNT = 0x0,
@@ -160,6 +170,12 @@ namespace Asm
 		return (V2MP_OP_CBX << 12)
 			| static_cast<V2MP_Word>(1 << 10)
 			| (static_cast<V2MP_Word>(deltaWords) & 0x00FF);
+	}
+
+	constexpr inline V2MP_Word DPQ(DevicePortQuery query)
+	{
+		return (V2MP_OP_DPQ << 12)
+			| (static_cast<V2MP_Word>(query) & 0x0007);
 	}
 
 	constexpr inline V2MP_Word DPO(DevicePortOperation operation, bool useIndirectDataTransfer)
