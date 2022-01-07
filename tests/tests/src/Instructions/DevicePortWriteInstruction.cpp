@@ -1,4 +1,5 @@
 #include <vector>
+#include <cstring>
 #include "catch2/catch.hpp"
 #include "Helpers/TestHarnessVM.h"
 #include "Helpers/SinkMockDevice.h"

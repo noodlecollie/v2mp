@@ -55,7 +55,7 @@ void RequestDevicePortIndirectRead(void* opaqueSv, V2MP_Word port, V2MP_Word dsS
 
 void RequestDevicePortIndirectWrite(void* opaqueSv, V2MP_Word port, V2MP_Word dsDestAddress, V2MP_Word dsMaxBytes)
 {
-	V2MP_Supervisor_RequestDevicePortIndirectRead((V2MP_Supervisor*)opaqueSv, port, dsDestAddress, dsMaxBytes);
+	V2MP_Supervisor_RequestDevicePortIndirectWrite((V2MP_Supervisor*)opaqueSv, port, dsDestAddress, dsMaxBytes);
 }
 
 void RequestRelinquishMailbox(void* opaqueSv, V2MP_Word port)
