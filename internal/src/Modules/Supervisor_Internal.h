@@ -15,7 +15,9 @@ typedef struct MemorySegment
 
 struct V2MP_Supervisor
 {
-	V2MP_DoubleLL* actions;
+	V2MP_DoubleLL* newActions;
+	V2MP_DoubleLL* ongoingActions;
+
 	MemorySegment programCS;
 	MemorySegment programDS;
 

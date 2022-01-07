@@ -101,7 +101,7 @@ V2MP_Supervisor* V2MP_Supervisor_AllocateAndInit(void)
 		return NULL;
 	}
 
-	if ( !V2MP_Supervisor_CreateActionList(supervisor) )
+	if ( !V2MP_Supervisor_CreateActionLists(supervisor) )
 	{
 		V2MP_Supervisor_DeinitAndFree(supervisor);
 		supervisor = NULL;
@@ -118,7 +118,7 @@ void V2MP_Supervisor_DeinitAndFree(V2MP_Supervisor* supervisor)
 	}
 
 	V2MP_Supervisor_SetMainboard(supervisor, NULL);
-	V2MP_Supervisor_DestroyActionList(supervisor);
+	V2MP_Supervisor_DestroyActionLists(supervisor);
 
 	V2MP_FREE(supervisor);
 }

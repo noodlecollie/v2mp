@@ -460,25 +460,31 @@ static ActionResult ResolveAction(V2MP_Supervisor* supervisor, V2MP_Supervisor_A
 	return ACTION_HANDLERS[(size_t)action->actionType](supervisor, action);
 }
 
-bool V2MP_Supervisor_CreateActionList(V2MP_Supervisor* supervisor)
+bool V2MP_Supervisor_CreateActionLists(V2MP_Supervisor* supervisor)
 {
 	if ( !supervisor )
 	{
 		return false;
 	}
 
-	supervisor->actions = V2MP_DoubleLL_AllocateAndInit(sizeof(V2MP_Supervisor_Action), NULL);
-	return supervisor->actions != NULL;
+	supervisor->newActions = V2MP_DoubleLL_AllocateAndInit(sizeof(V2MP_Supervisor_Action), NULL);
+	supervisor->ongoingActions = V2MP_DoubleLL_AllocateAndInit(sizeof(V2MP_Supervisor_Action), NULL);
+
+	return supervisor->newActions != NULL && supervisor->ongoingActions != NULL;
 }
 
-void V2MP_Supervisor_DestroyActionList(V2MP_Supervisor* supervisor)
+void V2MP_Supervisor_DestroyActionLists(V2MP_Supervisor* supervisor)
 {
 	if ( !supervisor )
 	{
 		return;
 	}
 
-	V2MP_DoubleLL_DeinitAndFree(supervisor->actions);
+	V2MP_DoubleLL_DeinitAndFree(supervisor->newActions);
+	supervisor->newActions = NULL;
+
+	V2MP_DoubleLL_DeinitAndFree(supervisor->ongoingActions);
+	supervisor->ongoingActions = NULL;
 }
 
 V2MP_Supervisor_Action* V2MP_Supervisor_CreateNewAction(V2MP_Supervisor* supervisor)
@@ -491,7 +497,7 @@ V2MP_Supervisor_Action* V2MP_Supervisor_CreateNewAction(V2MP_Supervisor* supervi
 		return NULL;
 	}
 
-	node = V2MP_DoubleLL_AppendToTail(supervisor->actions);
+	node = V2MP_DoubleLL_AppendToTail(supervisor->newActions);
 
 	if ( !node )
 	{
@@ -508,24 +514,106 @@ V2MP_Supervisor_Action* V2MP_Supervisor_CreateNewAction(V2MP_Supervisor* supervi
 	return action;
 }
 
+V2MP_DoubleLL_Node* V2MP_Supervisor_CloneToOngoingAction(V2MP_Supervisor* supervisor, V2MP_DoubleLL_Node* createAfter, V2MP_Supervisor_Action* template)
+{
+	V2MP_DoubleLL_Node* node;
+	V2MP_Supervisor_Action* action;
+
+	if ( !supervisor || !template )
+	{
+		return NULL;
+	}
+
+	if ( createAfter )
+	{
+		node = V2MP_DoubleLL_CreateAfter(supervisor->ongoingActions, createAfter);
+	}
+	else
+	{
+		node = V2MP_DoubleLL_PrependToHead(supervisor->ongoingActions);
+	}
+
+	if ( !node )
+	{
+		return NULL;
+	}
+
+	action = (V2MP_Supervisor_Action*)V2MP_DoubleLLNode_GetPayload(node);
+
+	if ( action )
+	{
+		*action = *template;
+	}
+
+	return node;
+}
+
 bool V2MP_Supervisor_ResolveOutstandingActions(V2MP_Supervisor* supervisor)
 {
 	V2MP_DoubleLL_Node* node;
+	V2MP_DoubleLL_Node* lastProcessedOngoingActionNode = NULL;
 
 	if ( !supervisor )
 	{
 		return false;
 	}
 
-	node = V2MP_DoubleLL_GetHead(supervisor->actions);
+	node = V2MP_DoubleLL_GetHead(supervisor->newActions);
 
 	while ( node )
 	{
 		V2MP_DoubleLL_Node* next;
 		ActionResult result;
+		V2MP_Supervisor_Action* action;
 
-		result = ResolveAction(supervisor, (V2MP_Supervisor_Action*)V2MP_DoubleLLNode_GetPayload(node));
+		action = (V2MP_Supervisor_Action*)V2MP_DoubleLLNode_GetPayload(node);
+		result = ResolveAction(supervisor, action);
+		next = V2MP_DoubleLLNode_GetNext(node);
 
+		if ( result == AR_ONGOING )
+		{
+			// Insert at the beginning of the ongoing actions list,
+			// and then keep track of the node that was just inserted so
+			// that we may inser others after it if we need to.
+			// The ongoing actions list is kept separate and processed
+			// after this. This is so that new actions created on this
+			// clock cycle are processed first, and if they take more
+			// than one clock cycle then they are added to the ongoing
+			// list. After this, all remaining ongoing actions are
+			// processed.
+
+			lastProcessedOngoingActionNode = V2MP_Supervisor_CloneToOngoingAction(supervisor, lastProcessedOngoingActionNode, action);
+
+		}
+
+		V2MP_DoubleLLNode_Destroy(node);
+
+		if ( result == AR_FAILED )
+		{
+			V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, 0));
+			break;
+		}
+
+		node = next;
+	}
+
+	if ( lastProcessedOngoingActionNode )
+	{
+		node = V2MP_DoubleLLNode_GetNext(lastProcessedOngoingActionNode);
+	}
+	else
+	{
+		node = V2MP_DoubleLL_GetHead(supervisor->ongoingActions);
+	}
+
+	while ( node )
+	{
+		V2MP_DoubleLL_Node* next;
+		ActionResult result;
+		V2MP_Supervisor_Action* action;
+
+		action = (V2MP_Supervisor_Action*)V2MP_DoubleLLNode_GetPayload(node);
+		result = ResolveAction(supervisor, action);
 		next = V2MP_DoubleLLNode_GetNext(node);
 
 		if ( result != AR_ONGOING )
