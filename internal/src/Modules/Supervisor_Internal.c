@@ -195,7 +195,7 @@ void V2MP_Supervisor_PerformDevicePortQuery(V2MP_Supervisor* supervisor, V2MP_Wo
 
 	if ( !action )
 	{
-		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, SVAT_STORE_WORD));
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, SVAT_DEVICE_PORT_QUERY));
 		return;
 	}
 
@@ -217,7 +217,7 @@ void V2MP_Supervisor_RequestDevicePortIndirectRead(
 
 	if ( !action )
 	{
-		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, SVAT_STORE_WORD));
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, SVAT_DEVICE_DATA_TRANSFER));
 		return;
 	}
 
@@ -241,7 +241,7 @@ void V2MP_Supervisor_RequestDevicePortIndirectWrite(
 
 	if ( !action )
 	{
-		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, SVAT_STORE_WORD));
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, SVAT_DEVICE_DATA_TRANSFER));
 		return;
 	}
 
@@ -250,4 +250,20 @@ void V2MP_Supervisor_RequestDevicePortIndirectWrite(
 	SVACTION_DDT_ARG_DS_ADDR(action) = dsSrcAddress;
 	SVACTION_DDT_ARG_DS_SIZE(action) = dsMaxBytes;
 	SVACTION_DDT_ARG_FLAGS(action) = SVACTION_DDT_FLAG_IS_MB_WRITE;
+}
+
+void V2MP_Supervisor_RequestRelinquishMailbox(V2MP_Supervisor* supervisor, V2MP_Word port)
+{
+	V2MP_Supervisor_Action* action;
+
+	action = V2MP_Supervisor_CreateNewAction(supervisor);
+
+	if ( !action )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, SVAT_RELINQUISH_PORT_MAILBOX));
+		return;
+	}
+
+	action->actionType = SVAT_RELINQUISH_PORT_MAILBOX;
+	SVACTION_RELINQUISH_MAILBOX_ARG_PORT(action) = port;
 }

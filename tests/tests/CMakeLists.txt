@@ -3,6 +3,7 @@ add_executable(V2MP_Tests
 
 	src/Helpers/BaseMockDevice.cpp
 	src/Helpers/EmitterMockDevice.cpp
+	src/Helpers/SinkMockDevice.cpp
 	src/Helpers/TestHarnessVM.cpp
 
 	src/Instructions/AddInstruction.cpp
@@ -15,6 +16,7 @@ add_executable(V2MP_Tests
 	src/Instructions/ConditionalBranchInstruction.cpp
 	src/Instructions/DevicePortQueryInstruction.cpp
 	src/Instructions/DevicePortReadInstruction.cpp
+	src/Instructions/DevicePortWriteInstruction.cpp
 	src/Instructions/HaltInstruction.cpp
 	src/Instructions/LoadStoreInstruction.cpp
 	src/Instructions/SubtractInstruction.cpp

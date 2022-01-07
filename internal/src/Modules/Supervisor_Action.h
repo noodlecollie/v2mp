@@ -9,7 +9,8 @@
 	LIST_ITEM(SVAT_LOAD_WORD = 0, V2MP_Supervisor_HandleLoadWord) \
 	LIST_ITEM(SVAT_STORE_WORD, V2MP_Supervisor_HandleStoreWord) \
 	LIST_ITEM(SVAT_DEVICE_PORT_QUERY, V2MP_Supervisor_HandlePerformDevicePortQuery) \
-	LIST_ITEM(SVAT_DEVICE_DATA_TRANSFER, V2MP_Supervisor_HandleDeviceDataTransfer)
+	LIST_ITEM(SVAT_DEVICE_DATA_TRANSFER, V2MP_Supervisor_HandleDeviceDataTransfer) \
+	LIST_ITEM(SVAT_RELINQUISH_PORT_MAILBOX, V2MP_Supervisor_HandleRelinquishPortMailbox)
 
 #define LIST_ITEM(value, handler) value,
 typedef enum V2MP_Supervisor_ActionType
@@ -39,6 +40,8 @@ typedef struct V2MP_Supervisor_Action
 #define SVACTION_DDT_ARG_FLAGS(actionPtr) ((actionPtr)->args[3])
 #define SVACTION_DDT_FLAG_IS_MB_WRITE (1 << 0)
 #define SVACTION_DDT_FLAG_IS_IN_PROGRESS (1 << 1)
+
+#define SVACTION_RELINQUISH_MAILBOX_ARG_PORT(actionPtr) ((actionPtr)->args[0])
 
 bool V2MP_Supervisor_CreateActionLists(V2MP_Supervisor* supervisor);
 void V2MP_Supervisor_DestroyActionLists(V2MP_Supervisor* supervisor);

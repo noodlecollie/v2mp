@@ -9,8 +9,16 @@ bool V2MP_CPU_DPO_UsableByteCount(V2MP_CPU* cpu)
 
 bool V2MP_CPU_DPO_RelinquishMailbox(V2MP_CPU* cpu)
 {
-	// TODO
-	V2MP_CPU_NotifyFault(cpu, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_INI, V2MP_OP_DPO_OPERATION_TYPE(cpu->ir)));
+	if ( !cpu->supervisorInterface.requestRelinquishMailbox )
+	{
+		return false;
+	}
+
+	cpu->supervisorInterface.requestRelinquishMailbox(
+		cpu->supervisorInterface.supervisor,
+		cpu->r0
+	);
+
 	return true;
 }
 
@@ -38,7 +46,12 @@ bool V2MP_CPU_DPO_Write(V2MP_CPU* cpu)
 		return false;
 	}
 
-	// TODO
-	V2MP_CPU_NotifyFault(cpu, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_INI, V2MP_OP_DPO_OPERATION_TYPE(cpu->ir)));
+	cpu->supervisorInterface.requestDevicePortIndirectWrite(
+		cpu->supervisorInterface.supervisor,
+		cpu->r0,
+		cpu->lr,
+		cpu->r1
+	);
+
 	return true;
 }

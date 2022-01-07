@@ -78,6 +78,11 @@ public:
 		return SetCSAndDS(csData, CSN, dsData, DSN);
 	}
 
+	inline bool SetCSAndDS(const std::vector<V2MP_Word>& cs, const std::vector<V2MP_Word>& ds)
+	{
+		return SetCSAndDS(cs.data(), cs.size(), ds.data(), ds.size());
+	}
+
 	template<std::size_t CSN>
 	inline typename std::enable_if<CSN <= MAX_WORD_VALUE_AS_SIZE_T, bool>::type
 	SetCS(const V2MP_Word (&csData)[CSN])

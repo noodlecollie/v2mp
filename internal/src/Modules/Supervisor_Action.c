@@ -43,6 +43,7 @@ static ActionResult V2MP_Supervisor_HandleLoadWord(V2MP_Supervisor* supervisor, 
 static ActionResult V2MP_Supervisor_HandleStoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 static ActionResult V2MP_Supervisor_HandlePerformDevicePortQuery(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 static ActionResult V2MP_Supervisor_HandleDeviceDataTransfer(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
+static ActionResult V2MP_Supervisor_HandleRelinquishPortMailbox(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 
 typedef ActionResult (*ActionHandler)(V2MP_Supervisor*, V2MP_Supervisor_Action*);
 
@@ -442,6 +443,32 @@ static ActionResult V2MP_Supervisor_HandleDeviceDataTransfer(V2MP_Supervisor* su
 	{
 		return HandleDataTransferRead(&context);
 	}
+}
+
+static ActionResult V2MP_Supervisor_HandleRelinquishPortMailbox(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
+{
+	V2MP_DevicePortCollection* dpc;
+	V2MP_DevicePort* port;
+
+	dpc = V2MP_Mainboard_GetDevicePortCollection(supervisor->mainboard);
+
+	if ( !dpc )
+	{
+		return AR_FAILED;
+	}
+
+	port = V2MP_DevicePortCollection_GetPort(dpc, SVACTION_RELINQUISH_MAILBOX_ARG_PORT(action));
+
+	if ( port )
+	{
+		V2MP_DevicePort_PassMailboxControlToDevice(port);
+	}
+	else
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_IDO, 0));
+	}
+
+	return AR_COMPLETE;
 }
 
 static ActionResult ResolveAction(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)

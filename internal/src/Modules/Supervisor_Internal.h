@@ -92,4 +92,6 @@ void V2MP_Supervisor_RequestDevicePortIndirectWrite(
 	V2MP_Word dsMaxBytes
 );
 
+void V2MP_Supervisor_RequestRelinquishMailbox(V2MP_Supervisor* supervisor, V2MP_Word port);
+
 #endif // V2MP_MODULES_SUPERVISOR_INTERNAL_H

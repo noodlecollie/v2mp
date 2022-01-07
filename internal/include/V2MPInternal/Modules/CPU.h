@@ -38,6 +38,9 @@ typedef struct V2MP_CPU_SupervisorInterface
 		V2MP_Word dsDestAddress,
 		V2MP_Word dsMaxBytes
 	);
+
+	void (*requestRelinquishMailbox)(void* supervisor, V2MP_Word port);
+
 } V2MP_CPU_SupervisorInterface;
 
 V2MP_CPU* V2MP_CPU_AllocateAndInit(void);

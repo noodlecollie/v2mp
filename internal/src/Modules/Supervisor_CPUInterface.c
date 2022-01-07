@@ -8,6 +8,7 @@ void RequestStoreWordToDS(void* opaqueSv, V2MP_Word address, V2MP_Word wordToSto
 void PerformDevicePortQuery(void* opaqueSv, V2MP_Word port, V2MP_Word queryType);
 void RequestDevicePortIndirectRead(void* opaqueSv, V2MP_Word port, V2MP_Word dsSrcAddress, V2MP_Word dsMaxBytes);
 void RequestDevicePortIndirectWrite(void* opaqueSv, V2MP_Word port, V2MP_Word dsDestAddress, V2MP_Word dsMaxBytes);
+void RequestRelinquishMailbox(void* opaqueSv, V2MP_Word port);
 
 void V2MP_Supervisor_CreateCPUInterface(V2MP_Supervisor* supervisor, V2MP_CPU_SupervisorInterface* interface)
 {
@@ -24,6 +25,7 @@ void V2MP_Supervisor_CreateCPUInterface(V2MP_Supervisor* supervisor, V2MP_CPU_Su
 	interface->performDevicePortQuery = &PerformDevicePortQuery;
 	interface->requestDevicePortIndirectRead = &RequestDevicePortIndirectRead;
 	interface->requestDevicePortIndirectWrite = &RequestDevicePortIndirectWrite;
+	interface->requestRelinquishMailbox = &RequestRelinquishMailbox;
 }
 
 V2MP_Word FetchInstructionWord(void* opaqueSv, V2MP_Word address, V2MP_Word* destReg)
@@ -54,4 +56,9 @@ void RequestDevicePortIndirectRead(void* opaqueSv, V2MP_Word port, V2MP_Word dsS
 void RequestDevicePortIndirectWrite(void* opaqueSv, V2MP_Word port, V2MP_Word dsDestAddress, V2MP_Word dsMaxBytes)
 {
 	V2MP_Supervisor_RequestDevicePortIndirectRead((V2MP_Supervisor*)opaqueSv, port, dsDestAddress, dsMaxBytes);
+}
+
+void RequestRelinquishMailbox(void* opaqueSv, V2MP_Word port)
+{
+	V2MP_Supervisor_RequestRelinquishMailbox((V2MP_Supervisor*)opaqueSv, port);
 }
