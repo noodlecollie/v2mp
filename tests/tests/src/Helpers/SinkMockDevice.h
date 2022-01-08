@@ -7,5 +7,6 @@
 class SinkMockDevice : public BaseMockDevice
 {
 public:
-	void ReadAllDataFromMailbox(std::vector<V2MP_Byte>& outBuffer);
+	void CopyAllDataFromMailbox(std::vector<V2MP_Byte>& outBuffer);
+	void ConsumeAllDataFromMailbox(std::vector<V2MP_Byte>& outBuffer);
 };

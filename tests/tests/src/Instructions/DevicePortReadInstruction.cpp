@@ -90,17 +90,17 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 
 					AND_THEN("The port's mailbox is controlled by the program")
 					{
-						REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
 					}
 
 					AND_THEN("The port's mailbox is not considered busy")
 					{
-						REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					}
 
 					AND_THEN("The port's mailbox is exhausted")
 					{
-						REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
+						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 					}
 				}
 			}
@@ -144,17 +144,17 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 
 					AND_THEN("The port's mailbox is controlled by the supervisor")
 					{
-						REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_SUPERVISOR);
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_SUPERVISOR);
 					}
 
 					AND_THEN("The port's mailbox is considered busy")
 					{
-						REQUIRE(V2MP_DevicePort_IsMailboxBusy(port));
+						CHECK(V2MP_DevicePort_IsMailboxBusy(port));
 					}
 
 					AND_THEN("The port's mailbox is still readable")
 					{
-						REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
+						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
 					}
 
 					AND_WHEN("A subsequent clock cycle is executed to transfer the rest of the message")
@@ -184,17 +184,17 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 
 						AND_THEN("The port's mailbox is controlled by the program")
 						{
-							REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
 						}
 
 						AND_THEN("The port's mailbox is not busy")
 						{
-							REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+							CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 						}
 
 						AND_THEN("The port's mailbox is exhausted")
 						{
-							REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
+							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 						}
 					}
 				}
@@ -244,8 +244,8 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox into a memory buffer
 
 				THEN("The CPU contains a SEG fault")
 				{
-					REQUIRE(vm.CPUHasFault());
-					REQUIRE(V2MP_CPU_FAULT_CODE(vm.GetCPUFaultWord()) == V2MP_FAULT_SEG);
+					CHECK(vm.CPUHasFault());
+					CHECK(V2MP_CPU_FAULT_CODE(vm.GetCPUFaultWord()) == V2MP_FAULT_SEG);
 				}
 
 				AND_THEN("The data segment contains as much of the original message as would fit")

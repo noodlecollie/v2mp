@@ -2,26 +2,31 @@
 #include "V2MPInternal/Util/Util.h"
 #include "V2MPInternal/Util/Heap.h"
 
+typedef struct BufferRange
+{
+	size_t head;
+	size_t tail;
+	size_t notEmpty;
+} BufferRange;
+
 struct V2MP_CircularBuffer
 {
 	uint8_t* buffer;
 	size_t capacity;
-	size_t head;
-	size_t tail;
-	bool notEmpty;
+	BufferRange r;
 };
 
 static inline size_t MaxSequentialBytesWriteableToHead(const V2MP_CircularBuffer* cb)
 {
-	if ( cb->head > cb->tail )
+	if ( cb->r.head > cb->r.tail )
 	{
 		// We can write all the way from the current head to the last index in the buffer.
-		return cb->capacity - cb->head;
+		return cb->capacity - cb->r.head;
 	}
-	else if ( cb->tail > cb->head )
+	else if ( cb->r.tail > cb->r.head )
 	{
 		// We can write all the way from the current head to the index before the tail.
-		return cb->tail - cb->head;
+		return cb->r.tail - cb->r.head;
 	}
 	else
 	{
@@ -29,8 +34,96 @@ static inline size_t MaxSequentialBytesWriteableToHead(const V2MP_CircularBuffer
 		// in which case there is no more empty space to write to.
 		// Otherwise, it must be empty, so we can write all the way
 		// to the last index in the buffer.
-		return cb->notEmpty ? 0 : (cb->capacity - cb->head);
+		return cb->r.notEmpty ? 0 : (cb->capacity - cb->r.head);
 	}
+}
+
+static inline size_t NumSequentialBytesReadableFromTail(const V2MP_CircularBuffer* cb, const BufferRange* range)
+{
+	if ( !cb )
+	{
+		return 0;
+	}
+
+	if ( !range )
+	{
+		range = &cb->r;
+	}
+
+	if ( range->tail > range->head )
+	{
+		// We can read all the way from the current tail to the last index in the buffer.
+		return cb->capacity - range->tail;
+	}
+	else if ( range->head > range->tail )
+	{
+		// We can write all the way from the current tail to the index before the head.
+		return range->head - range->tail;
+	}
+	else
+	{
+		// If the buffer is not empty, it must be completely full,
+		// in which case we can read all the way to the last index
+		// in the buffer. Otherwise the buffer is empty, so there
+		// is no data to read.
+		return range->notEmpty ? (cb->capacity - range->tail) : 0;
+	}
+}
+
+static size_t ReadData(const V2MP_CircularBuffer* cb, uint8_t* buffer, size_t bufferSize, BufferRange* range)
+{
+	size_t bytesWaiting;
+	size_t bytesRead;
+
+	if ( !cb || !range )
+	{
+		return 0;
+	}
+
+	// We only copy out to a buffer if it's valid.
+	// Otherwise, we just discard bytes.
+	if ( buffer && bufferSize < 1 )
+	{
+		buffer = NULL;
+		bufferSize = 0;
+	}
+
+	bytesWaiting = V2MP_CircularBuffer_BytesUsed(cb);
+
+	if ( bufferSize > 0 && bytesWaiting > bufferSize )
+	{
+		bytesWaiting = bufferSize;
+	}
+
+	bytesRead = bytesWaiting;
+
+	while ( bytesWaiting > 0 )
+	{
+		size_t numSequentialBytes;
+
+		numSequentialBytes = V2MP_CircularBuffer_NumSequentialBytesReadableFromTail(cb);
+
+		if ( numSequentialBytes > bytesWaiting )
+		{
+			numSequentialBytes = bytesWaiting;
+		}
+
+		if ( buffer )
+		{
+			memcpy(buffer, &cb->buffer[range->tail], numSequentialBytes);
+			buffer += numSequentialBytes;
+		}
+
+		bytesWaiting -= numSequentialBytes;
+		range->tail = (range->tail + numSequentialBytes) % cb->capacity;
+	}
+
+	if ( range->head == range->tail )
+	{
+		range->notEmpty = false;
+	}
+
+	return bytesRead;
 }
 
 V2MP_CircularBuffer* V2MP_CircularBuffer_AllocateAndInit(size_t capacity)
@@ -94,28 +187,28 @@ size_t V2MP_CircularBuffer_BytesUsed(const V2MP_CircularBuffer* cb)
 		return 0;
 	}
 
-	if ( cb->head > cb->tail )
+	if ( cb->r.head > cb->r.tail )
 	{
-		return cb->head - cb->tail;
+		return cb->r.head - cb->r.tail;
 	}
-	else if ( cb->tail > cb->head )
+	else if ( cb->r.tail > cb->r.head )
 	{
-		return cb->capacity - (cb->tail - cb->head);
+		return cb->capacity - (cb->r.tail - cb->r.head);
 	}
 	else
 	{
-		return cb->notEmpty ? cb->capacity : 0;
+		return cb->r.notEmpty ? cb->capacity : 0;
 	}
 }
 
 bool V2MP_CircularBuffer_IsFull(const V2MP_CircularBuffer* cb)
 {
-	return cb ? (cb->head == cb->tail && cb->notEmpty) : false;
+	return cb ? (cb->r.head == cb->r.tail && cb->r.notEmpty) : false;
 }
 
 bool V2MP_CircularBuffer_IsEmpty(const V2MP_CircularBuffer* cb)
 {
-	return cb ? !cb->notEmpty : true;
+	return cb ? !cb->r.notEmpty : true;
 }
 
 const uint8_t* V2MP_CircularBuffer_Head(const V2MP_CircularBuffer* cb)
@@ -125,7 +218,7 @@ const uint8_t* V2MP_CircularBuffer_Head(const V2MP_CircularBuffer* cb)
 		return NULL;
 	}
 
-	return &cb->buffer[cb->head];
+	return &cb->buffer[cb->r.head];
 }
 
 const uint8_t* V2MP_CircularBuffer_Tail(const V2MP_CircularBuffer* cb)
@@ -135,7 +228,7 @@ const uint8_t* V2MP_CircularBuffer_Tail(const V2MP_CircularBuffer* cb)
 		return NULL;
 	}
 
-	return &cb->buffer[cb->tail];
+	return &cb->buffer[cb->r.tail];
 }
 
 size_t V2MP_CircularBuffer_WriteData(V2MP_CircularBuffer* cb, const uint8_t* data, size_t dataSize)
@@ -168,17 +261,17 @@ size_t V2MP_CircularBuffer_WriteData(V2MP_CircularBuffer* cb, const uint8_t* dat
 			numSequentialBytes = dataSize;
 		}
 
-		memcpy(&cb->buffer[cb->head], data, numSequentialBytes);
+		memcpy(&cb->buffer[cb->r.head], data, numSequentialBytes);
 
 		data += numSequentialBytes;
 		dataSize -= numSequentialBytes;
 
-		cb->head = (cb->head + numSequentialBytes) % cb->capacity;
+		cb->r.head = (cb->r.head + numSequentialBytes) % cb->capacity;
 	}
 
 	if ( bytesToWrite > 0 )
 	{
-		cb->notEmpty = true;
+		cb->r.notEmpty = true;
 	}
 
 	return bytesToWrite;
@@ -186,85 +279,22 @@ size_t V2MP_CircularBuffer_WriteData(V2MP_CircularBuffer* cb, const uint8_t* dat
 
 size_t V2MP_CircularBuffer_ReadData(V2MP_CircularBuffer* cb, uint8_t* buffer, size_t bufferSize)
 {
-	size_t bytesWaiting;
-	size_t bytesRead;
-
 	if ( !cb || !buffer || bufferSize < 1 )
 	{
 		return 0;
 	}
 
-	bytesWaiting = V2MP_CircularBuffer_BytesUsed(cb);
-
-	if ( bytesWaiting > bufferSize )
-	{
-		bytesWaiting = bufferSize;
-	}
-
-	bytesRead = bytesWaiting;
-
-	while ( bytesWaiting > 0 )
-	{
-		size_t numSequentialBytes;
-
-		numSequentialBytes = V2MP_CircularBuffer_NumSequentialBytesReadableFromTail(cb);
-
-		if ( numSequentialBytes > bytesWaiting )
-		{
-			numSequentialBytes = bytesWaiting;
-		}
-
-		memcpy(buffer, &cb->buffer[cb->tail], numSequentialBytes);
-
-		buffer += numSequentialBytes;
-		bytesWaiting -= numSequentialBytes;
-
-		cb->tail = (cb->tail + numSequentialBytes) % cb->capacity;
-	}
-
-	if ( cb->head == cb->tail )
-	{
-		cb->notEmpty = false;
-	}
-
-	return bytesRead;
+	return ReadData(cb, buffer, bufferSize, &cb->r);
 }
 
 size_t V2MP_CircularBuffer_DiscardBytes(V2MP_CircularBuffer* cb, size_t numBytes)
 {
-	size_t bytesUsed;
-	size_t bytesDiscarded;
-
-	if ( !cb || numBytes < 1 )
+	if ( !cb )
 	{
 		return 0;
 	}
 
-	bytesUsed = V2MP_CircularBuffer_BytesUsed(cb);
-
-	if ( numBytes > bytesUsed )
-	{
-		numBytes = bytesUsed;
-	}
-
-	bytesDiscarded = numBytes;
-
-	while ( numBytes > 0 )
-	{
-		size_t numSequentialBytes;
-
-		numSequentialBytes = V2MP_CircularBuffer_NumSequentialBytesReadableFromTail(cb);
-
-		if ( numSequentialBytes > numBytes )
-		{
-			numSequentialBytes = numBytes;
-		}
-
-		numBytes -= numSequentialBytes;
-		cb->tail = (cb->tail + numSequentialBytes) % cb->capacity;
-	}
-
-	return bytesDiscarded;
+	return ReadData(cb, NULL, numBytes, &cb->r);
 }
 
 void V2MP_CircularBuffer_Reset(V2MP_CircularBuffer* cb)
@@ -274,9 +304,9 @@ void V2MP_CircularBuffer_Reset(V2MP_CircularBuffer* cb)
 		return;
 	}
 
-	cb->head = 0;
-	cb->tail = 0;
-	cb->notEmpty = false;
+	cb->r.head = 0;
+	cb->r.tail = 0;
+	cb->r.notEmpty = false;
 }
 
 size_t V2MP_CircularBuffer_NumSequentialBytesReadableFromTail(const V2MP_CircularBuffer* cb)
@@ -286,22 +316,20 @@ size_t V2MP_CircularBuffer_NumSequentialBytesReadableFromTail(const V2MP_Circula
 		return 0;
 	}
 
-	if ( cb->tail > cb->head )
+	return NumSequentialBytesReadableFromTail(cb, NULL);
+}
+
+size_t V2MP_CircularBuffer_CopyData(V2MP_CircularBuffer* cb, uint8_t* buffer, size_t bufferSize)
+{
+	BufferRange range;
+
+	if ( !cb || !buffer || bufferSize < 1 )
 	{
-		// We can read all the way from the current tail to the last index in the buffer.
-		return cb->capacity - cb->tail;
+		return 0;
 	}
-	else if ( cb->head > cb->tail )
-	{
-		// We can write all the way from the current tail to the index before the head.
-		return cb->head - cb->tail;
-	}
-	else
-	{
-		// If the buffer is not empty, it must be completely full,
-		// in which case we can read all the way to the last index
-		// in the buffer. Otherwise the buffer is empty, so there
-		// is no data to read.
-		return cb->notEmpty ? (cb->capacity - cb->tail) : 0;
-	}
+
+	// Create a fake range struct to modify, leaving the circular buffer itself unchanged.
+	range = cb->r;
+
+	return ReadData(cb, buffer, bufferSize, &range);
 }

@@ -31,6 +31,9 @@ size_t V2MP_CircularBuffer_ReadData(V2MP_CircularBuffer* cb, uint8_t* buffer, si
 size_t V2MP_CircularBuffer_DiscardBytes(V2MP_CircularBuffer* cb, size_t numBytes);
 void V2MP_CircularBuffer_Reset(V2MP_CircularBuffer* cb);
 
+// In contrast to ReadData(), this function does not consume the data from the buffer.
+size_t V2MP_CircularBuffer_CopyData(V2MP_CircularBuffer* cb, uint8_t* buffer, size_t bufferSize);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

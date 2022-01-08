@@ -41,6 +41,7 @@ bool V2MP_Device_AllocateConnectedMailbox(V2MP_Device* device, size_t sizeInByte
 bool V2MP_Device_DeallocateConnectedMailbox(V2MP_Device* device);
 size_t V2MP_Device_WriteToConnectedMailbox(V2MP_Device* device, const V2MP_Byte* data, size_t dataSize);
 size_t V2MP_Device_ReadFromConnectedMailbox(V2MP_Device* device, V2MP_Byte* outBuffer, size_t outBufferSize);
+size_t V2MP_Device_CopyFromConnectedMailbox(V2MP_Device* device, V2MP_Byte* outBuffer, size_t outBufferSize);
 bool V2MP_Device_RelinquishConnectedMailbox(V2MP_Device* device);
 
 // Data transfer speed is bytes per clock cycle.

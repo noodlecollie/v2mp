@@ -74,7 +74,7 @@ size_t V2MP_DevicePort_MailboxBytesUsed(const V2MP_DevicePort* port)
 	return (port && port->mailbox) ? V2MP_CircularBuffer_BytesUsed(port->mailbox) : 0;
 }
 
-V2MP_MailboxController V2MP_DevicePort_GetMailboxController(const V2MP_DevicePort* port)
+V2MP_DeviceMailboxController V2MP_DevicePort_GetMailboxController(const V2MP_DevicePort* port)
 {
 	return port ? port->mailboxController : V2MP_DMBC_DEVICE;
 }

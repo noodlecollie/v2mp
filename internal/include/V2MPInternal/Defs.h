@@ -52,13 +52,6 @@ typedef enum V2MP_RegisterIndex
 	V2MP_REGID_PC = 0x3
 } V2MP_RegisterIndex;
 
-typedef enum V2MP_MailboxController
-{
-	V2MP_DMBC_DEVICE = 0,
-	V2MP_DMBC_PROGRAM,
-	V2MP_DMBC_SUPERVISOR
-} V2MP_MailboxController;
-
 typedef enum V2MP_BitwiseOp
 {
 	V2MP_BITOP_AND = 0x0,
@@ -84,6 +77,13 @@ typedef enum V2MP_DevicePortOperationType
 	V2MP_DPOT_READ = 0x2,
 	V2MP_DPOT_WRITE = 0x3
 } V2MP_DevicePortOperationType;
+
+typedef enum V2MP_DeviceMailboxController
+{
+	V2MP_DMBC_DEVICE = 0,
+	V2MP_DMBC_PROGRAM,
+	V2MP_DMBC_SUPERVISOR
+} V2MP_DeviceMailboxController;
 
 typedef enum V2MP_DevicePortMailboxState
 {

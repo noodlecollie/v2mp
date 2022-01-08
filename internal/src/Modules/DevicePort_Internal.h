@@ -10,7 +10,7 @@ struct V2MP_DevicePort
 {
 	V2MP_Word address;
 	V2MP_CircularBuffer* mailbox;
-	V2MP_MailboxController mailboxController;
+	V2MP_DeviceMailboxController mailboxController;
 	V2MP_Device* connectedDevice;
 	bool mailboxWasReadableWhenDeviceTookControl;
 };
