@@ -91,7 +91,7 @@ V2MP_DevicePortMailboxState V2MP_DevicePort_GetMailboxState(const V2MP_DevicePor
 		return V2MP_DPMS_UNAVAILABLE;
 	}
 
-	if ( port->mailboxWasReadableWhenDeviceTookControl )
+	if ( port->mailboxStateWhenDeviceRelinquished == V2MP_DPMS_READABLE )
 	{
 		return V2MP_CircularBuffer_IsEmpty(port->mailbox)
 			? V2MP_DPMS_EXHAUSTED

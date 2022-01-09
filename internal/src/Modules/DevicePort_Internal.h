@@ -13,7 +13,8 @@ struct V2MP_DevicePort
 	V2MP_DeviceMailboxController mailboxController;
 	bool mailboxBusy;
 	V2MP_Device* connectedDevice;
-	bool mailboxWasReadableWhenDeviceTookControl;
+
+	V2MP_DevicePortMailboxState mailboxStateWhenDeviceRelinquished;
 };
 
 V2MP_DevicePort* V2MP_DevicePort_AllocateAndInit(void);
@@ -28,9 +29,9 @@ void V2MP_DevicePort_NotifyMailboxReadyForInteraction(V2MP_DevicePort* port);
 // The port must be controlled by the device for the mailbox to be allocated.
 bool V2MP_DevicePort_DeviceAllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes);
 bool V2MP_DevicePort_DeviceDeallocateMailbox(V2MP_DevicePort* port);
-bool V2MP_DevicePort_DeviceRelinquishMailbox(V2MP_DevicePort* port);
 
-void V2MP_DevicePort_SetMailboxController(V2MP_DevicePort* port, V2MP_DeviceMailboxController controller);
+bool V2MP_DevicePort_DeviceRelinquishMailbox(V2MP_DevicePort* port);
+bool V2MP_DevicePort_ProgramRelinquishMailbox(V2MP_DevicePort* port);
 void V2MP_DevicePort_SetMailboxBusy(V2MP_DevicePort* port, bool isBusy);
 
 struct V2MP_CircularBuffer* V2MP_DevicePort_GetMailbox(V2MP_DevicePort* port);

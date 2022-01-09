@@ -64,6 +64,8 @@ bool V2MP_DevicePort_DeviceAllocateMailbox(V2MP_DevicePort* port, size_t sizeInB
 	V2MP_CircularBuffer_DeinitAndFree(port->mailbox);
 	port->mailbox = NULL;
 
+	port->mailboxStateWhenDeviceRelinquished = V2MP_DPMS_UNAVAILABLE;
+
 	if ( sizeInBytes < 1 )
 	{
 		return true;
@@ -86,19 +88,37 @@ bool V2MP_DevicePort_DeviceRelinquishMailbox(V2MP_DevicePort* port)
 		return false;
 	}
 
-	port->mailboxWasReadableWhenDeviceTookControl = !V2MP_CircularBuffer_IsEmpty(port->mailbox);
+	if ( V2MP_CircularBuffer_IsEmpty(port->mailbox) )
+	{
+		port->mailboxStateWhenDeviceRelinquished = V2MP_DPMS_WRITEABLE;
+	}
+	else
+	{
+		port->mailboxStateWhenDeviceRelinquished = V2MP_DPMS_READABLE;
+	}
+
 	port->mailboxController = V2MP_DMBC_PROGRAM;
+
 	return true;
 }
 
-void V2MP_DevicePort_SetMailboxController(V2MP_DevicePort* port, V2MP_DeviceMailboxController controller)
+bool V2MP_DevicePort_ProgramRelinquishMailbox(V2MP_DevicePort* port)
 {
-	if ( !port )
+	if ( !port || !port->mailbox || port->mailboxController != V2MP_DMBC_PROGRAM )
 	{
-		return;
+		return false;
 	}
 
-	port->mailboxController = controller;
+	if ( port->mailboxStateWhenDeviceRelinquished == V2MP_DPMS_READABLE )
+	{
+		// Clear any remaining unread bytes from the mailbox.
+		V2MP_CircularBuffer_Reset(port->mailbox);
+	}
+
+	port->mailboxStateWhenDeviceRelinquished = V2MP_DPMS_UNAVAILABLE;
+	port->mailboxController = V2MP_DMBC_DEVICE;
+
+	return true;
 }
 
 void V2MP_DevicePort_SetMailboxBusy(V2MP_DevicePort* port, bool isBusy)

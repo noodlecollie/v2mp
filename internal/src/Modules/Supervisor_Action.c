@@ -470,9 +470,9 @@ static ActionResult V2MP_Supervisor_HandleRelinquishPortMailbox(V2MP_Supervisor*
 
 	if ( port )
 	{
-		if ( V2MP_DevicePort_GetMailboxController(port) != V2MP_DMBC_DEVICE )
+		if ( V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM )
 		{
-			V2MP_DevicePort_SetMailboxController(port, V2MP_DMBC_DEVICE);
+			V2MP_DevicePort_ProgramRelinquishMailbox(port);
 
 			if ( !V2MP_DevicePort_IsMailboxBusy(port) )
 			{

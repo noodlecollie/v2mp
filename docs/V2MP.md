@@ -183,7 +183,7 @@ When control of the mailbox is passed back to the device, the mailbox reverts to
 
 When the program passes control of the mailbox to the device, it may do so from any of the readable, writable, or exhausted states. However, if an indirect data transfer is in progress into or out of the mailbox, actual control of the mailbox is not passed to the device until the data transfer has finished. In this interim time, the supervisor retains control of the mailbox.
 
-If the program passes control of a readable mailbox back to the device, or the device passes control of a writable mailbox to the program, any remaining bytes in the mailbox are discarded by the supervisor before control of the mailbox is transferred.
+If the program passes control of a readable mailbox back to the device, any remaining bytes in the mailbox are discarded by the supervisor before control of the mailbox is transferred.
 
 ### Data Transfer
 
