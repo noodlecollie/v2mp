@@ -18,7 +18,7 @@ typedef struct V2MP_Device_Callbacks
 
 	void (*onDeviceAboutToBeDestroyed)(void* userData, V2MP_Device* device);
 	void (*onPoll)(void* userData, V2MP_Device* device);
-	void (*onMailboxControlAcquired)(void* userData, V2MP_Device* device);
+	void (*onMailboxReadyForInteraction)(void* userData, V2MP_Device* device);
 } V2MP_Device_Callbacks;
 
 void V2MP_Device_SetCallbacks(V2MP_Device* device, const V2MP_Device_Callbacks* interface);

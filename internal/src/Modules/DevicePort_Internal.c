@@ -44,6 +44,16 @@ void V2MP_DevicePort_NotifyDeviceDisconnected(V2MP_DevicePort* port)
 	port->connectedDevice = NULL;
 }
 
+void V2MP_DevicePort_NotifyMailboxReadyForInteraction(V2MP_DevicePort* port)
+{
+	if ( !port || !port->connectedDevice )
+	{
+		return;
+	}
+
+	V2MP_Device_NotifyMailboxReadyForInteraction(port->connectedDevice);
+}
+
 bool V2MP_DevicePort_DeviceAllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes)
 {
 	if ( !port || port->mailboxController != V2MP_DMBC_DEVICE )
@@ -81,42 +91,24 @@ bool V2MP_DevicePort_DeviceRelinquishMailbox(V2MP_DevicePort* port)
 	return true;
 }
 
-bool V2MP_DevicePort_PassMailboxControlToDevice(V2MP_DevicePort* port)
-{
-	if ( !port || !port->connectedDevice )
-	{
-		return false;
-	}
-
-	if ( port->mailboxController == V2MP_DMBC_DEVICE )
-	{
-		return true;
-	}
-
-	port->mailboxController = V2MP_DMBC_DEVICE;
-	V2MP_Device_NotifyMailboxControlAcquired(port->connectedDevice);
-
-	return true;
-}
-
-void V2MP_DevicePort_PassMailboxControlToSupervisor(V2MP_DevicePort* port)
+void V2MP_DevicePort_SetMailboxController(V2MP_DevicePort* port, V2MP_DeviceMailboxController controller)
 {
 	if ( !port )
 	{
 		return;
 	}
 
-	port->mailboxController = V2MP_DMBC_SUPERVISOR;
+	port->mailboxController = controller;
 }
 
-void V2MP_DevicePort_PassMailboxControlToProgram(V2MP_DevicePort* port)
+void V2MP_DevicePort_SetMailboxBusy(V2MP_DevicePort* port, bool isBusy)
 {
 	if ( !port )
 	{
 		return;
 	}
 
-	port->mailboxController = V2MP_DMBC_PROGRAM;
+	port->mailboxBusy = isBusy;
 }
 
 struct V2MP_CircularBuffer* V2MP_DevicePort_GetMailbox(V2MP_DevicePort* port)

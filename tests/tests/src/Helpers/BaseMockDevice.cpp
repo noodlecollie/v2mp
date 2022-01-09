@@ -87,9 +87,9 @@ void BaseMockDevice::Ifc_OnDeviceAboutToBeDestroyed()
 	m_Device = nullptr;
 }
 
-void BaseMockDevice::Ifc_OnMailboxControlAcquired()
+void BaseMockDevice::Ifc_OnMailboxReadyForInteraction()
 {
-	OnMailboxControlAcquired();
+	OnMailboxReadyForInteraction();
 }
 
 void BaseMockDevice::Ifc_OnPoll()
@@ -124,9 +124,9 @@ void BaseMockDevice::ConstructAndSetCallbacks()
 		reinterpret_cast<BaseMockDevice*>(userData)->Ifc_OnPoll();
 	};
 
-	callbacks.onMailboxControlAcquired = [](void* userData, V2MP_Device*)
+	callbacks.onMailboxReadyForInteraction = [](void* userData, V2MP_Device*)
 	{
-		reinterpret_cast<BaseMockDevice*>(userData)->Ifc_OnMailboxControlAcquired();
+		reinterpret_cast<BaseMockDevice*>(userData)->Ifc_OnMailboxReadyForInteraction();
 	};
 
 	V2MP_Device_SetCallbacks(m_Device, &callbacks);
@@ -152,7 +152,7 @@ void BaseMockDevice::OnPoll()
 	// Default implementation does nothing.
 }
 
-void BaseMockDevice::OnMailboxControlAcquired()
+void BaseMockDevice::OnMailboxReadyForInteraction()
 {
 	// Default implementation does nothing.
 }

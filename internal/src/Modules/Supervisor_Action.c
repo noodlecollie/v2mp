@@ -25,7 +25,6 @@ typedef enum DataTransferContextResult
 	DTCR_NO_PORT,
 	DTCR_NO_DEVICE,
 	DTCR_NO_MAILBOX,
-	DTCR_INVALID_CONTROLLER,
 	DTCR_EMPTY_DS_BUFFER
 } DataTransferContextResult;
 
@@ -60,7 +59,6 @@ static DataTransferContextResult ConstructDataTransferContext(
 	DataTransferContext* context)
 {
 	V2MP_DevicePortCollection* ports;
-	V2MP_Word flags;
 
 	if ( !supervisor || !action || !context )
 	{
@@ -105,14 +103,6 @@ static DataTransferContextResult ConstructDataTransferContext(
 	if ( !context->mailbox )
 	{
 		return DTCR_NO_MAILBOX;
-	}
-
-	flags = SVACTION_DDT_ARG_FLAGS(context->action);
-
-	if ( ((!(flags & SVACTION_DDT_FLAG_IS_IN_PROGRESS) && V2MP_DevicePort_GetMailboxController(context->port) != V2MP_DMBC_PROGRAM)) ||
-	     ((flags & SVACTION_DDT_FLAG_IS_IN_PROGRESS) && V2MP_DevicePort_GetMailboxController(context->port) != V2MP_DMBC_SUPERVISOR) )
-	{
-		return DTCR_INVALID_CONTROLLER;
 	}
 
 	if ( SVACTION_DDT_ARG_DS_SIZE(context->action) < 1 )
@@ -170,7 +160,7 @@ static ActionResult HandleDataTransferRead(DataTransferContext* context)
 		}
 	}
 
-	V2MP_DevicePort_PassMailboxControlToSupervisor(context->port);
+	V2MP_DevicePort_SetMailboxBusy(context->port, true);
 
 	origBytesInMailbox = V2MP_CircularBuffer_BytesUsed(context->mailbox);
 	bytesReadFromMailbox = V2MP_CircularBuffer_ReadData(context->mailbox, dsData, bytesToRead);
@@ -221,7 +211,13 @@ static ActionResult HandleDataTransferRead(DataTransferContext* context)
 	}
 	else
 	{
-		V2MP_DevicePort_PassMailboxControlToProgram(context->port);
+		V2MP_DevicePort_SetMailboxBusy(context->port, false);
+
+		if ( V2MP_DevicePort_GetMailboxController(context->port) == V2MP_DMBC_DEVICE )
+		{
+			V2MP_DevicePort_NotifyMailboxReadyForInteraction(context->port);
+		}
+
 		return AR_COMPLETE;
 	}
 }
@@ -273,6 +269,8 @@ static ActionResult HandleDataTransferWrite(DataTransferContext* context)
 		}
 	}
 
+	V2MP_DevicePort_SetMailboxBusy(context->port, true);
+
 	origBytesFreeInMailbox = V2MP_CircularBuffer_BytesFree(context->mailbox);
 	bytesWrittenToMailbox = V2MP_CircularBuffer_WriteData(context->mailbox, dsData, bytesToWrite);
 
@@ -280,7 +278,6 @@ static ActionResult HandleDataTransferWrite(DataTransferContext* context)
 	{
 		V2MP_Supervisor_SetCPUFault(context->supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SEG, 0));
 
-		SVACTION_DDT_ARG_DS_SIZE(context->action) = 0;
 		SVACTION_DDT_ARG_FLAGS(context->action) &= ~SVACTION_DDT_FLAG_IS_IN_PROGRESS;
 	}
 	else
@@ -317,9 +314,21 @@ static ActionResult HandleDataTransferWrite(DataTransferContext* context)
 		}
 	}
 
-	return (SVACTION_DDT_ARG_FLAGS(context->action) & SVACTION_DDT_FLAG_IS_IN_PROGRESS)
-		? AR_ONGOING
-		: AR_COMPLETE;
+	if ( SVACTION_DDT_ARG_FLAGS(context->action) & SVACTION_DDT_FLAG_IS_IN_PROGRESS )
+	{
+		return AR_ONGOING;
+	}
+	else
+	{
+		V2MP_DevicePort_SetMailboxBusy(context->port, false);
+
+		if ( V2MP_DevicePort_GetMailboxController(context->port) == V2MP_DMBC_DEVICE )
+		{
+			V2MP_DevicePort_NotifyMailboxReadyForInteraction(context->port);
+		}
+
+		return AR_COMPLETE;
+	}
 }
 
 static ActionResult V2MP_Supervisor_HandleLoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
@@ -461,7 +470,15 @@ static ActionResult V2MP_Supervisor_HandleRelinquishPortMailbox(V2MP_Supervisor*
 
 	if ( port )
 	{
-		V2MP_DevicePort_PassMailboxControlToDevice(port);
+		if ( V2MP_DevicePort_GetMailboxController(port) != V2MP_DMBC_DEVICE )
+		{
+			V2MP_DevicePort_SetMailboxController(port, V2MP_DMBC_DEVICE);
+
+			if ( !V2MP_DevicePort_IsMailboxBusy(port) )
+			{
+				V2MP_DevicePort_NotifyMailboxReadyForInteraction(port);
+			}
+		}
 	}
 	else
 	{

@@ -142,9 +142,9 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 						CHECK(vm.GetR1() == sizeof(MESSAGE));
 					}
 
-					AND_THEN("The port's mailbox is controlled by the supervisor")
+					AND_THEN("The port's mailbox is controlled by the program")
 					{
-						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_SUPERVISOR);
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
 					}
 
 					AND_THEN("The port's mailbox is considered busy")

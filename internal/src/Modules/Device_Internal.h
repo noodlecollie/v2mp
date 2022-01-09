@@ -21,7 +21,7 @@ void V2MP_Device_DeinitAndFree(V2MP_Device* device);
 
 void V2MP_Device_NotifyConnectedToPort(V2MP_Device* device, struct V2MP_DevicePort* port);
 void V2MP_Device_NotifyDisconnectedFromPort(V2MP_Device* device);
-bool V2MP_Device_NotifyMailboxControlAcquired(V2MP_Device* device);
+bool V2MP_Device_NotifyMailboxReadyForInteraction(V2MP_Device* device);
 
 V2MP_DoubleLL_Node* V2MP_Device_GetOwnerNode(const V2MP_Device* device);
 void V2MP_Device_SetOwnerNode(V2MP_Device* device, V2MP_DoubleLL_Node* node);

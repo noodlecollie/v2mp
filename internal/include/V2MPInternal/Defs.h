@@ -81,8 +81,7 @@ typedef enum V2MP_DevicePortOperationType
 typedef enum V2MP_DeviceMailboxController
 {
 	V2MP_DMBC_DEVICE = 0,
-	V2MP_DMBC_PROGRAM,
-	V2MP_DMBC_SUPERVISOR
+	V2MP_DMBC_PROGRAM
 } V2MP_DeviceMailboxController;
 
 typedef enum V2MP_DevicePortMailboxState

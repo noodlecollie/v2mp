@@ -169,7 +169,6 @@ SCENARIO("DPQ: Querying a port's \"readable + not busy\" state returns the corre
 
 				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::READ, true)));
 				REQUIRE_FALSE(vm.CPUHasFault());
-				REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_SUPERVISOR);
 				REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
 				REQUIRE(V2MP_DevicePort_IsMailboxBusy(port));
 

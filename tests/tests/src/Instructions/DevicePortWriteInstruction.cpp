@@ -116,9 +116,9 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 						CHECK(vm.GetR1() == sizeof(MESSAGE));
 					}
 
-					AND_THEN("The port's mailbox is controlled by the supervisor")
+					AND_THEN("The port's mailbox is controlled by the program")
 					{
-						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_SUPERVISOR);
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
 					}
 
 					AND_THEN("The port's mailbox is considered busy")
@@ -172,9 +172,9 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 							CHECK(vm.GetR1() == sizeof(MESSAGE));
 						}
 
-						AND_THEN("The port's mailbox is controlled by the program")
+						AND_THEN("The port's mailbox is controlled by the device")
 						{
-							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
 						}
 
 						AND_THEN("The port's mailbox is not busy")
@@ -182,9 +182,9 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 							CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 						}
 
-						AND_THEN("The port's mailbox is exhausted")
+						AND_THEN("The port's mailbox is unavailable")
 						{
-							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
+							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 						}
 					}
 				}

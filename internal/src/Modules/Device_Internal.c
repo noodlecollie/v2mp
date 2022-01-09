@@ -50,14 +50,14 @@ void V2MP_Device_NotifyDisconnectedFromPort(V2MP_Device* device)
 	device->connectedPort = NULL;
 }
 
-bool V2MP_Device_NotifyMailboxControlAcquired(V2MP_Device* device)
+bool V2MP_Device_NotifyMailboxReadyForInteraction(V2MP_Device* device)
 {
-	if ( !device || !device->callbacks.onMailboxControlAcquired )
+	if ( !device || !device->callbacks.onMailboxReadyForInteraction )
 	{
 		return false;
 	}
 
-	device->callbacks.onMailboxControlAcquired(device->callbacks.userData, device);
+	device->callbacks.onMailboxReadyForInteraction(device->callbacks.userData, device);
 	return true;
 }
 
