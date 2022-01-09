@@ -396,5 +396,71 @@ SCENARIO("DPO: Relinquishing a readable mailbox should discard any remaining byt
 	}
 }
 
-// TODO: Reserved bits, R1 set to 0
+SCENARIO("DPO: Atempting to read into a buffer of length zero should raise an IDO fault", "[instructions]")
+{
+	GIVEN("A virtual machine")
+	{
+		static constexpr V2MP_Word PORT_ADDRESS = 1234;
+		static constexpr size_t SEGMENT_SIZE_WORDS = 2;
+		static constexpr size_t SEGMENT_SIZE_BYTES = SEGMENT_SIZE_WORDS * sizeof(V2MP_Word);
+		static constexpr size_t MAILBOX_SIZE = 64;
+
+		// Enough memory for two segments of equal size.
+		TestHarnessVM vm(2 * SEGMENT_SIZE_BYTES);
+
+		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, 0));
+
+		AND_GIVEN("A port with a message in its mailbox")
+		{
+			static constexpr const char MESSAGE[] = "Mailbox message";
+
+			V2MP_DevicePort* port = vm.CreatePort(PORT_ADDRESS);
+			REQUIRE(port);
+
+			std::shared_ptr<EmitterMockDevice> device = vm.ConnectMockDeviceToPort<EmitterMockDevice>(PORT_ADDRESS);
+			REQUIRE(device);
+
+			REQUIRE(device->AllocateConnectedMailbox(MAILBOX_SIZE));
+			REQUIRE(device->WriteToConnectedMailbox(MESSAGE) == sizeof(MESSAGE));
+			REQUIRE(device->RelinquishConnectedMailbox());
+
+			WHEN("A DPO instruction is executed to read into a zero-sized buffer in memory")
+			{
+				vm.SetR0(PORT_ADDRESS);
+				vm.SetLR(0);
+				vm.SetR1(0);
+
+				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::READ, true)));
+
+				THEN("The CPU contains an IDO fault")
+				{
+					CHECK(vm.CPUHasFault());
+					CHECK(V2MP_CPU_FAULT_CODE(vm.GetCPUFaultWord()) == V2MP_FAULT_IDO);
+				}
+
+				AND_THEN("The port's mailbox is controlled by the program")
+				{
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+				}
+
+				AND_THEN("The port's mailbox is readable")
+				{
+					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
+				}
+
+				AND_THEN("The port's mailbox is not busy")
+				{
+					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+				}
+
+				AND_THEN("The port's mailbox still holds the original message")
+				{
+					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE));
+				}
+			}
+		}
+	}
+}
+
+// TODO: Reserved bits
 // TODO: Status register checks
