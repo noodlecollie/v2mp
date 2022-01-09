@@ -323,5 +323,6 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 	}
 }
 
+// TODO: Relinquish mailbox without having written to it
 // TODO: Reserved bits
 // TODO: Status register checks
