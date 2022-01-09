@@ -298,5 +298,103 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox into a memory buffer
 	}
 }
 
-// TODO: Reserved bits
+SCENARIO("DPO: Relinquishing a readable mailbox should discard any remaining bytes", "[instructions]")
+{
+	GIVEN("A virtual machine")
+	{
+		static constexpr V2MP_Word PORT_ADDRESS = 1234;
+		static constexpr size_t SEGMENT_SIZE_WORDS = 128;
+		static constexpr size_t SEGMENT_SIZE_BYTES = SEGMENT_SIZE_WORDS * sizeof(V2MP_Word);
+		static constexpr V2MP_Word DS_ADDRESS = 0;
+		static constexpr size_t MAILBOX_SIZE = 64;
+
+		// Enough memory for two segments of equal size.
+		TestHarnessVM vm(2 * SEGMENT_SIZE_BYTES);
+
+		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD));
+
+		AND_GIVEN("A port with a message in its mailbox")
+		{
+			static constexpr const char MESSAGE[] = "Mailbox message";
+
+			V2MP_DevicePort* port = vm.CreatePort(PORT_ADDRESS);
+			REQUIRE(port);
+
+			std::shared_ptr<EmitterMockDevice> device = vm.ConnectMockDeviceToPort<EmitterMockDevice>(PORT_ADDRESS);
+			REQUIRE(device);
+
+			REQUIRE(device->AllocateConnectedMailbox(MAILBOX_SIZE));
+			REQUIRE(device->WriteToConnectedMailbox(MESSAGE) == sizeof(MESSAGE));
+			REQUIRE(device->RelinquishConnectedMailbox());
+
+			WHEN("The port's mailbox is relinquished by the program")
+			{
+				vm.SetR0(PORT_ADDRESS);
+
+				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::RELINQUISH_MAILBOX, true)));
+				REQUIRE_FALSE(vm.CPUHasFault());
+
+				THEN("The port's mailbox is controlled by the device")
+				{
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+				}
+
+				AND_THEN("The port's mailbox is unavailable")
+				{
+					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
+				}
+
+				AND_THEN("The port's mailbox is not busy")
+				{
+					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+				}
+
+				AND_THEN("The port's mailbox is empty")
+				{
+					CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
+				}
+			}
+
+			AND_GIVEN("Some of the message is read by the device")
+			{
+				vm.SetR0(PORT_ADDRESS);
+				vm.SetLR(DS_ADDRESS);
+				vm.SetR1(static_cast<V2MP_Word>(sizeof(MESSAGE) / 2));
+
+				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::READ, true)));
+				REQUIRE_FALSE(vm.CPUHasFault());
+
+				WHEN("The port's mailbox is relinquished by the program")
+				{
+					vm.SetR0(PORT_ADDRESS);
+
+					REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::RELINQUISH_MAILBOX, true)));
+					REQUIRE_FALSE(vm.CPUHasFault());
+
+					THEN("The port's mailbox is controlled by the device")
+					{
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+					}
+
+					AND_THEN("The port's mailbox is unavailable")
+					{
+						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
+					}
+
+					AND_THEN("The port's mailbox is not busy")
+					{
+						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+					}
+
+					AND_THEN("The port's mailbox is empty")
+					{
+						CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
+					}
+				}
+			}
+		}
+	}
+}
+
+// TODO: Reserved bits, R1 set to 0
 // TODO: Status register checks
