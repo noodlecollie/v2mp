@@ -394,5 +394,4 @@ SCENARIO("DPO: Attempting to write from a buffer of length zero should raise an 
 	}
 }
 
-// TODO: Reserved bits
 // TODO: Status register checks

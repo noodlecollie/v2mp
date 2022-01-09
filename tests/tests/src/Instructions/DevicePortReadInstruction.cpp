@@ -462,5 +462,4 @@ SCENARIO("DPO: Atempting to read into a buffer of length zero should raise an ID
 	}
 }
 
-// TODO: Reserved bits
 // TODO: Status register checks
