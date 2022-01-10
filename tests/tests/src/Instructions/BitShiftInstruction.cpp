@@ -1365,7 +1365,7 @@ SCENARIO("SHFT: Setting any literal operand bit if the source and destination re
 
 		for ( size_t index = 0; index <= 8; ++index )
 		{
-			WHEN("R1 is shifted by the value in R0, and a reserved bit set")
+			DYNAMIC_SECTION("     When: R1 is shifted by the value in R0, and reserved bit " << index << " is set")
 			{
 				REQUIRE(vm.Execute(Asm::SHFTR(Asm::REG_R1, Asm::REG_R0) | (1 << index)));
 

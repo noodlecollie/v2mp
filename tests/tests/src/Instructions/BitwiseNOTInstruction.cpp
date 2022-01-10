@@ -341,7 +341,7 @@ SCENARIO("BITW: Performing a bitwise NOT between two registers with other operan
 
 			for ( size_t index = 0; index <= 5; ++index )
 			{
-				WHEN("A bitwise NOT is performed with a reserved bit set")
+				DYNAMIC_SECTION("     When: a bitwise NOT is performed with reserved bit " << index << " set")
 				{
 					REQUIRE(vm.Execute(Asm::BITWR(REG_SRC, REG_DEST, Asm::BitwiseOp::NOT) | (1 << index)));
 
@@ -366,7 +366,7 @@ SCENARIO("BITW: Performing a bitwise NOT between two registers with other operan
 
 			for ( size_t index = 0; index <= 5; ++index )
 			{
-				WHEN("A bitwise NOT is performed with a reserved bit set")
+				DYNAMIC_SECTION("     When: A bitwise NOT is performed with reserved bit " << index << " set")
 				{
 					REQUIRE(vm.Execute(Asm::BITWR(REG_SRC, REG_DEST, Asm::BitwiseOp::NOT) | (1 << index)));
 

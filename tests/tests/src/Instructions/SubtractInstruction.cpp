@@ -573,7 +573,7 @@ SCENARIO("SUB: Setting any literal operand bit if the source and destination reg
 
 		for ( size_t index = 0; index <= 8; ++index )
 		{
-			WHEN("R1 is subtracted from R0 with a reserved bit set")
+			DYNAMIC_SECTION("     When: R1 is subtracted from R0 with reserved bit " << index << " set")
 			{
 				REQUIRE(vm.Execute(Asm::SUBR(Asm::REG_R1, Asm::REG_R0) | (1 << index)));
 

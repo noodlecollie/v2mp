@@ -448,7 +448,7 @@ SCENARIO("CBX: Setting any literal operand bit if LR is being used as the target
 
 		for ( size_t index = 0; index <= 8; ++index )
 		{
-			WHEN("A conditional branch instruction is executed based on SR[Z], and a reserved bit is set")
+			DYNAMIC_SECTION("     When: A conditional branch instruction is executed based on SR[Z], and reserved bit " << index << " is set")
 			{
 				REQUIRE_FALSE(vm.CPUHasFault());
 				REQUIRE(vm.Execute(Asm::BXZR() | (1 << index)));
@@ -465,7 +465,7 @@ SCENARIO("CBX: Setting any literal operand bit if LR is being used as the target
 				}
 			}
 
-			AND_WHEN("A conditional branch instruction is executed based on SR[C], and a reserved bit is set")
+			DYNAMIC_SECTION("When a conditional branch instruction is executed based on SR[C], and reserved bit " << index << " is set")
 			{
 				REQUIRE_FALSE(vm.CPUHasFault());
 				REQUIRE(vm.Execute(Asm::BXCR() | (1 << index)));

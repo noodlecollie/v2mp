@@ -451,7 +451,7 @@ SCENARIO("ASGN: Setting any literal operand bit if the source and destination re
 
 		for ( size_t index = 0; index <= 8; ++index )
 		{
-			WHEN("R1 is assigned to R0 with a reserved bit set")
+			DYNAMIC_SECTION("     When: R1 is assigned to R0 with reserved bit " << index << " set")
 			{
 				REQUIRE(vm.Execute(Asm::ASGNR(Asm::REG_R1, Asm::REG_R0) | (1 << index)));
 

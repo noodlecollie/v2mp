@@ -350,7 +350,7 @@ SCENARIO("LDST: Setting any reserved bit raises a RES fault", "[instructions]")
 
 		for ( size_t index = 0; index <= 8; ++index )
 		{
-			WHEN("A load is attempted with any reserved bit set")
+			DYNAMIC_SECTION("     When: A load is attempted with reserved bit " << index << " set")
 			{
 				vm.ResetCPU();
 				vm.SetLR(MEM_ADDRESS);
@@ -371,7 +371,7 @@ SCENARIO("LDST: Setting any reserved bit raises a RES fault", "[instructions]")
 
 		for ( size_t index = 0; index <= 8; ++index )
 		{
-			WHEN("A store is attempted with any reserved bit set")
+			DYNAMIC_SECTION("     When: A store is attempted with reserved bit " << index << " set")
 			{
 				vm.ResetCPU();
 				vm.SetLR(MEM_ADDRESS);

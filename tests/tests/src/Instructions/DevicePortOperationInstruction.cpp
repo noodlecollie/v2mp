@@ -20,7 +20,7 @@ SCENARIO("DPO: Setting any reserved bit raises a RES fault", "[instructions]")
 
 		for ( size_t index = 2; index <= 10; ++index )
 		{
-			WHEN("A DPO instruction is executed with a reserved bit set")
+			DYNAMIC_SECTION("     When: A DPO instruction is executed with reserved bit " << index << " set")
 			{
 				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::WRITE, true) | (1 << index)));
 

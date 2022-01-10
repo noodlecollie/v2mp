@@ -1017,7 +1017,7 @@ SCENARIO("BITW: Performing a bitwise XOR between two registers with other operan
 
 		for ( size_t index = 0; index <= 5; ++index )
 		{
-			WHEN("A bitwise XOR is performed with a reserved bit set")
+			DYNAMIC_SECTION("     When: A bitwise XOR is performed with reserved bit " << index << " set")
 			{
 				REQUIRE(vm.Execute(Asm::BITWR(Asm::REG_R1, Asm::REG_R0, Asm::BitwiseOp::XOR) | (1 << index)));
 
