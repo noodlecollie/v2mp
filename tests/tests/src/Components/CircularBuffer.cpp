@@ -13,10 +13,6 @@ SCENARIO("Initialising a circular buffer", "[components]")
 		THEN("A null pointer is returned")
 		{
 			REQUIRE(cb == nullptr);
-		}
-
-		AND_THEN("Deinitialising the null pointer is safe")
-		{
 			REQUIRE_NOTHROW(V2MP_CircularBuffer_DeinitAndFree(cb));
 		}
 	}
@@ -54,13 +50,9 @@ SCENARIO("Querying circular buffer capacity", "[components]")
 			{
 				const size_t freeSpace = V2MP_CircularBuffer_BytesFree(cb);
 
-				THEN("The reported free space matches the capacity the buffer was initialised with")
+				THEN("The reported free space is correct")
 				{
 					REQUIRE(freeSpace == DEFAULT_CAPACITY);
-				}
-
-				AND_THEN("The reported free space matches the reported capacity")
-				{
 					REQUIRE(freeSpace == capacity);
 				}
 			}
@@ -121,33 +113,16 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 				origData.size()
 			);
 
-			THEN("The amount of data written matches the length of the input data")
-			{
-				REQUIRE(bytesWritten == origData.size());
-			}
-
-			AND_THEN("The number of used bytes in the buffer matches the length of the input data")
+			THEN("The amount of data written is correct")
 			{
 				const size_t used = V2MP_CircularBuffer_BytesUsed(cb);
-
-				REQUIRE(used == origData.size());
-				REQUIRE(used == bytesWritten);
-			}
-
-			AND_THEN("The number of free bytes in the buffer matches the remaining capacity")
-			{
 				const size_t free = V2MP_CircularBuffer_BytesFree(cb);
 
+				REQUIRE(bytesWritten == origData.size());
+				REQUIRE(used == origData.size());
+				REQUIRE(used == bytesWritten);
 				REQUIRE(free == DEFAULT_CAPACITY - origData.size());
-			}
-
-			AND_THEN("The buffer is not reported as being empty")
-			{
 				REQUIRE_FALSE(V2MP_CircularBuffer_IsEmpty(cb));
-			}
-
-			AND_THEN("The buffer is not reported as being full")
-			{
 				REQUIRE_FALSE(V2MP_CircularBuffer_IsFull(cb));
 			}
 
@@ -162,13 +137,9 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 					readData.size()
 				);
 
-				THEN("The amount of data read matches the amount requested")
+				THEN("The read data matches the original data")
 				{
 					REQUIRE(bytesRead == readData.size());
-				}
-
-				AND_THEN("The data read back matches the data that was written")
-				{
 					REQUIRE(origData == readData);
 				}
 			}
@@ -193,15 +164,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 				REQUIRE(bytesWritten != origData.size());
 				REQUIRE(bytesWritten == DEFAULT_CAPACITY);
 				REQUIRE(bytesWritten == V2MP_CircularBuffer_Capacity(cb));
-			}
-
-			AND_THEN("The buffer is not reported as being empty")
-			{
 				REQUIRE_FALSE(V2MP_CircularBuffer_IsEmpty(cb));
-			}
-
-			AND_THEN("The buffer is reported as being full")
-			{
 				REQUIRE(V2MP_CircularBuffer_IsFull(cb));
 			}
 
@@ -216,14 +179,11 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 					readData.size()
 				);
 
-				THEN("The amount of data read matches the buffer capacity")
+				THEN("The data read back matches the beginning of the original data")
 				{
 					REQUIRE(bytesRead == V2MP_CircularBuffer_Capacity(cb));
 					REQUIRE(bytesRead != origData.size());
-				}
 
-				AND_THEN("The data read back matches the beginning of the original data")
-				{
 					std::vector<char> origDataPrefix(origData.cbegin(), origData.cbegin() + DEFAULT_CAPACITY);
 					origDataPrefix.resize(readData.size());
 
@@ -245,15 +205,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 			THEN("The amount of data written is zero")
 			{
 				REQUIRE(bytesWritten == 0);
-			}
-
-			AND_THEN("The buffer is reported as being empty")
-			{
 				REQUIRE(V2MP_CircularBuffer_IsEmpty(cb));
-			}
-
-			AND_THEN("The buffer is not reported as being full")
-			{
 				REQUIRE_FALSE(V2MP_CircularBuffer_IsFull(cb));
 			}
 
@@ -270,10 +222,6 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 				THEN("No data is read")
 				{
 					REQUIRE(bytesRead == 0);
-				}
-
-				AND_THEN("The output buffer should not have been modified")
-				{
 					REQUIRE(readData == std::vector<char>(DEFAULT_CAPACITY, 'A'));
 				}
 			}

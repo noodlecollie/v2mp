@@ -448,13 +448,14 @@ SCENARIO("CBX: Setting any literal operand bit if LR is being used as the target
 
 		for ( size_t index = 0; index <= 8; ++index )
 		{
-			DYNAMIC_SECTION("     When: A conditional branch instruction is executed based on SR[Z], and reserved bit " << index << " is set")
+			WHEN("A conditional branch instruction is executed based on SR[Z], and a reserved bit is set")
 			{
 				REQUIRE_FALSE(vm.CPUHasFault());
 				REQUIRE(vm.Execute(Asm::BXZR() | (1 << index)));
 
 				THEN("A RES fault is raised, and all registers are left unchanged")
 				{
+					INFO("Reserved bit " << index << " was set");
 					CHECK(vm.CPUHasFault());
 					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == VAL_R0);
@@ -465,13 +466,14 @@ SCENARIO("CBX: Setting any literal operand bit if LR is being used as the target
 				}
 			}
 
-			DYNAMIC_SECTION("When a conditional branch instruction is executed based on SR[C], and reserved bit " << index << " is set")
+			WHEN("A conditional branch instruction is executed based on SR[C], and a reserved bit is set")
 			{
 				REQUIRE_FALSE(vm.CPUHasFault());
 				REQUIRE(vm.Execute(Asm::BXCR() | (1 << index)));
 
 				THEN("A RES fault is raised, and all registers are left unchanged")
 				{
+					INFO("Reserved bit " << index << " was set");
 					CHECK(vm.CPUHasFault());
 					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == VAL_R0);

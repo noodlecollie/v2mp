@@ -27,7 +27,7 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 
 		REQUIRE(vm.SetCSAndDS(cs, ds));
 
-		AND_GIVEN("A port with an empty mailbox")
+		AND_GIVEN("A port with an empty mailbox which is the size of the intended message")
 		{
 			V2MP_DevicePort* port = vm.CreatePort(PORT_ADDRESS);
 			REQUIRE(port);
@@ -52,28 +52,12 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 					REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::WRITE, true)));
 					REQUIRE_FALSE(vm.CPUHasFault());
 
-					THEN("The port's mailbox is controlled by the program")
+					THEN("The mailbox is written to and becomes exhausted")
 					{
 						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
-					}
-
-					AND_THEN("The port's mailbox is exhausted")
-					{
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
-					}
-
-					AND_THEN("The port's mailbox is not busy")
-					{
 						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-					}
-
-					AND_THEN("The port's mailbox holds the correct number of bytes")
-					{
 						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE));
-					}
-
-					AND_THEN("R1 holds the length of the entire message")
-					{
 						CHECK(vm.GetR1() == sizeof(MESSAGE));
 					}
 
@@ -82,33 +66,14 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 						REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::RELINQUISH_MAILBOX, true)));
 						REQUIRE_FALSE(vm.CPUHasFault());
 
-						THEN("The port's mailbox is controlled by the device")
+						THEN("The mailbox contains the entire message")
 						{
 							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
-						}
-
-						AND_THEN("The port's mailbox is unavailable")
-						{
 							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
-						}
-
-						AND_THEN("The port's mailbox is not busy")
-						{
 							CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-						}
-
-						AND_THEN("The port's mailbox holds the correct number of bytes")
-						{
 							CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE));
-						}
-
-						AND_THEN("R1 still holds the length of the entire message")
-						{
 							CHECK(vm.GetR1() == sizeof(MESSAGE));
-						}
 
-						AND_THEN("The mailbox contains the entire message")
-						{
 							std::vector<V2MP_Byte> outBuffer;
 							device->CopyAllDataFromMailbox(outBuffer);
 
@@ -136,28 +101,12 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 					REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::WRITE, true)));
 					REQUIRE_FALSE(vm.CPUHasFault());
 
-					THEN("The port's mailbox is controlled by the program")
+					THEN("The port's mailbox is busy and still writeable")
 					{
 						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
-					}
-
-					AND_THEN("The port's mailbox is still writeable")
-					{
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE);
-					}
-
-					AND_THEN("The port's mailbox is busy")
-					{
 						CHECK(V2MP_DevicePort_IsMailboxBusy(port));
-					}
-
-					AND_THEN("The port's mailbox holds the number of bytes transferred this cycle")
-					{
 						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == BYTES_PER_CYCLE);
-					}
-
-					AND_THEN("R1 holds the length of the entire message")
-					{
 						CHECK(vm.GetR1() == sizeof(MESSAGE));
 					}
 
@@ -166,33 +115,14 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 						REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::RELINQUISH_MAILBOX, true)));
 						REQUIRE_FALSE(vm.CPUHasFault());
 
-						THEN("The port's mailbox is controlled by the device")
+						THEN("The mailbox now contains the entire message")
 						{
 							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
-						}
-
-						AND_THEN("The port's mailbox is unavailable")
-						{
 							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
-						}
-
-						AND_THEN("The port's mailbox is not busy")
-						{
 							CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-						}
-
-						AND_THEN("The port's mailbox holds the correct number of bytes")
-						{
 							CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE));
-						}
-
-						AND_THEN("R1 still holds the length of the entire message")
-						{
 							CHECK(vm.GetR1() == sizeof(MESSAGE));
-						}
 
-						THEN("The mailbox contains the entire message")
-						{
 							std::vector<V2MP_Byte> outBuffer;
 							device->CopyAllDataFromMailbox(outBuffer);
 
@@ -219,28 +149,12 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 					REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::WRITE, true)));
 					REQUIRE_FALSE(vm.CPUHasFault());
 
-					THEN("The port's mailbox is controlled by the program")
+					THEN("The port's mailbox is busy and still writeable")
 					{
 						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
-					}
-
-					AND_THEN("The port's mailbox is still writeable")
-					{
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE);
-					}
-
-					AND_THEN("The port's mailbox is busy")
-					{
 						CHECK(V2MP_DevicePort_IsMailboxBusy(port));
-					}
-
-					AND_THEN("The port's mailbox holds the number of bytes transferred this cycle")
-					{
 						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == BYTES_PER_CYCLE);
-					}
-
-					AND_THEN("R1 holds the length of the entire message")
-					{
 						CHECK(vm.GetR1() == sizeof(MESSAGE));
 					}
 
@@ -249,28 +163,12 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 						REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::RELINQUISH_MAILBOX, true)));
 						REQUIRE_FALSE(vm.CPUHasFault());
 
-						THEN("The port's mailbox is controlled by the device")
+						THEN("The port's mailbox is still busy and still writeable")
 						{
 							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
-						}
-
-						AND_THEN("The port's mailbox is unavailable")
-						{
 							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
-						}
-
-						AND_THEN("The port's mailbox is busy")
-						{
 							CHECK(V2MP_DevicePort_IsMailboxBusy(port));
-						}
-
-						AND_THEN("The port's mailbox holds the correct number of bytes")
-						{
 							CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == 2 * BYTES_PER_CYCLE);
-						}
-
-						AND_THEN("R1 still holds the length of the entire message")
-						{
 							CHECK(vm.GetR1() == sizeof(MESSAGE));
 						}
 
@@ -282,33 +180,14 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 							REQUIRE(vm.Execute(Asm::NOP()));
 							REQUIRE_FALSE(vm.CPUHasFault());
 
-							THEN("The port's mailbox is controlled by the device")
+							THEN("The mailbox now contains the entire message")
 							{
 								CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
-							}
-
-							AND_THEN("The port's mailbox is unavailable")
-							{
 								CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
-							}
-
-							AND_THEN("The port's mailbox is not busy")
-							{
 								CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-							}
-
-							AND_THEN("The port's mailbox holds the correct number of bytes")
-							{
 								CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE));
-							}
-
-							AND_THEN("R1 still holds the length of the entire message")
-							{
 								CHECK(vm.GetR1() == sizeof(MESSAGE));
-							}
 
-							THEN("The mailbox contains the entire message")
-							{
 								std::vector<V2MP_Byte> outBuffer;
 								device->CopyAllDataFromMailbox(outBuffer);
 
@@ -368,25 +247,9 @@ SCENARIO("DPO: Attempting to write from a buffer of length zero should raise an 
 				{
 					CHECK(vm.CPUHasFault());
 					CHECK(V2MP_CPU_FAULT_CODE(vm.GetCPUFaultWord()) == V2MP_FAULT_IDO);
-				}
-
-				AND_THEN("The port's mailbox is controlled by the program")
-				{
 					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
-				}
-
-				AND_THEN("The port's mailbox is writeable")
-				{
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE);
-				}
-
-				AND_THEN("The port's mailbox is not busy")
-				{
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-				}
-
-				AND_THEN("The port's mailbox is still empty")
-				{
 					CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
 				}
 			}

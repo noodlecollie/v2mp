@@ -20,12 +20,13 @@ SCENARIO("DPO: Setting any reserved bit raises a RES fault", "[instructions]")
 
 		for ( size_t index = 2; index <= 10; ++index )
 		{
-			DYNAMIC_SECTION("     When: A DPO instruction is executed with reserved bit " << index << " set")
+			WHEN("A DPO instruction is executed with a reserved bit set")
 			{
 				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::WRITE, true) | (1 << index)));
 
 				THEN("A RES fault is raised, and all registers are left unchanged")
 				{
+					INFO("Reserved bit " << index << " was set");
 					CHECK(vm.CPUHasFault());
 					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == VAL_R0);

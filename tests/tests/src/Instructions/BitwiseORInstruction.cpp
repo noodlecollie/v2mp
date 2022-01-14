@@ -812,12 +812,13 @@ SCENARIO("BITW: Performing a bitwise OR between two registers with other operand
 
 		for ( size_t index = 0; index <= 5; ++index )
 		{
-			DYNAMIC_SECTION("     When: A bitwise OR is performed with reserved bit " << index << " set")
+			WHEN("A bitwise OR is performed with a reserved bit set")
 			{
 				REQUIRE(vm.Execute(Asm::BITWR(Asm::REG_R1, Asm::REG_R0, Asm::BitwiseOp::OR) | (1 << index)));
 
 				THEN("A RES fault is raised, and all registers are left unchanged")
 				{
+					INFO("Reserved bit " << index << " was set");
 					CHECK(vm.CPUHasFault());
 					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == VAL_R0);

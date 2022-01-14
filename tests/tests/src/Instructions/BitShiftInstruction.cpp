@@ -1365,12 +1365,13 @@ SCENARIO("SHFT: Setting any literal operand bit if the source and destination re
 
 		for ( size_t index = 0; index <= 8; ++index )
 		{
-			DYNAMIC_SECTION("     When: R1 is shifted by the value in R0, and reserved bit " << index << " is set")
+			WHEN("R1 is shifted by the value in R0, and a reserved bit is set")
 			{
 				REQUIRE(vm.Execute(Asm::SHFTR(Asm::REG_R1, Asm::REG_R0) | (1 << index)));
 
 				THEN("A RES fault is raised, and all registers are left unchanged")
 				{
+					INFO("Reserved bit " << index << " was set");
 					CHECK(vm.CPUHasFault());
 					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == VAL_R0);

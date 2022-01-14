@@ -69,33 +69,14 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 					REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::READ, true)));
 					REQUIRE_FALSE(vm.CPUHasFault());
 
-					THEN("The port's mailbox is controlled by the program")
+					THEN("The message is fetched correctly")
 					{
 						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
-					}
-
-					AND_THEN("The port's mailbox is exhausted")
-					{
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
-					}
-
-					AND_THEN("The port's mailbox is not busy")
-					{
 						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-					}
-
-					AND_THEN("The port's mailbox is empty")
-					{
 						CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
-					}
-
-					AND_THEN("R1 holds the length of the entire message")
-					{
 						CHECK(vm.GetR1() == sizeof(MESSAGE));
-					}
 
-					AND_THEN("The DS segment contains the entire message")
-					{
 						std::vector<V2MP_Byte> dsData;
 
 						REQUIRE(vm.GetDSData(0, SEGMENT_SIZE_BYTES, dsData));
@@ -128,33 +109,14 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 					REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::READ, true)));
 					REQUIRE_FALSE(vm.CPUHasFault());
 
-					THEN("The port's mailbox is controlled by the program")
+					THEN("The correct number of message bytes are fetched.")
 					{
 						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
-					}
-
-					AND_THEN("The port's mailbox is still readable")
-					{
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
-					}
-
-					AND_THEN("The port's mailbox is busy")
-					{
 						CHECK(V2MP_DevicePort_IsMailboxBusy(port));
-					}
-
-					AND_THEN("The port's mailbox holds the number of bytes not transferred this cycle")
-					{
 						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE) - BYTES_PER_CYCLE);
-					}
-
-					AND_THEN("R1 holds the length of the entire message")
-					{
 						CHECK(vm.GetR1() == sizeof(MESSAGE));
-					}
 
-					AND_THEN("The DS segment contains as many bytes as were transferred in that clock cycle")
-					{
 						std::vector<V2MP_Byte> dsData;
 
 						REQUIRE(vm.GetDSData(0, SEGMENT_SIZE_BYTES, dsData));
@@ -173,33 +135,14 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 						REQUIRE(vm.Execute(Asm::NOP()));
 						REQUIRE_FALSE(vm.CPUHasFault());
 
-						THEN("The port's mailbox is controlled by the program")
+						THEN("The entire message is now fetched")
 						{
 							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
-						}
-
-						AND_THEN("The port's mailbox is exhausted")
-						{
 							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
-						}
-
-						AND_THEN("The port's mailbox is not busy")
-						{
 							CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-						}
-
-						AND_THEN("The port's mailbox is empty")
-						{
 							CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
-						}
-
-						AND_THEN("R1 still holds the length of the entire message")
-						{
 							CHECK(vm.GetR1() == sizeof(MESSAGE));
-						}
 
-						AND_THEN("The DS segment contains the entire message")
-						{
 							std::vector<V2MP_Byte> dsData;
 
 							REQUIRE(vm.GetDSData(0, SEGMENT_SIZE_BYTES, dsData));
@@ -259,34 +202,16 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox into a memory buffer
 
 				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::READ, true)));
 
-				THEN("The CPU contains a SEG fault")
+				THEN("A SEG fault is raised and as much of the original message as possible is fetched")
 				{
 					CHECK(vm.CPUHasFault());
 					CHECK(V2MP_CPU_FAULT_CODE(vm.GetCPUFaultWord()) == V2MP_FAULT_SEG);
-				}
 
-				AND_THEN("The port's mailbox is controlled by the program")
-				{
 					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
-				}
-
-				AND_THEN("The port's mailbox is readable")
-				{
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
-				}
-
-				AND_THEN("The port's mailbox is not busy")
-				{
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-				}
-
-				AND_THEN("The port's mailbox holds as many bytes as were not transferred this clock cycle")
-				{
 					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE) - SEGMENT_SIZE_BYTES);
-				}
 
-				AND_THEN("The data segment contains as much of the original message as would fit")
-				{
 					std::vector<V2MP_Byte> dsData;
 
 					REQUIRE(vm.GetDSData(0, SEGMENT_SIZE_BYTES, dsData));
@@ -337,20 +262,8 @@ SCENARIO("DPO: Relinquishing a readable mailbox should discard any remaining byt
 				THEN("The port's mailbox is controlled by the device")
 				{
 					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
-				}
-
-				AND_THEN("The port's mailbox is unavailable")
-				{
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
-				}
-
-				AND_THEN("The port's mailbox is not busy")
-				{
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-				}
-
-				AND_THEN("The port's mailbox is empty")
-				{
 					CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
 				}
 			}
@@ -374,20 +287,8 @@ SCENARIO("DPO: Relinquishing a readable mailbox should discard any remaining byt
 					THEN("The port's mailbox is controlled by the device")
 					{
 						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
-					}
-
-					AND_THEN("The port's mailbox is unavailable")
-					{
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
-					}
-
-					AND_THEN("The port's mailbox is not busy")
-					{
 						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-					}
-
-					AND_THEN("The port's mailbox is empty")
-					{
 						CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
 					}
 				}
@@ -436,25 +337,10 @@ SCENARIO("DPO: Atempting to read into a buffer of length zero should raise an ID
 				{
 					CHECK(vm.CPUHasFault());
 					CHECK(V2MP_CPU_FAULT_CODE(vm.GetCPUFaultWord()) == V2MP_FAULT_IDO);
-				}
 
-				AND_THEN("The port's mailbox is controlled by the program")
-				{
 					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
-				}
-
-				AND_THEN("The port's mailbox is readable")
-				{
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
-				}
-
-				AND_THEN("The port's mailbox is not busy")
-				{
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-				}
-
-				AND_THEN("The port's mailbox still holds the original message")
-				{
 					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE));
 				}
 			}

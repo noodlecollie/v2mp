@@ -573,12 +573,13 @@ SCENARIO("ADD: Setting any literal operand bit if the source and destination reg
 
 		for ( size_t index = 0; index <= 8; ++index )
 		{
-			DYNAMIC_SECTION("     When: R1 is added to R0 with reserved bit " << index << " set")
+			WHEN("R1 is added to R0 with a reserved bit set")
 			{
 				REQUIRE(vm.Execute(Asm::ADDR(Asm::REG_R1, Asm::REG_R0) | (1 << index)));
 
 				THEN("A RES fault is raised, and all registers are left unchanged")
 				{
+					INFO("Reserved bit " << index << " was set");
 					CHECK(vm.CPUHasFault());
 					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == VAL_R0);

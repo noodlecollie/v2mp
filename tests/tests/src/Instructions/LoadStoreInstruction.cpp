@@ -350,7 +350,7 @@ SCENARIO("LDST: Setting any reserved bit raises a RES fault", "[instructions]")
 
 		for ( size_t index = 0; index <= 8; ++index )
 		{
-			DYNAMIC_SECTION("     When: A load is attempted with reserved bit " << index << " set")
+			WHEN("A load is attempted with a reserved bit set")
 			{
 				vm.ResetCPU();
 				vm.SetLR(MEM_ADDRESS);
@@ -358,6 +358,7 @@ SCENARIO("LDST: Setting any reserved bit raises a RES fault", "[instructions]")
 
 				THEN("A RES fault is raised and register values are not modified")
 				{
+					INFO("Reserved bit " << index << " was set");
 					CHECK(vm.CPUHasFault());
 					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == TestHarnessVM_StartsInvalid::INVALID_WORD);
@@ -371,7 +372,7 @@ SCENARIO("LDST: Setting any reserved bit raises a RES fault", "[instructions]")
 
 		for ( size_t index = 0; index <= 8; ++index )
 		{
-			DYNAMIC_SECTION("     When: A store is attempted with reserved bit " << index << " set")
+			WHEN("A store is attempted with a reserved bit set")
 			{
 				vm.ResetCPU();
 				vm.SetLR(MEM_ADDRESS);
@@ -380,6 +381,7 @@ SCENARIO("LDST: Setting any reserved bit raises a RES fault", "[instructions]")
 
 				THEN("A RES fault is raised and memory is not modified")
 				{
+					INFO("Reserved bit " << index << " was set");
 					CHECK(vm.CPUHasFault());
 					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 					CHECK(vm.GetR0() == 0x1234);

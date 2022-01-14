@@ -29,14 +29,10 @@ SCENARIO("Creating and destroying devices and ports automatically disconnects th
 			{
 				REQUIRE(V2MP_DevicePort_ConnectDevice(port, device));
 
-				THEN("The port reports that a device is connected")
+				THEN("The port reports that the device is connected")
 				{
-					REQUIRE(V2MP_DevicePort_HasConnectedDevice(port));
-				}
-
-				AND_THEN("Getting the connected device returns the correct device pointer")
-				{
-					REQUIRE(V2MP_DevicePort_GetConnectedDevice(port) == device);
+					CHECK(V2MP_DevicePort_HasConnectedDevice(port));
+					CHECK(V2MP_DevicePort_GetConnectedDevice(port) == device);
 				}
 
 				AND_WHEN("The device is subsequently disconnected from the port")
@@ -45,13 +41,9 @@ SCENARIO("Creating and destroying devices and ports automatically disconnects th
 
 					THEN("The port reports that no device is connected")
 					{
-						REQUIRE_FALSE(V2MP_DevicePort_HasConnectedDevice(port));
-					}
-
-					AND_THEN("Getting the connected device returns null")
-					{
-						REQUIRE(V2MP_DevicePort_GetConnectedDevice(port) == nullptr);
-						REQUIRE(V2MP_DevicePort_GetConnectedDevice(port) != device);
+						CHECK_FALSE(V2MP_DevicePort_HasConnectedDevice(port));
+						CHECK(V2MP_DevicePort_GetConnectedDevice(port) == nullptr);
+						CHECK(V2MP_DevicePort_GetConnectedDevice(port) != device);
 					}
 				}
 
@@ -64,12 +56,8 @@ SCENARIO("Creating and destroying devices and ports automatically disconnects th
 
 					THEN("The port reports that no device is connected")
 					{
-						REQUIRE_FALSE(V2MP_DevicePort_HasConnectedDevice(port));
-					}
-
-					AND_THEN("Getting the connected device returns null")
-					{
-						REQUIRE(V2MP_DevicePort_GetConnectedDevice(port) == nullptr);
+						CHECK_FALSE(V2MP_DevicePort_HasConnectedDevice(port));
+						CHECK(V2MP_DevicePort_GetConnectedDevice(port) == nullptr);
 					}
 				}
 
@@ -81,12 +69,8 @@ SCENARIO("Creating and destroying devices and ports automatically disconnects th
 
 					THEN("The port reports that no device is connected")
 					{
-						REQUIRE_FALSE(V2MP_DevicePort_HasConnectedDevice(port));
-					}
-
-					AND_THEN("Getting the connected device returns null")
-					{
-						REQUIRE(V2MP_DevicePort_GetConnectedDevice(port) == nullptr);
+						CHECK_FALSE(V2MP_DevicePort_HasConnectedDevice(port));
+						CHECK(V2MP_DevicePort_GetConnectedDevice(port) == nullptr);
 					}
 				}
 
@@ -97,7 +81,7 @@ SCENARIO("Creating and destroying devices and ports automatically disconnects th
 
 					THEN("The device reports that it is not connected to a port")
 					{
-						REQUIRE_FALSE(V2MP_Device_IsConnectedToPort(device));
+						CHECK_FALSE(V2MP_Device_IsConnectedToPort(device));
 					}
 				}
 
@@ -109,7 +93,7 @@ SCENARIO("Creating and destroying devices and ports automatically disconnects th
 
 					THEN("The device reports that it is not connected to a port")
 					{
-						REQUIRE_FALSE(V2MP_Device_IsConnectedToPort(device));
+						CHECK_FALSE(V2MP_Device_IsConnectedToPort(device));
 					}
 				}
 			}
@@ -146,25 +130,13 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 			THEN("The mailbox is still considered controlled by a device")
 			{
-				REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
-			}
-
-			AND_THEN("The mailbox is not considered busy")
-			{
-				REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-			}
-
-			AND_THEN("The mailbox is considered unavailable")
-			{
-				REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
-			}
-
-			AND_THEN("The mailbox is considered empty")
-			{
-				REQUIRE(V2MP_DevicePort_IsMailboxEmpty(port));
-				REQUIRE_FALSE(V2MP_DevicePort_IsMailboxFull(port));
-				REQUIRE(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
-				REQUIRE(V2MP_DevicePort_MailboxBytesFree(port) == 0);
+				CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+				CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+				CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
+				CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
+				CHECK_FALSE(V2MP_DevicePort_IsMailboxFull(port));
+				CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
+				CHECK(V2MP_DevicePort_MailboxBytesFree(port) == 0);
 			}
 		}
 
@@ -180,30 +152,18 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 			THEN("The mailbox is considered controlled by the device")
 			{
-				REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
-				REQUIRE(V2MP_Device_ControlsConnectedMailbox(device));
-			}
-
-			AND_THEN("The mailbox is not considered busy")
-			{
-				REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-			}
-
-			AND_THEN("The mailbox is considered unavailable")
-			{
-				REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
-			}
-
-			AND_THEN("The mailbox is considered empty")
-			{
-				REQUIRE(V2MP_DevicePort_IsMailboxEmpty(port));
-				REQUIRE_FALSE(V2MP_DevicePort_IsMailboxFull(port));
-				REQUIRE(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
-				REQUIRE(V2MP_DevicePort_MailboxBytesFree(port) == 0);
-				REQUIRE(V2MP_Device_IsConnectedMailboxEmpty(device));
-				REQUIRE_FALSE(V2MP_Device_IsConnectedMailboxFull(device));
-				REQUIRE(V2MP_Device_UsedBytesInConnectedMailbox(device) == 0);
-				REQUIRE(V2MP_Device_FreeBytesInConnectedMailbox(device) == 0);
+				CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+				CHECK(V2MP_Device_ControlsConnectedMailbox(device));
+				CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+				CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
+				CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
+				CHECK_FALSE(V2MP_DevicePort_IsMailboxFull(port));
+				CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
+				CHECK(V2MP_DevicePort_MailboxBytesFree(port) == 0);
+				CHECK(V2MP_Device_IsConnectedMailboxEmpty(device));
+				CHECK_FALSE(V2MP_Device_IsConnectedMailboxFull(device));
+				CHECK(V2MP_Device_UsedBytesInConnectedMailbox(device) == 0);
+				CHECK(V2MP_Device_FreeBytesInConnectedMailbox(device) == 0);
 			}
 
 			AND_WHEN("The device tries to write to the mailbox before it has been allocated")
@@ -216,7 +176,7 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 				THEN("No bytes are written to the mailbox")
 				{
-					REQUIRE(written == 0);
+					CHECK(written == 0);
 				}
 			}
 
@@ -226,29 +186,17 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 				THEN("The mailbox is considered controlled by the device")
 				{
-					REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
-				}
-
-				AND_THEN("The mailbox is not considered busy")
-				{
-					REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-				}
-
-				AND_THEN("The mailbox is considered unavailable")
-				{
-					REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
-				}
-
-				AND_THEN("The mailbox is considered empty")
-				{
-					REQUIRE(V2MP_DevicePort_IsMailboxEmpty(port));
-					REQUIRE_FALSE(V2MP_DevicePort_IsMailboxFull(port));
-					REQUIRE(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
-					REQUIRE(V2MP_DevicePort_MailboxBytesFree(port) == MAILBOX_SIZE);
-					REQUIRE(V2MP_Device_IsConnectedMailboxEmpty(device));
-					REQUIRE_FALSE(V2MP_Device_IsConnectedMailboxFull(device));
-					REQUIRE(V2MP_Device_UsedBytesInConnectedMailbox(device) == 0);
-					REQUIRE(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE);
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
+					CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
+					CHECK_FALSE(V2MP_DevicePort_IsMailboxFull(port));
+					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
+					CHECK(V2MP_DevicePort_MailboxBytesFree(port) == MAILBOX_SIZE);
+					CHECK(V2MP_Device_IsConnectedMailboxEmpty(device));
+					CHECK_FALSE(V2MP_Device_IsConnectedMailboxFull(device));
+					CHECK(V2MP_Device_UsedBytesInConnectedMailbox(device) == 0);
+					CHECK(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE);
 				}
 
 				AND_WHEN("The device writes to the mailbox")
@@ -259,20 +207,16 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 						sizeof(MAILBOX_MESSAGE)
 					);
 
-					THEN("The correct number of bytes is written to the mailbox")
-					{
-						REQUIRE(written == sizeof(MAILBOX_MESSAGE));
-					}
-
 					AND_THEN("The mailbox is considered partially filled")
 					{
-						REQUIRE_FALSE(V2MP_DevicePort_IsMailboxEmpty(port));
-						REQUIRE_FALSE(V2MP_DevicePort_IsMailboxFull(port));
-						REQUIRE(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MAILBOX_MESSAGE));
-						REQUIRE(V2MP_DevicePort_MailboxBytesFree(port) == MAILBOX_SIZE - sizeof(MAILBOX_MESSAGE));
-						REQUIRE_FALSE(V2MP_Device_IsConnectedMailboxEmpty(device));
-						REQUIRE(V2MP_Device_UsedBytesInConnectedMailbox(device) == sizeof(MAILBOX_MESSAGE));
-						REQUIRE(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE - sizeof(MAILBOX_MESSAGE));
+						CHECK(written == sizeof(MAILBOX_MESSAGE));
+						CHECK_FALSE(V2MP_DevicePort_IsMailboxEmpty(port));
+						CHECK_FALSE(V2MP_DevicePort_IsMailboxFull(port));
+						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MAILBOX_MESSAGE));
+						CHECK(V2MP_DevicePort_MailboxBytesFree(port) == MAILBOX_SIZE - sizeof(MAILBOX_MESSAGE));
+						CHECK_FALSE(V2MP_Device_IsConnectedMailboxEmpty(device));
+						CHECK(V2MP_Device_UsedBytesInConnectedMailbox(device) == sizeof(MAILBOX_MESSAGE));
+						CHECK(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE - sizeof(MAILBOX_MESSAGE));
 					}
 
 					AND_WHEN("The device relinquishes the mailbox")
@@ -281,29 +225,17 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 						THEN("The mailbox is considered controlled by the program")
 						{
-							REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
-						}
-
-						AND_THEN("The mailbox is not considered busy")
-						{
-							REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-						}
-
-						AND_THEN("The mailbox is considered readable")
-						{
-							REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
-						}
-
-						AND_THEN("The mailbox is considered partially filled")
-						{
-							REQUIRE_FALSE(V2MP_DevicePort_IsMailboxEmpty(port));
-							REQUIRE_FALSE(V2MP_DevicePort_IsMailboxFull(port));
-							REQUIRE(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MAILBOX_MESSAGE));
-							REQUIRE(V2MP_DevicePort_MailboxBytesFree(port) == MAILBOX_SIZE - sizeof(MAILBOX_MESSAGE));
-							REQUIRE_FALSE(V2MP_Device_IsConnectedMailboxEmpty(device));
-							REQUIRE_FALSE(V2MP_Device_IsConnectedMailboxFull(device));
-							REQUIRE(V2MP_Device_UsedBytesInConnectedMailbox(device) == sizeof(MAILBOX_MESSAGE));
-							REQUIRE(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE - sizeof(MAILBOX_MESSAGE));
+							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+							CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
+							CHECK_FALSE(V2MP_DevicePort_IsMailboxEmpty(port));
+							CHECK_FALSE(V2MP_DevicePort_IsMailboxFull(port));
+							CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MAILBOX_MESSAGE));
+							CHECK(V2MP_DevicePort_MailboxBytesFree(port) == MAILBOX_SIZE - sizeof(MAILBOX_MESSAGE));
+							CHECK_FALSE(V2MP_Device_IsConnectedMailboxEmpty(device));
+							CHECK_FALSE(V2MP_Device_IsConnectedMailboxFull(device));
+							CHECK(V2MP_Device_UsedBytesInConnectedMailbox(device) == sizeof(MAILBOX_MESSAGE));
+							CHECK(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE - sizeof(MAILBOX_MESSAGE));
 						}
 
 						AND_WHEN("The device relinquishes the mailbox without having control of it")
@@ -312,7 +244,7 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 							THEN("The result of the function should be false")
 							{
-								REQUIRE_FALSE(secondRelinquish);
+								CHECK_FALSE(secondRelinquish);
 							}
 						}
 					}
@@ -324,29 +256,17 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 					THEN("The mailbox is considered controlled by the program")
 					{
-						REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
-					}
-
-					AND_THEN("The mailbox is not considered busy")
-					{
-						REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
-					}
-
-					AND_THEN("The mailbox is considered writeable")
-					{
-						REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE);
-					}
-
-					AND_THEN("The mailbox is considered empty")
-					{
-						REQUIRE(V2MP_DevicePort_IsMailboxEmpty(port));
-						REQUIRE_FALSE(V2MP_DevicePort_IsMailboxFull(port));
-						REQUIRE(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
-						REQUIRE(V2MP_DevicePort_MailboxBytesFree(port) == MAILBOX_SIZE);
-						REQUIRE(V2MP_Device_IsConnectedMailboxEmpty(device));
-						REQUIRE_FALSE(V2MP_Device_IsConnectedMailboxFull(device));
-						REQUIRE(V2MP_Device_UsedBytesInConnectedMailbox(device) == 0);
-						REQUIRE(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE);
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE);
+						CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
+						CHECK_FALSE(V2MP_DevicePort_IsMailboxFull(port));
+						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
+						CHECK(V2MP_DevicePort_MailboxBytesFree(port) == MAILBOX_SIZE);
+						CHECK(V2MP_Device_IsConnectedMailboxEmpty(device));
+						CHECK_FALSE(V2MP_Device_IsConnectedMailboxFull(device));
+						CHECK(V2MP_Device_UsedBytesInConnectedMailbox(device) == 0);
+						CHECK(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE);
 					}
 
 					AND_WHEN("The device relinquishes the mailbox without having control of it")
@@ -355,7 +275,7 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 						THEN("The result of the function is false")
 						{
-							REQUIRE_FALSE(secondRelinquish);
+							CHECK_FALSE(secondRelinquish);
 						}
 					}
 
@@ -369,19 +289,15 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 						THEN("No bytes are written to the mailbox")
 						{
-							REQUIRE(written == 0);
-						}
-
-						AND_THEN("The mailbox is considered empty")
-						{
-							REQUIRE(V2MP_DevicePort_IsMailboxEmpty(port));
-							REQUIRE_FALSE(V2MP_DevicePort_IsMailboxFull(port));
-							REQUIRE(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
-							REQUIRE(V2MP_DevicePort_MailboxBytesFree(port) == MAILBOX_SIZE);
-							REQUIRE(V2MP_Device_IsConnectedMailboxEmpty(device));
-							REQUIRE_FALSE(V2MP_Device_IsConnectedMailboxFull(device));
-							REQUIRE(V2MP_Device_UsedBytesInConnectedMailbox(device) == 0);
-							REQUIRE(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE);
+							CHECK(written == 0);
+							CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
+							CHECK_FALSE(V2MP_DevicePort_IsMailboxFull(port));
+							CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
+							CHECK(V2MP_DevicePort_MailboxBytesFree(port) == MAILBOX_SIZE);
+							CHECK(V2MP_Device_IsConnectedMailboxEmpty(device));
+							CHECK_FALSE(V2MP_Device_IsConnectedMailboxFull(device));
+							CHECK(V2MP_Device_UsedBytesInConnectedMailbox(device) == 0);
+							CHECK(V2MP_Device_FreeBytesInConnectedMailbox(device) == MAILBOX_SIZE);
 						}
 					}
 				}
