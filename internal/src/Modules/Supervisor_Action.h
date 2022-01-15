@@ -34,12 +34,13 @@ typedef struct V2MP_Supervisor_Action
 #define SVACTION_DPQ_ARG_PORT(actionPtr) ((actionPtr)->args[0])
 #define SVACTION_DPQ_ARG_QUERY_TYPE(actionPtr) ((actionPtr)->args[1])
 
-#define SVACTION_DDT_ARG_PORT(actionPtr) ((actionPtr)->args[0])
-#define SVACTION_DDT_ARG_DS_ADDR(actionPtr) ((actionPtr)->args[1])
-#define SVACTION_DDT_ARG_DS_SIZE(actionPtr) ((actionPtr)->args[2])
-#define SVACTION_DDT_ARG_FLAGS(actionPtr) ((actionPtr)->args[3])
-#define SVACTION_DDT_FLAG_IS_MB_WRITE (1 << 0)
-#define SVACTION_DDT_FLAG_IS_IN_PROGRESS (1 << 1)
+#define SVACTION_DEVDT_ARG_PORT(actionPtr) ((actionPtr)->args[0])
+#define SVACTION_DEVDT_ARG_DS_ADDR(actionPtr) ((actionPtr)->args[1])
+#define SVACTION_DEVDT_ARG_DS_SIZE(actionPtr) ((actionPtr)->args[2])
+#define SVACTION_DEVDT_ARG_FLAGS(actionPtr) ((actionPtr)->args[3])
+#define SVACTION_DEVDT_FLAG_IS_MB_WRITE (1 << 0)
+#define SVACTION_DEVDT_FLAG_IS_IN_PROGRESS (1 << 1)
+#define SVACTION_DEVDT_FLAG_IS_INDIRECT (1 << 2)
 
 #define SVACTION_RELINQUISH_MAILBOX_ARG_PORT(actionPtr) ((actionPtr)->args[0])
 

@@ -509,11 +509,11 @@ If the operation is attempted when the mailbox is not readable or is busy, an [`
 
 **Direct Data Transfer**
 
-If operand bit `[11] (A)` is `0`, a direct data transfer is performed for the read. A  little-endian word of data is read from the device port's mailbox and placed into `LR`. If the mailbox only contained one byte of data, the second byte read into `LR` is always `00h`. The number of bytes read (either `1` or `2`) is placed into `R1`.
+If operand bit `[11] (A)` is `0`, a direct data transfer is performed for the read. A  little-endian word of data is read from the device port's mailbox and placed into `LR`. If the mailbox only contained one byte of data, the most significant byte read into `LR` is always `00h`. The number of bytes read (either `1` or `2`) is placed into `R1`.
 
-After the instruction is executed, `SR[Z]` is set if there were two or more bytes in the mailbox at the point the read was executed, and is cleared if there was only one byte in the mailbox when the read was executed.
+After the instruction is executed, `SR[C]` is set if there were two or more bytes in the mailbox at the point the read was executed, and is cleared if there was only one byte in the mailbox when the read was executed.
 
-`SR[C]` is set if there were bytes left to read in the mailbox after the data transfer, and is cleared if there were no more bytes in the mailbox after the data transfer. `SR[C]` is always cleared if `SR[Z]` is cleared.
+`SR[Z]` is cleared if there were bytes left to read in the mailbox after the data transfer, and is set if there were no more bytes in the mailbox after the data transfer.
 
 **Indirect Data Transfer**
 
@@ -535,9 +535,9 @@ If operand bits `[1 0] (B)` are set to `11b (2h)`, the operation initiates a wri
 
 If operand bit `[11] (A)` is `0`, a direct data transfer is performed for the write. A  little-endian word of data is written to the device port's mailbox from `LR`. If the mailbox only has one byte of writable space left, the lower byte of `LR` is written to the mailbox, and the upper byte is discarded. The number of bytes written (either `1` or `2`) is placed into `R1`.
 
-After the instruction is executed, `SR[Z]` is set if there were no more free bytes in the mailbox after the write, and is cleared if there were free bytes still available in the mailbox after the write.
+After the instruction is executed, `SR[Z]` is set if there is no more space left in the mailbox after the write, and is cleared if there are free bytes still available in the mailbox after the write.
 
-`SR[C]` is set if there were more bytes specified in the write than there were free bytes in the mailbox, and is cleared if the entirety of the write fitted into the mailbox.
+`SR[C]` is set if the mailbox had fewer than `2` bytes available, and is cleared if the entirety of the written word fitted into the mailbox.
 
 **Indirect Data Transfer**
 

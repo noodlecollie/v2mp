@@ -459,12 +459,16 @@ bool Execute_DPO(V2MP_CPU* cpu)
 
 		case V2MP_DPOT_READ:
 		{
-			return V2MP_CPU_DPO_Read(cpu);
+			return V2MP_OP_DPO_INDIRECT_TRANSFER(cpu->ir)
+				? V2MP_CPU_DPO_Read_IDT(cpu)
+				: V2MP_CPU_DPO_Read_DDT(cpu);
 		}
 
 		case V2MP_DPOT_WRITE:
 		{
-			return V2MP_CPU_DPO_Write(cpu);
+			return V2MP_OP_DPO_INDIRECT_TRANSFER(cpu->ir)
+				? V2MP_CPU_DPO_Write_IDT(cpu)
+				: V2MP_CPU_DPO_Write_DDT(cpu);
 		}
 
 		default:

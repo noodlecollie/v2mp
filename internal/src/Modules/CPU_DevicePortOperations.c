@@ -22,7 +22,22 @@ bool V2MP_CPU_DPO_RelinquishMailbox(V2MP_CPU* cpu)
 	return true;
 }
 
-bool V2MP_CPU_DPO_Read(V2MP_CPU* cpu)
+bool V2MP_CPU_DPO_Read_DDT(V2MP_CPU* cpu)
+{
+	if ( !cpu->supervisorInterface.requestDevicePortDirectRead )
+	{
+		return false;
+	}
+
+	cpu->supervisorInterface.requestDevicePortDirectRead(
+		cpu->supervisorInterface.supervisor,
+		cpu->r0
+	);
+
+	return true;
+}
+
+bool V2MP_CPU_DPO_Read_IDT(V2MP_CPU* cpu)
 {
 	if ( !cpu->supervisorInterface.requestDevicePortIndirectRead )
 	{
@@ -39,7 +54,22 @@ bool V2MP_CPU_DPO_Read(V2MP_CPU* cpu)
 	return true;
 }
 
-bool V2MP_CPU_DPO_Write(V2MP_CPU* cpu)
+bool V2MP_CPU_DPO_Write_DDT(V2MP_CPU* cpu)
+{
+	if ( !cpu->supervisorInterface.requestDevicePortDirectWrite )
+	{
+		return false;
+	}
+
+	cpu->supervisorInterface.requestDevicePortDirectWrite(
+		cpu->supervisorInterface.supervisor,
+		cpu->r0
+	);
+
+	return true;
+}
+
+bool V2MP_CPU_DPO_Write_IDT(V2MP_CPU* cpu)
 {
 	if ( !cpu->supervisorInterface.requestDevicePortIndirectWrite )
 	{

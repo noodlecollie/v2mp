@@ -204,6 +204,26 @@ void V2MP_Supervisor_PerformDevicePortQuery(V2MP_Supervisor* supervisor, V2MP_Wo
 	SVACTION_DPQ_ARG_QUERY_TYPE(action) = queryType;
 }
 
+void V2MP_Supervisor_RequestDevicePortDirectRead(
+	V2MP_Supervisor* supervisor,
+	V2MP_Word port
+)
+{
+	V2MP_Supervisor_Action* action;
+
+	action = V2MP_Supervisor_CreateNewAction(supervisor);
+
+	if ( !action )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, SVAT_DEVICE_DATA_TRANSFER));
+		return;
+	}
+
+	action->actionType = SVAT_DEVICE_DATA_TRANSFER;
+	SVACTION_DEVDT_ARG_PORT(action) = port;
+	SVACTION_DEVDT_ARG_FLAGS(action) = 0;
+}
+
 void V2MP_Supervisor_RequestDevicePortIndirectRead(
 	V2MP_Supervisor* supervisor,
 	V2MP_Word port,
@@ -222,10 +242,30 @@ void V2MP_Supervisor_RequestDevicePortIndirectRead(
 	}
 
 	action->actionType = SVAT_DEVICE_DATA_TRANSFER;
-	SVACTION_DDT_ARG_PORT(action) = port;
-	SVACTION_DDT_ARG_DS_ADDR(action) = dsDestAddress;
-	SVACTION_DDT_ARG_DS_SIZE(action) = dsMaxBytes;
-	SVACTION_DDT_ARG_FLAGS(action) = 0;
+	SVACTION_DEVDT_ARG_PORT(action) = port;
+	SVACTION_DEVDT_ARG_DS_ADDR(action) = dsDestAddress;
+	SVACTION_DEVDT_ARG_DS_SIZE(action) = dsMaxBytes;
+	SVACTION_DEVDT_ARG_FLAGS(action) = SVACTION_DEVDT_FLAG_IS_INDIRECT;
+}
+
+void V2MP_Supervisor_RequestDevicePortDirectWrite(
+	V2MP_Supervisor* supervisor,
+	V2MP_Word port
+)
+{
+	V2MP_Supervisor_Action* action;
+
+	action = V2MP_Supervisor_CreateNewAction(supervisor);
+
+	if ( !action )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, SVAT_DEVICE_DATA_TRANSFER));
+		return;
+	}
+
+	action->actionType = SVAT_DEVICE_DATA_TRANSFER;
+	SVACTION_DEVDT_ARG_PORT(action) = port;
+	SVACTION_DEVDT_ARG_FLAGS(action) = SVACTION_DEVDT_FLAG_IS_MB_WRITE;
 }
 
 void V2MP_Supervisor_RequestDevicePortIndirectWrite(
@@ -246,10 +286,10 @@ void V2MP_Supervisor_RequestDevicePortIndirectWrite(
 	}
 
 	action->actionType = SVAT_DEVICE_DATA_TRANSFER;
-	SVACTION_DDT_ARG_PORT(action) = port;
-	SVACTION_DDT_ARG_DS_ADDR(action) = dsSrcAddress;
-	SVACTION_DDT_ARG_DS_SIZE(action) = dsMaxBytes;
-	SVACTION_DDT_ARG_FLAGS(action) = SVACTION_DDT_FLAG_IS_MB_WRITE;
+	SVACTION_DEVDT_ARG_PORT(action) = port;
+	SVACTION_DEVDT_ARG_DS_ADDR(action) = dsSrcAddress;
+	SVACTION_DEVDT_ARG_DS_SIZE(action) = dsMaxBytes;
+	SVACTION_DEVDT_ARG_FLAGS(action) = SVACTION_DEVDT_FLAG_IS_MB_WRITE | SVACTION_DEVDT_FLAG_IS_INDIRECT;
 }
 
 void V2MP_Supervisor_RequestRelinquishMailbox(V2MP_Supervisor* supervisor, V2MP_Word port)

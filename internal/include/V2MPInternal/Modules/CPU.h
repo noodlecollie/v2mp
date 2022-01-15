@@ -25,17 +25,27 @@ typedef struct V2MP_CPU_SupervisorInterface
 	void (*performDevicePortQuery)(void* supervisor, V2MP_Word port, V2MP_Word queryType);
 
 	// DPO
+	void (*requestDevicePortDirectRead)(
+		void* supervisor,
+		V2MP_Word port
+	);
+
 	void (*requestDevicePortIndirectRead)(
 		void* supervisor,
 		V2MP_Word port,
-		V2MP_Word dsSrcAddress,
+		V2MP_Word dsDestAddress,
 		V2MP_Word dsMaxBytes
+	);
+
+	void (*requestDevicePortDirectWrite)(
+		void* supervisor,
+		V2MP_Word port
 	);
 
 	void (*requestDevicePortIndirectWrite)(
 		void* supervisor,
 		V2MP_Word port,
-		V2MP_Word dsDestAddress,
+		V2MP_Word dsSrcAddress,
 		V2MP_Word dsMaxBytes
 	);
 

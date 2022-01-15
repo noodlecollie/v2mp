@@ -202,7 +202,171 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 	}
 }
 
-SCENARIO("DPO: Attempting to write from a buffer of length zero should raise an IDO fault", "[instructions]")
+SCENARIO("DPO: Performing a DDT write should transfer the data to a mailbox", "[instructions]")
+{
+	GIVEN("A virtual machine")
+	{
+		static constexpr V2MP_Word PORT_ADDRESS = 1234;
+		static constexpr V2MP_Word MESSAGE_WORD = 0xF00D;
+
+		TestHarnessVM vm;
+
+		AND_GIVEN("A port with an empty mailbox which is larger than two bytes in capacity")
+		{
+			static constexpr size_t MAILBOX_SIZE = 4;
+
+			V2MP_DevicePort* port = vm.CreatePort(PORT_ADDRESS);
+			REQUIRE(port);
+
+			std::shared_ptr<SinkMockDevice> device = vm.ConnectMockDeviceToPort<SinkMockDevice>(PORT_ADDRESS);
+			REQUIRE(device);
+
+			REQUIRE(device->AllocateConnectedMailbox(MAILBOX_SIZE));
+			REQUIRE(device->RelinquishConnectedMailbox());
+
+			WHEN("A DPO instruction is executed to perform a DDT write to the mailbox")
+			{
+				vm.SetR0(PORT_ADDRESS);
+				vm.SetLR(MESSAGE_WORD);
+
+				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::WRITE, false)));
+				REQUIRE_FALSE(vm.CPUHasFault());
+
+				THEN("The mailbox is written to and remains writeable")
+				{
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE);
+					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE_WORD));
+				}
+
+				AND_WHEN("The program relinquishes the mailbox")
+				{
+					REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::RELINQUISH_MAILBOX, true)));
+					REQUIRE_FALSE(vm.CPUHasFault());
+
+					THEN("The mailbox contains the entire message word")
+					{
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
+						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE_WORD));
+
+						std::vector<V2MP_Byte> outBuffer;
+						device->CopyAllDataFromMailbox(outBuffer);
+
+						CHECK(outBuffer.size() == sizeof(MESSAGE_WORD));
+						CHECK(memcmp(outBuffer.data(), &MESSAGE_WORD, outBuffer.size()) == 0);
+					}
+				}
+			}
+		}
+
+		AND_GIVEN("A port with an empty mailbox which is exactly two bytes in capacity")
+		{
+			static constexpr size_t MAILBOX_SIZE = 2;
+
+			V2MP_DevicePort* port = vm.CreatePort(PORT_ADDRESS);
+			REQUIRE(port);
+
+			std::shared_ptr<SinkMockDevice> device = vm.ConnectMockDeviceToPort<SinkMockDevice>(PORT_ADDRESS);
+			REQUIRE(device);
+
+			REQUIRE(device->AllocateConnectedMailbox(MAILBOX_SIZE));
+			REQUIRE(device->RelinquishConnectedMailbox());
+
+			WHEN("A DPO instruction is executed to perform a DDT write to the mailbox")
+			{
+				vm.SetR0(PORT_ADDRESS);
+				vm.SetLR(MESSAGE_WORD);
+
+				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::WRITE, false)));
+				REQUIRE_FALSE(vm.CPUHasFault());
+
+				THEN("The mailbox is written to and becomes exhausted")
+				{
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
+					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE_WORD));
+				}
+
+				AND_WHEN("The program relinquishes the mailbox")
+				{
+					REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::RELINQUISH_MAILBOX, true)));
+					REQUIRE_FALSE(vm.CPUHasFault());
+
+					THEN("The mailbox contains the entire message word")
+					{
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
+						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE_WORD));
+
+						std::vector<V2MP_Byte> outBuffer;
+						device->CopyAllDataFromMailbox(outBuffer);
+
+						CHECK(outBuffer.size() == sizeof(MESSAGE_WORD));
+						CHECK(memcmp(outBuffer.data(), &MESSAGE_WORD, outBuffer.size()) == 0);
+					}
+				}
+			}
+		}
+
+		AND_GIVEN("A port with an empty mailbox which is exactly one byte in capacity")
+		{
+			static constexpr size_t MAILBOX_SIZE = 1;
+
+			V2MP_DevicePort* port = vm.CreatePort(PORT_ADDRESS);
+			REQUIRE(port);
+
+			std::shared_ptr<SinkMockDevice> device = vm.ConnectMockDeviceToPort<SinkMockDevice>(PORT_ADDRESS);
+			REQUIRE(device);
+
+			REQUIRE(device->AllocateConnectedMailbox(MAILBOX_SIZE));
+			REQUIRE(device->RelinquishConnectedMailbox());
+
+			WHEN("A DPO instruction is executed to perform a DDT write to the mailbox")
+			{
+				vm.SetR0(PORT_ADDRESS);
+				vm.SetLR(MESSAGE_WORD);
+
+				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::WRITE, false)));
+				REQUIRE_FALSE(vm.CPUHasFault());
+
+				THEN("The mailbox is written to and becomes exhausted")
+				{
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
+					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == 1);
+				}
+
+				AND_WHEN("The program relinquishes the mailbox")
+				{
+					REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::RELINQUISH_MAILBOX, true)));
+					REQUIRE_FALSE(vm.CPUHasFault());
+
+					THEN("The mailbox contains the first byte of the message word")
+					{
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
+						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
+						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == 1);
+
+						std::vector<V2MP_Byte> outBuffer;
+						device->CopyAllDataFromMailbox(outBuffer);
+
+						CHECK(outBuffer.size() == 1);
+						CHECK(memcmp(outBuffer.data(), &MESSAGE_WORD, outBuffer.size()) == 0);
+					}
+				}
+			}
+		}
+	}
+}
+
+SCENARIO("DPO: Attempting an IDT write from a buffer of length zero should raise an IDO fault", "[instructions]")
 {
 	GIVEN("A virtual machine with a message in DS")
 	{
@@ -257,7 +421,7 @@ SCENARIO("DPO: Attempting to write from a buffer of length zero should raise an 
 	}
 }
 
-SCENARIO("DPO: Writing to a mailbox should set the status register appropriately", "[instructions]")
+SCENARIO("DPO: Performing an IDT write to a mailbox should set the status register appropriately", "[instructions]")
 {
 	GIVEN("A virtual machine with a message in DS")
 	{
@@ -367,3 +531,5 @@ SCENARIO("DPO: Writing to a mailbox should set the status register appropriately
 		}
 	}
 }
+
+// TODO: Check state of all registers after instructions
