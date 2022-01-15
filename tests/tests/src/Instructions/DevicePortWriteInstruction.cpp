@@ -16,7 +16,7 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 		static constexpr V2MP_Word DS_ADDRESS = 0;
 
 		// Enough memory for two segments of equal size.
-		TestHarnessVM vm(2 * SEGMENT_SIZE_BYTES);
+		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
 		std::vector<V2MP_Word> cs;
 		cs.resize(1, 0);
@@ -58,7 +58,11 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE));
+
+						CHECK(vm.GetR0() == PORT_ADDRESS);
 						CHECK(vm.GetR1() == sizeof(MESSAGE));
+						CHECK(vm.GetLR() == DS_ADDRESS);
+						CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 					}
 
 					AND_WHEN("The program relinquishes the mailbox")
@@ -72,7 +76,11 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 							CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 							CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE));
+
+							CHECK(vm.GetR0() == PORT_ADDRESS);
 							CHECK(vm.GetR1() == sizeof(MESSAGE));
+							CHECK(vm.GetLR() == DS_ADDRESS);
+							CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 
 							std::vector<V2MP_Byte> outBuffer;
 							device->CopyAllDataFromMailbox(outBuffer);
@@ -107,7 +115,11 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE);
 						CHECK(V2MP_DevicePort_IsMailboxBusy(port));
 						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == BYTES_PER_CYCLE);
+
+						CHECK(vm.GetR0() == PORT_ADDRESS);
 						CHECK(vm.GetR1() == sizeof(MESSAGE));
+						CHECK(vm.GetLR() == DS_ADDRESS);
+						CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 					}
 
 					AND_WHEN("The program relinquishes the mailbox")
@@ -121,7 +133,11 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 							CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 							CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE));
+
+							CHECK(vm.GetR0() == PORT_ADDRESS);
 							CHECK(vm.GetR1() == sizeof(MESSAGE));
+							CHECK(vm.GetLR() == DS_ADDRESS);
+							CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 
 							std::vector<V2MP_Byte> outBuffer;
 							device->CopyAllDataFromMailbox(outBuffer);
@@ -155,7 +171,11 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE);
 						CHECK(V2MP_DevicePort_IsMailboxBusy(port));
 						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == BYTES_PER_CYCLE);
+
+						CHECK(vm.GetR0() == PORT_ADDRESS);
 						CHECK(vm.GetR1() == sizeof(MESSAGE));
+						CHECK(vm.GetLR() == DS_ADDRESS);
+						CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 					}
 
 					AND_WHEN("The program relinquishes the mailbox but the write has not completed yet")
@@ -169,7 +189,11 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 							CHECK(V2MP_DevicePort_IsMailboxBusy(port));
 							CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == 2 * BYTES_PER_CYCLE);
+
+							CHECK(vm.GetR0() == PORT_ADDRESS);
 							CHECK(vm.GetR1() == sizeof(MESSAGE));
+							CHECK(vm.GetLR() == DS_ADDRESS);
+							CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 						}
 
 						AND_WHEN("The program performs enough clock cycles for the write to complete")
@@ -186,7 +210,11 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 								CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 								CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 								CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE));
+
+								CHECK(vm.GetR0() == PORT_ADDRESS);
 								CHECK(vm.GetR1() == sizeof(MESSAGE));
+								CHECK(vm.GetLR() == DS_ADDRESS);
+								CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 
 								std::vector<V2MP_Byte> outBuffer;
 								device->CopyAllDataFromMailbox(outBuffer);
@@ -209,7 +237,7 @@ SCENARIO("DPO: Performing a DDT write should transfer the data to a mailbox", "[
 		static constexpr V2MP_Word PORT_ADDRESS = 1234;
 		static constexpr V2MP_Word MESSAGE_WORD = 0xF00D;
 
-		TestHarnessVM vm;
+		TestHarnessVM_StartsInvalid vm;
 
 		AND_GIVEN("A port with an empty mailbox which is larger than two bytes in capacity")
 		{
@@ -377,7 +405,7 @@ SCENARIO("DPO: Attempting an IDT write from a buffer of length zero should raise
 		static constexpr V2MP_Word DS_ADDRESS = 0;
 
 		// Enough memory for two segments of equal size.
-		TestHarnessVM vm(2 * SEGMENT_SIZE_BYTES);
+		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
 		std::vector<V2MP_Word> cs;
 		cs.resize(1, 0);
@@ -432,7 +460,7 @@ SCENARIO("DPO: Performing an IDT write to a mailbox should set the status regist
 		static constexpr V2MP_Word DS_ADDRESS = 0;
 
 		// Enough memory for two segments of equal size.
-		TestHarnessVM vm(2 * SEGMENT_SIZE_BYTES);
+		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
 		std::vector<V2MP_Word> cs;
 		cs.resize(1, 0);
@@ -531,5 +559,3 @@ SCENARIO("DPO: Performing an IDT write to a mailbox should set the status regist
 		}
 	}
 }
-
-// TODO: Check state of all registers after instructions

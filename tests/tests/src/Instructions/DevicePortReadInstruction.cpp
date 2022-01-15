@@ -42,7 +42,7 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 		static constexpr size_t MAILBOX_SIZE = 64;
 
 		// Enough memory for two segments of equal size.
-		TestHarnessVM vm(2 * SEGMENT_SIZE_BYTES);
+		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
 		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD));
 
@@ -80,7 +80,11 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 						CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
+
+						CHECK(vm.GetR0() == PORT_ADDRESS);
 						CHECK(vm.GetR1() == sizeof(MESSAGE));
+						CHECK(vm.GetLR() == DS_ADDRESS);
+						CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 
 						std::vector<V2MP_Byte> dsData;
 
@@ -120,7 +124,11 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
 						CHECK(V2MP_DevicePort_IsMailboxBusy(port));
 						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE) - BYTES_PER_CYCLE);
+
+						CHECK(vm.GetR0() == PORT_ADDRESS);
 						CHECK(vm.GetR1() == sizeof(MESSAGE));
+						CHECK(vm.GetLR() == DS_ADDRESS);
+						CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 
 						std::vector<V2MP_Byte> dsData;
 
@@ -146,7 +154,11 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 							CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 							CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
+
+							CHECK(vm.GetR0() == PORT_ADDRESS);
 							CHECK(vm.GetR1() == sizeof(MESSAGE));
+							CHECK(vm.GetLR() == DS_ADDRESS);
+							CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 
 							std::vector<V2MP_Byte> dsData;
 
@@ -174,7 +186,7 @@ SCENARIO("DPO: Performing a DDT read from a device mailbox should transfer the d
 		static constexpr V2MP_Word PORT_ADDRESS = 1234;
 		static constexpr size_t MAILBOX_SIZE = 64;
 
-		TestHarnessVM vm;
+		TestHarnessVM_StartsInvalid vm;
 
 		AND_GIVEN("A port with a message in its mailbox which is more than two bytes long")
 		{
@@ -203,8 +215,11 @@ SCENARIO("DPO: Performing a DDT read from a device mailbox should transfer the d
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE) - sizeof(V2MP_Word));
+
+					CHECK(vm.GetR0() == PORT_ADDRESS);
 					CHECK(vm.GetR1() == sizeof(V2MP_Word));
 					CHECK(vm.GetLR() == LEWord(MESSAGE[0], MESSAGE[1]));
+					CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				}
 			}
 		}
@@ -236,8 +251,11 @@ SCENARIO("DPO: Performing a DDT read from a device mailbox should transfer the d
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE) - sizeof(V2MP_Word));
+
+					CHECK(vm.GetR0() == PORT_ADDRESS);
 					CHECK(vm.GetR1() == sizeof(V2MP_Word));
 					CHECK(vm.GetLR() == LEWord(MESSAGE[0], MESSAGE[1]));
+					CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				}
 			}
 		}
@@ -269,8 +287,11 @@ SCENARIO("DPO: Performing a DDT read from a device mailbox should transfer the d
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
+
+					CHECK(vm.GetR0() == PORT_ADDRESS);
 					CHECK(vm.GetR1() == 1);
 					CHECK(vm.GetLR() == LEWord(MESSAGE[0], 0));
+					CHECK(vm.GetPC() == TestHarnessVM_StartsInvalid::INVALID_WORD);
 				}
 			}
 		}
@@ -288,7 +309,7 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox into a memory buffer
 		static constexpr size_t MAILBOX_SIZE = 128;
 
 		// Enough memory for two segments of equal size.
-		TestHarnessVM vm(2 * SEGMENT_SIZE_BYTES);
+		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
 		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD));
 
@@ -349,7 +370,7 @@ SCENARIO("DPO: Relinquishing a readable mailbox should discard any remaining byt
 		static constexpr size_t MAILBOX_SIZE = 64;
 
 		// Enough memory for two segments of equal size.
-		TestHarnessVM vm(2 * SEGMENT_SIZE_BYTES);
+		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
 		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD));
 
@@ -422,7 +443,7 @@ SCENARIO("DPO: Atempting an IDT read into a buffer of length zero should raise a
 		static constexpr size_t MAILBOX_SIZE = 64;
 
 		// Enough memory for two segments of equal size.
-		TestHarnessVM vm(2 * SEGMENT_SIZE_BYTES);
+		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
 		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, 0));
 
@@ -474,7 +495,7 @@ SCENARIO("DPO: Performing any kind of read from a mailbox that is not readable s
 		static constexpr size_t MAILBOX_SIZE = 64;
 
 		// Enough memory for two segments of equal size.
-		TestHarnessVM vm(2 * SEGMENT_SIZE_BYTES);
+		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
 		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD));
 
@@ -541,7 +562,7 @@ SCENARIO("DPO: Performing an IDT read from a mailbox should set the status regis
 		static constexpr size_t MAILBOX_SIZE = 64;
 
 		// Enough memory for two segments of equal size.
-		TestHarnessVM vm(2 * SEGMENT_SIZE_BYTES);
+		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
 		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD));
 
@@ -623,7 +644,7 @@ SCENARIO("DPO: Performing a DDT read from a mailbox should set the status regist
 		static constexpr size_t MAILBOX_SIZE = 64;
 
 		// Enough memory for two segments of equal size.
-		TestHarnessVM vm(2 * SEGMENT_SIZE_BYTES);
+		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
 		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD));
 
@@ -699,5 +720,3 @@ SCENARIO("DPO: Performing a DDT read from a mailbox should set the status regist
 		}
 	}
 }
-
-// TODO: Check state of all registers after instructions
