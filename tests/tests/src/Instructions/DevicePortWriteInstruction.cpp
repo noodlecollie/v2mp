@@ -257,4 +257,113 @@ SCENARIO("DPO: Attempting to write from a buffer of length zero should raise an 
 	}
 }
 
-// TODO: Status register checks
+SCENARIO("DPO: Writing to a mailbox should set the status register appropriately", "[instructions]")
+{
+	GIVEN("A virtual machine with a message in DS")
+	{
+		static constexpr const char MESSAGE[] = "Mailbox message";
+		static constexpr V2MP_Word PORT_ADDRESS = 1234;
+		static constexpr size_t SEGMENT_SIZE_WORDS = 128;
+		static constexpr size_t SEGMENT_SIZE_BYTES = SEGMENT_SIZE_WORDS * sizeof(V2MP_Word);
+		static constexpr V2MP_Word DS_ADDRESS = 0;
+
+		// Enough memory for two segments of equal size.
+		TestHarnessVM vm(2 * SEGMENT_SIZE_BYTES);
+
+		std::vector<V2MP_Word> cs;
+		cs.resize(1, 0);
+
+		std::vector<V2MP_Word> ds;
+		ds.resize(sizeof(MESSAGE));
+		memcpy(ds.data(), MESSAGE, ds.size());
+
+		REQUIRE(vm.SetCSAndDS(cs, ds));
+
+		AND_GIVEN("A port with an empty mailbox which is the size of the intended message")
+		{
+			V2MP_DevicePort* port = vm.CreatePort(PORT_ADDRESS);
+			REQUIRE(port);
+
+			std::shared_ptr<SinkMockDevice> device = vm.ConnectMockDeviceToPort<SinkMockDevice>(PORT_ADDRESS);
+			REQUIRE(device);
+
+			REQUIRE(device->AllocateConnectedMailbox(sizeof(MESSAGE)));
+			REQUIRE(device->RelinquishConnectedMailbox());
+
+			WHEN("A DPO instruction is executed to write the message to the mailbox")
+			{
+				vm.SetR0(PORT_ADDRESS);
+				vm.SetLR(DS_ADDRESS);
+				vm.SetR1(sizeof(MESSAGE));
+
+				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::WRITE, true)));
+				REQUIRE_FALSE(vm.CPUHasFault());
+
+				THEN("The status register is set appropriately")
+				{
+					CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+					CHECK((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				}
+			}
+		}
+
+		AND_GIVEN("A port with an empty mailbox which is larger than the intended message")
+		{
+			V2MP_DevicePort* port = vm.CreatePort(PORT_ADDRESS);
+			REQUIRE(port);
+
+			std::shared_ptr<SinkMockDevice> device = vm.ConnectMockDeviceToPort<SinkMockDevice>(PORT_ADDRESS);
+			REQUIRE(device);
+
+			REQUIRE(device->AllocateConnectedMailbox(sizeof(MESSAGE) + 5));
+			REQUIRE(device->RelinquishConnectedMailbox());
+
+			WHEN("A DPO instruction is executed to write the message to the mailbox")
+			{
+				vm.SetR0(PORT_ADDRESS);
+				vm.SetLR(DS_ADDRESS);
+				vm.SetR1(sizeof(MESSAGE));
+
+				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::WRITE, true)));
+				REQUIRE_FALSE(vm.CPUHasFault());
+
+				THEN("The status register is set appropriately")
+				{
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				}
+			}
+		}
+
+		AND_GIVEN("A port with an empty mailbox which is smaller than the intended message")
+		{
+			V2MP_DevicePort* port = vm.CreatePort(PORT_ADDRESS);
+			REQUIRE(port);
+
+			std::shared_ptr<SinkMockDevice> device = vm.ConnectMockDeviceToPort<SinkMockDevice>(PORT_ADDRESS);
+			REQUIRE(device);
+
+			REQUIRE(device->AllocateConnectedMailbox(sizeof(MESSAGE) - 5));
+			REQUIRE(device->RelinquishConnectedMailbox());
+
+			WHEN("A DPO instruction is executed to write the message to the mailbox")
+			{
+				vm.SetR0(PORT_ADDRESS);
+				vm.SetLR(DS_ADDRESS);
+				vm.SetR1(sizeof(MESSAGE));
+
+				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::WRITE, true)));
+				REQUIRE_FALSE(vm.CPUHasFault());
+
+				THEN("The status register is set appropriately")
+				{
+					CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+					CHECK((vm.GetSR() & Asm::SR_C) != 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				}
+			}
+		}
+	}
+}

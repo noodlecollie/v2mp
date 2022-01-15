@@ -348,4 +348,85 @@ SCENARIO("DPO: Atempting to read into a buffer of length zero should raise an ID
 	}
 }
 
-// TODO: Status register checks
+SCENARIO("DPO: Reading from a mailbox should set the status register appropriately", "[instructions]")
+{
+	GIVEN("A virtual machine")
+	{
+		static constexpr V2MP_Word PORT_ADDRESS = 1234;
+		static constexpr size_t SEGMENT_SIZE_WORDS = 128;
+		static constexpr size_t SEGMENT_SIZE_BYTES = SEGMENT_SIZE_WORDS * sizeof(V2MP_Word);
+		static constexpr V2MP_Word DS_ADDRESS = 0;
+		static constexpr size_t MAILBOX_SIZE = 64;
+
+		// Enough memory for two segments of equal size.
+		TestHarnessVM vm(2 * SEGMENT_SIZE_BYTES);
+
+		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD));
+
+		AND_GIVEN("A port with a message in its mailbox")
+		{
+			static constexpr const char MESSAGE[] = "Mailbox message";
+
+			V2MP_DevicePort* port = vm.CreatePort(PORT_ADDRESS);
+			REQUIRE(port);
+
+			std::shared_ptr<EmitterMockDevice> device = vm.ConnectMockDeviceToPort<EmitterMockDevice>(PORT_ADDRESS);
+			REQUIRE(device);
+
+			REQUIRE(device->AllocateConnectedMailbox(MAILBOX_SIZE));
+			REQUIRE(device->WriteToConnectedMailbox(MESSAGE) == sizeof(MESSAGE));
+			REQUIRE(device->RelinquishConnectedMailbox());
+
+			WHEN("A DPO instruction is executed to perform an IDT read from the mailbox into a buffer of the exact size of the message")
+			{
+				vm.SetR0(PORT_ADDRESS);
+				vm.SetLR(DS_ADDRESS);
+				vm.SetR1(static_cast<V2MP_Word>(sizeof(MESSAGE)));
+
+				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::READ, true)));
+				REQUIRE_FALSE(vm.CPUHasFault());
+
+				THEN("The status register is set appropriately")
+				{
+					CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+					CHECK((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				}
+			}
+
+			AND_WHEN("A DPO instruction is executed to perform an IDT read from the mailbox into a buffer larger than the message")
+			{
+				vm.SetR0(PORT_ADDRESS);
+				vm.SetLR(DS_ADDRESS);
+				vm.SetR1(static_cast<V2MP_Word>(sizeof(MESSAGE) + 5));
+
+				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::READ, true)));
+				REQUIRE_FALSE(vm.CPUHasFault());
+
+				THEN("The status register is set appropriately")
+				{
+					CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+					CHECK((vm.GetSR() & Asm::SR_C) != 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				}
+			}
+
+			AND_WHEN("A DPO instruction is executed to perform an IDT read from the mailbox into a buffer smaller than the message")
+			{
+				vm.SetR0(PORT_ADDRESS);
+				vm.SetLR(DS_ADDRESS);
+				vm.SetR1(static_cast<V2MP_Word>(sizeof(MESSAGE) - 5));
+
+				REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::READ, true)));
+				REQUIRE_FALSE(vm.CPUHasFault());
+
+				THEN("The status register is set appropriately")
+				{
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				}
+			}
+		}
+	}
+}

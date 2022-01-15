@@ -523,9 +523,9 @@ Once the instruction is executed, the mailbox becomes busy, and the supervisor b
 
 While the mailbox is busy, the data buffer originally pointed to by `R1` should not be accessed by the CPU, or undefined behaviour may result. Once the mailbox is no longer busy, the indirect data transfer has ended and the memory may be safely accessed.
 
-After the instruction is executed, `SR[C]` is cleared if the number of bytes being read in the data transfer exactly matches the maximum number of bytes originally specified by `R1`. `SR[C]` is set if the number of bytes being read in the data transfer is less than the maximum number of bytes originally specified by `R1`.
+After the instruction is executed, `SR[Z]` is set if there will be no more bytes left in the mailbox after the read operation completes, and is cleared if there will still be bytes in the mailbox after the operation.
 
-`SR[Z]` is cleared if there will be bytes left to read in the mailbox after the data transfer completes, and is set if there will be no more bytes in the mailbox after the data transfer completes.
+`SR[C]` is cleared if the buffer in `DS` will be completely filled by the data being transferred from the mailbox, and is set if the buffer will not be completely filled.
 
 #### Write (`11b`)
 
