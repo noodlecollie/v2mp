@@ -16,14 +16,13 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Build and install unit tests
+    - name: Build and run unit tests
       uses: ashutoshvarma/action-cmake-build@master
       with:
         build-dir: ${{runner.workspace}}/build
         cc: gcc
         cxx: g++
         build-type: Release
-        configure-options: -DCMAKE_INSTALL_PREFIX=build/install -DBUILD_SHARED_LIBS=NO -DBUILD_TESTING=YES
         run-test: true
         ctest-options: -j8 --output-on-failure
         install-build: false
