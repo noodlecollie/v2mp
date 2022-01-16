@@ -16,18 +16,15 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Build and install unit tests
+    - name: Build and run unit tests
       uses: ashutoshvarma/action-cmake-build@master
       with:
         build-dir: ${{runner.workspace}}/build
         cc: gcc
         cxx: g++
         build-type: Release
-        configure-options: -DCMAKE_INSTALL_PREFIX=build/install -DBUILD_SHARED_LIBS=NO -DBUILD_TESTS=YES
-        # TODO: We should get the unit testst to run with ctest, I've not used it before
-        # run-test: true
-        # ctest-options: -R mytest
-        install-build: true
+        configure-options: -DBUILD_TESTING=YES
+        run-test: true
+        ctest-options: -j8 --output-on-failure
+        install-build: false
         parallel: 14
-    - name: Run unit tests
-      run: "${{runner.workspace}}/v2mp/build/install/V2MP_Tests/bin/V2MP_Tests"
