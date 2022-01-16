@@ -66,10 +66,4 @@ endif()
 
 add_subdirectory(v2mp)
 add_subdirectory(internal)
-
-if(BUILD_TESTS)
-	if(BUILD_SHARED_LIBS)
-		message(FATAL_ERROR "Linking tests against a shared library is not currently supported. Set BUILD_SHARED_LIBS to FALSE.")
-	endif()
-	add_subdirectory(tests)
-endif()
+add_subdirectory(tests)
