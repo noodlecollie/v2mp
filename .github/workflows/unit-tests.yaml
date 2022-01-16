@@ -2,8 +2,7 @@ name: Unit Tests
 
 on:
   push:
-    # TODO: Remove non-master branches
-    branches: [ master, create-ci-actions ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -24,7 +23,7 @@ jobs:
         cc: gcc
         cxx: g++
         build-type: Release
-        configure-options: -DCMAKE_PREFIX_PATH="${{runner.workspace}}/build/install" -DBUILD_SHARED_LIBS=NO -DBUILD_TESTS=YES
+        configure-options: -DCMAKE_INSTALL_PREFIX="${{runner.workspace}}/build/install" -DBUILD_SHARED_LIBS=NO -DBUILD_TESTS=YES
         # TODO: We should get the unit testst to run with ctest, I've not used it before
         # run-test: true
         # ctest-options: -R mytest
