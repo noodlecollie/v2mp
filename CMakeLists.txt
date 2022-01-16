@@ -34,7 +34,11 @@ set(TARGETNAME_V2MP V2MP)
 set(TARGETNAME_V2MP_INTERNAL V2MPInternal)
 
 option(BUILD_SHARED_LIBS "If set, builds shared libraries; otherwise, builds static libraries." YES)
-option(BUILD_TESTS "If set, test suite is built." NO)
+option(BUILD_TESTING "If set, builds tests and links with Catch2" NO)
+
+if(BUILD_TESTING)
+	enable_testing()
+endif()
 
 # Store Git hash in VCS_COMMIT_ID
 execute_process(
