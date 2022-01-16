@@ -23,6 +23,7 @@ jobs:
         cc: gcc
         cxx: g++
         build-type: Release
+        configure-options: -DBUILD_TESTING=YES
         run-test: true
         ctest-options: -j8 --output-on-failure
         install-build: false
