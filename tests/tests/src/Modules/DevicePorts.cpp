@@ -130,7 +130,7 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 			THEN("The mailbox is still considered controlled by a device")
 			{
-				CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+				CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_DEVICE);
 				CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 				CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 				CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
@@ -152,7 +152,7 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 			THEN("The mailbox is considered controlled by the device")
 			{
-				CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+				CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_DEVICE);
 				CHECK(V2MP_Device_ControlsConnectedMailbox(device));
 				CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 				CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
@@ -186,7 +186,7 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 				THEN("The mailbox is considered controlled by the device")
 				{
-					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_DEVICE);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 					CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
@@ -225,7 +225,7 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 						THEN("The mailbox is considered controlled by the program")
 						{
-							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 							CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
 							CHECK_FALSE(V2MP_DevicePort_IsMailboxEmpty(port));
@@ -256,7 +256,7 @@ SCENARIO("Device port mailbox state", "[device_ports]")
 
 					THEN("The mailbox is considered controlled by the program")
 					{
-						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE);
 						CHECK(V2MP_DevicePort_IsMailboxEmpty(port));

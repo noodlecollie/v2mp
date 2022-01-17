@@ -54,7 +54,7 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 
 					THEN("The mailbox is written to and becomes exhausted")
 					{
-						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE));
@@ -72,7 +72,7 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 
 						THEN("The mailbox contains the entire message")
 						{
-							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_DEVICE);
 							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 							CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 							CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE));
@@ -111,7 +111,7 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 
 					THEN("The port's mailbox is busy and still writeable")
 					{
-						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE);
 						CHECK(V2MP_DevicePort_IsMailboxBusy(port));
 						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == BYTES_PER_CYCLE);
@@ -129,7 +129,7 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 
 						THEN("The mailbox now contains the entire message")
 						{
-							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_DEVICE);
 							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 							CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 							CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE));
@@ -167,7 +167,7 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 
 					THEN("The port's mailbox is busy and still writeable")
 					{
-						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE);
 						CHECK(V2MP_DevicePort_IsMailboxBusy(port));
 						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == BYTES_PER_CYCLE);
@@ -185,7 +185,7 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 
 						THEN("The port's mailbox is still busy and still writeable")
 						{
-							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_DEVICE);
 							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 							CHECK(V2MP_DevicePort_IsMailboxBusy(port));
 							CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == 2 * BYTES_PER_CYCLE);
@@ -206,7 +206,7 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 
 							THEN("The mailbox now contains the entire message")
 							{
-								CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+								CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_DEVICE);
 								CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 								CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 								CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE));
@@ -262,7 +262,7 @@ SCENARIO("DPO: Performing a DDT write should transfer the data to a mailbox", "[
 
 				THEN("The mailbox is written to and remains writeable")
 				{
-					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE_WORD));
@@ -275,7 +275,7 @@ SCENARIO("DPO: Performing a DDT write should transfer the data to a mailbox", "[
 
 					THEN("The mailbox contains the entire message word")
 					{
-						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_DEVICE);
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE_WORD));
@@ -313,7 +313,7 @@ SCENARIO("DPO: Performing a DDT write should transfer the data to a mailbox", "[
 
 				THEN("The mailbox is written to and becomes exhausted")
 				{
-					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE_WORD));
@@ -326,7 +326,7 @@ SCENARIO("DPO: Performing a DDT write should transfer the data to a mailbox", "[
 
 					THEN("The mailbox contains the entire message word")
 					{
-						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_DEVICE);
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE_WORD));
@@ -364,7 +364,7 @@ SCENARIO("DPO: Performing a DDT write should transfer the data to a mailbox", "[
 
 				THEN("The mailbox is written to and becomes exhausted")
 				{
-					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == 1);
@@ -377,7 +377,7 @@ SCENARIO("DPO: Performing a DDT write should transfer the data to a mailbox", "[
 
 					THEN("The mailbox contains the first byte of the message word")
 					{
-						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_DEVICE);
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == 1);
@@ -439,7 +439,7 @@ SCENARIO("DPO: Attempting an IDT write from a buffer of length zero should raise
 				{
 					CHECK(vm.CPUHasFault());
 					CHECK(V2MP_CPU_FAULT_CODE(vm.GetCPUFaultWord()) == V2MP_FAULT_IDO);
-					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_IsMailboxEmpty(port));

@@ -307,3 +307,19 @@ void V2MP_Supervisor_RequestRelinquishMailbox(V2MP_Supervisor* supervisor, V2MP_
 	action->actionType = SVAT_RELINQUISH_PORT_MAILBOX;
 	SVACTION_RELINQUISH_MAILBOX_ARG_PORT(action) = port;
 }
+
+void V2MP_Supervisor_RequestUsableByteCount(V2MP_Supervisor* supervisor, V2MP_Word port)
+{
+	V2MP_Supervisor_Action* action;
+
+	action = V2MP_Supervisor_CreateNewAction(supervisor);
+
+	if ( !action )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, SVAT_PORT_MAILBOX_USABLE_BYTE_COUNT));
+		return;
+	}
+
+	action->actionType = SVAT_PORT_MAILBOX_USABLE_BYTE_COUNT;
+	SVACTION_USABLE_BYTE_COUNT_ARG_PORT(action) = port;
+}

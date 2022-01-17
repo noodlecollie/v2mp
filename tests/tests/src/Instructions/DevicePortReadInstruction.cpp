@@ -76,7 +76,7 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 
 					THEN("The message is fetched correctly")
 					{
-						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 						CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
@@ -120,7 +120,7 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 
 					THEN("The correct number of message bytes are fetched.")
 					{
-						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
 						CHECK(V2MP_DevicePort_IsMailboxBusy(port));
 						CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE) - BYTES_PER_CYCLE);
@@ -150,7 +150,7 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 
 						THEN("The entire message is now fetched")
 						{
-							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+							CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 							CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 							CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 							CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
@@ -211,7 +211,7 @@ SCENARIO("DPO: Performing a DDT read from a device mailbox should transfer the d
 
 				THEN("A word of data is fetched from the mailbox")
 				{
-					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE) - sizeof(V2MP_Word));
@@ -247,7 +247,7 @@ SCENARIO("DPO: Performing a DDT read from a device mailbox should transfer the d
 
 				THEN("A word of data is fetched from the mailbox")
 				{
-					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE) - sizeof(V2MP_Word));
@@ -283,7 +283,7 @@ SCENARIO("DPO: Performing a DDT read from a device mailbox should transfer the d
 
 				THEN("A word of data is fetched from the mailbox, with the upper byte set to zero")
 				{
-					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_EXHAUSTED);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == 0);
@@ -343,7 +343,7 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox into a memory buffer
 					CHECK(vm.CPUHasFault());
 					CHECK(V2MP_CPU_FAULT_CODE(vm.GetCPUFaultWord()) == V2MP_FAULT_SEG);
 
-					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE) - SEGMENT_SIZE_BYTES);
@@ -397,7 +397,7 @@ SCENARIO("DPO: Relinquishing a readable mailbox should discard any remaining byt
 
 				THEN("The port's mailbox is controlled by the device")
 				{
-					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_DEVICE);
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
@@ -422,7 +422,7 @@ SCENARIO("DPO: Relinquishing a readable mailbox should discard any remaining byt
 
 					THEN("The port's mailbox is controlled by the device")
 					{
-						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_DEVICE);
+						CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_DEVICE);
 						CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 						CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 						CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
@@ -474,7 +474,7 @@ SCENARIO("DPO: Atempting an IDT read into a buffer of length zero should raise a
 					CHECK(vm.CPUHasFault());
 					CHECK(V2MP_CPU_FAULT_CODE(vm.GetCPUFaultWord()) == V2MP_FAULT_IDO);
 
-					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 					CHECK(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_MailboxBytesUsed(port) == sizeof(MESSAGE));
@@ -525,7 +525,7 @@ SCENARIO("DPO: Performing any kind of read from a mailbox that is not readable s
 					CHECK(vm.CPUHasFault());
 					CHECK(V2MP_CPU_FAULT_CODE(vm.GetCPUFaultWord()) == V2MP_FAULT_IDO);
 
-					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
 				}
@@ -542,7 +542,7 @@ SCENARIO("DPO: Performing any kind of read from a mailbox that is not readable s
 					CHECK(vm.CPUHasFault());
 					CHECK(V2MP_CPU_FAULT_CODE(vm.GetCPUFaultWord()) == V2MP_FAULT_IDO);
 
-					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+					CHECK(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 					CHECK_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 					CHECK(V2MP_DevicePort_IsMailboxEmpty(port));
 				}

@@ -42,7 +42,7 @@ static inline V2MP_Word Query_IsBusy(V2MP_DevicePort* port)
 
 static inline V2MP_Word Query_IsControlledByProgram(V2MP_DevicePort* port)
 {
-	return (port && V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM)
+	return (port && V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM)
 		? 0
 		: V2MP_CPU_SR_Z;
 }
