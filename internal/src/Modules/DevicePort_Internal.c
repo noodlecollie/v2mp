@@ -56,7 +56,7 @@ void V2MP_DevicePort_NotifyMailboxReadyForInteraction(V2MP_DevicePort* port)
 
 bool V2MP_DevicePort_DeviceAllocateMailbox(V2MP_DevicePort* port, size_t sizeInBytes)
 {
-	if ( !port || port->mailboxController != V2MP_DMBC_DEVICE )
+	if ( !port || port->mailboxController != V2MP_DPMC_DEVICE )
 	{
 		return false;
 	}
@@ -83,7 +83,7 @@ bool V2MP_DevicePort_DeviceDeallocateMailbox(V2MP_DevicePort* port)
 
 bool V2MP_DevicePort_DeviceRelinquishMailbox(V2MP_DevicePort* port)
 {
-	if ( !port || !port->mailbox || port->mailboxController != V2MP_DMBC_DEVICE )
+	if ( !port || !port->mailbox || port->mailboxController != V2MP_DPMC_DEVICE )
 	{
 		return false;
 	}
@@ -97,14 +97,14 @@ bool V2MP_DevicePort_DeviceRelinquishMailbox(V2MP_DevicePort* port)
 		port->mailboxStateWhenDeviceRelinquished = V2MP_DPMS_READABLE;
 	}
 
-	port->mailboxController = V2MP_DMBC_PROGRAM;
+	port->mailboxController = V2MP_DPMC_PROGRAM;
 
 	return true;
 }
 
 bool V2MP_DevicePort_ProgramRelinquishMailbox(V2MP_DevicePort* port)
 {
-	if ( !port || !port->mailbox || port->mailboxController != V2MP_DMBC_PROGRAM )
+	if ( !port || !port->mailbox || port->mailboxController != V2MP_DPMC_PROGRAM )
 	{
 		return false;
 	}
@@ -116,7 +116,7 @@ bool V2MP_DevicePort_ProgramRelinquishMailbox(V2MP_DevicePort* port)
 	}
 
 	port->mailboxStateWhenDeviceRelinquished = V2MP_DPMS_UNAVAILABLE;
-	port->mailboxController = V2MP_DMBC_DEVICE;
+	port->mailboxController = V2MP_DPMC_DEVICE;
 
 	return true;
 }

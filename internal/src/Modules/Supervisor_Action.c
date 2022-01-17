@@ -44,6 +44,7 @@ static ActionResult V2MP_Supervisor_HandleStoreWord(V2MP_Supervisor* supervisor,
 static ActionResult V2MP_Supervisor_HandlePerformDevicePortQuery(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 static ActionResult V2MP_Supervisor_HandleDeviceDataTransfer(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 static ActionResult V2MP_Supervisor_HandleRelinquishPortMailbox(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
+static ActionResult V2MP_Supervisor_HandleGetUsableByteCount(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 
 typedef ActionResult (*ActionHandler)(V2MP_Supervisor*, V2MP_Supervisor_Action*);
 
@@ -263,7 +264,7 @@ static ActionResult HandleIndirectDataTransferRead(DataTransferContext* context)
 	{
 		V2MP_DevicePort_SetMailboxBusy(context->port, false);
 
-		if ( V2MP_DevicePort_GetMailboxController(context->port) == V2MP_DMBC_DEVICE )
+		if ( V2MP_DevicePort_GetMailboxController(context->port) == V2MP_DPMC_DEVICE )
 		{
 			V2MP_DevicePort_NotifyMailboxReadyForInteraction(context->port);
 		}
@@ -406,7 +407,7 @@ static ActionResult HandleIndirectDataTransferWrite(DataTransferContext* context
 	{
 		V2MP_DevicePort_SetMailboxBusy(context->port, false);
 
-		if ( V2MP_DevicePort_GetMailboxController(context->port) == V2MP_DMBC_DEVICE )
+		if ( V2MP_DevicePort_GetMailboxController(context->port) == V2MP_DPMC_DEVICE )
 		{
 			V2MP_DevicePort_NotifyMailboxReadyForInteraction(context->port);
 		}
@@ -566,22 +567,61 @@ static ActionResult V2MP_Supervisor_HandleRelinquishPortMailbox(V2MP_Supervisor*
 
 	port = V2MP_DevicePortCollection_GetPort(dpc, SVACTION_RELINQUISH_MAILBOX_ARG_PORT(action));
 
+	if ( !port )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_IDO, 0));
+		return AR_COMPLETE;
+	}
+
+	if ( V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM )
+	{
+		V2MP_DevicePort_ProgramRelinquishMailbox(port);
+
+		if ( !V2MP_DevicePort_IsMailboxBusy(port) )
+		{
+			V2MP_DevicePort_NotifyMailboxReadyForInteraction(port);
+		}
+	}
+
+	return AR_COMPLETE;
+}
+
+static ActionResult V2MP_Supervisor_HandleGetUsableByteCount(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
+{
+	V2MP_DevicePortCollection* dpc;
+	V2MP_DevicePort* port;
+	V2MP_CPU* cpu;
+	V2MP_Word count = 0;
+
+	dpc = V2MP_Mainboard_GetDevicePortCollection(supervisor->mainboard);
+	cpu = V2MP_Mainboard_GetCPU(supervisor->mainboard);
+
+	if ( !dpc || !cpu )
+	{
+		return AR_FAILED;
+	}
+
+	port = V2MP_DevicePortCollection_GetPort(dpc, SVACTION_RELINQUISH_MAILBOX_ARG_PORT(action));
+
 	if ( port )
 	{
-		if ( V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM )
-		{
-			V2MP_DevicePort_ProgramRelinquishMailbox(port);
+		V2MP_CircularBuffer* mailbox = V2MP_DevicePort_GetMailbox(port);
 
-			if ( !V2MP_DevicePort_IsMailboxBusy(port) )
+		if ( mailbox )
+		{
+			if ( V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE )
 			{
-				V2MP_DevicePort_NotifyMailboxReadyForInteraction(port);
+				count = (V2MP_Word)V2MP_CircularBuffer_BytesUsed(mailbox);
+			}
+			else if ( V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE )
+			{
+				count = (V2MP_Word)V2MP_CircularBuffer_BytesFree(mailbox);
 			}
 		}
 	}
-	else
-	{
-		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_IDO, 0));
-	}
+
+	V2MP_CPU_SetLinkRegister(cpu, count);
+	V2MP_CPU_SetStatusRegister(cpu, count == 0 ? V2MP_CPU_SR_Z : 0);
 
 	return AR_COMPLETE;
 }

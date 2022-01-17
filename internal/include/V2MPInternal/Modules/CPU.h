@@ -50,6 +50,7 @@ typedef struct V2MP_CPU_SupervisorInterface
 	);
 
 	void (*requestRelinquishMailbox)(void* supervisor, V2MP_Word port);
+	void (*requestUsableByteCount)(void* supervisor, V2MP_Word port);
 
 } V2MP_CPU_SupervisorInterface;
 

@@ -76,7 +76,7 @@ size_t V2MP_DevicePort_MailboxBytesUsed(const V2MP_DevicePort* port)
 
 V2MP_DeviceMailboxController V2MP_DevicePort_GetMailboxController(const V2MP_DevicePort* port)
 {
-	return port ? port->mailboxController : V2MP_DMBC_DEVICE;
+	return port ? port->mailboxController : V2MP_DPMC_DEVICE;
 }
 
 bool V2MP_DevicePort_IsMailboxBusy(const V2MP_DevicePort* port)
@@ -86,7 +86,7 @@ bool V2MP_DevicePort_IsMailboxBusy(const V2MP_DevicePort* port)
 
 V2MP_DevicePortMailboxState V2MP_DevicePort_GetMailboxState(const V2MP_DevicePort* port)
 {
-	if ( !port || !port->mailbox || port->mailboxController == V2MP_DMBC_DEVICE )
+	if ( !port || !port->mailbox || port->mailboxController == V2MP_DPMC_DEVICE )
 	{
 		return V2MP_DPMS_UNAVAILABLE;
 	}

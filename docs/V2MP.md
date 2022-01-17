@@ -485,11 +485,9 @@ The purpose of the usable bytes depends on whether the mailbox is in a readable 
 * If the mailbox is in a readable state, the number of usable bytes corresponds to the number of bytes left to read from the mailbox.
 * If the mailbox is in a writable state, the number of useable bytes corresponds to the number of bytes left that can be written to in the mailbox.
 
-If the mailbox is exhausted, the number of usable bytes is `0`.
+If the port is not connected to a device, the mailbox is exhausted, or the mailbox is not controlled by the program, the number of usable bytes is `0`.
 
 When the instruction is executed, operand bit `[11] (A)` must be set to `0`. If it is not, a [`RES`](#faults) fault will be raised.
-
-If the operation is attempted when the mailbox is not controlled by the program, the result of the operation is zero.
 
 After the instruction has been executed, `SR[Z]` is set or cleared depending on the number of usable bytes returned. If the number of usable bytes was `0`, `SR[Z]` is set to `1`; otherwise, `SR[Z]` is set to `0`. All other bits in `SR` are set to `0`.
 

@@ -178,7 +178,7 @@ namespace Asm
 			| (static_cast<V2MP_Word>(query) & 0x0007);
 	}
 
-	constexpr inline V2MP_Word DPO(DevicePortOperation operation, bool useIndirectDataTransfer)
+	constexpr inline V2MP_Word DPO(DevicePortOperation operation, bool useIndirectDataTransfer = false)
 	{
 		return (V2MP_OP_DPO) << 12
 			| (static_cast<V2MP_Word>(useIndirectDataTransfer ? 1 : 0) << 11)

@@ -2,8 +2,16 @@
 
 bool V2MP_CPU_DPO_UsableByteCount(V2MP_CPU* cpu)
 {
-	// TODO
-	V2MP_CPU_NotifyFault(cpu, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_INI, V2MP_OP_DPO_OPERATION_TYPE(cpu->ir)));
+	if ( !cpu->supervisorInterface.requestUsableByteCount )
+	{
+		return false;
+	}
+
+	cpu->supervisorInterface.requestUsableByteCount(
+		cpu->supervisorInterface.supervisor,
+		cpu->r0
+	);
+
 	return true;
 }
 

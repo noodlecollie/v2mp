@@ -92,7 +92,7 @@ static void TestAllStatesWithQuery(Asm::DevicePortQuery query, const QueryAffirm
 			device->WriteToConnectedMailbox(MESSAGE);
 
 			REQUIRE(device->RelinquishConnectedMailbox());
-			REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+			REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 			REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 			REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE);
 
@@ -161,7 +161,7 @@ static void TestAllStatesWithQuery(Asm::DevicePortQuery query, const QueryAffirm
 
 					AND_GIVEN("The mailbox is relinquished by the program")
 					{
-						REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::RELINQUISH_MAILBOX, false)));
+						REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::RELINQUISH_MAILBOX)));
 						REQUIRE_FALSE(vm.CPUHasFault());
 						REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 
@@ -193,7 +193,7 @@ static void TestAllStatesWithQuery(Asm::DevicePortQuery query, const QueryAffirm
 			device->AllocateConnectedMailbox(2);
 
 			REQUIRE(device->RelinquishConnectedMailbox());
-			REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DMBC_PROGRAM);
+			REQUIRE(V2MP_DevicePort_GetMailboxController(port) == V2MP_DPMC_PROGRAM);
 			REQUIRE_FALSE(V2MP_DevicePort_IsMailboxBusy(port));
 			REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE);
 
@@ -262,7 +262,7 @@ static void TestAllStatesWithQuery(Asm::DevicePortQuery query, const QueryAffirm
 
 					AND_GIVEN("The mailbox is relinquished by the program")
 					{
-						REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::RELINQUISH_MAILBOX, false)));
+						REQUIRE(vm.Execute(Asm::DPO(Asm::DevicePortOperation::RELINQUISH_MAILBOX)));
 						REQUIRE_FALSE(vm.CPUHasFault());
 						REQUIRE(V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_UNAVAILABLE);
 
