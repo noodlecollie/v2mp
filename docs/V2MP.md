@@ -23,6 +23,7 @@ The specification for the virtual processor is outlined in this file.
     * [Relinquish Mailbox](#relinquish-mailbox-01b)
     * [Read](#read-10b)
     * [Write](#write-11b)
+  * [9h STK: Stack Operation](#9h-stack-operation-stk)
   * [Fh HCF: Halt](#fh-halt-hcf)
 * [Faults](#faults)
 
@@ -76,38 +77,46 @@ Instruction: |0101|AABC........|
 
 The CPU is 16-bit and little-endian. It contains the following registers:
 
+* An instruction register (`IR`)
 * A program counter (`PC`)
+* A stack pointer (`SP`)
 * A status register (`SR`)
 * A link register (`LR`)
 * Two general-purpose registers (`R0` and `R1`)
 
-The processor also contains an "instruction register" (`IR`) which holds the current instruction as it is decoded, but this cannot be manipulated during operation. It is mainly useful for debugging, as it is preserved if a fault is raised.
+### Instruction Register (`IR`)
+
+The instruction register holds the current instruction that is being executed. It cannot be accessed directly by instructions.
 
 ### Program Counter (`PC`)
 
 The program counter points to the next instruction in code memory. Its value must always be aligned to a word boundary (ie. `PC[0]` must be `0`), or an [`ALGN`](#faults) fault will be raised when the instruction it points to is fetched.
 
-The program counter is automatically incremented after the execution of each instruction, unless the instruction wrote to the program counter. In this case, the value of the program counter is assumed to point to the next instruction, so no increment takes place.
+The program counter is automatically incremented after each instruction is fetched. The instruction may then modify the value of the program counter (ie. perform a code branch), to specify which instruction will be fetched on the next clock cycle.
+
+### Stack Pointer (`SP`)
+
+The stack pointer points to the location in the stack memory segment where the top of the stack resides.
 
 ### Status Register (`SR`)
 
 The status register holds flags relating to the result of the execution of the previous instruction. It cannot be accessed directly by instructions, but its state is used to affect the operation of certain instructions (eg. for conditional branching).
 
-Before each instruction, all register bits are set to `0`. After the instruction, one or more bits may be set to `1` based on the result of the instruction.
+After the instruction is executed, all status register bits are set to `0` by default, apart from those bits which are affected by the result of the instruction. Any instructions that may affect the state of the status register will describe the nature of the state changes. Additionally, any instructions that operate based on the current state of the status register will describe how the state is used.
+
+The contents of the register are as follows:
 
 ```
 |..............CZ|
 ```
 
-The contents of the register are as follows:
-
 * Bit `[0]`, or `SR[Z]`, is the `ZERO` bit. This bit is set to `1` to indicate the absence of a result after an instruction is executed, or is set to `0` otherwise.
   * For arithmetic instructions, if this bit is set to `1` then it indicates that the result of the instruction was zero.
-  * For other instructions, a value of `1` may indicate for example that some requested device or state was not available.
-* Bit `[1]`, or `SR[C]`, is the `CARRY` bit. This bit is set to `1` if the previous instruction resulted in an overflow or an underflow, or is set to `0` otherwise.
+  * For other instructions, a value of `1` may indicate for example that some requested device or state was not available. The specific instruction will describe how the bit is used.
+* Bit `[1]`, or `SR[C]`, is the `CARRY` bit. It is used to indicate the propagation of some form of state outside of the scope of an instruction.
+  * For arithmetic instructions, this bit is set to `1` if the instruction resulted in an overflow or an underflow, or is set to `0` otherwise.
+  * For other instructions, a value of `1` may indicate for example that not all of the data used by the instruction was able to be processed. The specific instruction will describe how the bit is used.
 * Bits `[15 2]` are reserved for future use, and are always set to `0`.
-
-Any instructions that may affect the state of the status register will describe the nature of the state changes. Additionally, any instructions that operate based on the current state of the status register will describe how the state is used.
 
 ### Link Register (`LR`)
 
@@ -121,21 +130,31 @@ The general-purpose registers do not have any special significance for most inst
 
 ## Memory Model
 
-The CPU addresses two separate memory segments: the read-only code segment (`CS`) and the read-write data segment (`DS`). The program counter's address **always** refers to the code segment, and instructions to read from or write to memory **always** refer to the data segment. This means that under this memory model, code cannot be executed from RAM, and data for use in general-purpose registers cannot be directly loaded from the code segment. Some instructions, however, do support packing numerical literals into their operand bits, and these can affect the values in general-purpose registers.
+The CPU addresses three separate memory segments: the read-only code segment (`CS`), and the read-write data segment (`DS`), and the read-write stack segment (`SS`). The program counter's address **always** refers to the code segment, instructions to read from or write to memory **always** refer to the data segment, and instructions to push to or pop from the stack **always** refer to the stack segment. This means that under this memory model, code cannot be executed from modifiable memory, and data for use in general-purpose registers cannot be directly loaded from the code segment. Some instructions, however, do support packing numerical literals into their operand bits, and these can affect the values in general-purpose registers.
 
 ```
-        CS                                          DS
-+----------------+                          +----------------+
-|................| <- |.......PC.......|    |................|
-|................|    |.......LR.......| -> |................|
-|................|    |.......R0.......| -> |................|
-|................|    |.......R1.......| -> |................|
-+----------------+                          +----------------+
+        CS                                              DS
++----------------+                              +----------------+
+|................| <--- |.......PC.......|      |................|
+|................|      |.......LR.......| ---> |................|
+|................|      |.......R0.......| ---> |................|
+|................|      |.......R1.......| ---> |................|
++----------------+  /-- |.......SP.......|      +----------------+
+                    |
+                    |           SS
+                    |   +----------------+
+                    \-> |................|
+                        |................|
+                        |................|
+                        |................|
+                        +----------------+
 ```
 
-Each memory segment lives in a 16-bit address space, and so can hold a maximum of 65536 bytes (64KB). A program that runs on the V2MP CPU consists of the `CS` and `DS` segments, where the `CS` segment holds all code for the program, and the `DS` segment holds any pre-compiled data that the program may wish to use. It is completely up to the program in question how the `DS` data is managed - any data originally supplied within `DS` may be modified.
+Each memory segment lives in a 16-bit address space, and so can hold a maximum of 65536 bytes (64KB). A program that runs on the V2MP CPU consists primarily of the `CS` and `DS` segments, where the `CS` segment holds all code for the program, and the `DS` segment holds any pre-compiled data that the program may wish to use. It is completely up to the program in question how the `DS` data is managed - any data originally supplied within `DS` may be modified.
 
-The following restrictions apply to any memory access (either in `CS` or `DS`), via any register (`PC` or general-purpose):
+The program may also specify how much memory is allocated for `SS`, but the contents of `SS` may not be specified in advance.
+
+The following restrictions apply to any memory access (in `CS`, `DS`, or `SS`), via any register (`PC` or general-purpose):
 
 * When accessing a unit of memory (eg. a 2-byte word), the address of the access must be aligned to a multiple of the size of the unit. If this is not the case, an [`ALGN`](#faults) fault will be raised.
   * Although the processor itself can only load and store individual words using the [`LDST`](#6h-loadstore-ldst) instruction, other instructions such as [`DPO`](#8h-device-port-operation-dpo) can access memory segments at single-byte granularity. As such, alignment restrictions do not apply to these operations.
@@ -146,6 +165,8 @@ The V2MP memory model does not directly support dynamic memory allocation: memor
 ### Relevant Instructions
 
 The [`LDST`](#6h-loadstore-ldst) instruction loads or stores single words from or to `DS`. The [`DPO`](#8h-device-port-operation-dpo) instruction can transfer data between a device port and an address in `DS`.
+
+The [`STK`](#9h-stack-operation-stk) instruction pushes or pops register onto or off of the stack in `SS`.
 
 The [`CBX`](#5h-conditional-branch-cbx) instruction makes reference to an address in `CS` which the program counter `PC` should be set to if the branch condition is met. Other arithmetic instructions may directly modify the contents of `PC` to point to different addresses in `CS`.
 
@@ -316,7 +337,7 @@ If `A` and `B` are the same and the destination register is `R0`, `R1` or `LR`, 
 |1111111110000010|
 ```
 
-If `A` and `B` are the same, `PC` may not be assigned to, since the range of values that are passed in operand bits `[7 0] (C)` is too small to be useful. If `A` and `B` are the same and the register index `11b` is specified, an [`INO`](#faults) fault is raised.
+If `A` and `B` are the same, `PC` may not be assigned to, since the range of values that are passed in operand bits `[7 0] (C)` is too small to be useful. If `A` and `B` are the same and the register index `11b` is specified, a [`RES`](#faults) fault is raised.
 
 In all cases described for this instruction, `SR[Z]` is set if the eventual value in the destination register is zero; otherwise, it is cleared. All other bits in `SR` are cleared.
 
@@ -549,6 +570,34 @@ After the instruction is executed, `SR[Z]` is set if there will be no more space
 
 `SR[C]` is set if there were more bytes specified in the write than there were free bytes in the mailbox, and is cleared if the entirety of the write fitted into the mailbox.
 
+### `9h`: Stack Operation (`STK`)
+
+Pushes or pops register values from the stack.
+
+```
+ STK
+|1001|A.......BCDE|
+```
+
+* Operand bit `[11] (A)` specifies whether the operation is a push or pop. If `A` is set then the operation is a push; if `A` is not set then the operation is a pop.
+* Operand bit `[3] (B)` specifies whether `R0` is included in the operation: it is included if `B` is set, and is not included if `B` is not set.
+* Operand bit `[2] (C)` specifies whether `R1` is included in the operation: it is included if `C` is set, and is not included if `C` is not set.
+* Operand bit `[1] (D)` specifies whether `LR` is included in the operation: it is included if `D` is set, and is not included if `D` is not set.
+* Operand bit `[0] (E)` specifies whether `PC` is included in the operation: it is included if `E` is set, and is not included if `E` is not set.
+
+Operand bits `[10 4]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised. Additionally, including no registers in the operation (ie. leaving operand bits `B` - `E` as `0`) will also raise a [`RES`](#faults) fault.
+
+Registers are always pushed onto the stack in the following order, and are popped from the stack in reverse order:
+
+1. `R0`
+2. `R1`
+3. `LR`
+4. `PC`
+
+If a register is not specified in the instruction word, it is not included in the push or pop operation. After the operation, the stack is grown or shrunk by as many words as there were registers included in the operation.
+
+If a push operation overflows the stack, or a pop operation underflows the stack, a [`SOF`](#faults) fault is raised.
+
 ### `Fh`: Halt (`HCF`)
 
 Also known as "halt and catch fire". This instruction stops the processor, leaves all registers as they are, and raises an [`HCF`](#faults) fault.
@@ -572,12 +621,6 @@ The possible faults raised by the processor are described below.
 | `04h` | `SEG` | Segment Access Violation | Raised when an address outside `CS` or `DS` is dereferenced. | [`LDST`](#6h-loadstore-ldst), [`DPO`](#8h-device-port-operation-dpo), or upon fetching the next instruction using `PC` |
 | `05h` | `IDO` | Invalid Device Operation | Raised when an operation is attempted on a port which is not in the correct state for the operation. | [`DPO`](#8h-device-port-operation-dpo) |
 | `06h` | `INI` | Invalid Instruction | Raised when an unrecognised instruction opcode is decoded. | Decoding of an instruction |
-| `07h` | `INO` | Invalid Operand | Raised when an invalid combination of operands is provided on an instruction. | Execution of any instruction |
-| `08h` | `SPV` | Supervisor Error | Raised if the supervisor encounters an internal error. This fault indicates an exceptional issue with the supervisor code itself, and is not expected to be accommodated by a program. Under normal operation, this fault should never be raised. | Supervisor |
-| `09h` | `DEV` | Device Error | Raised if a device encounters an internal error. This fault indicates an exceptional issue with a device in the system, and is not expected to be accommodated by a program. Under normal operation, this fault should never be raised. | Supervisor, when interacting with a device |
-
-## Todo Notes
-
-### Stack
-
-Do we have enough remaining instructions to implement stack support? We're beginning to need it once we start wanting to check the results of device operations...
+| `07h` | `SPV` | Supervisor Error | Raised if the supervisor encounters an internal error. This fault indicates an exceptional issue with the supervisor code itself, and is not expected to be accommodated by a program. Under normal operation, this fault should never be raised. | Supervisor |
+| `08h` | `DEV` | Device Error | Raised if a device encounters an internal error. This fault indicates an exceptional issue with a device in the system, and is not expected to be accommodated by a program. Under normal operation, this fault should never be raised. | Supervisor, when interacting with a device |
+| `09h` | `SOF` | Stack overflow or underflow | Raised when a stack operation overflows or underflows the stack space. | [`STK`](#9h-stack-operation-stk) |

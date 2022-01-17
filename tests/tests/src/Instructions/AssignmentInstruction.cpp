@@ -486,10 +486,10 @@ SCENARIO("ASGN: Attempting to assign a literal value to PC raises an INO fault",
 		{
 			REQUIRE(vm.Execute(Asm::ASGNL(Asm::REG_PC, 0x23)));
 
-			THEN("An INO fault is raised, and all registers are left unchanged")
+			THEN("A RES fault is raised, and all registers are left unchanged")
 			{
 				CHECK(vm.CPUHasFault());
-				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_INO);
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
 				CHECK(vm.GetR0() == VAL_R0);
 				CHECK(vm.GetR1() == VAL_R1);
 				CHECK(vm.GetLR() == VAL_LR);

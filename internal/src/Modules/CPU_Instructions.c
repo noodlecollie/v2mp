@@ -129,7 +129,7 @@ bool Execute_ASGN(V2MP_CPU* cpu)
 	{
 		if ( V2MP_OP_ASGN_DREGINDEX(cpu->ir) == V2MP_REGID_PC )
 		{
-			SetFault(cpu, V2MP_FAULT_INO, 0);
+			SetFault(cpu, V2MP_FAULT_RES, 0);
 			return true;
 		}
 
