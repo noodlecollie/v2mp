@@ -44,7 +44,10 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox should transfer the 
 		// Enough memory for two segments of equal size.
 		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
-		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD));
+		TestHarnessVM::ProgramDef prog;
+		prog.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD);
+
+		REQUIRE(vm.LoadProgram(prog));
 
 		AND_GIVEN("A port with a message in its mailbox")
 		{
@@ -311,7 +314,10 @@ SCENARIO("DPO: Performing an IDT read from a device mailbox into a memory buffer
 		// Enough memory for two segments of equal size.
 		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
-		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD));
+		TestHarnessVM::ProgramDef prog;
+		prog.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD);
+
+		REQUIRE(vm.LoadProgram(prog));
 
 		AND_GIVEN("A port with a message in its mailbox")
 		{
@@ -372,7 +378,10 @@ SCENARIO("DPO: Relinquishing a readable mailbox should discard any remaining byt
 		// Enough memory for two segments of equal size.
 		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
-		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD));
+		TestHarnessVM::ProgramDef prog;
+		prog.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD);
+
+		REQUIRE(vm.LoadProgram(prog));
 
 		AND_GIVEN("A port with a message in its mailbox")
 		{
@@ -445,7 +454,10 @@ SCENARIO("DPO: Atempting an IDT read into a buffer of length zero should raise a
 		// Enough memory for two segments of equal size.
 		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
-		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, 0));
+		TestHarnessVM::ProgramDef prog;
+		prog.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, 0);
+
+		REQUIRE(vm.LoadProgram(prog));
 
 		AND_GIVEN("A port with a message in its mailbox")
 		{
@@ -497,7 +509,10 @@ SCENARIO("DPO: Performing any kind of read from a mailbox that is not readable s
 		// Enough memory for two segments of equal size.
 		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
-		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD));
+		TestHarnessVM::ProgramDef prog;
+		prog.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD);
+
+		REQUIRE(vm.LoadProgram(prog));
 
 		AND_GIVEN("A port with an empty mailbox")
 		{
@@ -564,7 +579,10 @@ SCENARIO("DPO: Performing an IDT read from a mailbox should set the status regis
 		// Enough memory for two segments of equal size.
 		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
-		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD));
+		TestHarnessVM::ProgramDef prog;
+		prog.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD);
+
+		REQUIRE(vm.LoadProgram(prog));
 
 		AND_GIVEN("A port with a message in its mailbox")
 		{
@@ -646,7 +664,10 @@ SCENARIO("DPO: Performing a DDT read from a mailbox should set the status regist
 		// Enough memory for two segments of equal size.
 		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
-		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD));
+		TestHarnessVM::ProgramDef prog;
+		prog.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, SEGMENT_SENTRY_WORD);
+
+		REQUIRE(vm.LoadProgram(prog));
 
 		AND_GIVEN("A port with a message in its mailbox")
 		{

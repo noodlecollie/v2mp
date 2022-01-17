@@ -52,6 +52,10 @@ typedef struct V2MP_CPU_SupervisorInterface
 	void (*requestRelinquishMailbox)(void* supervisor, V2MP_Word port);
 	void (*requestUsableByteCount)(void* supervisor, V2MP_Word port);
 
+	// STK
+	void (*requestStackPush)(void* supervisor, V2MP_Word regFlags);
+	void (*requestStackPop)(void* supervisor, V2MP_Word regFlags);
+
 } V2MP_CPU_SupervisorInterface;
 
 V2MP_CPU* V2MP_CPU_AllocateAndInit(void);

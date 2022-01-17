@@ -7,12 +7,18 @@ static constexpr V2MP_Word DATA_WORD = 0xF00D;
 template<std::size_t N>
 static inline bool SetDS(TestHarnessVM& vm, const V2MP_Word (&data)[N])
 {
-	return vm.SetCSAndDS({0}, data);
+	TestHarnessVM::ProgramDef prog;
+	prog.SetCSAndDS({0}, data);
+
+	return vm.LoadProgram(prog);
 }
 
 static inline bool FillDS(TestHarnessVM& vm, V2MP_Word numWords, V2MP_Word fill)
 {
-	return vm.FillCSAndDS(1, 0, numWords, fill);
+	TestHarnessVM::ProgramDef prog;
+	prog.FillCSAndDS(1, 0, numWords, fill);
+
+	return vm.LoadProgram(prog);
 }
 
 SCENARIO("LDST: Loading a value from memory places the value in the expected register", "[instructions]")

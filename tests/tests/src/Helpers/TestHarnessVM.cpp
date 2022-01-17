@@ -79,17 +79,16 @@ const V2MP_DeviceCollection* TestHarnessVM::GetDeviceCollection() const
 	return V2MP_Mainboard_GetDeviceCollection(GetMainboard());
 }
 
-bool TestHarnessVM::SetCSAndDS(const V2MP_Word* cs, size_t csWords, const V2MP_Word* ds, size_t dsWords)
+bool TestHarnessVM::LoadProgram(const ProgramDef& prog)
 {
-	return V2MP_VirtualMachine_LoadProgram(m_VM, cs, csWords, ds, dsWords);
-}
-
-bool TestHarnessVM::FillCSAndDS(size_t csWords, V2MP_Word csFill, size_t dsWords, V2MP_Word dsFill)
-{
-	const std::vector<V2MP_Word> cs(static_cast<size_t>(csWords), csFill);
-	const std::vector<V2MP_Word> ds(static_cast<size_t>(dsWords), dsFill);
-
-	return V2MP_VirtualMachine_LoadProgram(m_VM, cs.data(), cs.size(), ds.data(), ds.size());
+	return V2MP_VirtualMachine_LoadProgram(
+		m_VM,
+		prog.GetCS(),
+		prog.GetCSWords(),
+		prog.GetDS(),
+		prog.GetDSWords(),
+		prog.GetSSWords()
+	);
 }
 
 V2MP_DevicePort* TestHarnessVM::CreatePort(V2MP_Word address)

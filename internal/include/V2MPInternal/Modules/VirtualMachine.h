@@ -27,7 +27,8 @@ bool V2MP_VirtualMachine_LoadProgram(
 	const V2MP_Word* cs,
 	size_t csLengthInWords,
 	const V2MP_Word* ds,
-	size_t dsLengthInWords
+	size_t dsLengthInWords,
+	size_t ssLengthInWords
 );
 
 void V2MP_VirtualMachine_ClearProgram(V2MP_VirtualMachine* vm);

@@ -84,11 +84,12 @@ bool V2MP_VirtualMachine_LoadProgram(
 	const V2MP_Word* cs,
 	size_t csLengthInWords,
 	const V2MP_Word* ds,
-	size_t dsLengthInWords
+	size_t dsLengthInWords,
+	size_t ssLengthInWords
 )
 {
 	return vm->supervisor
-		? V2MP_Supervisor_LoadProgram(vm->supervisor, cs, csLengthInWords, ds, dsLengthInWords)
+		? V2MP_Supervisor_LoadProgram(vm->supervisor, cs, csLengthInWords, ds, dsLengthInWords, ssLengthInWords)
 		: false;
 }
 

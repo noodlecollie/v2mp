@@ -20,6 +20,7 @@ static bool Execute_CBX(V2MP_CPU* cpu);
 static bool Execute_LDST(V2MP_CPU* cpu);
 static bool Execute_DPQ(V2MP_CPU* cpu);
 static bool Execute_DPO(V2MP_CPU* cpu);
+static bool Execute_STK(V2MP_CPU* cpu);
 static bool Execute_Unassigned(V2MP_CPU* cpu);
 static bool Execute_HCF(V2MP_CPU* cpu);
 
@@ -34,7 +35,7 @@ static const InstructionCallback INSTRUCTION_TABLE[0x10] =
 	&Execute_LDST,			// 0x6
 	&Execute_DPQ,			// 0x7
 	&Execute_DPO,			// 0x8
-	&Execute_Unassigned,	// 0x9
+	&Execute_STK,			// 0x9
 	&Execute_Unassigned,	// 0xA
 	&Execute_Unassigned,	// 0xB
 	&Execute_Unassigned,	// 0xC
@@ -398,15 +399,15 @@ bool Execute_LDST(V2MP_CPU* cpu)
 
 bool Execute_DPQ(V2MP_CPU* cpu)
 {
+	if ( !cpu->supervisorInterface.performDevicePortQuery )
+	{
+		return false;
+	}
+
 	if ( V2MP_OP_DPQ_RESBITS(cpu->ir) != 0 )
 	{
 		SetFault(cpu, V2MP_FAULT_RES, 0);
 		return true;
-	}
-
-	if ( !cpu->supervisorInterface.performDevicePortQuery )
-	{
-		return false;
 	}
 
 	switch ( V2MP_OP_DPQ_QUERY_TYPE(cpu->ir) )
@@ -477,6 +478,60 @@ bool Execute_DPO(V2MP_CPU* cpu)
 			return true;
 		}
 	}
+}
+
+static bool Execute_STK(V2MP_CPU* cpu)
+{
+	V2MP_Word regFlags = 0;
+
+	if ( !cpu->supervisorInterface.requestStackPush ||
+	     !cpu->supervisorInterface.requestStackPop )
+	{
+		return false;
+	}
+
+	if ( V2MP_OP_STK_RESBITS(cpu->ir) != 0 )
+	{
+		SetFault(cpu, V2MP_FAULT_RES, 0);
+		return true;
+	}
+
+	if ( V2MP_OP_STK_R0(cpu->ir) )
+	{
+		regFlags |= (1 << V2MP_REGID_R0);
+	}
+
+	if ( V2MP_OP_STK_R1(cpu->ir) )
+	{
+		regFlags |= (1 << V2MP_REGID_R1);
+	}
+
+	if ( V2MP_OP_STK_LR(cpu->ir) )
+	{
+		regFlags |= (1 << V2MP_REGID_LR);
+	}
+
+	if ( V2MP_OP_STK_PC(cpu->ir) )
+	{
+		regFlags |= (1 << V2MP_REGID_PC);
+	}
+
+	if ( V2MP_OP_STK_PUSH(cpu->ir) )
+	{
+		cpu->supervisorInterface.requestStackPush(
+			cpu->supervisorInterface.supervisor,
+			regFlags
+		);
+	}
+	else
+	{
+		cpu->supervisorInterface.requestStackPop(
+			cpu->supervisorInterface.supervisor,
+			regFlags
+		);
+	}
+
+	return true;
 }
 
 bool Execute_Unassigned(V2MP_CPU* cpu)

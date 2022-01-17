@@ -25,7 +25,10 @@ SCENARIO("DPO: Performing an IDT write from program memory should transfer the d
 		ds.resize(sizeof(MESSAGE));
 		memcpy(ds.data(), MESSAGE, ds.size());
 
-		REQUIRE(vm.SetCSAndDS(cs, ds));
+		TestHarnessVM::ProgramDef prog;
+		prog.SetCSAndDS(cs, ds);
+
+		REQUIRE(vm.LoadProgram(prog));
 
 		AND_GIVEN("A port with an empty mailbox which is the size of the intended message")
 		{
@@ -414,7 +417,10 @@ SCENARIO("DPO: Attempting an IDT write from a buffer of length zero should raise
 		ds.resize(sizeof(MESSAGE));
 		memcpy(ds.data(), MESSAGE, ds.size());
 
-		REQUIRE(vm.SetCSAndDS(cs, ds));
+		TestHarnessVM::ProgramDef prog;
+		prog.SetCSAndDS(cs, ds);
+
+		REQUIRE(vm.LoadProgram(prog));
 
 		AND_GIVEN("A port with an empty mailbox")
 		{
@@ -469,7 +475,10 @@ SCENARIO("DPO: Performing an IDT write to a mailbox should set the status regist
 		ds.resize(sizeof(MESSAGE));
 		memcpy(ds.data(), MESSAGE, ds.size());
 
-		REQUIRE(vm.SetCSAndDS(cs, ds));
+		TestHarnessVM::ProgramDef prog;
+		prog.SetCSAndDS(cs, ds);
+
+		REQUIRE(vm.LoadProgram(prog));
 
 		AND_GIVEN("A port with an empty mailbox which is the size of the intended message")
 		{

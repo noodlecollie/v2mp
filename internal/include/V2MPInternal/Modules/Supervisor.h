@@ -23,7 +23,8 @@ bool V2MP_Supervisor_LoadProgram(
 	const V2MP_Word* cs,
 	size_t csLengthInWords,
 	const V2MP_Word* ds,
-	size_t dsLengthInWords
+	size_t dsLengthInWords,
+	size_t ssLengthInWords
 );
 
 void V2MP_Supervisor_ClearProgram(V2MP_Supervisor* supervisor);

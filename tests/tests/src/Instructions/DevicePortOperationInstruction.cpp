@@ -15,7 +15,10 @@ SCENARIO("DPO: Getting the usable byte count of a port's mailbox returns the cor
 		// Enough memory for two segments of equal size.
 		TestHarnessVM_StartsInvalid vm(2 * SEGMENT_SIZE_BYTES);
 
-		REQUIRE(vm.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, 0));
+		TestHarnessVM::ProgramDef prog;
+		prog.FillCSAndDS(SEGMENT_SIZE_WORDS, 0, SEGMENT_SIZE_WORDS, 0);
+
+		REQUIRE(vm.LoadProgram(prog));
 
 		AND_GIVEN("A device port with no device connected")
 		{

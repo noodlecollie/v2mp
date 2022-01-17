@@ -112,7 +112,11 @@ static void TestAllStatesWithQuery(Asm::DevicePortQuery query, const QueryAffirm
 
 			AND_GIVEN("A device port read is in progress")
 			{
-				vm.FillCSAndDS(1, 0, 1, 0);
+				TestHarnessVM::ProgramDef prog;
+				prog.FillCSAndDS(1, 0, 1, 0);
+
+				REQUIRE(vm.LoadProgram(prog));
+
 				vm.SetR0(PORT_NUMBER);
 				vm.SetLR(0);
 				vm.SetR1(2);
@@ -213,7 +217,11 @@ static void TestAllStatesWithQuery(Asm::DevicePortQuery query, const QueryAffirm
 
 			AND_GIVEN("A device port write is in progress")
 			{
-				vm.FillCSAndDS(1, 0, 1, 0);
+				TestHarnessVM::ProgramDef prog;
+				prog.FillCSAndDS(1, 0, 1, 0);
+
+				REQUIRE(vm.LoadProgram(prog));
+
 				vm.SetR0(PORT_NUMBER);
 				vm.SetLR(0);
 				vm.SetR1(2);

@@ -20,6 +20,7 @@ struct V2MP_Supervisor
 
 	MemorySegment programCS;
 	MemorySegment programDS;
+	MemorySegment programSS;
 
 	V2MP_Mainboard* mainboard;
 };

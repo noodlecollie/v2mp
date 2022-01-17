@@ -145,11 +145,12 @@ bool V2MP_Supervisor_LoadProgram(
 	const V2MP_Word* cs,
 	size_t csLengthInWords,
 	const V2MP_Word* ds,
-	size_t dsLengthInWords
+	size_t dsLengthInWords,
+	size_t ssLengthInWords
 )
 {
 	V2MP_MemoryStore* memoryStore;
-	size_t totalMemoryAvailable;
+	size_t totalMemoryAvailableInWords;
 	V2MP_Byte* rawMemory = NULL;
 
 	if ( !supervisor || !cs || csLengthInWords < 1 || (!ds && dsLengthInWords > 0) )
@@ -171,19 +172,28 @@ bool V2MP_Supervisor_LoadProgram(
 		return false;
 	}
 
-	totalMemoryAvailable = V2MP_MemoryStore_GetTotalMemorySize(memoryStore);
+	totalMemoryAvailableInWords = V2MP_MemoryStore_GetTotalMemorySize(memoryStore) / sizeof(V2MP_Word);
 
 	// We do this carefully, to avoid overflowing any size_t calculations:
 
 	// First of all, is either segment on its own larger than the total RAM that we have?
-	if ( csLengthInWords > totalMemoryAvailable / sizeof(V2MP_Word) || dsLengthInWords > totalMemoryAvailable / sizeof(V2MP_Word) )
+	if ( csLengthInWords > totalMemoryAvailableInWords ||
+	     dsLengthInWords > totalMemoryAvailableInWords ||
+		 ssLengthInWords > totalMemoryAvailableInWords )
 	{
 		return false;
 	}
 
-	// Now that we know that both the CS and DS lengths are no larger than (in the worst case) half
-	// of the maximum value of a size_t, we can add them together and do a final comparison.
-	if ( csLengthInWords + dsLengthInWords > totalMemoryAvailable / sizeof(V2MP_Word) )
+	// Next, is any pair larger than the max available memory?
+	if ( csLengthInWords + dsLengthInWords > totalMemoryAvailableInWords ||
+	     csLengthInWords + ssLengthInWords > totalMemoryAvailableInWords ||
+	     dsLengthInWords + ssLengthInWords > totalMemoryAvailableInWords )
+	{
+		return false;
+	}
+
+	// Finally, is the entire sum larger than the max available memory?
+	if ( csLengthInWords + dsLengthInWords + ssLengthInWords > totalMemoryAvailableInWords )
 	{
 		return false;
 	}
@@ -193,6 +203,9 @@ bool V2MP_Supervisor_LoadProgram(
 
 	supervisor->programDS.base = supervisor->programCS.base + supervisor->programCS.lengthInBytes;
 	supervisor->programDS.lengthInBytes = dsLengthInWords * sizeof(V2MP_Word);
+
+	supervisor->programSS.base = supervisor->programDS.base + supervisor->programDS.lengthInBytes;
+	supervisor->programSS.lengthInBytes = ssLengthInWords * sizeof(V2MP_Word);
 
 	memcpy(rawMemory + supervisor->programCS.base, cs, supervisor->programCS.lengthInBytes);
 
