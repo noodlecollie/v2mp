@@ -166,6 +166,11 @@ V2MP_Word TestHarnessVM::GetIR() const
 	return V2MP_CPU_GetInstructionRegister(GetCPU());
 }
 
+V2MP_Word TestHarnessVM::GetSP() const
+{
+	return V2MP_CPU_GetStackPointer(GetCPU());
+}
+
 void TestHarnessVM::ResetCPU()
 {
 	V2MP_CPU_Reset(GetCPU());
@@ -193,6 +198,24 @@ bool TestHarnessVM::GetDSData(V2MP_Word address, size_t length, std::vector<V2MP
 	outData.resize(length);
 
 	return V2MP_Supervisor_ReadDSRange(GetSupervisor(), address, outData.data(), outData.size());
+}
+
+bool TestHarnessVM::GetSSData(V2MP_Word address, size_t lengthInWords, std::vector<V2MP_Word>& outWords)
+{
+	outWords.clear();
+	outWords.resize(lengthInWords);
+
+	if ( address & 0x1 )
+	{
+		return false;
+	}
+
+	return V2MP_Supervisor_ReadSSRange(
+		GetSupervisor(),
+		address,
+		reinterpret_cast<V2MP_Byte*>(outWords.data()),
+		outWords.size() * sizeof(V2MP_Word)
+	);
 }
 
 std::shared_ptr<BaseMockDevice> TestHarnessVM::GetBaseMockDevice(V2MP_Word address) const

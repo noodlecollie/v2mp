@@ -328,3 +328,24 @@ bool V2MP_Supervisor_ReadDSRange(
 		numBytes
 	);
 }
+
+bool V2MP_Supervisor_ReadSSRange(
+	const V2MP_Supervisor* supervisor,
+	V2MP_Word address,
+	V2MP_Byte* outBuffer,
+	size_t numBytes
+)
+{
+	if ( !supervisor || !outBuffer || numBytes < 1 )
+	{
+		return false;
+	}
+
+	return V2MP_Supervisor_ReadRangeFromSegment(
+		supervisor,
+		&supervisor->programSS,
+		address,
+		outBuffer,
+		numBytes
+	);
+}

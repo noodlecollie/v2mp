@@ -598,6 +598,8 @@ If a register is not specified in the instruction word, it is not included in th
 
 If a push operation overflows the stack, or a pop operation underflows the stack, a [`SOF`](#faults) fault is raised.
 
+The status register `SR` is unaffected by the instruction, and its existing value is maintained.
+
 ### `Fh`: Halt (`HCF`)
 
 Also known as "halt and catch fire". This instruction stops the processor, leaves all registers as they are, and raises an [`HCF`](#faults) fault.

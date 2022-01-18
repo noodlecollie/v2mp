@@ -47,6 +47,7 @@ void V2MP_CPU_Reset(V2MP_CPU* cpu)
 	}
 
 	cpu->pc = 0;
+	cpu->sp = 0;
 	cpu->sr = 0;
 	cpu->lr = 0;
 	cpu->r0 = 0;
