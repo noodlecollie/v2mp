@@ -10,6 +10,7 @@
 #include "V2MPInternal/Util/Util.h"
 #include "Modules/DevicePort_Internal.h"
 #include "Modules/Supervisor_Action_DPQ.h"
+#include "Modules/Supervisor_Action_Stack.h"
 
 typedef enum ActionResult
 {
@@ -39,14 +40,15 @@ typedef struct DataTransferContext
 	V2MP_Supervisor_Action* action;
 } DataTransferContext;
 
+typedef ActionResult (*ActionHandler)(V2MP_Supervisor*, V2MP_Supervisor_Action*);
+
 static ActionResult V2MP_Supervisor_HandleLoadWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 static ActionResult V2MP_Supervisor_HandleStoreWord(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 static ActionResult V2MP_Supervisor_HandlePerformDevicePortQuery(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 static ActionResult V2MP_Supervisor_HandleDeviceDataTransfer(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 static ActionResult V2MP_Supervisor_HandleRelinquishPortMailbox(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 static ActionResult V2MP_Supervisor_HandleGetUsableByteCount(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
-
-typedef ActionResult (*ActionHandler)(V2MP_Supervisor*, V2MP_Supervisor_Action*);
+static ActionResult V2MP_Supervisor_HandleStackOperation(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action);
 
 #define LIST_ITEM(value, handler) handler,
 static const ActionHandler ACTION_HANDLERS[] =
@@ -622,6 +624,74 @@ static ActionResult V2MP_Supervisor_HandleGetUsableByteCount(V2MP_Supervisor* su
 
 	V2MP_CPU_SetLinkRegister(cpu, count);
 	V2MP_CPU_SetStatusRegister(cpu, count == 0 ? V2MP_CPU_SR_Z : 0);
+
+	return AR_COMPLETE;
+}
+
+static ActionResult V2MP_Supervisor_HandleStackOperation(V2MP_Supervisor* supervisor, V2MP_Supervisor_Action* action)
+{
+	V2MP_CPU* cpu;
+
+	cpu = V2MP_Mainboard_GetCPU(supervisor->mainboard);
+
+	if ( !cpu )
+	{
+		return AR_FAILED;
+	}
+
+	if ( SVACTION_STACK_IS_PUSH(action) )
+	{
+		V2MP_Word regData[V2MP_REGID_MAX + 1];
+		size_t numWords = 0;
+		size_t index;
+
+		for ( index = 0; index <= V2MP_REGID_MAX; ++index )
+		{
+			if ( SVACTION_STACK_REG_FLAGS(action) & (1 << index) )
+			{
+				if ( !V2MP_CPU_GetRegisterValue(cpu, (V2MP_RegisterIndex)index, &regData[numWords++]) )
+				{
+					return AR_FAILED;
+				}
+			}
+		}
+
+		if ( !V2MP_Supervisor_PerformStackPush(supervisor, regData, numWords) )
+		{
+			V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SOF, 0));
+		}
+	}
+	else
+	{
+		V2MP_Word regData[V2MP_REGID_MAX + 1];
+		size_t numWords = 0;
+		size_t index;
+
+		for ( index = 0; index <= V2MP_REGID_MAX; ++index )
+		{
+			if ( SVACTION_STACK_REG_FLAGS(action) & (1 << index) )
+			{
+				++numWords;
+			}
+		}
+
+		if ( V2MP_Supervisor_PerformStackPop(supervisor, regData, numWords) )
+		{
+			numWords = 0;
+
+			for ( index = 0; index <= V2MP_REGID_MAX; ++index )
+			{
+				if ( SVACTION_STACK_REG_FLAGS(action) & (1 << index) )
+				{
+					V2MP_CPU_SetRegisterValue(cpu, (V2MP_RegisterIndex)index, regData[numWords++]);
+				}
+			}
+		}
+		else
+		{
+			V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SOF, 0));
+		}
+	}
 
 	return AR_COMPLETE;
 }

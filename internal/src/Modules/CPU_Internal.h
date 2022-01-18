@@ -11,6 +11,7 @@ struct V2MP_CPU
 	V2MP_Word r0;
 	V2MP_Word r1;
 	V2MP_Word ir;
+	V2MP_Word sp;
 	V2MP_Word fault;
 
 	V2MP_CPU_SupervisorInterface supervisorInterface;

@@ -71,6 +71,7 @@ void V2MP_CPU_NotifyFault(V2MP_CPU* cpu, V2MP_Fault fault);
 bool V2MP_CPU_HasFault(const V2MP_CPU* cpu);
 V2MP_Word V2MP_CPU_GetFaultWord(const V2MP_CPU* cpu);
 
+bool V2MP_CPU_SetRegisterValue(V2MP_CPU* cpu, V2MP_RegisterIndex regIndex, V2MP_Word value);
 bool V2MP_CPU_SetRegisterValueAndUpdateSR(V2MP_CPU* cpu, V2MP_RegisterIndex regIndex, V2MP_Word value);
 bool V2MP_CPU_GetRegisterValue(const V2MP_CPU* cpu, V2MP_RegisterIndex regIndex, V2MP_Word* outValue);
 
@@ -93,6 +94,9 @@ void V2MP_CPU_SetR1(V2MP_CPU* cpu, V2MP_Word value);
 
 V2MP_Word V2MP_CPU_GetInstructionRegister(const V2MP_CPU* cpu);
 void V2MP_CPU_SetInstructionRegister(V2MP_CPU* cpu, V2MP_Word value);
+
+V2MP_Word V2MP_CPU_GetStackPointer(const V2MP_CPU* cpu);
+void V2MP_CPU_SetStackPointer(V2MP_CPU* cpu, V2MP_Word value);
 
 #ifdef __cplusplus
 } // extern "C"

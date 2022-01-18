@@ -92,7 +92,8 @@ typedef enum V2MP_DevicePortMailboxState
 	V2MP_DPMS_EXHAUSTED
 } V2MP_DevicePortMailboxState;
 
-#define V2MP_REGID_MASK(val) ((val) & 0x3)
+#define V2MP_REGID_MAX 3
+#define V2MP_REGID_MASK(val) ((val) & V2MP_REGID_MAX)
 
 #define V2MP_CPU_SR_Z (1 << 0)
 #define V2MP_CPU_SR_C (1 << 1)

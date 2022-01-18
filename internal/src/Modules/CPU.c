@@ -97,6 +97,27 @@ V2MP_Word V2MP_CPU_GetFaultWord(const V2MP_CPU* cpu)
 	return cpu ? cpu->fault : 0;
 }
 
+bool V2MP_CPU_SetRegisterValue(V2MP_CPU* cpu, V2MP_RegisterIndex regIndex, V2MP_Word value)
+{
+	V2MP_Word* regPtr;
+
+	if ( !cpu )
+	{
+		return false;
+	}
+
+	regPtr = V2MP_CPU_GetRegisterPtr(cpu, regIndex);
+
+	if ( !regPtr )
+	{
+		return false;
+	}
+
+	*regPtr = value;
+
+	return true;
+}
+
 bool V2MP_CPU_SetRegisterValueAndUpdateSR(V2MP_CPU* cpu, V2MP_RegisterIndex regIndex, V2MP_Word value)
 {
 	V2MP_Word* regPtr;
@@ -245,4 +266,19 @@ void V2MP_CPU_SetInstructionRegister(V2MP_CPU* cpu, V2MP_Word value)
 	}
 
 	cpu->ir = value;
+}
+
+V2MP_Word V2MP_CPU_GetStackPointer(const V2MP_CPU* cpu)
+{
+	return cpu ? cpu->sp : 0;
+}
+
+void V2MP_CPU_SetStackPointer(V2MP_CPU* cpu, V2MP_Word value)
+{
+	if ( !cpu )
+	{
+		return;
+	}
+
+	cpu->sp = value;
 }

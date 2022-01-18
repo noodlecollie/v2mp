@@ -12,6 +12,8 @@ void RequestDevicePortDirectWrite(void* opaqueSv, V2MP_Word port);
 void RequestDevicePortIndirectWrite(void* opaqueSv, V2MP_Word port, V2MP_Word dsDestAddress, V2MP_Word dsMaxBytes);
 void RequestRelinquishMailbox(void* opaqueSv, V2MP_Word port);
 void RequestUsableByteCount(void* opaqueSv, V2MP_Word port);
+void RequestStackPush(void* opaqueSv, V2MP_Word regFlags);
+void RequestStackPop(void* opaqueSv, V2MP_Word regFlags);
 
 void V2MP_Supervisor_CreateCPUInterface(V2MP_Supervisor* supervisor, V2MP_CPU_SupervisorInterface* interface)
 {
@@ -32,6 +34,8 @@ void V2MP_Supervisor_CreateCPUInterface(V2MP_Supervisor* supervisor, V2MP_CPU_Su
 	interface->requestDevicePortIndirectWrite = &RequestDevicePortIndirectWrite;
 	interface->requestRelinquishMailbox = &RequestRelinquishMailbox;
 	interface->requestUsableByteCount = &RequestUsableByteCount;
+	interface->requestStackPush = &RequestStackPush;
+	interface->requestStackPop = &RequestStackPop;
 }
 
 V2MP_Word FetchInstructionWord(void* opaqueSv, V2MP_Word address, V2MP_Word* destReg)
@@ -82,4 +86,14 @@ void RequestRelinquishMailbox(void* opaqueSv, V2MP_Word port)
 void RequestUsableByteCount(void* opaqueSv, V2MP_Word port)
 {
 	V2MP_Supervisor_RequestUsableByteCount((V2MP_Supervisor*)opaqueSv, port);
+}
+
+void RequestStackPush(void* opaqueSv, V2MP_Word regFlags)
+{
+	V2MP_Supervisor_RequestStackPush((V2MP_Supervisor*)opaqueSv, regFlags);
+}
+
+void RequestStackPop(void* opaqueSv, V2MP_Word regFlags)
+{
+	V2MP_Supervisor_RequestStackPop((V2MP_Supervisor*)opaqueSv, regFlags);
 }

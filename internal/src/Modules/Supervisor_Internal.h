@@ -106,4 +106,7 @@ void V2MP_Supervisor_RequestDevicePortIndirectWrite(
 void V2MP_Supervisor_RequestRelinquishMailbox(V2MP_Supervisor* supervisor, V2MP_Word port);
 void V2MP_Supervisor_RequestUsableByteCount(V2MP_Supervisor* supervisor, V2MP_Word port);
 
+void V2MP_Supervisor_RequestStackPush(V2MP_Supervisor* supervisor, V2MP_Word regFlags);
+void V2MP_Supervisor_RequestStackPop(V2MP_Supervisor* supervisor, V2MP_Word regFlags);
+
 #endif // V2MP_MODULES_SUPERVISOR_INTERNAL_H

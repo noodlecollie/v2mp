@@ -323,3 +323,37 @@ void V2MP_Supervisor_RequestUsableByteCount(V2MP_Supervisor* supervisor, V2MP_Wo
 	action->actionType = SVAT_PORT_MAILBOX_USABLE_BYTE_COUNT;
 	SVACTION_USABLE_BYTE_COUNT_ARG_PORT(action) = port;
 }
+
+void V2MP_Supervisor_RequestStackPush(V2MP_Supervisor* supervisor, V2MP_Word regFlags)
+{
+	V2MP_Supervisor_Action* action;
+
+	action = V2MP_Supervisor_CreateNewAction(supervisor);
+
+	if ( !action )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, SVAT_STACK_OPERATION));
+		return;
+	}
+
+	action->actionType = SVAT_STACK_OPERATION;
+	SVACTION_STACK_REG_FLAGS(action) = regFlags;
+	SVACTION_STACK_IS_PUSH(action) = (V2MP_Word)true;
+}
+
+void V2MP_Supervisor_RequestStackPop(V2MP_Supervisor* supervisor, V2MP_Word regFlags)
+{
+	V2MP_Supervisor_Action* action;
+
+	action = V2MP_Supervisor_CreateNewAction(supervisor);
+
+	if ( !action )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_SPV, SVAT_STACK_OPERATION));
+		return;
+	}
+
+	action->actionType = SVAT_STACK_OPERATION;
+	SVACTION_STACK_REG_FLAGS(action) = regFlags;
+	SVACTION_STACK_IS_PUSH(action) = (V2MP_Word)false;
+}
