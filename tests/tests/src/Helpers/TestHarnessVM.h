@@ -198,6 +198,8 @@ public:
 	V2MP_Word GetIR() const;
 	V2MP_Word GetSP() const;
 
+	V2MP_Word GetRegisterValue(V2MP_RegisterIndex registerIndex) const;
+
 	void ResetCPU();
 	bool Execute(V2MP_Word instruction);
 

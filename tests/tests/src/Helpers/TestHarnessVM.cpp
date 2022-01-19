@@ -171,6 +171,13 @@ V2MP_Word TestHarnessVM::GetSP() const
 	return V2MP_CPU_GetStackPointer(GetCPU());
 }
 
+V2MP_Word TestHarnessVM::GetRegisterValue(V2MP_RegisterIndex registerIndex) const
+{
+	V2MP_Word out = 0;
+	V2MP_CPU_GetRegisterValue(GetCPU(), registerIndex, &out);
+	return out;
+}
+
 void TestHarnessVM::ResetCPU()
 {
 	V2MP_CPU_Reset(GetCPU());
