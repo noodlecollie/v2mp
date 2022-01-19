@@ -516,6 +516,12 @@ static bool Execute_STK(V2MP_CPU* cpu)
 		regFlags |= (1 << V2MP_REGID_PC);
 	}
 
+	if ( regFlags == 0 )
+	{
+		SetFault(cpu, V2MP_FAULT_RES, 0);
+		return true;
+	}
+
 	if ( V2MP_OP_STK_PUSH(cpu->ir) )
 	{
 		cpu->supervisorInterface.requestStackPush(

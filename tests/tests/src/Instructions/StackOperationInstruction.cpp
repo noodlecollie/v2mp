@@ -8,11 +8,13 @@ struct STKResult
 	bool r1Push = false;
 	bool lrPush = false;
 	bool pcPush = false;
+	bool srWasSameAfterPush = false;
 
 	bool r0Pop = false;
 	bool r1Pop = false;
 	bool lrPop = false;
 	bool pcPop = false;
+	bool srWasSameAfterPop = false;
 
 	inline void SetPushResult(size_t index, bool result)
 	{
@@ -130,6 +132,8 @@ static void PerformSTKTest(size_t iteration, STKResult& result)
 	vm.SetLR(VAL_LR);
 	vm.SetPC(VAL_PC);
 
+	const V2MP_Word srPrePush = vm.GetSR();
+
 	if ( !vm.Execute(Asm::PUSH(regFlags)) )
 	{
 		throw std::runtime_error("PUSH instruction failed to execute");
@@ -161,10 +165,14 @@ static void PerformSTKTest(size_t iteration, STKResult& result)
 		}
 	}
 
+	result.srWasSameAfterPush = srPrePush == vm.GetSR();
+
 	vm.SetR0(0);
 	vm.SetR1(0);
 	vm.SetLR(0);
 	vm.SetPC(0);
+
+	const V2MP_Word srPrePop = vm.GetSR();
 
 	if ( !vm.Execute(Asm::POP(regFlags)) )
 	{
@@ -180,6 +188,8 @@ static void PerformSTKTest(size_t iteration, STKResult& result)
 	result.SetPopResult(V2MP_REGID_R1, vm.GetR1() == ((regFlags & (1 << V2MP_REGID_R1)) ? VAL_R1 : 0));
 	result.SetPopResult(V2MP_REGID_LR, vm.GetLR() == ((regFlags & (1 << V2MP_REGID_LR)) ? VAL_LR : 0));
 	result.SetPopResult(V2MP_REGID_PC, vm.GetPC() == ((regFlags & (1 << V2MP_REGID_PC)) ? VAL_PC : 0));
+
+	result.srWasSameAfterPop = srPrePop == vm.GetSR();
 }
 
 SCENARIO("STK: Pushing and popping registers should result in the correct values being placed onto or removed from the stack", "[instructions]")
@@ -201,6 +211,8 @@ SCENARIO("STK: Pushing and popping registers should result in the correct values
 	CHECK(results[iteration].lrPop);
 	CHECK(results[iteration].pcPush);
 	CHECK(results[iteration].pcPop);
+	CHECK(results[iteration].srWasSameAfterPush);
+	CHECK(results[iteration].srWasSameAfterPop);
 	++iteration;
 
 	REQUIRE_NOTHROW(PerformSTKTest(iteration, results[iteration]));	// 2
@@ -212,6 +224,8 @@ SCENARIO("STK: Pushing and popping registers should result in the correct values
 	CHECK(results[iteration].lrPop);
 	CHECK(results[iteration].pcPush);
 	CHECK(results[iteration].pcPop);
+	CHECK(results[iteration].srWasSameAfterPush);
+	CHECK(results[iteration].srWasSameAfterPop);
 	++iteration;
 
 	REQUIRE_NOTHROW(PerformSTKTest(iteration, results[iteration]));	// 3
@@ -223,6 +237,8 @@ SCENARIO("STK: Pushing and popping registers should result in the correct values
 	CHECK(results[iteration].lrPop);
 	CHECK(results[iteration].pcPush);
 	CHECK(results[iteration].pcPop);
+	CHECK(results[iteration].srWasSameAfterPush);
+	CHECK(results[iteration].srWasSameAfterPop);
 	++iteration;
 
 	REQUIRE_NOTHROW(PerformSTKTest(iteration, results[iteration]));	// 4
@@ -234,6 +250,8 @@ SCENARIO("STK: Pushing and popping registers should result in the correct values
 	CHECK(results[iteration].lrPop);
 	CHECK(results[iteration].pcPush);
 	CHECK(results[iteration].pcPop);
+	CHECK(results[iteration].srWasSameAfterPush);
+	CHECK(results[iteration].srWasSameAfterPop);
 	++iteration;
 
 	REQUIRE_NOTHROW(PerformSTKTest(iteration, results[iteration]));	// 5
@@ -245,6 +263,8 @@ SCENARIO("STK: Pushing and popping registers should result in the correct values
 	CHECK(results[iteration].lrPop);
 	CHECK(results[iteration].pcPush);
 	CHECK(results[iteration].pcPop);
+	CHECK(results[iteration].srWasSameAfterPush);
+	CHECK(results[iteration].srWasSameAfterPop);
 	++iteration;
 
 	REQUIRE_NOTHROW(PerformSTKTest(iteration, results[iteration]));	// 6
@@ -256,6 +276,8 @@ SCENARIO("STK: Pushing and popping registers should result in the correct values
 	CHECK(results[iteration].lrPop);
 	CHECK(results[iteration].pcPush);
 	CHECK(results[iteration].pcPop);
+	CHECK(results[iteration].srWasSameAfterPush);
+	CHECK(results[iteration].srWasSameAfterPop);
 	++iteration;
 
 	REQUIRE_NOTHROW(PerformSTKTest(iteration, results[iteration]));	// 7
@@ -267,6 +289,8 @@ SCENARIO("STK: Pushing and popping registers should result in the correct values
 	CHECK(results[iteration].lrPop);
 	CHECK(results[iteration].pcPush);
 	CHECK(results[iteration].pcPop);
+	CHECK(results[iteration].srWasSameAfterPush);
+	CHECK(results[iteration].srWasSameAfterPop);
 	++iteration;
 
 	REQUIRE_NOTHROW(PerformSTKTest(iteration, results[iteration]));	// 8
@@ -278,6 +302,8 @@ SCENARIO("STK: Pushing and popping registers should result in the correct values
 	CHECK(results[iteration].lrPop);
 	CHECK(results[iteration].pcPush);
 	CHECK(results[iteration].pcPop);
+	CHECK(results[iteration].srWasSameAfterPush);
+	CHECK(results[iteration].srWasSameAfterPop);
 	++iteration;
 
 	REQUIRE_NOTHROW(PerformSTKTest(iteration, results[iteration]));	// 9
@@ -289,6 +315,8 @@ SCENARIO("STK: Pushing and popping registers should result in the correct values
 	CHECK(results[iteration].lrPop);
 	CHECK(results[iteration].pcPush);
 	CHECK(results[iteration].pcPop);
+	CHECK(results[iteration].srWasSameAfterPush);
+	CHECK(results[iteration].srWasSameAfterPop);
 	++iteration;
 
 	REQUIRE_NOTHROW(PerformSTKTest(iteration, results[iteration]));	// 10
@@ -300,6 +328,8 @@ SCENARIO("STK: Pushing and popping registers should result in the correct values
 	CHECK(results[iteration].lrPop);
 	CHECK(results[iteration].pcPush);
 	CHECK(results[iteration].pcPop);
+	CHECK(results[iteration].srWasSameAfterPush);
+	CHECK(results[iteration].srWasSameAfterPop);
 	++iteration;
 
 	REQUIRE_NOTHROW(PerformSTKTest(iteration, results[iteration]));	// 11
@@ -311,6 +341,8 @@ SCENARIO("STK: Pushing and popping registers should result in the correct values
 	CHECK(results[iteration].lrPop);
 	CHECK(results[iteration].pcPush);
 	CHECK(results[iteration].pcPop);
+	CHECK(results[iteration].srWasSameAfterPush);
+	CHECK(results[iteration].srWasSameAfterPop);
 	++iteration;
 
 	REQUIRE_NOTHROW(PerformSTKTest(iteration, results[iteration]));	// 12
@@ -322,6 +354,8 @@ SCENARIO("STK: Pushing and popping registers should result in the correct values
 	CHECK(results[iteration].lrPop);
 	CHECK(results[iteration].pcPush);
 	CHECK(results[iteration].pcPop);
+	CHECK(results[iteration].srWasSameAfterPush);
+	CHECK(results[iteration].srWasSameAfterPop);
 	++iteration;
 
 	REQUIRE_NOTHROW(PerformSTKTest(iteration, results[iteration]));	// 13
@@ -333,6 +367,8 @@ SCENARIO("STK: Pushing and popping registers should result in the correct values
 	CHECK(results[iteration].lrPop);
 	CHECK(results[iteration].pcPush);
 	CHECK(results[iteration].pcPop);
+	CHECK(results[iteration].srWasSameAfterPush);
+	CHECK(results[iteration].srWasSameAfterPop);
 	++iteration;
 
 	REQUIRE_NOTHROW(PerformSTKTest(iteration, results[iteration]));	// 14
@@ -344,6 +380,8 @@ SCENARIO("STK: Pushing and popping registers should result in the correct values
 	CHECK(results[iteration].lrPop);
 	CHECK(results[iteration].pcPush);
 	CHECK(results[iteration].pcPop);
+	CHECK(results[iteration].srWasSameAfterPush);
+	CHECK(results[iteration].srWasSameAfterPop);
 	++iteration;
 
 	REQUIRE_NOTHROW(PerformSTKTest(iteration, results[iteration]));	// 15
@@ -355,8 +393,180 @@ SCENARIO("STK: Pushing and popping registers should result in the correct values
 	CHECK(results[iteration].lrPop);
 	CHECK(results[iteration].pcPush);
 	CHECK(results[iteration].pcPop);
+	CHECK(results[iteration].srWasSameAfterPush);
+	CHECK(results[iteration].srWasSameAfterPop);
 }
 
-// TODO: Ensure SR stays the same after instruction
-// TODO: Reserved bits
-// TODO: Overflow and underflow checks
+SCENARIO("STK: Performing a stack operation with reserved bits set should raise a RES fault", "[instructions]")
+{
+	GIVEN("A virtual machine with different values in different registers")
+	{
+		static constexpr V2MP_Word VAL_R0 = 0x0001;
+		static constexpr V2MP_Word VAL_R1 = 0x0002;
+		static constexpr V2MP_Word VAL_LR = 0x0003;
+		static constexpr V2MP_Word VAL_PC = 0x0004;
+
+		TestHarnessVM vm;
+
+		vm.SetR0(VAL_R0);
+		vm.SetR1(VAL_R1);
+		vm.SetLR(VAL_LR);
+		vm.SetPC(VAL_PC);
+
+		for ( size_t index = 4; index <= 10; ++index )
+		{
+			WHEN("A push is performed with a reserved bit set")
+			{
+				REQUIRE(vm.Execute(Asm::PUSH(V2MP_REGID_R1) | (1 << index)));
+
+				THEN("A RES fault is raised, and all registers are left unchanged")
+				{
+					INFO("Reserved bit " << index << " was set");
+					CHECK(vm.CPUHasFault());
+					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
+					CHECK(vm.GetR0() == VAL_R0);
+					CHECK(vm.GetR1() == VAL_R1);
+					CHECK(vm.GetLR() == VAL_LR);
+					CHECK(vm.GetPC() == VAL_PC);
+					CHECK(vm.GetSR() == 0);
+					CHECK(vm.GetSP() == 0);
+				}
+			}
+
+			AND_WHEN("A pop is performed with a reserved bit set")
+			{
+				REQUIRE(vm.Execute(Asm::POP(V2MP_REGID_R1) | (1 << index)));
+
+				THEN("A RES fault is raised, and all registers are left unchanged")
+				{
+					INFO("Reserved bit " << index << " was set");
+					CHECK(vm.CPUHasFault());
+					CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
+					CHECK(vm.GetR0() == VAL_R0);
+					CHECK(vm.GetR1() == VAL_R1);
+					CHECK(vm.GetLR() == VAL_LR);
+					CHECK(vm.GetPC() == VAL_PC);
+					CHECK(vm.GetSR() == 0);
+					CHECK(vm.GetSP() == 0);
+				}
+			}
+		}
+
+		AND_WHEN("A push is performed with no registers specified")
+		{
+			REQUIRE(vm.Execute(Asm::PUSH(0)));
+
+			THEN("A RES fault is raised, and all registers are left unchanged")
+			{
+				CHECK(vm.CPUHasFault());
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
+				CHECK(vm.GetR0() == VAL_R0);
+				CHECK(vm.GetR1() == VAL_R1);
+				CHECK(vm.GetLR() == VAL_LR);
+				CHECK(vm.GetPC() == VAL_PC);
+				CHECK(vm.GetSR() == 0);
+				CHECK(vm.GetSP() == 0);
+			}
+		}
+
+		AND_WHEN("A pop is performed with no registers specified")
+		{
+			REQUIRE(vm.Execute(Asm::POP(0)));
+
+			THEN("A RES fault is raised, and all registers are left unchanged")
+			{
+				CHECK(vm.CPUHasFault());
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
+				CHECK(vm.GetR0() == VAL_R0);
+				CHECK(vm.GetR1() == VAL_R1);
+				CHECK(vm.GetLR() == VAL_LR);
+				CHECK(vm.GetPC() == VAL_PC);
+				CHECK(vm.GetSR() == 0);
+				CHECK(vm.GetSP() == 0);
+			}
+		}
+	}
+}
+
+SCENARIO("STK: Performing a stack push that exceeds the stack space raises a SOF fault", "[instructions]")
+{
+	GIVEN("A virtual machine with different values in different registers")
+	{
+		static constexpr V2MP_Word VAL_R0 = 0x0001;
+		static constexpr V2MP_Word VAL_R1 = 0x0002;
+		static constexpr V2MP_Word VAL_LR = 0x0003;
+		static constexpr V2MP_Word VAL_PC = 0x0004;
+
+		TestHarnessVM vm(4);
+
+		TestHarnessVM::ProgramDef prog;
+		prog.FillCS(1, 0);
+		prog.SetStackSize(1);
+
+		REQUIRE(vm.LoadProgram(prog));
+
+		vm.SetR0(VAL_R0);
+		vm.SetR1(VAL_R1);
+		vm.SetLR(VAL_LR);
+		vm.SetPC(VAL_PC);
+
+		WHEN("A stack push is performed that would exceed the available stack space")
+		{
+			REQUIRE(vm.Execute(Asm::PUSH((1 << V2MP_REGID_R0) | (1 << V2MP_REGID_R1))));
+
+			THEN("A SOF fault is raised and all registers are left unchanged")
+			{
+				CHECK(vm.CPUHasFault());
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_SOF);
+				CHECK(vm.GetR0() == VAL_R0);
+				CHECK(vm.GetR1() == VAL_R1);
+				CHECK(vm.GetLR() == VAL_LR);
+				CHECK(vm.GetPC() == VAL_PC);
+				CHECK(vm.GetSR() == 0);
+				CHECK(vm.GetSP() == 0);
+			}
+		}
+	}
+}
+
+SCENARIO("STK: Performing a stack pop that exceeds the available stack words raises a SOF fault", "[instructions]")
+{
+	GIVEN("A virtual machine with different values in different registers")
+	{
+		static constexpr V2MP_Word VAL_R0 = 0x0001;
+		static constexpr V2MP_Word VAL_R1 = 0x0002;
+		static constexpr V2MP_Word VAL_LR = 0x0003;
+		static constexpr V2MP_Word VAL_PC = 0x0004;
+
+		TestHarnessVM vm(4);
+
+		TestHarnessVM::ProgramDef prog;
+		prog.FillCS(1, 0);
+		prog.SetStackSize(1);
+
+		REQUIRE(vm.LoadProgram(prog));
+
+		vm.SetR0(VAL_R0);
+		vm.SetR1(VAL_R1);
+		vm.SetLR(VAL_LR);
+		vm.SetPC(VAL_PC);
+
+		WHEN("A stack pop is performed that would exceed the available words on the stack")
+		{
+			REQUIRE(vm.Execute(Asm::PUSH(1 << V2MP_REGID_R0)));
+			REQUIRE(vm.Execute(Asm::POP((1 << V2MP_REGID_R0) | (1 << V2MP_REGID_R1))));
+
+			THEN("A SOF fault is raised and all registers are left unchanged")
+			{
+				CHECK(vm.CPUHasFault());
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_SOF);
+				CHECK(vm.GetR0() == VAL_R0);
+				CHECK(vm.GetR1() == VAL_R1);
+				CHECK(vm.GetLR() == VAL_LR);
+				CHECK(vm.GetPC() == VAL_PC);
+				CHECK(vm.GetSR() == 0);
+				CHECK(vm.GetSP() == 2);
+			}
+		}
+	}
+}
