@@ -196,6 +196,9 @@ public:
 	void SetSR(V2MP_Word value);
 
 	V2MP_Word GetIR() const;
+	V2MP_Word GetSP() const;
+
+	V2MP_Word GetRegisterValue(V2MP_RegisterIndex registerIndex) const;
 
 	void ResetCPU();
 	bool Execute(V2MP_Word instruction);
@@ -204,6 +207,7 @@ public:
 	bool GetDSWord(V2MP_Word address, V2MP_Word& outWord) const;
 
 	bool GetDSData(V2MP_Word address, size_t length, std::vector<V2MP_Byte>& outData);
+	bool GetSSData(V2MP_Word address, size_t lengthInWords, std::vector<V2MP_Word>& outWords);
 
 	template<typename T>
 	inline typename std::enable_if<std::is_base_of<BaseMockDevice, T>::value, std::shared_ptr<T>>::type

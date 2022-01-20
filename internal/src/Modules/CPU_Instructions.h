@@ -45,10 +45,10 @@
 #define V2MP_OP_DPO_RESBITS(instr) ((instr) & 0x07FC)
 
 #define V2MP_OP_STK_PUSH(instr) (((instr) & 0x0800) != 0)
-#define V2MP_OP_STK_R0(instr) (((instr) & 0x0008) != 0)
-#define V2MP_OP_STK_R1(instr) (((instr) & 0x0004) != 0)
-#define V2MP_OP_STK_LR(instr) (((instr) & 0x0002) != 0)
-#define V2MP_OP_STK_PC(instr) (((instr) & 0x0001) != 0)
+#define V2MP_OP_STK_R0(instr) (((instr) & 0x0001) != 0)
+#define V2MP_OP_STK_R1(instr) (((instr) & 0x0002) != 0)
+#define V2MP_OP_STK_LR(instr) (((instr) & 0x0004) != 0)
+#define V2MP_OP_STK_PC(instr) (((instr) & 0x0008) != 0)
 #define V2MP_OP_STK_RESBITS(instr) ((instr) & 0x07F0)
 
 bool V2MP_CPU_ExecuteInstructionInternal(V2MP_CPU* cpu);

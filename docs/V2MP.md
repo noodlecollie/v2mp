@@ -580,10 +580,10 @@ Pushes or pops register values from the stack.
 ```
 
 * Operand bit `[11] (A)` specifies whether the operation is a push or pop. If `A` is set then the operation is a push; if `A` is not set then the operation is a pop.
-* Operand bit `[3] (B)` specifies whether `R0` is included in the operation: it is included if `B` is set, and is not included if `B` is not set.
-* Operand bit `[2] (C)` specifies whether `R1` is included in the operation: it is included if `C` is set, and is not included if `C` is not set.
-* Operand bit `[1] (D)` specifies whether `LR` is included in the operation: it is included if `D` is set, and is not included if `D` is not set.
-* Operand bit `[0] (E)` specifies whether `PC` is included in the operation: it is included if `E` is set, and is not included if `E` is not set.
+* Operand bit `[3] (B)` specifies whether `PC` is included in the operation: it is included if `B` is set, and is not included if `B` is not set.
+* Operand bit `[2] (C)` specifies whether `LR` is included in the operation: it is included if `C` is set, and is not included if `C` is not set.
+* Operand bit `[1] (D)` specifies whether `R1` is included in the operation: it is included if `D` is set, and is not included if `D` is not set.
+* Operand bit `[0] (E)` specifies whether `R0` is included in the operation: it is included if `E` is set, and is not included if `E` is not set.
 
 Operand bits `[10 4]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised. Additionally, including no registers in the operation (ie. leaving operand bits `B` - `E` as `0`) will also raise a [`RES`](#faults) fault.
 
@@ -597,6 +597,8 @@ Registers are always pushed onto the stack in the following order, and are poppe
 If a register is not specified in the instruction word, it is not included in the push or pop operation. After the operation, the stack is grown or shrunk by as many words as there were registers included in the operation.
 
 If a push operation overflows the stack, or a pop operation underflows the stack, a [`SOF`](#faults) fault is raised.
+
+The status register `SR` is unaffected by the instruction, and its existing value is maintained.
 
 ### `Fh`: Halt (`HCF`)
 
