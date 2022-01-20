@@ -325,9 +325,7 @@ Operand bit `[8]` is reserved for future use, and must be set to `0`. If this is
 
 After the instruction is executed, the destination register as specified by operand `A` will hold the lower 16 bits of the result, and `LR` will hold the higher 16 bits of the result. If the result fitted entirely into the destination register, `LR` will be set appropriately depending on whether the operation was signed or unsigned, so that `LR` concatenated with the destination register would form a 32-bit word of the correct sign.
 
-If the result could not fit into both the destination register and `LR`, `SR[C]` will be set; otherwise, `SR[C]` will be cleared.
-
-If the result was zero, `SR[Z]` will be set; otherwise, `SR[Z]` will be cleared.
+If the result could not fit into both the destination register and `LR`, `SR[C]` is set; otherwise, it is cleared. If the result is zero, `SR[Z]` is set; otherwise, it is. All other bits in `SR` are cleared.
 
 ### `3h`: Divide (`DIV`)
 
@@ -335,10 +333,20 @@ Divides a register by a value.
 
 ```
  DIV
-|0011|............|
+|0011|ABC.DDDDDDDD|
 ```
 
-**TODO**
+* Operand bit `[11] (A)` specifies whether `R0` or `R1` is used as the destination register for the operation. If `A` is `0` then `R0` is used; if `A` is `1` then `R1` is used.
+* Operand bit `[10] (B)` specifies the source of the divisor. If `B` is `0` then either `R0` or `R1` (the opposite to that which has been selected by operand `A`) is used as the divisor; if `B` is `1` then operand bits `[7 0] (D)` are treated as an 8-bit divisor whose sign depends on operand `C`.
+* Operand bit `[9] (C)` specifies whether the operation is treated as signed or unsigned. If `C` is `0` then the destination and divisor are treated as unsigned; if `C` is `1` then the destination and divisor are treated as signed.
+
+Operand bit `[8]` is reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
+
+If the divisor is zero when the instruction is executed, a [`DIV`](#faults) fault is raised.
+
+After the instruction is executed, the destination register as specified by operand `A` will hold the quotient of the result, and `LR` will hold the remainder. Both values will be either signed or unsigned, depending on whether the operation was a signed or unsigned division.
+
+If the remainder of the result is not zero, `SR[C]` is set; otherwise, it is cleared. If the quotient of the result is zero, `SR[Z]` is set; otherwise, it is cleared. All other bits in `SR` are cleared.
 
 ### `4h`: Assign (`ASGN`)
 
@@ -660,3 +668,4 @@ The possible faults raised by the processor are described below.
 | `07h` | `SPV` | Supervisor Error | Raised if the supervisor encounters an internal error. This fault indicates an exceptional issue with the supervisor code itself, and is not expected to be accommodated by a program. Under normal operation, this fault should never be raised. | Supervisor |
 | `08h` | `DEV` | Device Error | Raised if a device encounters an internal error. This fault indicates an exceptional issue with a device in the system, and is not expected to be accommodated by a program. Under normal operation, this fault should never be raised. | Supervisor, when interacting with a device |
 | `09h` | `SOF` | Stack overflow or underflow | Raised when a stack operation overflows or underflows the stack space. | [`STK`](#Bh-stack-operation-stk) |
+| `0Ah` | `DIV` | Division by zero | Raised when a [`DIV`](#3h-divide-div) operation is performed with a divisor of `0`. | [`DIV`](#3h-divide-div) |
