@@ -12,18 +12,20 @@ The specification for the virtual processor is outlined in this file.
 * [Instruction Set](#instruction-set)
   * [0h ADD: Add](#0h-add-add)
   * [1h SUB: Subtract](#1h-subtract-sub)
-  * [2h ASGN: Assign](#2h-assign-asgn)
-  * [3h SHFT: Bit Shift](#3h-bit-shift-shft)
-  * [4h BITW: Bitwise Operation](#4h-bitwise-operation-bitw)
-  * [5h CBX: Conditional Branch](#5h-conditional-branch-cbx)
-  * [6h LDST: Load/Store](#6h-loadstore-ldst)
-  * [7h DPQ: Device Port Query](#7h-device-port-query-dpq)
-  * [8h DPO: Device Port Operation](#8h-device-port-operation-dpo)
+  * [2h MUL: Multiply](#2h-multiply-mul)
+  * [3h DIV: Divide](#3h-divide-div)
+  * [4h ASGN: Assign](#4h-assign-asgn)
+  * [5h SHFT: Bit Shift](#5h-bit-shift-shft)
+  * [6h BITW: Bitwise Operation](#6h-bitwise-operation-bitw)
+  * [7h CBX: Conditional Branch](#7h-conditional-branch-cbx)
+  * [8h LDST: Load/Store](#6h-loadstore-ldst)
+  * [9h DPQ: Device Port Query](#9h-device-port-query-dpq)
+  * [Ah DPO: Device Port Operation](#Ah-device-port-operation-dpo)
     * [Usable Byte Count](#usable-byte-count-00b)
     * [Relinquish Mailbox](#relinquish-mailbox-01b)
     * [Read](#read-10b)
     * [Write](#write-11b)
-  * [9h STK: Stack Operation](#9h-stack-operation-stk)
+  * [Bh STK: Stack Operation](#Bh-stack-operation-stk)
   * [Fh HCF: Halt](#fh-halt-hcf)
 * [Faults](#faults)
 
@@ -157,18 +159,18 @@ The program may also specify how much memory is allocated for `SS`, but the cont
 The following restrictions apply to any memory access (in `CS`, `DS`, or `SS`), via any register (`PC` or general-purpose):
 
 * When accessing a unit of memory (eg. a 2-byte word), the address of the access must be aligned to a multiple of the size of the unit. If this is not the case, an [`ALGN`](#faults) fault will be raised.
-  * Although the processor itself can only load and store individual words using the [`LDST`](#6h-loadstore-ldst) instruction, other instructions such as [`DPO`](#8h-device-port-operation-dpo) can access memory segments at single-byte granularity. As such, alignment restrictions do not apply to these operations.
+  * Although the processor itself can only load and store individual words using the [`LDST`](#6h-loadstore-ldst) instruction, other instructions such as [`DPO`](#Ah-device-port-operation-dpo) can access memory segments at single-byte granularity. As such, alignment restrictions do not apply to these operations.
 * The address of the access must be within the size of the segment. Although 64KB of memory from each segment is addressable, the entire memory space might not be used if the program is not that large, and so will not be allocated by the supervisor. If access is attempted to a memory address outside of either segment, a [`SEG`](#faults) fault will be raised.
 
 The V2MP memory model does not directly support dynamic memory allocation: memory segments are of a fixed size. However, supervisor calls may be used to manipulate memory pages themselves at runtime, eg. to swap one page out for another.
 
 ### Relevant Instructions
 
-The [`LDST`](#6h-loadstore-ldst) instruction loads or stores single words from or to `DS`. The [`DPO`](#8h-device-port-operation-dpo) instruction can transfer data between a device port and an address in `DS`.
+The [`LDST`](#6h-loadstore-ldst) instruction loads or stores single words from or to `DS`. The [`DPO`](#Ah-device-port-operation-dpo) instruction can transfer data between a device port and an address in `DS`.
 
-The [`STK`](#9h-stack-operation-stk) instruction pushes or pops register onto or off of the stack in `SS`.
+The [`STK`](#Bh-stack-operation-stk) instruction pushes or pops register onto or off of the stack in `SS`.
 
-The [`CBX`](#5h-conditional-branch-cbx) instruction makes reference to an address in `CS` which the program counter `PC` should be set to if the branch condition is met. Other arithmetic instructions may directly modify the contents of `PC` to point to different addresses in `CS`.
+The [`CBX`](#7h-conditional-branch-cbx) instruction makes reference to an address in `CS` which the program counter `PC` should be set to if the branch condition is met. Other arithmetic instructions may directly modify the contents of `PC` to point to different addresses in `CS`.
 
 ## Device Ports
 
@@ -182,13 +184,13 @@ The program can query the number of bytes currently available in a device's mail
 
 ### State
 
-All descriptions of state in this section describe the state as seen from the program's point of view (ie. as reported by a [`DPQ`](#8h-device-port-query-dpq) instruction).
+All descriptions of state in this section describe the state as seen from the program's point of view (ie. as reported by a [`DPQ`](#Ah-device-port-query-dpq) instruction).
 
-If a device port has no device attached to it, it is considered "disconnected". A disconnected port may not be operated on using a [`DPO`](#8h-device-port-operation-dpo) instruction; if this occurs, an [`IDO`](#faults) fault will be raised.
+If a device port has no device attached to it, it is considered "disconnected". A disconnected port may not be operated on using a [`DPO`](#Ah-device-port-operation-dpo) instruction; if this occurs, an [`IDO`](#faults) fault will be raised.
 
 If a port does have a device attached to it, it is considered "connected".
 
-A connected port's mailbox is controlled either by the running program or by the device. If the mailbox is controlled by the device, the mailbox's state is considered "unavailable", and the program is not allowed to perform any operations on the mailbox using the [`DPO`](#8h-device-port-operation-dpo) instruction. If the [`DPO`](#8h-device-port-operation-dpo) instruction is used on an unavailable mailbox, an [`IDO`](#faults) fault will be raised.
+A connected port's mailbox is controlled either by the running program or by the device. If the mailbox is controlled by the device, the mailbox's state is considered "unavailable", and the program is not allowed to perform any operations on the mailbox using the [`DPO`](#Ah-device-port-operation-dpo) instruction. If the [`DPO`](#Ah-device-port-operation-dpo) instruction is used on an unavailable mailbox, an [`IDO`](#faults) fault will be raised.
 
 Note that if a port is disconnected, its mailbox is always considered unavailable.
 
@@ -233,7 +235,7 @@ A transition to a disconnected state may only happen if the port's mailbox is no
 
 ### Relevant Instructions
 
-The [`DPQ`](#7h-device-port-query-dpq) and [`DPO`](#8h-device-port-operation-dpo) instructions are used to respectively query a device port's state, and to perform an operation on a device port.
+The [`DPQ`](#9h-device-port-query-dpq) and [`DPO`](#Ah-device-port-operation-dpo) instructions are used to respectively query a device port's state, and to perform an operation on a device port.
 
 ## Instruction Set
 
@@ -296,7 +298,7 @@ Decrements the value in a register.
 
 If the source `A` and destination `B` register identifiers are different, the source register's value is used to decrement the destination register, and the source register remains unchanged. Operand bits `[7 0] (C)` must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
 
-If instead the source `A` and destination `B` register identifiers are the same, operand bits `[7 0] (C)` are interpreted as an unsigned 8-bit literal, which is used to decrement destination register.
+If instead the source `A` and destination `B` register identifiers are the same, operand bits `[7 0] (C)` are interpreted as an unsigned 8-bit literal, which is used to decrement the destination register.
 
 Note that if the destination register is `PC`, the decrement (either as a literal or from a register) is treated as the number of **words** to decrement by, rather than the number of bytes. This is to avoid causing an address mis-alignment by setting `PC` to an odd value.
 
@@ -306,13 +308,45 @@ If the subtraction operation results in a value of `0` in the destination regist
 
 All other bits in `SR` are always cleared.
 
-### `2h`: Assign (`ASGN`)
+### `2h`: Multiply (`MUL`)
+
+Multiplies a register by a value.
+
+```
+ MUL
+|0010|ABC.DDDDDDDD|
+```
+
+* Operand bit `[11] (A)` specifies whether `R0` or `R1` is used as the destination register for the operation. If `A` is `0` then `R0` is used; if `A` is `1` then `R1` is used.
+* Operand bit `[10] (B)` specifies the source of the multiplicand. If `B` is `0` then either `R0` or `R1` (the opposite to that which has been selected by operand `A`) is used as the multiplicand; if `B` is `1` then operand bits `[7 0] (D)` are treated as an 8-bit multiplicand whose sign depends on operand `C`.
+* Operand bit `[9] (C)` specifies whether the operation is treated as signed or unsigned. If `C` is `0` then the destination and multiplicand are treated as unsigned; if `C` is `1` then the destination and multiplicand are treated as signed.
+
+Operand bit `[8]` is reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
+
+After the instruction is executed, the destination register as specified by operand `A` will hold the lower 16 bits of the result, and `LR` will hold the higher 16 bits of the result. If the result fitted entirely into the destination register, `LR` will be set appropriately depending on whether the operation was signed or unsigned, so that `LR` concatenated with the destination register would form a 32-bit word of the correct sign.
+
+If the result could not fit into both the destination register and `LR`, `SR[C]` will be set; otherwise, `SR[C]` will be cleared.
+
+If the result was zero, `SR[Z]` will be set; otherwise, `SR[Z]` will be cleared.
+
+### `3h`: Divide (`DIV`)
+
+Divides a register by a value.
+
+```
+ DIV
+|0011|............|
+```
+
+**TODO**
+
+### `4h`: Assign (`ASGN`)
 
 Assigns a value to a register.
 
 ```
  ASGN
-|0010|AABBCCCCCCCC|
+|0100|AABBCCCCCCCC|
 ```
 
 * Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
@@ -341,13 +375,13 @@ If `A` and `B` are the same, `PC` may not be assigned to, since the range of val
 
 In all cases described for this instruction, `SR[Z]` is set if the eventual value in the destination register is zero; otherwise, it is cleared. All other bits in `SR` are cleared.
 
-### `3h`: Bit Shift (`SHFT`)
+### `5h`: Bit Shift (`SHFT`)
 
 Shifts the bits in a register left or right.
 
 ```
  SHFT
-|0011|AABB...CCCCC|
+|0101|AABB...CCCCC|
 ```
 
 * Operand bits `[11 10] (A)` specify the two-bit identifier of the register whose value determines the magnitude of the shift. The contents of the register are treated as a signed 16-bit value.
@@ -363,13 +397,13 @@ When shifting bits, a negative magnitude implies a right shift (dividing the val
 
 If after the operation the remaining value in the register is zero, `SR[Z]` is set to `1`; otherwise, it is set to `0`. Additionally, if any `1` bits were shifted off the end of the register during the operation, `SR[C]` is set to `1`; otherwise, it is set to `0`. All other bits in `SR` are set to `0`.
 
-### `4h`: Bitwise Operation (`BITW`)
+### `6h`: Bitwise Operation (`BITW`)
 
 Performs a bitwise operation between two register values.
 
 ```
  BITW
-|0100|AABBCCD.EEEE|
+|0110|AABBCCD.EEEE|
 ```
 
 * Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source of the bit mask.
@@ -395,13 +429,13 @@ In all cases, operand bit `[4]` is reserved for future use, and must be set to `
 
 If the resulting value in the destination register is zero, `SR[Z]` is set to `1`; otherwise, it is set to `0`. All other bits in `SR` are set to `0`.
 
-### `5h` Conditional Branch (`CBX`)
+### `7h` Conditional Branch (`CBX`)
 
 Decided whether or not to modify the value of the program counter `PC`, depending on the current state of the status register `SR`.
 
 ```
  CBX
-|0101|AB..CCCCCCCC|
+|0111|AB..CCCCCCCC|
 ```
 
 * Operand bit `[11] (A)` specifies how the value of `PC` should be modified:
@@ -415,13 +449,13 @@ Operand bits `[9 8]` are reserved for future use, and must be set to `0`. If thi
 
 After this instruction, `SR[Z]` will be set to `1` if the condition was not met. If the condition was met, and `PC` was set, `SR[Z]` will be set to `0`. All other bits in `SR` will be set to `0`.
 
-### `6h`: Load/Store (`LDST`)
+### `8h`: Load/Store (`LDST`)
 
 Depending on the operands, either loads a value from a location in memory, or stores a value to a location in memory.
 
 ```
  LDST
-|0110|ABB.........|
+|1000|ABB.........|
 ```
 
 * Operand bit `[11] (A)` specifies the mode of the operation:
@@ -437,13 +471,13 @@ If the memory address specified by `LR` is not aligned to a word boundary, an [`
 
 If the value that is loaded or stored to or from the register is zero, `SR[Z]` is set; otherwise, it is cleared. All other bits in `SR` are always cleared.
 
-### `7h` Device Port Query (`DPQ`)
+### `9h` Device Port Query (`DPQ`)
 
 Queries the state of a device communications port, and sets the status register `SR` appropriately.
 
 ```
  DPQ
-|0111|.........AAA|
+|1001|.........AAA|
 ```
 
 The number of the port to be queried is held in `R0`. Additionally, operand bits `[2 0] (A)` specify the type of query to perform:
@@ -470,13 +504,13 @@ After the instruction is executed, `SR[Z]` is set based on the query type. The c
 
 All other bits in `SR` will be set to `0`.
 
-### `8h` Device Port Operation (`DPO`)
+### `Ah` Device Port Operation (`DPO`)
 
 Performs an operation on a device communications port.
 
 ```
  DPO
-|1000|A.........BB|
+|1010|A.........BB|
 ```
 
 The number of the port to use is held in `R0`. Operand bit `[11] (A)` is used to specify the type of data transfer used for a read or a write:
@@ -570,13 +604,13 @@ After the instruction is executed, `SR[Z]` is set if there will be no more space
 
 `SR[C]` is set if there were more bytes specified in the write than there were free bytes in the mailbox, and is cleared if the entirety of the write fitted into the mailbox.
 
-### `9h`: Stack Operation (`STK`)
+### `Bh`: Stack Operation (`STK`)
 
 Pushes or pops register values from the stack.
 
 ```
  STK
-|1001|A.......BCDE|
+|1011|A.......BCDE|
 ```
 
 * Operand bit `[11] (A)` specifies whether the operation is a push or pop. If `A` is set then the operation is a push; if `A` is not set then the operation is a pop.
@@ -620,9 +654,9 @@ The possible faults raised by the processor are described below.
 | `01h` | `HCF` | Halt and Catch Fire | Raised by the [`HCF`](#fh-halt-hcf) instruction to indicate that the processor has halted. | [`HCF`](#fh-halt-hcf) |
 | `02h` | `RES` | Reserved Bits Set | Raised when an instruction is decoded and one or more reserved bits are set to `1`. | Execution of any instruction |
 | `03h` | `ALGN` | Alignment Violation | Raised when an unaligned memory address is dereferenced in `CS` or `DS`. | [`LDST`](#6h-loadstore-ldst), or upon fetching the next instruction using `PC`. |
-| `04h` | `SEG` | Segment Access Violation | Raised when an address outside `CS` or `DS` is dereferenced. | [`LDST`](#6h-loadstore-ldst), [`DPO`](#8h-device-port-operation-dpo), or upon fetching the next instruction using `PC` |
-| `05h` | `IDO` | Invalid Device Operation | Raised when an operation is attempted on a port which is not in the correct state for the operation. | [`DPO`](#8h-device-port-operation-dpo) |
+| `04h` | `SEG` | Segment Access Violation | Raised when an address outside `CS` or `DS` is dereferenced. | [`LDST`](#6h-loadstore-ldst), [`DPO`](#Ah-device-port-operation-dpo), or upon fetching the next instruction using `PC` |
+| `05h` | `IDO` | Invalid Device Operation | Raised when an operation is attempted on a port which is not in the correct state for the operation. | [`DPO`](#Ah-device-port-operation-dpo) |
 | `06h` | `INI` | Invalid Instruction | Raised when an unrecognised instruction opcode is decoded. | Decoding of an instruction |
 | `07h` | `SPV` | Supervisor Error | Raised if the supervisor encounters an internal error. This fault indicates an exceptional issue with the supervisor code itself, and is not expected to be accommodated by a program. Under normal operation, this fault should never be raised. | Supervisor |
 | `08h` | `DEV` | Device Error | Raised if a device encounters an internal error. This fault indicates an exceptional issue with a device in the system, and is not expected to be accommodated by a program. Under normal operation, this fault should never be raised. | Supervisor, when interacting with a device |
-| `09h` | `SOF` | Stack overflow or underflow | Raised when a stack operation overflows or underflows the stack space. | [`STK`](#9h-stack-operation-stk) |
+| `09h` | `SOF` | Stack overflow or underflow | Raised when a stack operation overflows or underflows the stack space. | [`STK`](#Bh-stack-operation-stk) |
