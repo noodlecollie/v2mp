@@ -19,6 +19,12 @@
 #define V2MP_OP_ADDSUB_DREGINDEX(instr) (((instr) & 0x0300) >> 8)
 #define V2MP_OP_ADDSUB_VALUE(instr) ((instr) & 0x00FF)
 
+#define V2MP_OP_MULDIV_DEST_IS_R1(instr) (((instr) & 0x0800) != 0)
+#define V2MP_OP_MULDIV_SOURCE_IS_STATIC(instr) (((instr) & 0x0400) != 0)
+#define V2MP_OP_MULDIV_IS_SIGNED(instr) (((instr) & 0x0200) != 0)
+#define V2MP_OP_MULDIV_VALUE(instr) ((instr) & 0x00FF)
+#define V2MP_OP_MULDIV_RESBITS(instr) ((instr) & 0x0100)
+
 #define V2MP_OP_SHFT_SREGINDEX(instr) (((instr) & 0x0C00) >> 10)
 #define V2MP_OP_SHFT_DREGINDEX(instr) (((instr) & 0x0300) >> 8)
 #define V2MP_OP_SHFT_VALUE(instr) ((instr) & 0x001F)

@@ -13,6 +13,8 @@ typedef bool (* InstructionCallback)(V2MP_CPU*);
 
 static bool Execute_ADD(V2MP_CPU* cpu);
 static bool Execute_SUB(V2MP_CPU* cpu);
+static bool Execute_MUL(V2MP_CPU* cpu);
+static bool Execute_DIV(V2MP_CPU* cpu);
 static bool Execute_ASGN(V2MP_CPU* cpu);
 static bool Execute_SHFT(V2MP_CPU* cpu);
 static bool Execute_BITW(V2MP_CPU* cpu);
@@ -28,8 +30,8 @@ static const InstructionCallback INSTRUCTION_TABLE[0x10] =
 {
 	&Execute_ADD,			// 0x0
 	&Execute_SUB,			// 0x1
-	&Execute_Unassigned,	// 0x2
-	&Execute_Unassigned,	// 0x3
+	&Execute_MUL,			// 0x2
+	&Execute_DIV,			// 0x3
 	&Execute_ASGN,			// 0x4
 	&Execute_SHFT,			// 0x5
 	&Execute_BITW,			// 0x6
@@ -98,17 +100,90 @@ static bool Execute_ADDOrSUB(V2MP_CPU* cpu, bool isAdd)
 	return true;
 }
 
-bool Execute_ADD(V2MP_CPU* cpu)
+static bool Execute_ADD(V2MP_CPU* cpu)
 {
 	return Execute_ADDOrSUB(cpu, true);
 }
 
-bool Execute_SUB(V2MP_CPU* cpu)
+static bool Execute_SUB(V2MP_CPU* cpu)
 {
 	return Execute_ADDOrSUB(cpu, false);
 }
 
-bool Execute_ASGN(V2MP_CPU* cpu)
+static bool Execute_MUL(V2MP_CPU* cpu)
+{
+	V2MP_Word* destReg;
+	V2MP_Word srcVal;
+	bool overflowed = false;
+	V2MP_Word sr = 0;
+
+	if ( V2MP_OP_MULDIV_RESBITS(cpu->ir) != 0 )
+	{
+		SetFault(cpu, V2MP_FAULT_RES, 0);
+		return true;
+	}
+
+	destReg = V2MP_OP_MULDIV_DEST_IS_R1(cpu->ir) ? &cpu->r1 : &cpu->r0;
+
+	if ( V2MP_OP_MULDIV_SOURCE_IS_STATIC(cpu->ir) )
+	{
+		if ( V2MP_OP_MULDIV_IS_SIGNED(cpu->ir) )
+		{
+			const int8_t value = (int8_t)V2MP_OP_MULDIV_VALUE(cpu->ir);
+			srcVal =  (V2MP_Word)((int16_t)value);
+		}
+		else
+		{
+			srcVal = (V2MP_Word)V2MP_OP_MULDIV_VALUE(cpu->ir);
+		}
+	}
+	else
+	{
+		srcVal = V2MP_OP_MULDIV_DEST_IS_R1(cpu->ir) ? cpu->r0 : cpu->r1;
+	}
+
+	if ( V2MP_OP_MULDIV_IS_SIGNED(cpu->ir) )
+	{
+		int32_t result = (int16_t)(*destReg) * (int16_t)srcVal;
+		V2MP_Word* castResult = (V2MP_Word*)(&result);
+
+		overflowed = (result / (int16_t)srcVal) != (int16_t)(*destReg);
+
+		cpu->lr = castResult[0];
+		*destReg = castResult[1];
+	}
+	else
+	{
+		uint32_t result = (*destReg) * srcVal;
+		V2MP_Word* castResult = (V2MP_Word*)(&result);
+
+		overflowed = (result / srcVal) != (*destReg);
+
+		cpu->lr = castResult[0];
+		*destReg = castResult[1];
+	}
+
+	if ( overflowed )
+	{
+		sr |= V2MP_CPU_SR_C;
+	}
+
+	if ( cpu->lr == 0 && *destReg == 0 )
+	{
+		sr |= V2MP_CPU_SR_Z;
+	}
+
+	return true;
+}
+
+static bool Execute_DIV(V2MP_CPU* cpu)
+{
+	// TODO
+	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
+	return true;
+}
+
+static bool Execute_ASGN(V2MP_CPU* cpu)
 {
 	V2MP_Word* sourceReg;
 	V2MP_Word* destReg;
@@ -147,7 +222,7 @@ bool Execute_ASGN(V2MP_CPU* cpu)
 	return true;
 }
 
-bool Execute_SHFT(V2MP_CPU* cpu)
+static bool Execute_SHFT(V2MP_CPU* cpu)
 {
 	V2MP_Word* sourceReg;
 	V2MP_Word* destReg;
@@ -225,7 +300,7 @@ bool Execute_SHFT(V2MP_CPU* cpu)
 	return true;
 }
 
-bool Execute_BITW(V2MP_CPU* cpu)
+static bool Execute_BITW(V2MP_CPU* cpu)
 {
 	V2MP_Word* sourceReg;
 	V2MP_Word* destReg;
@@ -305,7 +380,7 @@ bool Execute_BITW(V2MP_CPU* cpu)
 	return true;
 }
 
-bool Execute_CBX(V2MP_CPU* cpu)
+static bool Execute_CBX(V2MP_CPU* cpu)
 {
 	bool shouldBranch;
 
@@ -350,7 +425,7 @@ bool Execute_CBX(V2MP_CPU* cpu)
 	return true;
 }
 
-bool Execute_LDST(V2MP_CPU* cpu)
+static bool Execute_LDST(V2MP_CPU* cpu)
 {
 	V2MP_Word* reg;
 
@@ -397,7 +472,7 @@ bool Execute_LDST(V2MP_CPU* cpu)
 	return true;
 }
 
-bool Execute_DPQ(V2MP_CPU* cpu)
+static bool Execute_DPQ(V2MP_CPU* cpu)
 {
 	if ( !cpu->supervisorInterface.performDevicePortQuery )
 	{
@@ -438,7 +513,7 @@ bool Execute_DPQ(V2MP_CPU* cpu)
 	return true;
 }
 
-bool Execute_DPO(V2MP_CPU* cpu)
+static bool Execute_DPO(V2MP_CPU* cpu)
 {
 	if ( V2MP_OP_DPO_RESBITS(cpu->ir) != 0 )
 	{
@@ -540,13 +615,13 @@ static bool Execute_STK(V2MP_CPU* cpu)
 	return true;
 }
 
-bool Execute_Unassigned(V2MP_CPU* cpu)
+static bool Execute_Unassigned(V2MP_CPU* cpu)
 {
 	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
 	return true;
 }
 
-bool Execute_HCF(V2MP_CPU* cpu)
+static bool Execute_HCF(V2MP_CPU* cpu)
 {
 	SetFault(cpu, V2MP_FAULT_HCF, cpu->ir);
 	return true;
