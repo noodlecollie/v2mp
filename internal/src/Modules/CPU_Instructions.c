@@ -28,16 +28,16 @@ static const InstructionCallback INSTRUCTION_TABLE[0x10] =
 {
 	&Execute_ADD,			// 0x0
 	&Execute_SUB,			// 0x1
-	&Execute_ASGN,			// 0x2
-	&Execute_SHFT,			// 0x3
-	&Execute_BITW,			// 0x4
-	&Execute_CBX,			// 0x5
-	&Execute_LDST,			// 0x6
-	&Execute_DPQ,			// 0x7
-	&Execute_DPO,			// 0x8
-	&Execute_STK,			// 0x9
-	&Execute_Unassigned,	// 0xA
-	&Execute_Unassigned,	// 0xB
+	&Execute_Unassigned,	// 0x2
+	&Execute_Unassigned,	// 0x3
+	&Execute_ASGN,			// 0x4
+	&Execute_SHFT,			// 0x5
+	&Execute_BITW,			// 0x6
+	&Execute_CBX,			// 0x7
+	&Execute_LDST,			// 0x8
+	&Execute_DPQ,			// 0x9
+	&Execute_DPO,			// 0xA
+	&Execute_STK,			// 0xB
 	&Execute_Unassigned,	// 0xC
 	&Execute_Unassigned,	// 0xD
 	&Execute_Unassigned,	// 0xE
