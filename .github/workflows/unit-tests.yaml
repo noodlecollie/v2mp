@@ -36,7 +36,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        submodules: recusrive
+        submodules: recursive
 
     - name: Build and run unit tests
       uses: ashutoshvarma/action-cmake-build@master
