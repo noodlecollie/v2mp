@@ -149,8 +149,8 @@ static bool Execute_MUL(V2MP_CPU* cpu)
 
 		overflowed = (result / (int16_t)srcVal) != (int16_t)(*destReg);
 
-		cpu->lr = castResult[0];
-		*destReg = castResult[1];
+		cpu->lr = castResult[1];
+		*destReg = castResult[0];
 	}
 	else
 	{
@@ -159,8 +159,8 @@ static bool Execute_MUL(V2MP_CPU* cpu)
 
 		overflowed = (result / srcVal) != (*destReg);
 
-		cpu->lr = castResult[0];
-		*destReg = castResult[1];
+		cpu->lr = castResult[1];
+		*destReg = castResult[0];
 	}
 
 	if ( overflowed )

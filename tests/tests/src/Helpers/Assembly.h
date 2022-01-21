@@ -180,14 +180,14 @@ namespace Asm
 
 	constexpr inline V2MP_Word DPO(DevicePortOperation operation, bool useIndirectDataTransfer = false)
 	{
-		return (V2MP_OP_DPO) << 12
+		return (V2MP_OP_DPO << 12)
 			| (static_cast<V2MP_Word>(useIndirectDataTransfer ? 1 : 0) << 11)
 			| (static_cast<V2MP_Word>(operation) & 0x0003);
 	}
 
 	constexpr inline V2MP_Word PUSH(uint8_t regFlags)
 	{
-		return (V2MP_OP_STK) << 12
+		return (V2MP_OP_STK << 12)
 			| (static_cast<V2MP_Word>(1 << 11))
 			| (static_cast<V2MP_Word>(regFlags) & 0x000F);
 	}
@@ -196,5 +196,35 @@ namespace Asm
 	{
 		return (V2MP_OP_STK) << 12
 			| (static_cast<V2MP_Word>(regFlags) & 0x000F);
+	}
+
+	constexpr inline V2MP_Word MULR(uint8_t destReg)
+	{
+		return (V2MP_OP_MUL << 12)
+			| (static_cast<V2MP_Word>(destReg & 0x1) << 11);
+	}
+
+	constexpr inline V2MP_Word MULL(uint8_t destReg, uint8_t multiplicand)
+	{
+		return (V2MP_OP_MUL << 12)
+			| (static_cast<V2MP_Word>(destReg & 0x1) << 11)
+			| static_cast<V2MP_Word>(1 << 10)
+			| static_cast<V2MP_Word>(multiplicand);
+	}
+
+	constexpr inline V2MP_Word IMULR(uint8_t destReg)
+	{
+		return (V2MP_OP_MUL << 12)
+			| (static_cast<V2MP_Word>(destReg & 0x1) << 11)
+			| static_cast<V2MP_Word>(1 << 9);
+	}
+
+	constexpr inline V2MP_Word IMULL(uint8_t destReg, uint8_t multiplicand)
+	{
+		return (V2MP_OP_MUL << 12)
+			| (static_cast<V2MP_Word>(destReg & 0x1) << 11)
+			| static_cast<V2MP_Word>(1 << 10)
+			| static_cast<V2MP_Word>(1 << 9)
+			| static_cast<V2MP_Word>(multiplicand);
 	}
 }
