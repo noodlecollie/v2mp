@@ -37,7 +37,7 @@ bool V2MP_Supervisor_PerformStackPush(V2MP_Supervisor* supervisor, const V2MP_Wo
 	}
 
 	memcpy(stackData, inWords, numWords * sizeof(V2MP_Word));
-	sp += numWords * sizeof(V2MP_Word);
+	sp += (V2MP_Word)(numWords * sizeof(V2MP_Word));
 
 	V2MP_CPU_SetStackPointer(cpu, sp);
 
@@ -69,7 +69,7 @@ bool V2MP_Supervisor_PerformStackPop(V2MP_Supervisor* supervisor, V2MP_Word* out
 		return false;
 	}
 
-	sp -= numWords * sizeof(V2MP_Word);
+	sp -= (V2MP_Word)(numWords * sizeof(V2MP_Word));
 
 	stackData = V2MP_Supervisor_GetDataRangeFromSegment(
 		supervisor,
