@@ -28,3 +28,25 @@ jobs:
         ctest-options: -j8 --output-on-failure
         install-build: false
         parallel: 14
+
+  build-windows:
+    name: Build and run unit tests on Windows
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recusrive
+
+    - name: Build and run unit tests
+      uses: ashutoshvarma/action-cmake-build@master
+      with:
+        build-dir: ${{runner.workspace}}/build
+        cc: cl
+        cxx: cl
+        build-type: Release
+        configure-options: -DBUILD_TESTING=YES
+        run-test: true
+        ctest-options: -j8 --output-on-failure
+        install-build: false
+        parallel: 14
