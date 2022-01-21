@@ -110,7 +110,7 @@ static void PerformSTKTest(size_t iteration, STKResult& result)
 		throw std::runtime_error("Could not load program");
 	}
 
-	const V2MP_Word regFlags = static_cast<V2MP_Word>(iteration & 0xF);
+	const uint8_t regFlags = static_cast<uint8_t>(iteration & 0xF);
 
 	size_t numRegisters = 0;
 
@@ -146,7 +146,7 @@ static void PerformSTKTest(size_t iteration, STKResult& result)
 
 	std::vector<V2MP_Word> data;
 
-	if ( !vm.GetSSData(vm.GetSP() - (numRegisters * sizeof(V2MP_Word)), numRegisters, data) )
+	if ( !vm.GetSSData(vm.GetSP() - (V2MP_Word)(numRegisters * sizeof(V2MP_Word)), numRegisters, data) )
 	{
 		throw std::runtime_error("Could not get stack data");
 	}
