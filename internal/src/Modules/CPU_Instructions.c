@@ -178,8 +178,56 @@ static bool Execute_MUL(V2MP_CPU* cpu)
 
 static bool Execute_DIV(V2MP_CPU* cpu)
 {
-	// TODO
-	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
+	V2MP_Word* destReg;
+	V2MP_Word srcVal;
+	V2MP_Word sr = 0;
+
+	if ( V2MP_OP_MULDIV_RESBITS(cpu->ir) != 0 )
+	{
+		SetFault(cpu, V2MP_FAULT_RES, 0);
+		return true;
+	}
+
+	destReg = V2MP_OP_MULDIV_DEST_IS_R1(cpu->ir) ? &cpu->r1 : &cpu->r0;
+
+	if ( V2MP_OP_MULDIV_SOURCE_IS_STATIC(cpu->ir) )
+	{
+		if ( V2MP_OP_MULDIV_IS_SIGNED(cpu->ir) )
+		{
+			const int8_t value = (int8_t)V2MP_OP_MULDIV_VALUE(cpu->ir);
+			srcVal =  (V2MP_Word)((int16_t)value);
+		}
+		else
+		{
+			srcVal = (V2MP_Word)V2MP_OP_MULDIV_VALUE(cpu->ir);
+		}
+	}
+	else
+	{
+		srcVal = V2MP_OP_MULDIV_DEST_IS_R1(cpu->ir) ? cpu->r0 : cpu->r1;
+	}
+
+	if ( V2MP_OP_MULDIV_IS_SIGNED(cpu->ir) )
+	{
+		cpu->lr = (V2MP_Word)((int16_t)(*destReg) % (int16_t)srcVal);
+		*destReg = (V2MP_Word)((int16_t)(*destReg) / (int16_t)srcVal);
+	}
+	else
+	{
+		cpu->lr = *destReg % srcVal;
+		*destReg /= srcVal;
+	}
+
+	if ( cpu->lr != 0 )
+	{
+		sr |= V2MP_CPU_SR_C;
+	}
+
+	if ( *destReg == 0 )
+	{
+		sr |= V2MP_CPU_SR_Z;
+	}
+
 	return true;
 }
 
