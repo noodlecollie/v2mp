@@ -110,6 +110,104 @@ SCENARIO("MUL: Multiplying a register by a value results in the correct value in
 	}
 }
 
-// TODO: Edge cases regarding splitting result across registers
+SCENARIO("MUL: High and low portions of result are placed into the correct registers", "[instructions]")
+{
+	GIVEN("A virtual machine initialised with known values in registers")
+	{
+		TestHarnessVM vm;
+
+		vm.SetR0(VAL_R0);
+		vm.SetR1(VAL_R1);
+		vm.SetLR(VAL_LR);
+		vm.SetPC(VAL_PC);
+
+		AND_GIVEN("The destination register is R0 and the source is R1")
+		{
+			static constexpr uint8_t REG_DEST = Asm::REG_R0;
+
+			WHEN("A multiplication is performed where the result fits into one register")
+			{
+				static constexpr V2MP_Word RHS = 2;
+				static constexpr V2MP_Word LHS = (static_cast<V2MP_Word>(~0) - 1) / RHS;
+
+				vm.SetR0(LHS);
+				vm.SetR1(RHS);
+
+				REQUIRE(vm.Execute(Asm::MULR(REG_DEST)));
+
+				THEN("The values in the lower and upper registers are correct")
+				{
+					CHECK_FALSE(vm.CPUHasFault());
+					CHECK(vm.GetR0() == static_cast<V2MP_Word>(~0) - 1);
+					CHECK(vm.GetR1() == RHS);
+					CHECK(vm.GetLR() == 0);
+					CHECK(vm.GetPC() == VAL_PC);
+				}
+			}
+
+			AND_WHEN("A multiplication is performed where the result does not fit into one register")
+			{
+				static constexpr V2MP_Word RHS = 2;
+				static constexpr V2MP_Word LHS = static_cast<V2MP_Word>(static_cast<uint32_t>(0x00010000) / RHS);
+
+				vm.SetR0(LHS);
+				vm.SetR1(RHS);
+
+				REQUIRE(vm.Execute(Asm::MULR(REG_DEST)));
+
+				THEN("The values in the lower and upper registers are correct")
+				{
+					CHECK_FALSE(vm.CPUHasFault());
+					CHECK(vm.GetR0() == 0x0000);
+					CHECK(vm.GetR1() == RHS);
+					CHECK(vm.GetLR() == 0x0001);
+					CHECK(vm.GetPC() == VAL_PC);
+				}
+			}
+
+			AND_WHEN("The largest mutliplication possible is performed")
+			{
+				static constexpr V2MP_Word RHS = 0xFFFF;
+				static constexpr V2MP_Word LHS = 0xFFFF;
+
+				vm.SetR0(LHS);
+				vm.SetR1(RHS);
+
+				REQUIRE(vm.Execute(Asm::MULR(REG_DEST)));
+
+				THEN("The values in the lower and upper registers are correct")
+				{
+					CHECK_FALSE(vm.CPUHasFault());
+					CHECK(vm.GetR0() == 0x0001);
+					CHECK(vm.GetR1() == RHS);
+					CHECK(vm.GetLR() == 0xFFFE);
+					CHECK(vm.GetPC() == VAL_PC);
+				}
+			}
+
+			AND_WHEN("A multiplcation by zero is performed")
+			{
+				static constexpr V2MP_Word RHS = 0xFFFF;
+				static constexpr V2MP_Word LHS = 0x0;
+
+				vm.SetR0(LHS);
+				vm.SetR1(RHS);
+
+				REQUIRE(vm.Execute(Asm::MULR(REG_DEST)));
+
+				THEN("The values in the lower and upper registers are correct")
+				{
+					CHECK_FALSE(vm.CPUHasFault());
+					CHECK(vm.GetR0() == 0x0);
+					CHECK(vm.GetR1() == RHS);
+					CHECK(vm.GetLR() == 0x0);
+					CHECK(vm.GetPC() == VAL_PC);
+				}
+			}
+		}
+	}
+}
+
+// TODO: Signed multiplication checks
 // TODO: SR checks
 // TODO: Reserved bit checks
