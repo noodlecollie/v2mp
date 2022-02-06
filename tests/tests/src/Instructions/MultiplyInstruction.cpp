@@ -491,7 +491,7 @@ SCENARIO("MUL: Setting any reserved bit raises a RES fault", "[instructions]")
 		vm.SetLR(VAL_LR);
 		vm.SetPC(VAL_PC);
 
-		WHEN("A DPO instruction is executed with a reserved bit set")
+		WHEN("A MUL instruction is executed with a reserved bit set")
 		{
 			REQUIRE(vm.Execute(Asm::MULR(Asm::REG_R0) | (1 << 8)));
 
