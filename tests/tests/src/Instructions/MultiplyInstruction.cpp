@@ -426,7 +426,7 @@ SCENARIO("MUL: Performing a multiplication sets the status register appropriatel
 
 			AND_WHEN("A negative signed multiplication is performed that fits entirely into the lower register")
 			{
-				vm.SetR0(-2);
+				vm.SetR0(static_cast<V2MP_Word>(-2));
 				vm.SetR1(2);
 
 				REQUIRE(vm.Execute(Asm::IMULR(REG_DEST)));
@@ -442,7 +442,7 @@ SCENARIO("MUL: Performing a multiplication sets the status register appropriatel
 
 			AND_WHEN("A negative signed multiplication is performed that does not fit into the lower register")
 			{
-				vm.SetR0(-32767);
+				vm.SetR0(static_cast<V2MP_Word>(-32767));
 				vm.SetR1(32767);
 
 				REQUIRE(vm.Execute(Asm::IMULR(REG_DEST)));
@@ -458,7 +458,7 @@ SCENARIO("MUL: Performing a multiplication sets the status register appropriatel
 
 			AND_WHEN("A signed multiplication is performed that results in a value of zero")
 			{
-				vm.SetR0(-32768);
+				vm.SetR0(static_cast<V2MP_Word>(-32768));
 				vm.SetR1(0);
 
 				REQUIRE(vm.Execute(Asm::MULR(REG_DEST)));
@@ -479,11 +479,6 @@ SCENARIO("MUL: Setting any reserved bit raises a RES fault", "[instructions]")
 {
 	GIVEN("A virtual machine with different values in different registers")
 	{
-		static constexpr V2MP_Word VAL_R0 = 0x0001;
-		static constexpr V2MP_Word VAL_R1 = 0x0002;
-		static constexpr V2MP_Word VAL_LR = 0x0003;
-		static constexpr V2MP_Word VAL_PC = 0x0004;
-
 		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);

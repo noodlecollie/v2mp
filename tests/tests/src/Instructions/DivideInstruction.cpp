@@ -155,8 +155,8 @@ SCENARIO("DIV: Signed divisions are computed correctly", "[instructions]")
 				static constexpr int16_t RESULT_Q = LHS / RHS;
 				static constexpr int16_t RESULT_R = LHS % RHS;
 
-				vm.SetR0(LHS);
-				vm.SetR1(RHS);
+				vm.SetR0(static_cast<V2MP_Word>(LHS));
+				vm.SetR1(static_cast<V2MP_Word>(RHS));
 
 				REQUIRE(vm.Execute(Asm::IDIVR(REG_DEST)));
 
@@ -177,8 +177,8 @@ SCENARIO("DIV: Signed divisions are computed correctly", "[instructions]")
 				static constexpr int16_t RESULT_Q = LHS / RHS;
 				static constexpr int16_t RESULT_R = LHS % RHS;
 
-				vm.SetR0(LHS);
-				vm.SetR1(RHS);
+				vm.SetR0(static_cast<V2MP_Word>(LHS));
+				vm.SetR1(static_cast<V2MP_Word>(RHS));
 
 				REQUIRE(vm.Execute(Asm::IDIVR(REG_DEST)));
 
@@ -199,8 +199,8 @@ SCENARIO("DIV: Signed divisions are computed correctly", "[instructions]")
 				static constexpr int16_t RESULT_Q = LHS / RHS;
 				static constexpr int16_t RESULT_R = LHS % RHS;
 
-				vm.SetR0(LHS);
-				vm.SetR1(RHS);
+				vm.SetR0(static_cast<V2MP_Word>(LHS));
+				vm.SetR1(static_cast<V2MP_Word>(RHS));
 
 				REQUIRE(vm.Execute(Asm::IDIVR(REG_DEST)));
 
@@ -226,7 +226,7 @@ SCENARIO("DIV: Signed divisions are computed correctly", "[instructions]")
 				static constexpr int16_t RESULT_Q = LHS / RHS;
 				static constexpr int16_t RESULT_R = LHS % RHS;
 
-				vm.SetR0(LHS);
+				vm.SetR0(static_cast<V2MP_Word>(LHS));
 
 				REQUIRE(vm.Execute(Asm::IDIVL(REG_DEST, static_cast<int8_t>(RHS))));
 
@@ -247,7 +247,7 @@ SCENARIO("DIV: Signed divisions are computed correctly", "[instructions]")
 				static constexpr int16_t RESULT_Q = LHS / RHS;
 				static constexpr int16_t RESULT_R = LHS % RHS;
 
-				vm.SetR0(LHS);
+				vm.SetR0(static_cast<V2MP_Word>(LHS));
 
 				REQUIRE(vm.Execute(Asm::IDIVL(REG_DEST, static_cast<int8_t>(RHS))));
 
@@ -268,7 +268,7 @@ SCENARIO("DIV: Signed divisions are computed correctly", "[instructions]")
 				static constexpr int16_t RESULT_Q = LHS / RHS;
 				static constexpr int16_t RESULT_R = LHS % RHS;
 
-				vm.SetR0(LHS);
+				vm.SetR0(static_cast<V2MP_Word>(LHS));
 
 				REQUIRE(vm.Execute(Asm::IDIVL(REG_DEST, static_cast<int8_t>(RHS))));
 
@@ -289,7 +289,7 @@ SCENARIO("DIV: Signed divisions are computed correctly", "[instructions]")
 				static constexpr int16_t RESULT_Q = LHS / RHS;
 				static constexpr int16_t RESULT_R = LHS % RHS;
 
-				vm.SetR0(LHS);
+				vm.SetR0(static_cast<V2MP_Word>(LHS));
 
 				REQUIRE(vm.Execute(Asm::IDIVL(REG_DEST, static_cast<int8_t>(RHS))));
 
@@ -431,11 +431,6 @@ SCENARIO("DIV: Setting any reserved bit raises a RES fault", "[instructions]")
 {
 	GIVEN("A virtual machine with different values in different registers")
 	{
-		static constexpr V2MP_Word VAL_R0 = 0x0001;
-		static constexpr V2MP_Word VAL_R1 = 0x0002;
-		static constexpr V2MP_Word VAL_LR = 0x0003;
-		static constexpr V2MP_Word VAL_PC = 0x0004;
-
 		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
