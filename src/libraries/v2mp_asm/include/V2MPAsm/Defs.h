@@ -1,32 +1,12 @@
 #ifndef V2MPASM_DEFS_H
 #define V2MPASM_DEFS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <cstdint>
 
-#define V2MPASM_WARNING_LIST \
-	LIST_ITEM(V2MPASM_WARNING_UNSPECIFIED = 0, "Unspecified")
-
-#define V2MPASM_ERROR_LIST \
-	LIST_ITEM(V2MPASM_ERROR_UNSPECIFIED = 0, "Unspecified")
-
-#define LIST_ITEM(value, desc) value,
-typedef enum V2MPAsm_AsmWarningType
+namespace V2MPAsm
 {
-	V2MPASM_WARNING_LIST
-} V2MPAsm_AsmWarningType;
-#undef LIST_ITEM
-
-#define LIST_ITEM(value, desc) value,
-typedef enum V2MPAsm_AsmErrorType
-{
-	V2MPASM_ERROR_LIST
-} V2MPAsm_AsmErrorType;
-#undef LIST_ITEM
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
+	using V2MPAsm_Word = uint16_t;
+	using V2MPAsm_Byte = uint8_t;
+}
 
 #endif // V2MPASM_DEFS_H
