@@ -16,11 +16,17 @@ namespace V2MPAsm
 		for ( size_t index = 0; index < 2; ++index )
 		{
 			const MetaInstruction& instr = INSTRUCTIONS[index];
+			const char* label = "<none>";
+
+			if ( !instr.IsInstruction() )
+			{
+				label = instr.GetLabel();
+			}
 
 			std::cout << "Index " << index << ":" << std::endl;
 			std::cout << "  Is instruction: " << (instr.IsInstruction() ? "true" : "false") << std::endl;
-			std::cout << "  Label: " << (instr.IsInstruction() ? "<none>" : instr.GetLabel()) << std::endl;
-			std::cout << "  Instruction word: 0x" << std::hex << instr.GetInstructionWord() << std::endl;
+			std::cout << "  Label: " << label << std::endl;
+			std::cout << "  Instruction word: 0x" << std::hex << instr.GetInstructionWord() << std::dec << std::endl;
 		}
 	}
 }

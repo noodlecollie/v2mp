@@ -30,7 +30,7 @@ namespace V2MPAsm
 
 		inline const char* GetLabel() const
 		{
-			return IsInstruction() ? reinterpret_cast<const char*>(m_Instruction) : nullptr;
+			return (!IsInstruction()) ? reinterpret_cast<const char*>(m_Instruction) : nullptr;
 		}
 
 		inline V2MPAsm_Word GetInstructionWord() const
