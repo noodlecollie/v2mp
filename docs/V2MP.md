@@ -325,7 +325,7 @@ Operand bit `[8]` is reserved for future use, and must be set to `0`. If this is
 
 After the instruction is executed, the destination register as specified by operand `A` will hold the lower 16 bits of the result, and `LR` will hold the higher 16 bits of the result. If the result fitted entirely into the destination register, `LR` will be set appropriately depending on whether the operation was signed or unsigned, so that `LR` concatenated with the destination register would form a 32-bit word of the correct sign.
 
-If the result could not fit into both the destination register and `LR`, `SR[C]` is set; otherwise, it is cleared. If the result is zero, `SR[Z]` is set; otherwise, it is. All other bits in `SR` are cleared.
+If the result of the multiplication did not fit into the target register, `SR[C]` is set; otherwise, it is cleared. If the result is zero, `SR[Z]` is set; otherwise, it is. All other bits in `SR` are cleared.
 
 ### `3h`: Divide (`DIV`)
 

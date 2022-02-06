@@ -41,7 +41,8 @@ typedef enum V2MP_Fault
 	V2MP_FAULT_INI = 0x6,
 	V2MP_FAULT_SPV = 0x7,
 	V2MP_FAULT_DEV = 0x8,
-	V2MP_FAULT_SOF = 0x9
+	V2MP_FAULT_SOF = 0x9,
+	V2MP_FAULT_DIV = 0xA
 } V2MP_Fault;
 
 typedef enum V2MP_RegisterIndex
