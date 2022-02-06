@@ -306,6 +306,51 @@ SCENARIO("DIV: Signed divisions are computed correctly", "[instructions]")
 	}
 }
 
-// TODO: Division by 0
+SCENARIO("DIV: Dividing by zero raises a DIV fault", "[instructions]")
+{
+	GIVEN("A virtual machine initialised with known values in registers")
+	{
+		TestHarnessVM vm;
+
+		vm.SetR0(VAL_R0);
+		vm.SetR1(VAL_R1);
+		vm.SetLR(VAL_LR);
+		vm.SetPC(VAL_PC);
+
+		WHEN("A division instruction is executed where the source register is zero")
+		{
+			vm.SetR0(1234);
+			vm.SetR1(0);
+
+			REQUIRE(vm.Execute(Asm::DIVR(Asm::REG_R0)));
+
+			THEN("A DIV fault is raised, and all registers are left unchanged")
+			{
+				CHECK(vm.CPUHasFault());
+				CHECK(vm.GetR0() == 1234);
+				CHECK(vm.GetR1() == 0);
+				CHECK(vm.GetLR() == VAL_LR);
+				CHECK(vm.GetPC() == VAL_PC);
+			}
+		}
+
+		AND_WHEN("A division instruction is executed where the instruction literal is zero")
+		{
+			vm.SetR0(1234);
+
+			REQUIRE(vm.Execute(Asm::DIVL(Asm::REG_R0, 0)));
+
+			THEN("A DIV fault is raised, and all registers are left unchanged")
+			{
+				CHECK(vm.CPUHasFault());
+				CHECK(vm.GetR0() == 1234);
+				CHECK(vm.GetR1() == VAL_R1);
+				CHECK(vm.GetLR() == VAL_LR);
+				CHECK(vm.GetPC() == VAL_PC);
+			}
+		}
+	}
+}
+
 // TODO: Status register
 // TODO: Reserved bits

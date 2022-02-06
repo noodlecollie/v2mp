@@ -215,6 +215,12 @@ static bool Execute_DIV(V2MP_CPU* cpu)
 		srcVal = V2MP_OP_MULDIV_DEST_IS_R1(cpu->ir) ? cpu->r0 : cpu->r1;
 	}
 
+	if ( srcVal == 0 )
+	{
+		SetFault(cpu, V2MP_FAULT_DIV, 0);
+		return true;
+	}
+
 	if ( V2MP_OP_MULDIV_IS_SIGNED(cpu->ir) )
 	{
 		cpu->lr = (V2MP_Word)(*((int16_t*)(destReg)) % (int16_t)srcVal);
