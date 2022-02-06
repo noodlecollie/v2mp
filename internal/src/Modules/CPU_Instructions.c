@@ -217,8 +217,8 @@ static bool Execute_DIV(V2MP_CPU* cpu)
 
 	if ( V2MP_OP_MULDIV_IS_SIGNED(cpu->ir) )
 	{
-		cpu->lr = (V2MP_Word)((int16_t)(*destReg) % (int16_t)srcVal);
-		*destReg = (V2MP_Word)((int16_t)(*destReg) / (int16_t)srcVal);
+		cpu->lr = (V2MP_Word)(*((int16_t*)(destReg)) % (int16_t)srcVal);
+		*destReg = (V2MP_Word)(*((int16_t*)(destReg)) / (int16_t)srcVal);
 	}
 	else
 	{

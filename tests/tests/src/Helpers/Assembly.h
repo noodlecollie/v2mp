@@ -227,4 +227,34 @@ namespace Asm
 			| static_cast<V2MP_Word>(1 << 9)
 			| (static_cast<V2MP_Word>(multiplicand) & 0xFF);
 	}
+
+	constexpr inline V2MP_Word DIVR(uint8_t destReg)
+	{
+		return (V2MP_OP_DIV << 12)
+			| (static_cast<V2MP_Word>(destReg & 0x1) << 11);
+	}
+
+	constexpr inline V2MP_Word DIVL(uint8_t destReg, uint8_t multiplicand)
+	{
+		return (V2MP_OP_DIV << 12)
+			| (static_cast<V2MP_Word>(destReg & 0x1) << 11)
+			| static_cast<V2MP_Word>(1 << 10)
+			| (static_cast<V2MP_Word>(multiplicand) & 0xFF);
+	}
+
+	constexpr inline V2MP_Word IDIVR(uint8_t destReg)
+	{
+		return (V2MP_OP_DIV << 12)
+			| (static_cast<V2MP_Word>(destReg & 0x1) << 11)
+			| static_cast<V2MP_Word>(1 << 9);
+	}
+
+	constexpr inline V2MP_Word IDIVL(uint8_t destReg, int8_t multiplicand)
+	{
+		return (V2MP_OP_DIV << 12)
+			| (static_cast<V2MP_Word>(destReg & 0x1) << 11)
+			| static_cast<V2MP_Word>(1 << 10)
+			| static_cast<V2MP_Word>(1 << 9)
+			| (static_cast<V2MP_Word>(multiplicand) & 0xFF);
+	}
 }

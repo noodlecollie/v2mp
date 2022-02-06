@@ -18,6 +18,7 @@ add_executable(V2MP_Tests
 	src/Instructions/DevicePortQueryInstruction.cpp
 	src/Instructions/DevicePortReadInstruction.cpp
 	src/Instructions/DevicePortWriteInstruction.cpp
+	src/Instructions/DivideInstruction.cpp
 	src/Instructions/HaltInstruction.cpp
 	src/Instructions/LoadStoreInstruction.cpp
 	src/Instructions/MultiplyInstruction.cpp
