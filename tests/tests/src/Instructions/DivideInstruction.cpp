@@ -310,6 +310,8 @@ SCENARIO("DIV: Dividing by zero raises a DIV fault", "[instructions]")
 {
 	GIVEN("A virtual machine initialised with known values in registers")
 	{
+		static constexpr V2MP_Word NUMERATOR = 1234;
+
 		TestHarnessVM vm;
 
 		vm.SetR0(VAL_R0);
@@ -319,7 +321,7 @@ SCENARIO("DIV: Dividing by zero raises a DIV fault", "[instructions]")
 
 		WHEN("A division instruction is executed where the source register is zero")
 		{
-			vm.SetR0(1234);
+			vm.SetR0(NUMERATOR);
 			vm.SetR1(0);
 
 			REQUIRE(vm.Execute(Asm::DIVR(Asm::REG_R0)));
@@ -327,7 +329,7 @@ SCENARIO("DIV: Dividing by zero raises a DIV fault", "[instructions]")
 			THEN("A DIV fault is raised, and all registers are left unchanged")
 			{
 				CHECK(vm.CPUHasFault());
-				CHECK(vm.GetR0() == 1234);
+				CHECK(vm.GetR0() == NUMERATOR);
 				CHECK(vm.GetR1() == 0);
 				CHECK(vm.GetLR() == VAL_LR);
 				CHECK(vm.GetPC() == VAL_PC);
@@ -336,14 +338,14 @@ SCENARIO("DIV: Dividing by zero raises a DIV fault", "[instructions]")
 
 		AND_WHEN("A division instruction is executed where the instruction literal is zero")
 		{
-			vm.SetR0(1234);
+			vm.SetR0(NUMERATOR);
 
 			REQUIRE(vm.Execute(Asm::DIVL(Asm::REG_R0, 0)));
 
 			THEN("A DIV fault is raised, and all registers are left unchanged")
 			{
 				CHECK(vm.CPUHasFault());
-				CHECK(vm.GetR0() == 1234);
+				CHECK(vm.GetR0() == NUMERATOR);
 				CHECK(vm.GetR1() == VAL_R1);
 				CHECK(vm.GetLR() == VAL_LR);
 				CHECK(vm.GetPC() == VAL_PC);
@@ -352,5 +354,77 @@ SCENARIO("DIV: Dividing by zero raises a DIV fault", "[instructions]")
 	}
 }
 
-// TODO: Status register
+SCENARIO("DIV: Performing a division sets the status register appropriately", "[instructions]")
+{
+	GIVEN("A virtual machine initialised with known values in registers")
+	{
+		TestHarnessVM vm;
+
+		vm.SetR0(VAL_R0);
+		vm.SetR1(VAL_R1);
+		vm.SetLR(VAL_LR);
+		vm.SetPC(VAL_PC);
+
+		WHEN("A division is performed where both the quotient and remainder are zero")
+		{
+			vm.SetR0(0);
+
+			REQUIRE(vm.Execute(Asm::DIVL(Asm::REG_R0, 2)));
+
+			THEN("SR[Z] is set and SR[C] is not set")
+			{
+				CHECK_FALSE(vm.CPUHasFault());
+				CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+				CHECK((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+			}
+		}
+
+		AND_WHEN("A division is performed where the quotient is zero and the remainder is not zero")
+		{
+			vm.SetR0(2);
+
+			REQUIRE(vm.Execute(Asm::DIVL(Asm::REG_R0, 3)));
+
+			THEN("SR[Z] is set and SR[C] is set")
+			{
+				CHECK_FALSE(vm.CPUHasFault());
+				CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+				CHECK((vm.GetSR() & Asm::SR_C) != 0);
+				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+			}
+		}
+
+		AND_WHEN("A division is performed where the quotient is not zero and the remainder is zero")
+		{
+			vm.SetR0(4);
+
+			REQUIRE(vm.Execute(Asm::DIVL(Asm::REG_R0, 2)));
+
+			THEN("SR[Z] is not set and SR[C] is not set")
+			{
+				CHECK_FALSE(vm.CPUHasFault());
+				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_C) == 0);
+				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+			}
+		}
+
+		AND_WHEN("A division is performed where the quotient is not zero and the remainder is not zero")
+		{
+			vm.SetR0(5);
+
+			REQUIRE(vm.Execute(Asm::DIVL(Asm::REG_R0, 2)));
+
+			THEN("SR[Z] is not set and SR[C] is set")
+			{
+				CHECK_FALSE(vm.CPUHasFault());
+				CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+				CHECK((vm.GetSR() & Asm::SR_C) != 0);
+				CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+			}
+		}
+	}
+}
+
 // TODO: Reserved bits

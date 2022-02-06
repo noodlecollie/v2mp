@@ -188,7 +188,6 @@ static bool Execute_DIV(V2MP_CPU* cpu)
 {
 	V2MP_Word* destReg;
 	V2MP_Word srcVal;
-	V2MP_Word sr = 0;
 
 	if ( V2MP_OP_MULDIV_RESBITS(cpu->ir) != 0 )
 	{
@@ -232,14 +231,16 @@ static bool Execute_DIV(V2MP_CPU* cpu)
 		*destReg /= srcVal;
 	}
 
+	cpu->sr = 0;
+
 	if ( cpu->lr != 0 )
 	{
-		sr |= V2MP_CPU_SR_C;
+		cpu->sr |= V2MP_CPU_SR_C;
 	}
 
 	if ( *destReg == 0 )
 	{
-		sr |= V2MP_CPU_SR_Z;
+		cpu->sr |= V2MP_CPU_SR_Z;
 	}
 
 	return true;
