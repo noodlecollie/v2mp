@@ -115,7 +115,6 @@ static bool Execute_MUL(V2MP_CPU* cpu)
 	V2MP_Word* destReg;
 	V2MP_Word srcVal;
 	bool overflowed = false;
-	V2MP_Word sr = 0;
 
 	if ( V2MP_OP_MULDIV_RESBITS(cpu->ir) != 0 )
 	{
@@ -147,7 +146,14 @@ static bool Execute_MUL(V2MP_CPU* cpu)
 		int32_t result = (int16_t)(*destReg) * (int16_t)srcVal;
 		V2MP_Word* castResult = (V2MP_Word*)(&result);
 
-		overflowed = (result / (int16_t)srcVal) != (int16_t)(*destReg);
+		if ( result > 0 )
+		{
+			overflowed = result > 32767;
+		}
+		else
+		{
+			overflowed = result < -32768;
+		}
 
 		cpu->lr = castResult[1];
 		*destReg = castResult[0];
@@ -157,20 +163,22 @@ static bool Execute_MUL(V2MP_CPU* cpu)
 		uint32_t result = (*destReg) * srcVal;
 		V2MP_Word* castResult = (V2MP_Word*)(&result);
 
-		overflowed = (result / srcVal) != (*destReg);
+		overflowed = castResult[1] != 0;
 
 		cpu->lr = castResult[1];
 		*destReg = castResult[0];
 	}
 
+	cpu->sr = 0;
+
 	if ( overflowed )
 	{
-		sr |= V2MP_CPU_SR_C;
+		cpu->sr |= V2MP_CPU_SR_C;
 	}
 
 	if ( cpu->lr == 0 && *destReg == 0 )
 	{
-		sr |= V2MP_CPU_SR_Z;
+		cpu->sr |= V2MP_CPU_SR_Z;
 	}
 
 	return true;

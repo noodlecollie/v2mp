@@ -329,5 +329,182 @@ SCENARIO("MUL: Signed multiplications are computed correctly", "[instructions]")
 	}
 }
 
-// TODO: SR checks
-// TODO: Reserved bit checks
+SCENARIO("MUL: Performing a multiplication sets the status register appropriately", "[instructions]")
+{
+	GIVEN("A virtual machine initialised with known values in registers")
+	{
+		TestHarnessVM vm;
+
+		vm.SetR0(VAL_R0);
+		vm.SetR1(VAL_R1);
+		vm.SetLR(VAL_LR);
+		vm.SetPC(VAL_PC);
+
+		AND_GIVEN("The destination register is R0 and the source is R1")
+		{
+			static constexpr uint8_t REG_DEST = Asm::REG_R0;
+
+			WHEN("A non-zero unsigned multiplication is performed that fits entirely into the lower register")
+			{
+				vm.SetR0(2);
+				vm.SetR1(2);
+
+				REQUIRE(vm.Execute(Asm::MULR(REG_DEST)));
+
+				THEN("SR[Z] is not set and SR[C] is not set")
+				{
+					CHECK_FALSE(vm.CPUHasFault());
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				}
+			}
+
+			AND_WHEN("A non-zero unsigned multiplication is performed that does not fit into the lower register")
+			{
+				vm.SetR0(0xFFFF);
+				vm.SetR1(2);
+
+				REQUIRE(vm.Execute(Asm::MULR(REG_DEST)));
+
+				THEN("SR[Z] is not set and SR[C] is set")
+				{
+					CHECK_FALSE(vm.CPUHasFault());
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) != 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				}
+			}
+
+			AND_WHEN("An unsigned multiplication is performed that results in a value of zero")
+			{
+				vm.SetR0(0xFFFF);
+				vm.SetR1(0);
+
+				REQUIRE(vm.Execute(Asm::MULR(REG_DEST)));
+
+				THEN("SR[Z] is set and SR[C] is not set")
+				{
+					CHECK_FALSE(vm.CPUHasFault());
+					CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+					CHECK((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				}
+			}
+
+			AND_WHEN("A positive signed multiplication is performed that fits entirely into the lower register")
+			{
+				vm.SetR0(2);
+				vm.SetR1(2);
+
+				REQUIRE(vm.Execute(Asm::IMULR(REG_DEST)));
+
+				THEN("SR[Z] is not set and SR[C] is not set")
+				{
+					CHECK_FALSE(vm.CPUHasFault());
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				}
+			}
+
+			AND_WHEN("A positive signed multiplication is performed that does not fit into the lower register")
+			{
+				vm.SetR0(32767);
+				vm.SetR1(32767);
+
+				REQUIRE(vm.Execute(Asm::IMULR(REG_DEST)));
+
+				THEN("SR[Z] is not set and SR[C] is set")
+				{
+					CHECK_FALSE(vm.CPUHasFault());
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) != 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				}
+			}
+
+			AND_WHEN("A negative signed multiplication is performed that fits entirely into the lower register")
+			{
+				vm.SetR0(-2);
+				vm.SetR1(2);
+
+				REQUIRE(vm.Execute(Asm::IMULR(REG_DEST)));
+
+				THEN("SR[Z] is not set and SR[C] is not set")
+				{
+					CHECK_FALSE(vm.CPUHasFault());
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				}
+			}
+
+			AND_WHEN("A negative signed multiplication is performed that does not fit into the lower register")
+			{
+				vm.SetR0(-32767);
+				vm.SetR1(32767);
+
+				REQUIRE(vm.Execute(Asm::IMULR(REG_DEST)));
+
+				THEN("SR[Z] is not set and SR[C] is set")
+				{
+					CHECK_FALSE(vm.CPUHasFault());
+					CHECK((vm.GetSR() & Asm::SR_Z) == 0);
+					CHECK((vm.GetSR() & Asm::SR_C) != 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				}
+			}
+
+			AND_WHEN("A signed multiplication is performed that results in a value of zero")
+			{
+				vm.SetR0(-32768);
+				vm.SetR1(0);
+
+				REQUIRE(vm.Execute(Asm::MULR(REG_DEST)));
+
+				THEN("SR[Z] is set and SR[C] is not set")
+				{
+					CHECK_FALSE(vm.CPUHasFault());
+					CHECK((vm.GetSR() & Asm::SR_Z) != 0);
+					CHECK((vm.GetSR() & Asm::SR_C) == 0);
+					CHECK((vm.GetSR() & ~(Asm::SR_Z | Asm::SR_C)) == 0);
+				}
+			}
+		}
+	}
+}
+
+SCENARIO("MUL: Setting any reserved bit raises a RES fault", "[instructions]")
+{
+	GIVEN("A virtual machine with different values in different registers")
+	{
+		static constexpr V2MP_Word VAL_R0 = 0x0001;
+		static constexpr V2MP_Word VAL_R1 = 0x0002;
+		static constexpr V2MP_Word VAL_LR = 0x0003;
+		static constexpr V2MP_Word VAL_PC = 0x0004;
+
+		TestHarnessVM vm;
+
+		vm.SetR0(VAL_R0);
+		vm.SetR1(VAL_R1);
+		vm.SetLR(VAL_LR);
+		vm.SetPC(VAL_PC);
+
+		WHEN("A DPO instruction is executed with a reserved bit set")
+		{
+			REQUIRE(vm.Execute(Asm::MULR(Asm::REG_R0) | (1 << 8)));
+
+			THEN("A RES fault is raised, and all registers are left unchanged")
+			{
+				CHECK(vm.CPUHasFault());
+				CHECK(Asm::FaultFromWord(vm.GetCPUFaultWord()) == V2MP_FAULT_RES);
+				CHECK(vm.GetR0() == VAL_R0);
+				CHECK(vm.GetR1() == VAL_R1);
+				CHECK(vm.GetLR() == VAL_LR);
+				CHECK(vm.GetPC() == VAL_PC);
+				CHECK(vm.GetSR() == 0);
+			}
+		}
+	}
+}
