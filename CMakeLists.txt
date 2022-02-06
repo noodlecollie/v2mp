@@ -68,6 +68,5 @@ else()
 	add_link_options(-Wl,--fatal-warnings)
 endif()
 
-add_subdirectory(v2mp)
-add_subdirectory(internal)
+add_subdirectory(src)
 add_subdirectory(tests)
