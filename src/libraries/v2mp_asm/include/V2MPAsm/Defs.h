@@ -6,10 +6,10 @@ extern "C" {
 #endif
 
 #define V2MPASM_WARNING_LIST \
-	LIST_ITEM(V2MPASM_WARNING_NONE = 0, "None")
+	LIST_ITEM(V2MPASM_WARNING_UNSPECIFIED = 0, "Unspecified")
 
 #define V2MPASM_ERROR_LIST \
-	LIST_ITEM(V2MPASM_ERROR_NONE = 0, "None")
+	LIST_ITEM(V2MPASM_ERROR_UNSPECIFIED = 0, "Unspecified")
 
 #define LIST_ITEM(value, desc) value,
 typedef enum V2MPAsm_AsmWarningType

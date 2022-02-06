@@ -24,6 +24,7 @@ add_library(${TARGETNAME_V2MP_INTERNAL} STATIC
 	src/Modules/VirtualMachine.c
 
 	src/Util/Heap.c
+	src/Util/String.c
 )
 
 target_include_directories(${TARGETNAME_V2MP_INTERNAL} PUBLIC include)
