@@ -33,6 +33,7 @@ endif()
 set(TARGETNAME_V2MP V2MP)
 set(TARGETNAME_V2MP_INTERNAL V2MPInternal)
 set(TARGETNAME_V2MP_ASM V2MPAsm)
+set(TARGETNAME_ASSEMBLER Assembler)
 
 option(BUILD_SHARED_LIBS "If set, builds shared libraries; otherwise, builds static libraries." YES)
 option(BUILD_TESTING "If set, builds tests and links with Catch2" NO)
