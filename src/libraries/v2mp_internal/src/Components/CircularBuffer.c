@@ -1,6 +1,6 @@
 #include "V2MPInternal/Components/CircularBuffer.h"
-#include "V2MPInternal/Util/Util.h"
-#include "V2MPInternal/Util/Heap.h"
+#include "BaseUtil/Util.h"
+#include "BaseUtil/Heap.h"
 
 typedef struct BufferRange
 {
@@ -135,7 +135,7 @@ V2MP_CircularBuffer* V2MP_CircularBuffer_AllocateAndInit(size_t capacity)
 		return NULL;
 	}
 
-	cb = V2MP_CALLOC_STRUCT(V2MP_CircularBuffer);
+	cb = BASEUTIL_CALLOC_STRUCT(V2MP_CircularBuffer);
 
 	if ( !cb )
 	{
@@ -143,7 +143,7 @@ V2MP_CircularBuffer* V2MP_CircularBuffer_AllocateAndInit(size_t capacity)
 	}
 
 	cb->capacity = capacity;
-	cb->buffer = (uint8_t*)V2MP_MALLOC(cb->capacity);
+	cb->buffer = (uint8_t*)BASEUTIL_MALLOC(cb->capacity);
 
 	if ( !cb->buffer )
 	{

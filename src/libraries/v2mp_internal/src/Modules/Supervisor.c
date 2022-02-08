@@ -4,7 +4,7 @@
 #include "V2MPInternal/Modules/MemoryStore.h"
 #include "V2MPInternal/Modules/DeviceCollection.h"
 #include "V2MPInternal/Modules/Device.h"
-#include "V2MPInternal/Util/Heap.h"
+#include "BaseUtil/Heap.h"
 #include "Modules/Supervisor_Internal.h"
 #include "Modules/Supervisor_CPUInterface.h"
 #include "Modules/Device_Internal.h"
@@ -94,7 +94,7 @@ static bool HandlePostInstructionTasks(V2MP_Supervisor* supervisor)
 
 V2MP_Supervisor* V2MP_Supervisor_AllocateAndInit(void)
 {
-	V2MP_Supervisor* supervisor = V2MP_CALLOC_STRUCT(V2MP_Supervisor);
+	V2MP_Supervisor* supervisor = BASEUTIL_CALLOC_STRUCT(V2MP_Supervisor);
 
 	if ( !supervisor )
 	{
@@ -120,7 +120,7 @@ void V2MP_Supervisor_DeinitAndFree(V2MP_Supervisor* supervisor)
 	V2MP_Supervisor_SetMainboard(supervisor, NULL);
 	V2MP_Supervisor_DestroyActionLists(supervisor);
 
-	V2MP_FREE(supervisor);
+	BASEUTIL_FREE(supervisor);
 }
 
 struct V2MP_Mainboard* V2MP_Supervisor_GetMainboard(const V2MP_Supervisor* supervisor)

@@ -7,7 +7,7 @@
 #include "V2MPInternal/Modules/DevicePortCollection.h"
 #include "V2MPInternal/Modules/DevicePort.h"
 #include "V2MPInternal/Modules/CPU.h"
-#include "V2MPInternal/Util/Util.h"
+#include "BaseUtil/Util.h"
 #include "Modules/DevicePort_Internal.h"
 #include "Modules/Supervisor_Action_DPQ.h"
 #include "Modules/Supervisor_Action_Stack.h"
@@ -69,7 +69,7 @@ static DataTransferContextResult ConstructDataTransferContext(
 		return DTCR_FAILED;
 	}
 
-	V2MP_ZERO_STRUCT_PTR(context);
+	BASEUTIL_ZERO_STRUCT_PTR(context);
 
 	context->supervisor = supervisor;
 	context->action = action;
@@ -241,7 +241,7 @@ static ActionResult HandleIndirectDataTransferRead(DataTransferContext* context)
 				sr |= V2MP_CPU_SR_Z;
 			}
 
-			V2MP_CPU_SetR1(context->cpu, (V2MP_Word)V2MP_MIN(origBytesInMailbox, SVACTION_DEVDT_ARG_DS_SIZE(context->action)));
+			V2MP_CPU_SetR1(context->cpu, (V2MP_Word)BASEUTIL_MIN(origBytesInMailbox, SVACTION_DEVDT_ARG_DS_SIZE(context->action)));
 			V2MP_CPU_SetStatusRegister(context->cpu, sr);
 		}
 
@@ -384,7 +384,7 @@ static ActionResult HandleIndirectDataTransferWrite(DataTransferContext* context
 				sr |= V2MP_CPU_SR_Z;
 			}
 
-			V2MP_CPU_SetR1(context->cpu, (V2MP_Word)V2MP_MIN(origBytesFreeInMailbox, SVACTION_DEVDT_ARG_DS_SIZE(context->action)));
+			V2MP_CPU_SetR1(context->cpu, (V2MP_Word)BASEUTIL_MIN(origBytesFreeInMailbox, SVACTION_DEVDT_ARG_DS_SIZE(context->action)));
 			V2MP_CPU_SetStatusRegister(context->cpu, sr);
 		}
 
@@ -703,7 +703,7 @@ static ActionResult ResolveAction(V2MP_Supervisor* supervisor, V2MP_Supervisor_A
 		return AR_FAILED;
 	}
 
-	if ( (size_t)action->actionType >= V2MP_ARRAY_SIZE(ACTION_HANDLERS) ||
+	if ( (size_t)action->actionType >= BASEUTIL_ARRAY_SIZE(ACTION_HANDLERS) ||
 	     !ACTION_HANDLERS[(size_t)action->actionType] )
 	{
 		return AR_FAILED;

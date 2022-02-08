@@ -1,11 +1,11 @@
 #include "Modules/Device_Internal.h"
 #include "Modules/DevicePort_Internal.h"
-#include "V2MPInternal/Util/Heap.h"
-#include "V2MPInternal/Util/Util.h"
+#include "BaseUtil/Heap.h"
+#include "BaseUtil/Util.h"
 
 V2MP_Device* V2MP_Device_AllocateAndInit(void)
 {
-	return V2MP_CALLOC_STRUCT(V2MP_Device);
+	return BASEUTIL_CALLOC_STRUCT(V2MP_Device);
 }
 
 void V2MP_Device_DeinitAndFree(V2MP_Device* device)
@@ -18,7 +18,7 @@ void V2MP_Device_DeinitAndFree(V2MP_Device* device)
 	if ( device->callbacks.onDeviceAboutToBeDestroyed )
 	{
 		device->callbacks.onDeviceAboutToBeDestroyed(device->callbacks.userData, device);
-		V2MP_ZERO_STRUCT_PTR(&device->callbacks);
+		BASEUTIL_ZERO_STRUCT_PTR(&device->callbacks);
 	}
 
 	if ( device->connectedPort )
@@ -27,7 +27,7 @@ void V2MP_Device_DeinitAndFree(V2MP_Device* device)
 		device->connectedPort = NULL;
 	}
 
-	V2MP_FREE(device);
+	BASEUTIL_FREE(device);
 }
 
 void V2MP_Device_NotifyConnectedToPort(V2MP_Device* device, struct V2MP_DevicePort* port)

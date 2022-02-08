@@ -1,5 +1,5 @@
 #include "V2MPInternal/Components/DoubleLinkedList.h"
-#include "V2MPInternal/Util/Heap.h"
+#include "BaseUtil/Heap.h"
 
 struct V2MP_DoubleLL_Node
 {
@@ -21,18 +21,18 @@ struct V2MP_DoubleLL
 
 static inline V2MP_DoubleLL_Node* AllocateNodeAndPayload(V2MP_DoubleLL* list)
 {
-	V2MP_DoubleLL_Node* node = V2MP_CALLOC_STRUCT(V2MP_DoubleLL_Node);
+	V2MP_DoubleLL_Node* node = BASEUTIL_CALLOC_STRUCT(V2MP_DoubleLL_Node);
 
 	if ( !node )
 	{
 		return NULL;
 	}
 
-	node->payload = V2MP_MALLOC(list->payloadSize);
+	node->payload = BASEUTIL_MALLOC(list->payloadSize);
 
 	if ( !node->payload )
 	{
-		V2MP_FREE(node);
+		BASEUTIL_FREE(node);
 		node = NULL;
 	}
 
@@ -45,10 +45,10 @@ static inline void FreeNode(V2MP_DoubleLL_Node* node, V2MP_DoubleLL_OnDestroyPay
 	if ( onDestroyPayloadCallback )
 	{
 		onDestroyPayloadCallback(node->payload);
-		V2MP_FREE(node->payload);
+		BASEUTIL_FREE(node->payload);
 	}
 
-	V2MP_FREE(node);
+	BASEUTIL_FREE(node);
 }
 
 static void FreeAllNodes(V2MP_DoubleLL* list)
@@ -74,7 +74,7 @@ V2MP_DoubleLL* V2MP_DoubleLL_AllocateAndInit(size_t payloadSize, V2MP_DoubleLL_O
 		return NULL;
 	}
 
-	V2MP_DoubleLL* list = V2MP_CALLOC_STRUCT(V2MP_DoubleLL);
+	V2MP_DoubleLL* list = BASEUTIL_CALLOC_STRUCT(V2MP_DoubleLL);
 
 	if ( !list )
 	{
@@ -95,7 +95,7 @@ void V2MP_DoubleLL_DeinitAndFree(V2MP_DoubleLL* list)
 	}
 
 	FreeAllNodes(list);
-	V2MP_FREE(list);
+	BASEUTIL_FREE(list);
 }
 
 V2MP_DoubleLL_Node* V2MP_DoubleLL_GetHead(const V2MP_DoubleLL* list)

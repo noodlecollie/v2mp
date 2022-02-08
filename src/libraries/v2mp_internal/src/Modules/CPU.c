@@ -1,19 +1,19 @@
 #include "V2MPInternal/Modules/CPU.h"
-#include "V2MPInternal/Util/Heap.h"
-#include "V2MPInternal/Util/Util.h"
+#include "BaseUtil/Heap.h"
+#include "BaseUtil/Util.h"
 #include "Modules/CPU_Internal.h"
 #include "Modules/CPU_Instructions.h"
 
 V2MP_CPU* V2MP_CPU_AllocateAndInit(void)
 {
-	return V2MP_CALLOC_STRUCT(V2MP_CPU);
+	return BASEUTIL_CALLOC_STRUCT(V2MP_CPU);
 }
 
 void V2MP_CPU_DeinitAndFree(V2MP_CPU* cpu)
 {
 	if ( cpu )
 	{
-		V2MP_FREE(cpu);
+		BASEUTIL_FREE(cpu);
 	}
 }
 
@@ -30,7 +30,7 @@ void V2MP_CPU_SetSupervisorInterface(V2MP_CPU* cpu, const V2MP_CPU_SupervisorInt
 	}
 	else
 	{
-		V2MP_ZERO_STRUCT_PTR(&cpu->supervisorInterface);
+		BASEUTIL_ZERO_STRUCT_PTR(&cpu->supervisorInterface);
 	}
 }
 

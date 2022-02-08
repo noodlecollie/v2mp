@@ -3,7 +3,7 @@
 #include "V2MPInternal/Modules/MemoryStore.h"
 #include "V2MPInternal/Modules/DevicePortCollection.h"
 #include "V2MPInternal/Modules/DeviceCollection.h"
-#include "V2MPInternal/Util/Heap.h"
+#include "BaseUtil/Heap.h"
 
 struct V2MP_Mainboard
 {
@@ -25,7 +25,7 @@ static inline bool HasAllModules(V2MP_Mainboard* board)
 
 V2MP_Mainboard* V2MP_Mainboard_AllocateAndInit(void)
 {
-	V2MP_Mainboard* board = V2MP_CALLOC_STRUCT(V2MP_Mainboard);
+	V2MP_Mainboard* board = BASEUTIL_CALLOC_STRUCT(V2MP_Mainboard);
 
 	if ( !board )
 	{
@@ -77,7 +77,7 @@ void V2MP_Mainboard_DeinitAndFree(V2MP_Mainboard* board)
 		board->memoryStore = NULL;
 	}
 
-	V2MP_FREE(board);
+	BASEUTIL_FREE(board);
 }
 
 struct V2MP_CPU* V2MP_Mainboard_GetCPU(const V2MP_Mainboard* board)

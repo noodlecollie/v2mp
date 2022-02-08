@@ -2,7 +2,7 @@
 #include "V2MPInternal/Modules/Mainboard.h"
 #include "V2MPInternal/Modules/Supervisor.h"
 #include "V2MPInternal/Modules/MemoryStore.h"
-#include "V2MPInternal/Util/Heap.h"
+#include "BaseUtil/Heap.h"
 
 struct V2MP_VirtualMachine
 {
@@ -12,7 +12,7 @@ struct V2MP_VirtualMachine
 
 V2MP_VirtualMachine* V2MP_VirtualMachine_AllocateAndInit(void)
 {
-	V2MP_VirtualMachine* vm = V2MP_CALLOC_STRUCT(V2MP_VirtualMachine);
+	V2MP_VirtualMachine* vm = BASEUTIL_CALLOC_STRUCT(V2MP_VirtualMachine);
 
 	vm->mainboard = V2MP_Mainboard_AllocateAndInit();
 	vm->supervisor = V2MP_Supervisor_AllocateAndInit();
@@ -38,7 +38,7 @@ void V2MP_VirtualMachine_DeinitAndFree(V2MP_VirtualMachine* vm)
 	V2MP_Supervisor_DeinitAndFree(vm->supervisor);
 	V2MP_Mainboard_DeinitAndFree(vm->mainboard);
 
-	V2MP_FREE(vm);
+	BASEUTIL_FREE(vm);
 }
 
 struct V2MP_Mainboard* V2MP_VirtualMachine_GetMainboard(V2MP_VirtualMachine* vm)

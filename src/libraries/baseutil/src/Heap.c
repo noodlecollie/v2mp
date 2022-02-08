@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "V2MPInternal/Util/Heap.h"
+#include "BaseUtil/Heap.h"
 
 // According to Windows, functions like malloc() are dllimported, so they don't
 // necessarily have a static address. Instead, we have to wrap them.
@@ -24,7 +24,7 @@ static void LocalFree(void* ptr)
 	free(ptr);
 }
 
-V2MP_HeapFunctions LocalHeapFunctions =
+BaseUtil_HeapFunctions LocalHeapFunctions =
 {
 	&LocalMalloc,
 	&LocalRealloc,
@@ -32,7 +32,7 @@ V2MP_HeapFunctions LocalHeapFunctions =
 	&LocalFree
 };
 
-void V2MP_Heap_SetHeapFunctions(V2MP_HeapFunctions functions)
+void BaseUtil_Heap_SetHeapFunctions(BaseUtil_HeapFunctions functions)
 {
 	if ( !functions.mallocFunc )
 	{
@@ -57,28 +57,28 @@ void V2MP_Heap_SetHeapFunctions(V2MP_HeapFunctions functions)
 	LocalHeapFunctions = functions;
 }
 
-void V2MP_Heap_ResetHeapFunctions(void)
+void BaseUtil_Heap_ResetHeapFunctions(void)
 {
-	V2MP_HeapFunctions functions = { NULL, NULL, NULL, NULL };
-	V2MP_Heap_SetHeapFunctions(functions);
+	BaseUtil_HeapFunctions functions = { NULL, NULL, NULL, NULL };
+	BaseUtil_Heap_SetHeapFunctions(functions);
 }
 
-void* V2MP_Heap_Malloc(size_t size)
+void* BaseUtil_Heap_Malloc(size_t size)
 {
 	return LocalHeapFunctions.mallocFunc(size);
 }
 
-void* V2MP_Heap_Realloc(void* ptr, size_t newSize)
+void* BaseUtil_Heap_Realloc(void* ptr, size_t newSize)
 {
 	return LocalHeapFunctions.reallocFunc(ptr, newSize);
 }
 
-void* V2MP_Heap_Calloc(size_t numElements, size_t elementSize)
+void* BaseUtil_Heap_Calloc(size_t numElements, size_t elementSize)
 {
 	return LocalHeapFunctions.callocFunc(numElements, elementSize);
 }
 
-void V2MP_Heap_Free(void* ptr)
+void BaseUtil_Heap_Free(void* ptr)
 {
 	LocalHeapFunctions.freeFunc(ptr);
 }

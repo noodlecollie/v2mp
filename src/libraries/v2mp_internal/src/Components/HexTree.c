@@ -1,8 +1,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include "V2MPInternal/Components/HexTree.h"
-#include "V2MPInternal/Util/Util.h"
-#include "V2MPInternal/Util/Heap.h"
+#include "BaseUtil/Util.h"
+#include "BaseUtil/Heap.h"
 
 // Each level of the tree has 16 slots, corresponding to the number of permutations in a half-byte.
 #define NUM_SLOTS 16
@@ -88,7 +88,7 @@ static void** GetLeafSlot(V2MP_HexTreeNode* root, uint16_t key, bool createIfNon
 					break;
 				}
 
-				(*slot) = V2MP_CALLOC_STRUCT(V2MP_HexTreeNode);
+				(*slot) = BASEUTIL_CALLOC_STRUCT(V2MP_HexTreeNode);
 
 				if ( !(*slot) )
 				{
@@ -110,7 +110,7 @@ static void** GetLeafSlot(V2MP_HexTreeNode* root, uint16_t key, bool createIfNon
 
 V2MP_HexTreeNode* V2MP_HexTree_AllocateAndInit(void)
 {
-	return V2MP_CALLOC_STRUCT(V2MP_HexTreeNode);
+	return BASEUTIL_CALLOC_STRUCT(V2MP_HexTreeNode);
 }
 
 void V2MP_HexTree_DeinitAndFree(V2MP_HexTreeNode* root)

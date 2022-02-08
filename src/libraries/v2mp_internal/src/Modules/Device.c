@@ -1,7 +1,7 @@
 #include "V2MPInternal/Modules/Device.h"
 #include "V2MPInternal/Modules/DevicePort.h"
 #include "V2MPInternal/Components/CircularBuffer.h"
-#include "V2MPInternal/Util/Util.h"
+#include "BaseUtil/Util.h"
 #include "Modules/Device_Internal.h"
 #include "Modules/DevicePort_Internal.h"
 
@@ -35,7 +35,7 @@ void V2MP_Device_SetCallbacks(V2MP_Device* device, const V2MP_Device_Callbacks* 
 	}
 	else
 	{
-		V2MP_ZERO_STRUCT_PTR(&device->callbacks);
+		BASEUTIL_ZERO_STRUCT_PTR(&device->callbacks);
 	}
 }
 

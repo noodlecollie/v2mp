@@ -1,8 +1,8 @@
 #include <string.h>
-#include "V2MPInternal/Util/String.h"
-#include "V2MPInternal/Util/Heap.h"
+#include "BaseUtil/String.h"
+#include "BaseUtil/Heap.h"
 
-char* V2MP_String_Duplicate(const char* origString)
+char* BaseUtil_String_Duplicate(const char* origString)
 {
 	size_t length;
 	char* newBuffer;
@@ -13,7 +13,7 @@ char* V2MP_String_Duplicate(const char* origString)
 	}
 
 	length = strlen(origString) + 1;
-	newBuffer = (char*)V2MP_MALLOC(length);
+	newBuffer = (char*)BASEUTIL_MALLOC(length);
 
 	if ( !newBuffer )
 	{

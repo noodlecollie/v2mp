@@ -1,5 +1,5 @@
 #include "V2MPInternal/Modules/MemoryStore.h"
-#include "V2MPInternal/Util/Heap.h"
+#include "BaseUtil/Heap.h"
 #include "V2MPInternal/Defs.h"
 
 struct V2MP_MemoryStore
@@ -17,7 +17,7 @@ static void FreeAllMemory(V2MP_MemoryStore* mem)
 
 	if ( mem->totalMemory )
 	{
-		V2MP_FREE(mem->totalMemory);
+		BASEUTIL_FREE(mem->totalMemory);
 	}
 
 	mem->totalMemory = NULL;
@@ -26,7 +26,7 @@ static void FreeAllMemory(V2MP_MemoryStore* mem)
 
 V2MP_MemoryStore* V2MP_MemoryStore_AllocateAndInit(void)
 {
-	return V2MP_CALLOC_STRUCT(V2MP_MemoryStore);
+	return BASEUTIL_CALLOC_STRUCT(V2MP_MemoryStore);
 }
 
 void V2MP_MemoryStore_DeinitAndFree(V2MP_MemoryStore* mem)
@@ -37,7 +37,7 @@ void V2MP_MemoryStore_DeinitAndFree(V2MP_MemoryStore* mem)
 	}
 
 	FreeAllMemory(mem);
-	V2MP_FREE(mem);
+	BASEUTIL_FREE(mem);
 }
 
 bool V2MP_MemoryStore_AllocateTotalMemory(V2MP_MemoryStore* mem, size_t sizeInBytes)
@@ -49,7 +49,7 @@ bool V2MP_MemoryStore_AllocateTotalMemory(V2MP_MemoryStore* mem, size_t sizeInBy
 
 	FreeAllMemory(mem);
 
-	mem->totalMemory = V2MP_MALLOC(sizeInBytes);
+	mem->totalMemory = BASEUTIL_MALLOC(sizeInBytes);
 
 	if ( !mem->totalMemory )
 	{

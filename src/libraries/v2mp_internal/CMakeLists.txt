@@ -22,10 +22,11 @@ add_library(${TARGETNAME_V2MP_INTERNAL} STATIC
 	src/Modules/Supervisor_Internal.c
 	src/Modules/Supervisor.c
 	src/Modules/VirtualMachine.c
-
-	src/Util/Heap.c
-	src/Util/String.c
 )
 
 target_include_directories(${TARGETNAME_V2MP_INTERNAL} PUBLIC include)
 target_include_directories(${TARGETNAME_V2MP_INTERNAL} PRIVATE src)
+
+target_link_libraries(${TARGETNAME_V2MP_INTERNAL} PRIVATE
+	${TARGETNAME_BASEUTIL}
+)

@@ -1,7 +1,7 @@
 #include "V2MPInternal/Modules/DeviceCollection.h"
 #include "V2MPInternal/Modules/Device.h"
 #include "V2MPInternal/Components/DoubleLinkedList.h"
-#include "V2MPInternal/Util/Heap.h"
+#include "BaseUtil/Heap.h"
 #include "Modules/Device_Internal.h"
 
 typedef struct DeviceEntry
@@ -49,7 +49,7 @@ static V2MP_Device* GetNextDevice(const V2MP_DeviceCollection* dc, V2MP_Device* 
 
 V2MP_DeviceCollection* V2MP_DeviceCollection_AllocateAndInit(void)
 {
-	V2MP_DeviceCollection* dc = V2MP_CALLOC_STRUCT(V2MP_DeviceCollection);
+	V2MP_DeviceCollection* dc = BASEUTIL_CALLOC_STRUCT(V2MP_DeviceCollection);
 
 	if ( !dc )
 	{
@@ -76,7 +76,7 @@ void V2MP_DeviceCollection_DeinitAndFree(V2MP_DeviceCollection* dc)
 
 	V2MP_DoubleLL_DeinitAndFree(dc->deviceList);
 
-	V2MP_FREE(dc);
+	BASEUTIL_FREE(dc);
 }
 
 struct V2MP_Device* V2MP_DeviceCollection_CreateDevice(V2MP_DeviceCollection* dc)
