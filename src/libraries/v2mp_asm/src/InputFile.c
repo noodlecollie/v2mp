@@ -1,11 +1,6 @@
 #include "V2MPAsm/InputFile.h"
 #include "BaseUtil/Heap.h"
-
-struct V2MPAsm_InputFile
-{
-	const V2MPAsm_Byte* data;
-	size_t length;
-};
+#include "InputFile_Internal.h"
 
 V2MPAsm_InputFile* V2MPAsm_InputFile_AllocateAndInit(void)
 {
@@ -33,13 +28,21 @@ void V2MPAsm_InputFile_SetInput(V2MPAsm_InputFile* inputFile, const V2MPAsm_Byte
 		return;
 	}
 
+	V2MPAsm_InputFile_ResetCurrentLine(inputFile);
+
 	if ( !data || length < 1 )
 	{
 		inputFile->data = NULL;
 		inputFile->length = 0;
+
 		return;
 	}
 
 	inputFile->data = data;
 	inputFile->length = length;
+}
+
+bool V2MPAsm_InputFile_IsValid(const V2MPAsm_InputFile* inputFile)
+{
+	return inputFile && inputFile->data && inputFile->length > 0;
 }

@@ -1,4 +1,5 @@
 #include <string.h>
+#include <ctype.h>
 #include "BaseUtil/String.h"
 #include "BaseUtil/Heap.h"
 
@@ -26,4 +27,37 @@ char* BaseUtil_String_Duplicate(const char* origString)
 	newBuffer[length - 1] = '\0';
 
 	return newBuffer;
+}
+
+const char* BaseUtil_String_TrimTrailingWhitespace(const char* origString)
+{
+	const char* lastValid;
+
+	if ( !origString )
+	{
+		return NULL;
+	}
+
+	if ( !(*origString) )
+	{
+		return origString;
+	}
+
+	lastValid = origString;
+
+	while ( *origString )
+	{
+		if ( !isspace(*origString) )
+		{
+			lastValid = origString;
+		}
+
+		++origString;
+	}
+
+	// If for some reason the string was all whitespace,
+	// lastValid will be whitespace. In this case, the
+	// terminator should be placed there. Otherwise, the
+	// terminator should be placed at the next character.
+	return isspace(*lastValid) ? lastValid : (lastValid + 1);
 }

@@ -7,6 +7,10 @@ extern "C" {
 
 char* BaseUtil_String_Duplicate(const char* origString);
 
+// Returns a pointer to where the new terminator of the string should be
+// if trailing whitespace were to be removed.
+const char* BaseUtil_String_TrimTrailingWhitespace(const char* origString);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif
