@@ -29,7 +29,7 @@ char* BaseUtil_String_Duplicate(const char* origString)
 	return newBuffer;
 }
 
-const char* BaseUtil_String_TrimTrailingWhitespace(const char* origString)
+const char* BaseUtil_String_EndWithoutWhitespace(const char* origString)
 {
 	const char* lastValid;
 
@@ -60,4 +60,19 @@ const char* BaseUtil_String_TrimTrailingWhitespace(const char* origString)
 	// terminator should be placed there. Otherwise, the
 	// terminator should be placed at the next character.
 	return isspace(*lastValid) ? lastValid : (lastValid + 1);
+}
+
+const char* BaseUtil_String_BeginWithoutWhitespace(const char* origString)
+{
+	if ( !origString )
+	{
+		return NULL;
+	}
+
+	while ( *origString && isspace(*origString) )
+	{
+		++origString;
+	}
+
+	return origString;
 }

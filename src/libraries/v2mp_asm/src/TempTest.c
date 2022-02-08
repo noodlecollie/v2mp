@@ -1,5 +1,8 @@
 #include <stdio.h>
+#include <ctype.h>
+#include <string.h>
 #include "BaseUtil/Heap.h"
+#include "BaseUtil/String.h"
 #include "V2MPAsm/TempTest.h"
 #include "InputFile.h"
 #include "Parsing.h"
@@ -12,6 +15,9 @@ static void ReadEachLine(V2MPAsm_InputFile* inputFile)
 	do
 	{
 		size_t charsRead;
+		size_t charsAfterTrimming;
+		char* newTerminator;
+		const char* newBegin;
 
 		V2MPAsm_Parsing_SeekNextLine(inputFile);
 
@@ -25,13 +31,19 @@ static void ReadEachLine(V2MPAsm_InputFile* inputFile)
 
 		charsRead = V2MPAsm_InputFile_GetCurrentLineContent(inputFile, buffer, sizeof(buffer));
 
+		newTerminator = (char*)BaseUtil_String_EndWithoutWhitespace(buffer);
+		*newTerminator = '\0';
+
+		newBegin = BaseUtil_String_BeginWithoutWhitespace(buffer);
+		charsAfterTrimming = strlen(newBegin);
+
 		if ( charsRead > 0 )
 		{
-			printf("%s (%lu characters)\n", buffer, charsRead);
+			printf("%s (%lu characters read, trimmed to %lu characters)\n", newBegin, charsRead, charsAfterTrimming);
 		}
 		else
 		{
-			printf(" (0 characters)\n");
+			printf(" (0 characters, trimmed to 0 characters)\n");
 		}
 
 		++lineNumber;

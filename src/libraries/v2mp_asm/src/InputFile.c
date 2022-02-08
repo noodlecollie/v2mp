@@ -111,13 +111,6 @@ size_t V2MPAsm_InputFile_GetCurrentLineContent(const V2MPAsm_InputFile* inputFil
 	}
 
 	lineLength = V2MPAsm_InputFile_GetCurrentLineLength(inputFile);
-
-	// Don't copy any trailing whitespace.
-	while ( lineLength > 0 && isspace(inputFile->data[inputFile->curLineBegin + lineLength - 1]) )
-	{
-		--lineLength;
-	}
-
 	lineLength = BASEUTIL_MIN(lineLength, maxLength - 1);
 
 	if ( lineLength < 1 )
