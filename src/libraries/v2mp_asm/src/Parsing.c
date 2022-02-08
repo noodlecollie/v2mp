@@ -1,5 +1,4 @@
 #include "Parsing.h"
-#include "InputFile_Internal.h"
 
 void V2MPAsm_Parsing_SeekNextLine(V2MPAsm_InputFile* inputFile)
 {

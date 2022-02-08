@@ -1,8 +1,7 @@
 #include <stdio.h>
-#include "V2MPAsm/TempTest.h"
-#include "V2MPAsm/InputFile.h"
 #include "BaseUtil/Heap.h"
-#include "InputFile_Internal.h"
+#include "V2MPAsm/TempTest.h"
+#include "InputFile.h"
 #include "Parsing.h"
 
 static void ReadEachLine(V2MPAsm_InputFile* inputFile)
