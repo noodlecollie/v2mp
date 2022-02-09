@@ -3,6 +3,43 @@
 #include "BaseUtil/Util.h"
 #include "InputFile.h"
 
+static void SetCurrentLine(V2MPAsm_InputFile* inputFile, size_t begin, size_t end)
+{
+	if ( !inputFile )
+	{
+		return;
+	}
+
+	if ( begin > inputFile->length )
+	{
+		begin = inputFile->length;
+	}
+
+	if ( end > inputFile->length )
+	{
+		end = inputFile->length;
+	}
+
+	if ( end < begin )
+	{
+		end = begin;
+	}
+
+	inputFile->curLineBegin = begin;
+	inputFile->curLineEnd = end;
+}
+
+static inline void ResetCurrentLine(V2MPAsm_InputFile* inputFile)
+{
+	if ( !inputFile )
+	{
+		return;
+	}
+
+	SetCurrentLine(inputFile, 0, 0);
+	inputFile->curLineNo = 0;
+}
+
 V2MPAsm_InputFile* V2MPAsm_InputFile_AllocateAndInit(void)
 {
 	V2MPAsm_InputFile* inputFile;
@@ -29,7 +66,7 @@ void V2MPAsm_InputFile_SetInput(V2MPAsm_InputFile* inputFile, const V2MPAsm_Byte
 		return;
 	}
 
-	V2MPAsm_InputFile_ResetCurrentLine(inputFile);
+	ResetCurrentLine(inputFile);
 
 	if ( !data || length < 1 )
 	{
@@ -41,6 +78,8 @@ void V2MPAsm_InputFile_SetInput(V2MPAsm_InputFile* inputFile, const V2MPAsm_Byte
 
 	inputFile->data = data;
 	inputFile->length = length;
+
+	V2MPAsm_InputFile_SeekNextLine(inputFile);
 }
 
 bool V2MPAsm_InputFile_IsValid(const V2MPAsm_InputFile* inputFile)
@@ -58,35 +97,56 @@ size_t V2MPAsm_InputFile_GetCurrentLineLength(const V2MPAsm_InputFile* inputFile
 	return inputFile->curLineEnd - inputFile->curLineBegin;
 }
 
-void V2MPAsm_InputFile_SetCurrentLine(V2MPAsm_InputFile* inputFile, size_t begin, size_t end)
+size_t V2MPAsm_InputFile_GetCurrentLineNumber(const V2MPAsm_InputFile* inputFile)
+{
+	return inputFile ? inputFile->curLineNo : 0;
+}
+
+void V2MPAsm_InputFile_SeekFirstLine(V2MPAsm_InputFile* inputFile)
 {
 	if ( !inputFile )
 	{
 		return;
 	}
 
-	if ( begin > inputFile->length )
-	{
-		begin = inputFile->length;
-	}
-
-	if ( end > inputFile->length )
-	{
-		end = inputFile->length;
-	}
-
-	if ( end < begin )
-	{
-		end = begin;
-	}
-
-	inputFile->curLineBegin = begin;
-	inputFile->curLineEnd = end;
+	ResetCurrentLine(inputFile);
+	V2MPAsm_InputFile_SeekNextLine(inputFile);
 }
 
-void V2MPAsm_InputFile_ResetCurrentLine(V2MPAsm_InputFile* inputFile)
+void V2MPAsm_InputFile_SeekNextLine(V2MPAsm_InputFile* inputFile)
 {
-	V2MPAsm_InputFile_SetCurrentLine(inputFile, 0, 0);
+	if ( !inputFile )
+	{
+		return;
+	}
+
+	if ( !V2MPAsm_InputFile_IsValid(inputFile) )
+	{
+		ResetCurrentLine(inputFile);
+		return;
+	}
+
+	if ( inputFile->curLineEnd >= inputFile->length )
+	{
+		// Seeking to EOF.
+		SetCurrentLine(inputFile, inputFile->length, inputFile->length);
+		++inputFile->curLineNo;
+
+		return;
+	}
+
+	// Set the begin index to be where the end was previously.
+	inputFile->curLineBegin = inputFile->curLineEnd;
+
+	while ( inputFile->curLineEnd < inputFile->length && inputFile->data[inputFile->curLineEnd++] != '\n' )
+	{
+		// curLineEnd is incremented in the while condition.
+	}
+
+	// Now, the end index will either be one character in front of a newline, or one character in front
+	// of the last character in the file (or both).
+
+	++inputFile->curLineNo;
 }
 
 bool V2MPAsm_InputFile_IsEOF(const V2MPAsm_InputFile* inputFile)

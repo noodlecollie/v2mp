@@ -5,22 +5,20 @@
 #include "BaseUtil/String.h"
 #include "V2MPAsm/TempTest.h"
 #include "InputFile.h"
-#include "Parsing.h"
 
 static void ReadEachLine(V2MPAsm_InputFile* inputFile)
 {
 	char buffer[512];
-	size_t lineNumber = 1;
 
 	do
 	{
+		size_t lineNumber;
 		size_t charsRead;
 		size_t charsAfterTrimming;
 		char* newTerminator;
 		const char* newBegin;
 
-		V2MPAsm_Parsing_SeekNextLine(inputFile);
-
+		lineNumber = V2MPAsm_InputFile_GetCurrentLineNumber(inputFile);
 		printf("Line %lu: ", lineNumber);
 
 		if ( V2MPAsm_InputFile_IsEOF(inputFile) )
@@ -46,7 +44,7 @@ static void ReadEachLine(V2MPAsm_InputFile* inputFile)
 			printf(" (0 characters, trimmed to 0 characters)\n");
 		}
 
-		++lineNumber;
+		V2MPAsm_InputFile_SeekNextLine(inputFile);
 	}
 	while ( true );
 }

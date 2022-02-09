@@ -3,7 +3,6 @@ create_export_header(${TARGETNAME_V2MP_ASM})
 
 add_library(${TARGETNAME_V2MP_ASM}
 	src/InputFile.c
-	src/Parsing.c
 	src/TempTest.c
 )
 

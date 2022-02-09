@@ -10,6 +10,7 @@ typedef struct V2MPAsm_InputFile
 	const V2MPAsm_Byte* data;
 	size_t length;
 
+	size_t curLineNo;
 	size_t curLineBegin;
 	size_t curLineEnd;
 } V2MPAsm_InputFile;
@@ -22,8 +23,9 @@ void V2MPAsm_InputFile_SetInput(V2MPAsm_InputFile* inputFile, const V2MPAsm_Byte
 bool V2MPAsm_InputFile_IsValid(const V2MPAsm_InputFile* inputFile);
 
 size_t V2MPAsm_InputFile_GetCurrentLineLength(const V2MPAsm_InputFile* inputFile);
-void V2MPAsm_InputFile_SetCurrentLine(V2MPAsm_InputFile* inputFile, size_t begin, size_t end);
-void V2MPAsm_InputFile_ResetCurrentLine(V2MPAsm_InputFile* inputFile);
+size_t V2MPAsm_InputFile_GetCurrentLineNumber(const V2MPAsm_InputFile* inputFile);
+void V2MPAsm_InputFile_SeekFirstLine(V2MPAsm_InputFile* inputFile);
+void V2MPAsm_InputFile_SeekNextLine(V2MPAsm_InputFile* inputFile);
 bool V2MPAsm_InputFile_IsEOF(const V2MPAsm_InputFile* inputFile);
 
 // Returns the number of bytes obtained, not including the terminator.
