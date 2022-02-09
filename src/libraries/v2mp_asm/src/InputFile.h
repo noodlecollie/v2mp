@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
-#include "V2MPAsm/Defs.h"
+#include "Defs.h"
 
 typedef struct V2MPAsm_InputFile
 {
