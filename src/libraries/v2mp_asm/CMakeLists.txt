@@ -12,4 +12,5 @@ target_include_directories(${TARGETNAME_V2MP_ASM} PRIVATE src)
 
 target_link_libraries(${TARGETNAME_V2MP_ASM} PRIVATE
 	${TARGETNAME_BASEUTIL}
+	cwalk
 )

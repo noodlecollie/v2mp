@@ -28,6 +28,7 @@ void BaseUtil_Heap_Free(void* ptr);
 #define BASEUTIL_CALLOC(numElements, elementSize) BaseUtil_Heap_Calloc(numElements, elementSize)
 #define BASEUTIL_FREE(ptr) BaseUtil_Heap_Free(ptr)
 
+#define BASEUTIL_MALLOC_STRUCT(structType) ((structType*)BASEUTIL_MALLOC(sizeof(structType)))
 #define BASEUTIL_CALLOC_STRUCT(structType) ((structType*)BASEUTIL_CALLOC(1, sizeof(structType)))
 
 #ifdef __cplusplus

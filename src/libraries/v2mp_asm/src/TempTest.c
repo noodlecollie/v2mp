@@ -4,11 +4,16 @@
 #include "BaseUtil/Heap.h"
 #include "BaseUtil/String.h"
 #include "V2MPAsm/TempTest.h"
-#include "InputFile.h"
+#include "ParseContext.h"
 
-static void ReadEachLine(V2MPAsm_InputFile* inputFile)
+static void ReadEachLine(V2MPAsm_ParseContext* context)
 {
+	V2MPAsm_InputFile* inputFile;
 	char buffer[512];
+
+	printf("Parsing: %s\n", V2MPAsm_ParseContext_GetFileName(context));
+
+	inputFile = V2MPAsm_ParseContext_GetInputFile(context);
 
 	do
 	{
@@ -49,23 +54,23 @@ static void ReadEachLine(V2MPAsm_InputFile* inputFile)
 	while ( true );
 }
 
-static void ParseFileData(const V2MPAsm_Byte* buffer, size_t length)
+static void ParseFileData(const char* filePath, const V2MPAsm_Byte* buffer, size_t length)
 {
-	V2MPAsm_InputFile* inputFile = V2MPAsm_InputFile_AllocateAndInit();
+	V2MPAsm_ParseContext* context = V2MPAsm_ParseContext_AllocateAndInit();
 
-	if ( !inputFile )
+	if ( !context )
 	{
-		printf("Failed to create V2MPAsm_InputFile\n");
+		printf("Failed to create V2MPAsm_ParseContext\n");
 		return;
 	}
 
-	V2MPAsm_InputFile_SetInput(inputFile, buffer, length);
-	ReadEachLine(inputFile);
+	V2MPAsm_ParseContext_SetInput(context, filePath, buffer, length);
+	ReadEachLine(context);
 
-	V2MPAsm_InputFile_DeinitAndFree(inputFile);
+	V2MPAsm_ParseContext_DeinitAndFree(context);
 }
 
-static void ReadFileFromDisk(FILE* inFile)
+static void ReadFileFromDisk(const char* filePath, FILE* inFile)
 {
 	size_t length = 0;
 	V2MPAsm_Byte* buffer;
@@ -85,7 +90,7 @@ static void ReadFileFromDisk(FILE* inFile)
 	}
 
 	fread(buffer, 1, length, inFile);
-	ParseFileData(buffer, length);
+	ParseFileData(filePath, buffer, length);
 
 	BASEUTIL_FREE(buffer);
 }
@@ -109,7 +114,7 @@ void V2MPAsm_TempTest_ReadFile(const char* filePath)
 	}
 
 	printf("Reading file %s\n", filePath);
-	ReadFileFromDisk(inFile);
+	ReadFileFromDisk(filePath, inFile);
 
 	fclose(inFile);
 }
