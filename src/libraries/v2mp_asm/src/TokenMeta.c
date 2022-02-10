@@ -21,6 +21,11 @@ static V2MPAsm_TokenType IdentifyTokenInDefaultContext(const char* str)
 		}
 	}
 
+	if ( *str == '[' )
+	{
+		return TOKEN_LABEL;
+	}
+
 	if ( (*str >= '0' && *str <= '9') || *str == '-' || *str == '+' )
 	{
 		return TOKEN_NUMERIC_LITERAL;
