@@ -1,1 +1,1 @@
-add_subdirectory(cwalk-v1.2.6)
+add_subdirectory(cwalk-v1.2.6-modified)

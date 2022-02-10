@@ -9,8 +9,11 @@ typedef struct V2MPAsm_ParseContext
 {
 	V2MPAsm_InputFile* inputFile;
 
-	char filePath[BASEUTIL_PATH_MAX];
+	char* filePath;
 	const char* fileName;
+
+	char* lineBuffer;
+	size_t lineBufferSize;
 } V2MPAsm_ParseContext;
 
 V2MPAsm_ParseContext* V2MPAsm_ParseContext_AllocateAndInit(void);
@@ -20,7 +23,9 @@ V2MPAsm_InputFile* V2MPAsm_ParseContext_GetInputFile(const V2MPAsm_ParseContext*
 const char* V2MPAsm_ParseContext_GetFilePath(const V2MPAsm_ParseContext* context);
 const char* V2MPAsm_ParseContext_GetFileName(const V2MPAsm_ParseContext* context);
 
-void V2MPAsm_ParseContext_SetInput(V2MPAsm_ParseContext* context, const char* filePath, const V2MPAsm_Byte* data, size_t length);
+bool V2MPAsm_ParseContext_SetInput(V2MPAsm_ParseContext* context, const char* filePath, const V2MPAsm_Byte* data, size_t length);
 bool V2MPAsm_ParseContext_HasInput(const V2MPAsm_ParseContext* context);
+
+bool V2MPAsm_ParseContext_AllocateLineBuffer(V2MPAsm_ParseContext* context, size_t bufferSize);
 
 #endif // V2MPASM_PARSECONTEXT_H

@@ -1,5 +1,5 @@
 # CWalk had an annoying CMake file that didn't allow you to disable installing,
-# so we do this instead. This is version 1.2.6.
+# so we do this instead. This is version 1.2.6, modified with a PR I made.
 
 add_library(cwalk STATIC
   "include/cwalk/cwalk.h"
