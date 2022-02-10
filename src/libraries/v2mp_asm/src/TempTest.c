@@ -8,11 +8,9 @@
 
 static void ReadEachLine(V2MPAsm_ParseContext* context)
 {
-	V2MPAsm_InputFile* inputFile;
 	char* lineBuffer;
 	size_t lineBufferSize;
 
-	inputFile = V2MPAsm_ParseContext_GetInputFile(context);
 	lineBuffer = V2MPAsm_ParseContext_GetLineBuffer(context);
 	lineBufferSize = V2MPAsm_ParseContext_GetLineBufferSize(context);
 
@@ -24,28 +22,28 @@ static void ReadEachLine(V2MPAsm_ParseContext* context)
 
 	printf("Parsing: %s\n", V2MPAsm_ParseContext_GetFileName(context));
 
-	for ( ; ; V2MPAsm_InputFile_SeekNextLine(inputFile) )
+	for ( ; ; V2MPAsm_ParseContext_SeekToNextInputLine(context) )
 	{
 		size_t charsRead;
 		size_t charsAfterTrimming;
 		char* newTerminator;
 		const char* newBegin;
 
-		printf("Line %lu: ", V2MPAsm_InputFile_GetCurrentLineNumber(inputFile));
+		printf("Line %lu: ", V2MPAsm_ParseContext_GetInputLineNumber(context));
 
-		if ( V2MPAsm_InputFile_IsEOF(inputFile) )
+		if ( V2MPAsm_ParseContext_InputIsAtEOF(context) )
 		{
 			printf("EOF\n");
 			break;
 		}
 
-		if ( V2MPAsm_InputFile_GetCurrentLineLength(inputFile) >= lineBufferSize )
+		if ( !V2MPAsm_ParseContext_CurrentInputLineWillFitInLineBuffer(context) )
 		{
 			printf("Overflowed max line length of %lu characters.\n", lineBufferSize - 1);
 			continue;
 		}
 
-		charsRead = V2MPAsm_InputFile_GetCurrentLineContent(inputFile, lineBuffer, lineBufferSize);
+		charsRead = V2MPAsm_ParseContext_ExtractCurrentInputLineToLineBuffer(context);
 
 		newTerminator = (char*)BaseUtil_String_EndWithoutWhitespace(lineBuffer);
 		*newTerminator = '\0';

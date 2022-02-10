@@ -17,11 +17,34 @@ static inline void FreeFilePath(V2MPAsm_ParseContext* context)
 
 V2MPAsm_ParseContext* V2MPAsm_ParseContext_AllocateAndInit(void)
 {
-	V2MPAsm_ParseContext* context = BASEUTIL_CALLOC_STRUCT(V2MPAsm_ParseContext);
+	V2MPAsm_ParseContext* context;
 
-	context->inputFile = V2MPAsm_InputFile_AllocateAndInit();
+	do
+	{
+		context = BASEUTIL_CALLOC_STRUCT(V2MPAsm_ParseContext);
 
-	return context;
+		if ( !context )
+		{
+			break;
+		}
+
+		context->inputFile = V2MPAsm_InputFile_AllocateAndInit();
+
+		if ( !context->inputFile )
+		{
+			break;
+		}
+
+		return context;
+	}
+	while ( false );
+
+	if ( context )
+	{
+		BASEUTIL_FREE(context);
+	}
+
+	return NULL;
 }
 
 void V2MPAsm_ParseContext_DeinitAndFree(V2MPAsm_ParseContext* context)
@@ -51,6 +74,16 @@ const char* V2MPAsm_ParseContext_GetFilePath(const V2MPAsm_ParseContext* context
 const char* V2MPAsm_ParseContext_GetFileName(const V2MPAsm_ParseContext* context)
 {
 	return context ? context->fileName : NULL;
+}
+
+bool V2MPAsm_ParseContext_InputIsAtEOF(const V2MPAsm_ParseContext* context)
+{
+	return context ? V2MPAsm_InputFile_IsEOF(context->inputFile) : true;
+}
+
+size_t V2MPAsm_ParseContext_GetInputLineNumber(const V2MPAsm_ParseContext* context)
+{
+	return context ? V2MPAsm_InputFile_GetCurrentLineNumber(context->inputFile) : 0;
 }
 
 bool V2MPAsm_ParseContext_SetInput(V2MPAsm_ParseContext* context, const char* filePath, const V2MPAsm_Byte* data, size_t length)
@@ -121,4 +154,34 @@ char* V2MPAsm_ParseContext_GetLineBuffer(const V2MPAsm_ParseContext* context)
 size_t V2MPAsm_ParseContext_GetLineBufferSize(const V2MPAsm_ParseContext* context)
 {
 	return context ? context->lineBufferSize : 0;
+}
+
+bool V2MPAsm_ParseContext_HasLineBuffer(const V2MPAsm_ParseContext* context)
+{
+	return context && context->lineBuffer && context->lineBufferSize > 0;
+}
+
+bool V2MPAsm_ParseContext_CurrentInputLineWillFitInLineBuffer(const V2MPAsm_ParseContext* context)
+{
+	return context && V2MPAsm_InputFile_GetCurrentLineLength(context->inputFile) < context->lineBufferSize;
+}
+
+size_t V2MPAsm_ParseContext_ExtractCurrentInputLineToLineBuffer(V2MPAsm_ParseContext* context)
+{
+	if ( !V2MPAsm_ParseContext_HasLineBuffer(context) )
+	{
+		return 0;
+	}
+
+	return V2MPAsm_InputFile_GetCurrentLineContent(context->inputFile, context->lineBuffer, context->lineBufferSize);
+}
+
+void V2MPAsm_ParseContext_SeekToNextInputLine(V2MPAsm_ParseContext* context)
+{
+	if ( !context )
+	{
+		return;
+	}
+
+	V2MPAsm_InputFile_SeekNextLine(context->inputFile);
 }
