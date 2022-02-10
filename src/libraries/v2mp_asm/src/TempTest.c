@@ -5,7 +5,7 @@
 #include "BaseUtil/String.h"
 #include "V2MPAsm/TempTest.h"
 #include "ParseContext.h"
-#include "TokenMeta.h"
+#include "Tokens/TokenMeta.h"
 
 static void ParseLine(V2MPAsm_ParseContext* context)
 {

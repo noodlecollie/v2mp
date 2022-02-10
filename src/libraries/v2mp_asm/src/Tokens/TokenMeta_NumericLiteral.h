@@ -1,0 +1,8 @@
+#ifndef V2MPASM_TOKENS_TOKENMETA_NUMERICLITERAL_H
+#define V2MPASM_TOKENS_TOKENMETA_NUMERICLITERAL_H
+
+#include "Tokens/TokenMeta.h"
+
+extern const V2MPAsm_TokenMeta V2MPAsm_TokenMeta_NumericLiteral;
+
+#endif // V2MPASM_TOKENS_TOKENMETA_NUMERICLITERAL_H

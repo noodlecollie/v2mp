@@ -1,5 +1,11 @@
 #include "BaseUtil/Util.h"
-#include "TokenMeta.h"
+#include "Tokens/TokenMeta.h"
+#include "Tokens/TokenMeta_LineComment.h"
+#include "Tokens/TokenMeta_MultilineComment.h"
+#include "Tokens/TokenMeta_Preprocessor.h"
+#include "Tokens/TokenMeta_NumericLiteral.h"
+#include "Tokens/TokenMeta_Name.h"
+#include "Tokens/TokenMeta_Label.h"
 
 static V2MPAsm_TokenType IdentifyTokenInDefaultContext(const char* str)
 {
@@ -41,16 +47,10 @@ static V2MPAsm_TokenType IdentifyTokenInDefaultContext(const char* str)
 
 const char* V2MPAsm_TokenMeta_GetTokenTypeString(V2MPAsm_TokenType tokenType)
 {
-#define LIST_ITEM(value, name) name,
-	static const char* const TYPE_STRINGS[] =
-	{
-		V2MPASM_TOKEN_TYPE_LIST
-	};
-#undef LIST_ITEM
+	const V2MPAsm_TokenMeta* meta;
 
-	return (size_t)tokenType < BASEUTIL_ARRAY_SIZE(TYPE_STRINGS)
-		? TYPE_STRINGS[(size_t)tokenType]
-		: "<INVALID>";
+	meta = V2MPAsm_TokenMeta_GetMetaForTokenType(tokenType);
+	return meta ? meta->typeName : "Unknown";
 }
 
 const char* V2MPAsm_TokenMeta_GetTokenContextString(V2MPAsm_TokenContext tokencontext)
@@ -85,7 +85,14 @@ V2MPAsm_TokenType V2MPAsm_TokenMeta_IdentifyToken(const char* str, V2MPAsm_Token
 
 const V2MPAsm_TokenMeta* V2MPAsm_TokenMeta_GetMetaForTokenType(V2MPAsm_TokenType tokenType)
 {
-	// TODO
-	(void)tokenType;
-	return NULL;
+#define LIST_ITEM(value, metaEntry) metaEntry,
+	static const V2MPAsm_TokenMeta* const TOKEN_METADATA[] =
+	{
+		V2MPASM_TOKEN_TYPE_LIST
+	};
+#undef LIST_ITEM
+
+	return (size_t)tokenType < BASEUTIL_ARRAY_SIZE(TOKEN_METADATA)
+		? TOKEN_METADATA[(size_t)tokenType]
+		: NULL;
 }

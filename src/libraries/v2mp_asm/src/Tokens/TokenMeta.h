@@ -2,18 +2,18 @@
 #define V2MPASM_TOKENMETA_H
 
 #define V2MPASM_TOKEN_TYPE_LIST \
-	LIST_ITEM(TOKEN_UNKNOWN = 0, "Unknown") \
-	LIST_ITEM(TOKEN_LINE_COMMENT, "Line comment") \
-	LIST_ITEM(TOKEN_MULTILINE_COMMENT, "Multiline comment") \
-	LIST_ITEM(TOKEN_PREPROCESSOR, "Preprocessor") \
-	LIST_ITEM(TOKEN_NUMERIC_LITERAL, "Numeric literal") \
-	LIST_ITEM(TOKEN_NAME, "Name") \
-	LIST_ITEM(TOKEN_LABEL, "Label") \
+	LIST_ITEM(TOKEN_UNKNOWN = 0, NULL) \
+	LIST_ITEM(TOKEN_LINE_COMMENT, &V2MPAsm_TokenMeta_LineComment) \
+	LIST_ITEM(TOKEN_MULTILINE_COMMENT, &V2MPAsm_TokenMeta_MultilineComment) \
+	LIST_ITEM(TOKEN_PREPROCESSOR, &V2MPAsm_TokenMeta_Preprocessor) \
+	LIST_ITEM(TOKEN_NUMERIC_LITERAL, &V2MPAsm_TokenMeta_NumericLiteral) \
+	LIST_ITEM(TOKEN_NAME, &V2MPAsm_TokenMeta_Name) \
+	LIST_ITEM(TOKEN_LABEL, &V2MPAsm_TokenMeta_Label) \
 
 #define V2MPASM_TOKEN_CONTEXT_LIST \
 	LIST_ITEM(TOKENCTX_DEFAULT = 0, "Default")
 
-#define LIST_ITEM(value, name) value,
+#define LIST_ITEM(value, metaEntry) value,
 typedef enum V2MPAsm_TokenType
 {
 	V2MPASM_TOKEN_TYPE_LIST
@@ -30,6 +30,7 @@ typedef enum V2MPAsm_TokenContext
 typedef struct V2MPAsm_TokenMeta
 {
 	V2MPAsm_TokenType type;
+	const char* typeName;
 
 	const char* (*findEndOfToken)(const char* token, V2MPAsm_TokenContext context);
 } V2MPAsm_TokenMeta;
