@@ -26,9 +26,17 @@ typedef enum V2MPAsm_TokenContext
 } V2MPAsm_TokenContext;
 #undef LIST_ITEM
 
+typedef struct V2MPAsm_TokenMeta
+{
+	V2MPAsm_TokenType type;
+
+	const char* (*findEndOfToken)(const char* token, V2MPAsm_TokenContext context);
+} V2MPAsm_TokenMeta;
+
 const char* V2MPAsm_TokenMeta_GetTokenTypeString(V2MPAsm_TokenType tokenType);
 const char* V2MPAsm_TokenMeta_GetTokenContextString(V2MPAsm_TokenContext tokencontext);
 
 V2MPAsm_TokenType V2MPAsm_TokenMeta_IdentifyToken(const char* str, V2MPAsm_TokenContext context);
+const V2MPAsm_TokenMeta* V2MPAsm_TokenMeta_GetMetaForTokenType(V2MPAsm_TokenType tokenType);
 
 #endif // V2MPASM_TOKENMETA_H

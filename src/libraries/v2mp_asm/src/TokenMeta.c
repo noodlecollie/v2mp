@@ -77,3 +77,10 @@ V2MPAsm_TokenType V2MPAsm_TokenMeta_IdentifyToken(const char* str, V2MPAsm_Token
 		}
 	}
 }
+
+const V2MPAsm_TokenMeta* V2MPAsm_TokenMeta_GetMetaForTokenType(V2MPAsm_TokenType tokenType)
+{
+	// TODO
+	(void)tokenType;
+	return NULL;
+}
