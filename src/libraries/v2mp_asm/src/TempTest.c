@@ -5,16 +5,49 @@
 #include "BaseUtil/String.h"
 #include "V2MPAsm/TempTest.h"
 #include "ParseContext.h"
+#include "TokenMeta.h"
+
+static void ParseLine(V2MPAsm_ParseContext* context)
+{
+	const char* cursor;
+	char tokenBuffer[512];
+
+	cursor = BaseUtil_String_BeginWithoutWhitespace(V2MPAsm_ParseContext_GetLineBuffer(context));
+
+	for ( const char* end; *cursor; cursor = BaseUtil_String_BeginWithoutWhitespace(end) )
+	{
+		size_t length;
+		V2MPAsm_TokenType tokenType;
+
+		tokenType = V2MPAsm_TokenMeta_IdentifyToken(cursor, TOKENCTX_DEFAULT);
+
+		printf("  Token (%s): ", V2MPAsm_TokenMeta_GetTokenTypeString(tokenType));
+
+		end = cursor;
+
+		while ( *end && !isspace(*end) )
+		{
+			++end;
+		}
+
+		length = end - cursor;
+
+		if ( length >= sizeof(tokenBuffer) )
+		{
+			printf("length %lu was larger than max token length of %lu.\n", length, sizeof(tokenBuffer) - 1);
+			continue;
+		}
+
+		memcpy(tokenBuffer, cursor, length);
+		tokenBuffer[length] = '\0';
+
+		printf("%s\n", tokenBuffer);
+	}
+}
 
 static void ReadEachLine(V2MPAsm_ParseContext* context)
 {
-	char* lineBuffer;
-	size_t lineBufferSize;
-
-	lineBuffer = V2MPAsm_ParseContext_GetLineBuffer(context);
-	lineBufferSize = V2MPAsm_ParseContext_GetLineBufferSize(context);
-
-	if ( !lineBuffer || lineBufferSize < 2 )
+	if ( !V2MPAsm_ParseContext_HasLineBuffer(context) )
 	{
 		printf("No line buffer present for parsing file.\n");
 		return;
@@ -25,9 +58,6 @@ static void ReadEachLine(V2MPAsm_ParseContext* context)
 	for ( ; ; V2MPAsm_ParseContext_SeekToNextInputLine(context) )
 	{
 		size_t charsRead;
-		size_t charsAfterTrimming;
-		char* newTerminator;
-		const char* newBegin;
 
 		printf("Line %lu: ", V2MPAsm_ParseContext_GetInputLineNumber(context));
 
@@ -39,26 +69,14 @@ static void ReadEachLine(V2MPAsm_ParseContext* context)
 
 		if ( !V2MPAsm_ParseContext_CurrentInputLineWillFitInLineBuffer(context) )
 		{
-			printf("Overflowed max line length of %lu characters.\n", lineBufferSize - 1);
+			printf("Overflowed max line length of %lu characters.\n", V2MPAsm_ParseContext_GetLineBufferSize(context) - 1);
 			continue;
 		}
 
 		charsRead = V2MPAsm_ParseContext_ExtractCurrentInputLineToLineBuffer(context);
+		printf("%lu characters\n", charsRead);
 
-		newTerminator = (char*)BaseUtil_String_EndWithoutWhitespace(lineBuffer);
-		*newTerminator = '\0';
-
-		newBegin = BaseUtil_String_BeginWithoutWhitespace(lineBuffer);
-		charsAfterTrimming = strlen(newBegin);
-
-		if ( charsRead > 0 )
-		{
-			printf("%s (%lu characters read, trimmed to %lu characters)\n", newBegin, charsRead, charsAfterTrimming);
-		}
-		else
-		{
-			printf(" (0 characters, trimmed to 0 characters)\n");
-		}
+		ParseLine(context);
 	}
 }
 

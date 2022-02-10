@@ -5,6 +5,7 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/InputFile.c
 	src/ParseContext.c
 	src/TempTest.c
+	src/TokenMeta.c
 )
 
 target_include_directories(${TARGETNAME_V2MP_ASM} PUBLIC include)
