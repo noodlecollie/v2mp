@@ -52,7 +52,7 @@ static void ParseLine(V2MPAsm_ParseContext* context)
 		memcpy(tokenBuffer, cursor, length);
 		tokenBuffer[length] = '\0';
 
-		printf("%s\n", tokenBuffer);
+		printf("%s (%lu characters)\n", tokenBuffer, length);
 	}
 }
 
