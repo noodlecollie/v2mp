@@ -112,3 +112,13 @@ bool V2MPAsm_ParseContext_AllocateLineBuffer(V2MPAsm_ParseContext* context, size
 	context->lineBufferSize = bufferSize;
 	return true;
 }
+
+char* V2MPAsm_ParseContext_GetLineBuffer(const V2MPAsm_ParseContext* context)
+{
+	return context ? context->lineBuffer : NULL;
+}
+
+size_t V2MPAsm_ParseContext_GetLineBufferSize(const V2MPAsm_ParseContext* context)
+{
+	return context ? context->lineBufferSize : 0;
+}

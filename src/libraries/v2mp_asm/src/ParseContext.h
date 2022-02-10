@@ -27,5 +27,7 @@ bool V2MPAsm_ParseContext_SetInput(V2MPAsm_ParseContext* context, const char* fi
 bool V2MPAsm_ParseContext_HasInput(const V2MPAsm_ParseContext* context);
 
 bool V2MPAsm_ParseContext_AllocateLineBuffer(V2MPAsm_ParseContext* context, size_t bufferSize);
+char* V2MPAsm_ParseContext_GetLineBuffer(const V2MPAsm_ParseContext* context);
+size_t V2MPAsm_ParseContext_GetLineBufferSize(const V2MPAsm_ParseContext* context);
 
 #endif // V2MPASM_PARSECONTEXT_H

@@ -9,22 +9,29 @@
 static void ReadEachLine(V2MPAsm_ParseContext* context)
 {
 	V2MPAsm_InputFile* inputFile;
-	char buffer[512];
+	char* lineBuffer;
+	size_t lineBufferSize;
+
+	inputFile = V2MPAsm_ParseContext_GetInputFile(context);
+	lineBuffer = V2MPAsm_ParseContext_GetLineBuffer(context);
+	lineBufferSize = V2MPAsm_ParseContext_GetLineBufferSize(context);
+
+	if ( !lineBuffer || lineBufferSize < 2 )
+	{
+		printf("No line buffer present for parsing file.\n");
+		return;
+	}
 
 	printf("Parsing: %s\n", V2MPAsm_ParseContext_GetFileName(context));
 
-	inputFile = V2MPAsm_ParseContext_GetInputFile(context);
-
-	do
+	for ( ; ; V2MPAsm_InputFile_SeekNextLine(inputFile) )
 	{
-		size_t lineNumber;
 		size_t charsRead;
 		size_t charsAfterTrimming;
 		char* newTerminator;
 		const char* newBegin;
 
-		lineNumber = V2MPAsm_InputFile_GetCurrentLineNumber(inputFile);
-		printf("Line %lu: ", lineNumber);
+		printf("Line %lu: ", V2MPAsm_InputFile_GetCurrentLineNumber(inputFile));
 
 		if ( V2MPAsm_InputFile_IsEOF(inputFile) )
 		{
@@ -32,12 +39,18 @@ static void ReadEachLine(V2MPAsm_ParseContext* context)
 			break;
 		}
 
-		charsRead = V2MPAsm_InputFile_GetCurrentLineContent(inputFile, buffer, sizeof(buffer));
+		if ( V2MPAsm_InputFile_GetCurrentLineLength(inputFile) >= lineBufferSize )
+		{
+			printf("Overflowed max line length of %lu characters.\n", lineBufferSize - 1);
+			continue;
+		}
 
-		newTerminator = (char*)BaseUtil_String_EndWithoutWhitespace(buffer);
+		charsRead = V2MPAsm_InputFile_GetCurrentLineContent(inputFile, lineBuffer, lineBufferSize);
+
+		newTerminator = (char*)BaseUtil_String_EndWithoutWhitespace(lineBuffer);
 		*newTerminator = '\0';
 
-		newBegin = BaseUtil_String_BeginWithoutWhitespace(buffer);
+		newBegin = BaseUtil_String_BeginWithoutWhitespace(lineBuffer);
 		charsAfterTrimming = strlen(newBegin);
 
 		if ( charsRead > 0 )
@@ -48,10 +61,7 @@ static void ReadEachLine(V2MPAsm_ParseContext* context)
 		{
 			printf(" (0 characters, trimmed to 0 characters)\n");
 		}
-
-		V2MPAsm_InputFile_SeekNextLine(inputFile);
 	}
-	while ( true );
 }
 
 static void ParseFileData(const char* filePath, const V2MPAsm_Byte* buffer, size_t length)
@@ -65,6 +75,8 @@ static void ParseFileData(const char* filePath, const V2MPAsm_Byte* buffer, size
 	}
 
 	V2MPAsm_ParseContext_SetInput(context, filePath, buffer, length);
+	V2MPAsm_ParseContext_AllocateLineBuffer(context, 512);
+
 	ReadEachLine(context);
 
 	V2MPAsm_ParseContext_DeinitAndFree(context);
