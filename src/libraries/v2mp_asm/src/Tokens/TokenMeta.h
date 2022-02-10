@@ -41,4 +41,12 @@ const char* V2MPAsm_TokenMeta_GetTokenContextString(V2MPAsm_TokenContext tokenco
 V2MPAsm_TokenType V2MPAsm_TokenMeta_IdentifyToken(const char* str, V2MPAsm_TokenContext context);
 const V2MPAsm_TokenMeta* V2MPAsm_TokenMeta_GetMetaForTokenType(V2MPAsm_TokenType tokenType);
 
+// These functions should be used, rather than calling function pointers directly on the metadata struct:
+
+const char* V2MPAsm_TokenMeta_FindEndOfToken(
+	const V2MPAsm_TokenMeta* metadata,
+	const char* token,
+	V2MPAsm_TokenContext context
+);
+
 #endif // V2MPASM_TOKENMETA_H

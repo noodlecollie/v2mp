@@ -14,20 +14,31 @@ static void ParseLine(V2MPAsm_ParseContext* context)
 
 	cursor = BaseUtil_String_BeginWithoutWhitespace(V2MPAsm_ParseContext_GetLineBuffer(context));
 
-	for ( const char* end; *cursor; cursor = BaseUtil_String_BeginWithoutWhitespace(end) )
+	for ( const char* end = NULL; *cursor; cursor = BaseUtil_String_BeginWithoutWhitespace(end), end = NULL )
 	{
 		size_t length;
 		V2MPAsm_TokenType tokenType;
+		const V2MPAsm_TokenMeta* tokenMeta;
 
 		tokenType = V2MPAsm_TokenMeta_IdentifyToken(cursor, TOKENCTX_DEFAULT);
+		tokenMeta = V2MPAsm_TokenMeta_GetMetaForTokenType(tokenType);
 
 		printf("  Token (%s): ", V2MPAsm_TokenMeta_GetTokenTypeString(tokenType));
 
-		end = cursor;
-
-		while ( *end && !isspace(*end) )
+		if ( tokenMeta )
 		{
-			++end;
+			end = V2MPAsm_TokenMeta_FindEndOfToken(tokenMeta, cursor, TOKENCTX_DEFAULT);
+		}
+
+		if ( !end )
+		{
+			// Default to skipping whitespace.
+			end = cursor;
+
+			while ( *end && !isspace(*end) )
+			{
+				++end;
+			}
 		}
 
 		length = end - cursor;

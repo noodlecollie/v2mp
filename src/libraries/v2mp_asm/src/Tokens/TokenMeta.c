@@ -96,3 +96,17 @@ const V2MPAsm_TokenMeta* V2MPAsm_TokenMeta_GetMetaForTokenType(V2MPAsm_TokenType
 		? TOKEN_METADATA[(size_t)tokenType]
 		: NULL;
 }
+
+const char* V2MPAsm_TokenMeta_FindEndOfToken(
+	const V2MPAsm_TokenMeta* metadata,
+	const char* token,
+	V2MPAsm_TokenContext context
+)
+{
+	if ( !metadata || !token || !metadata->findEndOfToken )
+	{
+		return NULL;
+	}
+
+	return metadata->findEndOfToken(token, context);
+}
