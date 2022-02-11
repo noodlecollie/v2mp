@@ -34,6 +34,7 @@ static V2MPAsm_TokenType IdentifyTokenInDefaultContext(const char* str)
 
 	if ( (*str >= '0' && *str <= '9') || *str == '-' || *str == '+' )
 	{
+		// TODO: Handle binary and hex too
 		return TOKEN_NUMERIC_LITERAL;
 	}
 

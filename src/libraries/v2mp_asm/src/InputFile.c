@@ -1,52 +1,56 @@
 #include <ctype.h>
 #include "BaseUtil/Heap.h"
 #include "BaseUtil/Util.h"
+#include "BaseUtil/String.h"
 #include "InputFile.h"
 
-static void SetCurrentLine(V2MPAsm_InputFile* inputFile, size_t begin, size_t end)
+static void FindBeginningOfLineFromCurrentCursor(V2MPAsm_InputFile* inputFile)
 {
-	if ( !inputFile )
-	{
-		return;
-	}
+	inputFile->beginningOfLine = inputFile->cursor;
 
-	if ( begin > inputFile->length )
+	while ( inputFile->beginningOfLine > inputFile->data )
 	{
-		begin = inputFile->length;
-	}
+		if ( *(inputFile->beginningOfLine - 1) == '\n' )
+		{
+			break;
+		}
 
-	if ( end > inputFile->length )
-	{
-		end = inputFile->length;
+		--inputFile->beginningOfLine;
 	}
-
-	if ( end < begin )
-	{
-		end = begin;
-	}
-
-	inputFile->curLineBegin = begin;
-	inputFile->curLineEnd = end;
 }
 
-static inline void ResetCurrentLine(V2MPAsm_InputFile* inputFile)
+static void WindCursorForward(V2MPAsm_InputFile* inputFile, const char* newCursor)
 {
-	if ( !inputFile )
+	while ( *inputFile->cursor && inputFile->cursor < newCursor )
 	{
-		return;
+		if ( *(inputFile->cursor++) == '\n' )
+		{
+			inputFile->beginningOfLine = inputFile->cursor;
+			++inputFile->curLineNo;
+		}
 	}
+}
 
-	SetCurrentLine(inputFile, 0, 0);
-	inputFile->curLineNo = 0;
+static void WindCursorBackward(V2MPAsm_InputFile* inputFile, const char* newCursor)
+{
+	while ( inputFile->cursor > newCursor )
+	{
+		if ( inputFile->cursor == inputFile->data )
+		{
+			break;
+		}
+
+		if ( *(--inputFile->cursor) == '\n' )
+		{
+			--inputFile->curLineNo;
+			FindBeginningOfLineFromCurrentCursor(inputFile);
+		}
+	}
 }
 
 V2MPAsm_InputFile* V2MPAsm_InputFile_AllocateAndInit(void)
 {
-	V2MPAsm_InputFile* inputFile;
-
-	inputFile = BASEUTIL_CALLOC_STRUCT(V2MPAsm_InputFile);
-
-	return inputFile;
+	return BASEUTIL_CALLOC_STRUCT(V2MPAsm_InputFile);
 }
 
 void V2MPAsm_InputFile_DeinitAndFree(V2MPAsm_InputFile* inputFile)
@@ -59,27 +63,29 @@ void V2MPAsm_InputFile_DeinitAndFree(V2MPAsm_InputFile* inputFile)
 	BASEUTIL_FREE(inputFile);
 }
 
-void V2MPAsm_InputFile_SetInput(V2MPAsm_InputFile* inputFile, const V2MPAsm_Byte* data, size_t length)
+void V2MPAsm_InputFile_SetInput(V2MPAsm_InputFile* inputFile, const char* data, size_t length)
 {
 	if ( !inputFile )
 	{
 		return;
 	}
 
-	ResetCurrentLine(inputFile);
-
 	if ( !data || length < 1 )
 	{
 		inputFile->data = NULL;
 		inputFile->length = 0;
+		inputFile->cursor = NULL;
+		inputFile->beginningOfLine = NULL;
+		inputFile->curLineNo = 0;
 
 		return;
 	}
 
 	inputFile->data = data;
 	inputFile->length = length;
-
-	V2MPAsm_InputFile_SeekNextLine(inputFile);
+	inputFile->cursor = data;
+	inputFile->beginningOfLine = data;
+	inputFile->curLineNo = 1;
 }
 
 bool V2MPAsm_InputFile_IsValid(const V2MPAsm_InputFile* inputFile)
@@ -87,99 +93,60 @@ bool V2MPAsm_InputFile_IsValid(const V2MPAsm_InputFile* inputFile)
 	return inputFile && inputFile->data && inputFile->length > 0;
 }
 
-size_t V2MPAsm_InputFile_GetCurrentLineLength(const V2MPAsm_InputFile* inputFile)
-{
-	if ( !inputFile || inputFile->curLineBegin > inputFile->curLineEnd )
-	{
-		return 0;
-	}
-
-	return inputFile->curLineEnd - inputFile->curLineBegin;
-}
-
 size_t V2MPAsm_InputFile_GetCurrentLineNumber(const V2MPAsm_InputFile* inputFile)
 {
 	return inputFile ? inputFile->curLineNo : 0;
 }
 
-void V2MPAsm_InputFile_SeekFirstLine(V2MPAsm_InputFile* inputFile)
+size_t V2MPAsm_InputFile_GetCurrentColumnNumber(const V2MPAsm_InputFile* inputFile)
 {
-	if ( !inputFile )
-	{
-		return;
-	}
-
-	ResetCurrentLine(inputFile);
-	V2MPAsm_InputFile_SeekNextLine(inputFile);
+	return (inputFile && inputFile->cursor && inputFile->beginningOfLine)
+		? (inputFile->cursor - inputFile->beginningOfLine + 1)
+		: 0;
 }
 
-void V2MPAsm_InputFile_SeekNextLine(V2MPAsm_InputFile* inputFile)
+const char* V2MPAsm_InputFile_GetCursor(const V2MPAsm_InputFile* inputFile)
 {
-	if ( !inputFile )
-	{
-		return;
-	}
-
-	if ( !V2MPAsm_InputFile_IsValid(inputFile) )
-	{
-		ResetCurrentLine(inputFile);
-		return;
-	}
-
-	if ( inputFile->curLineEnd >= inputFile->length )
-	{
-		// Seeking to EOF.
-		SetCurrentLine(inputFile, inputFile->length, inputFile->length);
-		++inputFile->curLineNo;
-
-		return;
-	}
-
-	// Set the begin index to be where the end was previously.
-	inputFile->curLineBegin = inputFile->curLineEnd;
-
-	while ( inputFile->curLineEnd < inputFile->length && inputFile->data[inputFile->curLineEnd++] != '\n' )
-	{
-		// curLineEnd is incremented in the while condition.
-	}
-
-	// Now, the end index will either be one character in front of a newline, or one character in front
-	// of the last character in the file (or both).
-
-	++inputFile->curLineNo;
+	return inputFile ? inputFile->cursor : NULL;
 }
 
 bool V2MPAsm_InputFile_IsEOF(const V2MPAsm_InputFile* inputFile)
 {
-	return inputFile ? inputFile->curLineBegin >= inputFile->length : true;
+	return !inputFile || !inputFile->cursor || !(*inputFile->cursor);
 }
 
-size_t V2MPAsm_InputFile_GetCurrentLineContent(const V2MPAsm_InputFile* inputFile, char* buffer, size_t maxLength)
+void V2MPAsm_InputFile_SkipWhitespace(V2MPAsm_InputFile* inputFile)
 {
-	size_t lineLength;
-
-	if ( !buffer || maxLength < 1 )
+	if ( !inputFile )
 	{
-		return 0;
+		return;
 	}
 
-	buffer[0] = '\0';
+	V2MPAsm_InputFile_SkipToCursor(inputFile, BaseUtil_String_BeginWithoutWhitespace(inputFile->cursor));
+}
 
-	if ( !V2MPAsm_InputFile_IsValid(inputFile) || V2MPAsm_InputFile_IsEOF(inputFile) )
+void V2MPAsm_InputFile_SkipToCursor(V2MPAsm_InputFile* inputFile, const char* newCursor)
+{
+	if ( !V2MPAsm_InputFile_IsValid(inputFile) || !newCursor || newCursor == inputFile->cursor )
 	{
-		return 0;
+		return;
 	}
 
-	lineLength = V2MPAsm_InputFile_GetCurrentLineLength(inputFile);
-	lineLength = BASEUTIL_MIN(lineLength, maxLength - 1);
-
-	if ( lineLength < 1 )
+	if ( newCursor < inputFile->data )
 	{
-		return 0;
+		inputFile->cursor = inputFile->data;
+		inputFile->beginningOfLine = inputFile->cursor;
+		inputFile->curLineNo = 0;
+
+		return;
 	}
 
-	memcpy(buffer, &inputFile->data[inputFile->curLineBegin], lineLength);
-	buffer[lineLength] = '\0';
-
-	return lineLength;
+	if ( newCursor > inputFile->cursor )
+	{
+		WindCursorForward(inputFile, newCursor);
+	}
+	else
+	{
+		WindCursorBackward(inputFile, newCursor);
+	}
 }

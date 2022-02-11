@@ -32,6 +32,8 @@ typedef struct V2MPAsm_TokenMeta
 	V2MPAsm_TokenType type;
 	const char* typeName;
 
+	// Returns pointer to first character after end of token,
+	// or NULL if the token is unterminated.
 	const char* (*findEndOfToken)(const char* token, V2MPAsm_TokenContext context);
 } V2MPAsm_TokenMeta;
 

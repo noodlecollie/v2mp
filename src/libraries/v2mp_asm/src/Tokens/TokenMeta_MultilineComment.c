@@ -5,18 +5,22 @@ static const char* FindEndOfToken(const char* token, V2MPAsm_TokenContext contex
 {
 	(void)context;
 
+	// Skip first "/*"
+	token += 2;
+
 	while ( *token )
 	{
 		if ( *token == '*' && *(token + 1) == '/' )
 		{
-			token += 2;
+			return token + 2;
 			break;
 		}
 
 		++token;
 	}
 
-	return token;
+	// Token was unterminated.
+	return NULL;
 }
 
 const V2MPAsm_TokenMeta V2MPAsm_TokenMeta_MultilineComment =

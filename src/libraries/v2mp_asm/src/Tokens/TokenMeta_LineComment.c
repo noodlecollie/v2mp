@@ -5,11 +5,20 @@ static const char* FindEndOfToken(const char* token, V2MPAsm_TokenContext contex
 {
 	(void)context;
 
-	while ( *token && *token != '\n' )
+	// Skip first "//"
+	token += 2;
+
+	while ( *token )
 	{
+		if ( *token == '\n' )
+		{
+			return token + 1;
+		}
+
 		++token;
 	}
 
+	// Ending a line comment with EOF is fine.
 	return token;
 }
 

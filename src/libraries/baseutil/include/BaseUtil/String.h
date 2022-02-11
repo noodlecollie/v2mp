@@ -14,6 +14,9 @@ const char* BaseUtil_String_EndWithoutWhitespace(const char* origString);
 // Returns a pointer to the first non-whitespace character of the string.
 const char* BaseUtil_String_BeginWithoutWhitespace(const char* origString);
 
+// Returns the first character of whitespace in the string.
+const char* BaseUtil_String_NextWhitespace(const char* string);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

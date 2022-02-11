@@ -7,91 +7,63 @@
 #include "ParseContext.h"
 #include "Tokens/TokenMeta.h"
 
-static void ParseLine(V2MPAsm_ParseContext* context)
+static void ReadAllTokens(V2MPAsm_ParseContext* context)
 {
-	const char* cursor;
-	char tokenBuffer[512];
-
-	cursor = BaseUtil_String_BeginWithoutWhitespace(V2MPAsm_ParseContext_GetLineBuffer(context));
-
-	for ( const char* end = NULL; *cursor; cursor = BaseUtil_String_BeginWithoutWhitespace(end), end = NULL )
+	for ( const char* tokenEnd; !V2MPAsm_ParseContext_InputIsAtEOF(context); V2MPAsm_ParseContext_SeekInput(context, tokenEnd) )
 	{
-		size_t length;
+		char tokenBuffer[512];
+		const char* tokenBegin;
 		V2MPAsm_TokenType tokenType;
 		const V2MPAsm_TokenMeta* tokenMeta;
+		size_t length;
 
-		tokenType = V2MPAsm_TokenMeta_IdentifyToken(cursor, TOKENCTX_DEFAULT);
-		tokenMeta = V2MPAsm_TokenMeta_GetMetaForTokenType(tokenType);
-
-		printf("  Token (%s): ", V2MPAsm_TokenMeta_GetTokenTypeString(tokenType));
-
-		if ( tokenMeta )
-		{
-			end = V2MPAsm_TokenMeta_FindEndOfToken(tokenMeta, cursor, TOKENCTX_DEFAULT);
-		}
-
-		if ( !end )
-		{
-			// Default to skipping whitespace.
-			end = cursor;
-
-			while ( *end && !isspace(*end) )
-			{
-				++end;
-			}
-		}
-
-		length = end - cursor;
-
-		if ( length >= sizeof(tokenBuffer) )
-		{
-			printf("length %lu was larger than max token length of %lu.\n", length, sizeof(tokenBuffer) - 1);
-			continue;
-		}
-
-		memcpy(tokenBuffer, cursor, length);
-		tokenBuffer[length] = '\0';
-
-		printf("%s (%lu characters)\n", tokenBuffer, length);
-	}
-}
-
-static void ReadEachLine(V2MPAsm_ParseContext* context)
-{
-	if ( !V2MPAsm_ParseContext_HasLineBuffer(context) )
-	{
-		printf("No line buffer present for parsing file.\n");
-		return;
-	}
-
-	printf("Parsing: %s\n", V2MPAsm_ParseContext_GetFileName(context));
-
-	for ( ; ; V2MPAsm_ParseContext_SeekToNextInputLine(context) )
-	{
-		size_t charsRead;
-
-		printf("Line %lu: ", V2MPAsm_ParseContext_GetInputLineNumber(context));
+		tokenBuffer[0] = '\0';
+		tokenEnd = NULL;
+		tokenBegin = V2MPAsm_ParseContext_GetBeginningOfNextToken(context);
 
 		if ( V2MPAsm_ParseContext_InputIsAtEOF(context) )
 		{
-			printf("EOF\n");
 			break;
 		}
 
-		if ( !V2MPAsm_ParseContext_CurrentInputLineWillFitInLineBuffer(context) )
+		tokenType = V2MPAsm_TokenMeta_IdentifyToken(tokenBegin, TOKENCTX_DEFAULT);
+		tokenMeta = V2MPAsm_TokenMeta_GetMetaForTokenType(tokenType);
+
+		if ( tokenMeta )
 		{
-			printf("Overflowed max line length of %lu characters.\n", V2MPAsm_ParseContext_GetLineBufferSize(context) - 1);
-			continue;
+			tokenEnd = V2MPAsm_TokenMeta_FindEndOfToken(tokenMeta, tokenBegin, TOKENCTX_DEFAULT);
 		}
 
-		charsRead = V2MPAsm_ParseContext_ExtractCurrentInputLineToLineBuffer(context);
-		printf("%lu characters\n", charsRead);
+		if ( !tokenEnd )
+		{
+			// Default to skipping whitespace.
+			tokenEnd = BaseUtil_String_NextWhitespace(tokenBegin);
+		}
 
-		ParseLine(context);
+		length = tokenEnd - tokenBegin;
+
+		if ( length < sizeof(tokenBuffer) )
+		{
+			memcpy(tokenBuffer, tokenBegin, length);
+			tokenBuffer[length] = '\0';
+		}
+		else
+		{
+			snprintf(tokenBuffer, sizeof(tokenBuffer), "<Token length %lu exceeded max length of %lu>", length, sizeof(tokenBuffer) - 1);
+		}
+
+		printf(
+			"%s token of length %lu found at %lu:%lu: %s\n",
+			V2MPAsm_TokenMeta_GetTokenTypeString(tokenType),
+			length,
+			V2MPAsm_ParseContext_GetInputLineNumber(context),
+			V2MPAsm_ParseContext_GetInputColumnNumber(context),
+			tokenBuffer
+		);
 	}
 }
 
-static void ParseFileData(const char* filePath, const V2MPAsm_Byte* buffer, size_t length)
+static void ParseFileData(const char* filePath, const char* buffer, size_t length)
 {
 	V2MPAsm_ParseContext* context = V2MPAsm_ParseContext_AllocateAndInit();
 
@@ -102,9 +74,8 @@ static void ParseFileData(const char* filePath, const V2MPAsm_Byte* buffer, size
 	}
 
 	V2MPAsm_ParseContext_SetInput(context, filePath, buffer, length);
-	V2MPAsm_ParseContext_AllocateLineBuffer(context, 512);
 
-	ReadEachLine(context);
+	ReadAllTokens(context);
 
 	V2MPAsm_ParseContext_DeinitAndFree(context);
 }
@@ -112,7 +83,7 @@ static void ParseFileData(const char* filePath, const V2MPAsm_Byte* buffer, size
 static void ReadFileFromDisk(const char* filePath, FILE* inFile)
 {
 	size_t length = 0;
-	V2MPAsm_Byte* buffer;
+	char* buffer;
 
 	fseek(inFile, 0, SEEK_END);
 	length = ftell(inFile);
@@ -120,7 +91,7 @@ static void ReadFileFromDisk(const char* filePath, FILE* inFile)
 
 	printf("File size: %lu bytes\n", length);
 
-	buffer = BASEUTIL_MALLOC(length);
+	buffer = (char*)BASEUTIL_MALLOC(length);
 
 	if ( !buffer )
 	{

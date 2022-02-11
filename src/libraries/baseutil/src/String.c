@@ -76,3 +76,18 @@ const char* BaseUtil_String_BeginWithoutWhitespace(const char* origString)
 
 	return origString;
 }
+
+const char* BaseUtil_String_NextWhitespace(const char* string)
+{
+	if ( !string )
+	{
+		return NULL;
+	}
+
+	while ( *string && !isspace(*string) )
+	{
+		++string;
+	}
+
+	return string;
+}

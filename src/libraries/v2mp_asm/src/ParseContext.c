@@ -54,7 +54,6 @@ void V2MPAsm_ParseContext_DeinitAndFree(V2MPAsm_ParseContext* context)
 		return;
 	}
 
-	V2MPAsm_ParseContext_AllocateLineBuffer(context, 0);
 	FreeFilePath(context);
 	V2MPAsm_InputFile_DeinitAndFree(context->inputFile);
 
@@ -86,7 +85,17 @@ size_t V2MPAsm_ParseContext_GetInputLineNumber(const V2MPAsm_ParseContext* conte
 	return context ? V2MPAsm_InputFile_GetCurrentLineNumber(context->inputFile) : 0;
 }
 
-bool V2MPAsm_ParseContext_SetInput(V2MPAsm_ParseContext* context, const char* filePath, const V2MPAsm_Byte* data, size_t length)
+size_t V2MPAsm_ParseContext_GetInputColumnNumber(const V2MPAsm_ParseContext* context)
+{
+	return context ? V2MPAsm_InputFile_GetCurrentColumnNumber(context->inputFile) : 0;
+}
+
+const char* V2MPAsm_ParseContext_GetInputCursor(const V2MPAsm_ParseContext* context)
+{
+	return context ? V2MPAsm_InputFile_GetCursor(context->inputFile) : NULL;
+}
+
+bool V2MPAsm_ParseContext_SetInput(V2MPAsm_ParseContext* context, const char* filePath, const char* data, size_t length)
 {
 	if ( !context )
 	{
@@ -116,72 +125,23 @@ bool V2MPAsm_ParseContext_HasInput(const V2MPAsm_ParseContext* context)
 	return context && V2MPAsm_InputFile_IsValid(context->inputFile);
 }
 
-bool V2MPAsm_ParseContext_AllocateLineBuffer(V2MPAsm_ParseContext* context, size_t bufferSize)
-{
-	if ( !context )
-	{
-		return false;
-	}
-
-	if ( context->lineBuffer )
-	{
-		BASEUTIL_FREE(context->lineBuffer);
-		context->lineBuffer = NULL;
-		context->lineBufferSize = 0;
-	}
-
-	if ( bufferSize < 1 )
-	{
-		return true;
-	}
-
-	context->lineBuffer = (char*)BASEUTIL_MALLOC(bufferSize);
-
-	if ( !context->lineBuffer )
-	{
-		return false;
-	}
-
-	context->lineBufferSize = bufferSize;
-	return true;
-}
-
-char* V2MPAsm_ParseContext_GetLineBuffer(const V2MPAsm_ParseContext* context)
-{
-	return context ? context->lineBuffer : NULL;
-}
-
-size_t V2MPAsm_ParseContext_GetLineBufferSize(const V2MPAsm_ParseContext* context)
-{
-	return context ? context->lineBufferSize : 0;
-}
-
-bool V2MPAsm_ParseContext_HasLineBuffer(const V2MPAsm_ParseContext* context)
-{
-	return context && context->lineBuffer && context->lineBufferSize > 0;
-}
-
-bool V2MPAsm_ParseContext_CurrentInputLineWillFitInLineBuffer(const V2MPAsm_ParseContext* context)
-{
-	return context && V2MPAsm_InputFile_GetCurrentLineLength(context->inputFile) < context->lineBufferSize;
-}
-
-size_t V2MPAsm_ParseContext_ExtractCurrentInputLineToLineBuffer(V2MPAsm_ParseContext* context)
-{
-	if ( !V2MPAsm_ParseContext_HasLineBuffer(context) )
-	{
-		return 0;
-	}
-
-	return V2MPAsm_InputFile_GetCurrentLineContent(context->inputFile, context->lineBuffer, context->lineBufferSize);
-}
-
-void V2MPAsm_ParseContext_SeekToNextInputLine(V2MPAsm_ParseContext* context)
+void V2MPAsm_ParseContext_SeekInput(V2MPAsm_ParseContext* context, const char* pos)
 {
 	if ( !context )
 	{
 		return;
 	}
 
-	V2MPAsm_InputFile_SeekNextLine(context->inputFile);
+	V2MPAsm_InputFile_SkipToCursor(context->inputFile, pos);
+}
+
+const char* V2MPAsm_ParseContext_GetBeginningOfNextToken(V2MPAsm_ParseContext* context)
+{
+	if ( !context )
+	{
+		return NULL;
+	}
+
+	V2MPAsm_InputFile_SkipWhitespace(context->inputFile);
+	return V2MPAsm_InputFile_GetCursor(context->inputFile);
 }
