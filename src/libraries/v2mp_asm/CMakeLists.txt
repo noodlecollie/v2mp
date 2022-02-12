@@ -1,5 +1,7 @@
-include(win32_export)
-create_export_header(${TARGETNAME_V2MP_ASM})
+configure_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/configure/LibExport.h.in"
+	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_V2MP_ASM}/LibExport.h"
+)
 
 add_library(${TARGETNAME_V2MP_ASM}
 	src/Tokens/TokenMeta_Label.c
@@ -23,4 +25,4 @@ target_link_libraries(${TARGETNAME_V2MP_ASM} PRIVATE
 	cwalk
 )
 
-add_export_defs(${TARGETNAME_V2MP_ASM})
+target_compile_definitions(${TARGETNAME_V2MP_ASM} PRIVATE "V2MPASM_PRODUCER")

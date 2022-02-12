@@ -1,5 +1,7 @@
-include(win32_export)
-create_export_header(${TARGETNAME_V2MP})
+configure_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/configure/LibExport.h.in"
+	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_V2MP}/LibExport.h"
+)
 
 set(PUBLIC_HEADERS_GENERAL
 	include/${TARGETNAME_V2MP}/Dummy.h
@@ -25,6 +27,8 @@ target_include_directories(${TARGETNAME_V2MP} PRIVATE src)
 
 target_link_libraries(${TARGETNAME_V2MP} PRIVATE ${TARGETNAME_V2MP_INTERNAL})
 
+target_compile_definitions(${TARGETNAME_V2MP} PRIVATE "V2MP_PRODUCER")
+
 install(TARGETS ${TARGETNAME_V2MP}
 	ARCHIVE DESTINATION ${TARGETNAME_V2MP}/lib
 	LIBRARY DESTINATION ${TARGETNAME_V2MP}/lib
@@ -32,5 +36,3 @@ install(TARGETS ${TARGETNAME_V2MP}
 )
 
 install(FILES ${PUBLIC_HEADERS_GENERAL} DESTINATION ${TARGETNAME_V2MP}/include/${TARGETNAME_V2MP})
-
-add_export_defs(${TARGETNAME_V2MP})
