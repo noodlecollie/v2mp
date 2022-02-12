@@ -49,11 +49,11 @@ static void ReadAllTokens(V2MPAsm_ParseContext* context)
 		}
 		else
 		{
-			snprintf(tokenBuffer, sizeof(tokenBuffer), "<Token length %lu exceeded max length of %lu>", length, sizeof(tokenBuffer) - 1);
+			snprintf(tokenBuffer, sizeof(tokenBuffer), "<Token length %zu exceeded max length of %zu>", length, sizeof(tokenBuffer) - 1);
 		}
 
 		printf(
-			"%s token of length %lu found at %lu:%lu: %s\n",
+			"%s token of length %zu found at %zu:%zu: %s\n",
 			V2MPAsm_TokenMeta_GetTokenTypeString(tokenType),
 			length,
 			V2MPAsm_ParseContext_GetInputLineNumber(context),
@@ -89,7 +89,7 @@ static void ReadFileFromDisk(const char* filePath, FILE* inFile)
 	length = ftell(inFile);
 	fseek(inFile, 0, SEEK_SET);
 
-	printf("File size: %lu bytes\n", length);
+	printf("File size: %zu bytes\n", length);
 
 	buffer = (char*)BASEUTIL_MALLOC(length);
 

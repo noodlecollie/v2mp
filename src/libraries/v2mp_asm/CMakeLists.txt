@@ -22,3 +22,5 @@ target_link_libraries(${TARGETNAME_V2MP_ASM} PRIVATE
 	${TARGETNAME_BASEUTIL}
 	cwalk
 )
+
+add_export_defs(${TARGETNAME_V2MP_ASM})
