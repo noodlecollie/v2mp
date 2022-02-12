@@ -2,14 +2,14 @@
 #define V2MP_MODULES_DEVICEPORT_INTERNAL_H
 
 #include "V2MPInternal/Defs.h"
-#include "V2MPInternal/Components/CircularBuffer.h"
+#include "SharedComponents/CircularBuffer.h"
 #include "V2MPInternal/Modules/DevicePort.h"
 #include "V2MPInternal/Modules/Device.h"
 
 struct V2MP_DevicePort
 {
 	V2MP_Word address;
-	V2MP_CircularBuffer* mailbox;
+	V2MPSC_CircularBuffer* mailbox;
 	V2MP_DeviceMailboxController mailboxController;
 	bool mailboxBusy;
 	V2MP_Device* connectedDevice;
@@ -34,7 +34,7 @@ bool V2MP_DevicePort_DeviceRelinquishMailbox(V2MP_DevicePort* port);
 bool V2MP_DevicePort_ProgramRelinquishMailbox(V2MP_DevicePort* port);
 void V2MP_DevicePort_SetMailboxBusy(V2MP_DevicePort* port, bool isBusy);
 
-struct V2MP_CircularBuffer* V2MP_DevicePort_GetMailbox(V2MP_DevicePort* port);
-const struct V2MP_CircularBuffer* V2MP_DevicePort_GetConstMailbox(const V2MP_DevicePort* port);
+struct V2MPSC_CircularBuffer* V2MP_DevicePort_GetMailbox(V2MP_DevicePort* port);
+const struct V2MPSC_CircularBuffer* V2MP_DevicePort_GetConstMailbox(const V2MP_DevicePort* port);
 
 #endif // V2MP_MODULES_DEVICEPORT_INTERNAL_H

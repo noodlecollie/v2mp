@@ -30,7 +30,12 @@ add_executable(V2MP_Tests
 	src/Main.cpp
 )
 
-target_link_libraries(V2MP_Tests PRIVATE Catch2::Catch2 ${TARGETNAME_V2MP} ${TARGETNAME_V2MP_INTERNAL})
+target_link_libraries(V2MP_Tests PRIVATE
+	Catch2::Catch2
+	${TARGETNAME_V2MP_INTERNAL}
+	${TARGETNAME_SHARED_COMPONENTS}
+)
+
 target_include_directories(V2MP_Tests PRIVATE src)
 
 include(CTest)

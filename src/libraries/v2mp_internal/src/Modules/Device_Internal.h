@@ -4,13 +4,13 @@
 #include <stdbool.h>
 #include "V2MPInternal/Defs.h"
 #include "V2MPInternal/Modules/Device.h"
-#include "V2MPInternal/Components/DoubleLinkedList.h"
+#include "SharedComponents/DoubleLinkedList.h"
 
 struct V2MP_DevicePort;
 
 struct V2MP_Device
 {
-	V2MP_DoubleLL_Node* ownerNode;
+	V2MPSC_DoubleLL_Node* ownerNode;
 	struct V2MP_DevicePort* connectedPort;
 	V2MP_Device_Callbacks callbacks;
 	size_t dataTransferSpeed;
@@ -23,8 +23,8 @@ void V2MP_Device_NotifyConnectedToPort(V2MP_Device* device, struct V2MP_DevicePo
 void V2MP_Device_NotifyDisconnectedFromPort(V2MP_Device* device);
 bool V2MP_Device_NotifyMailboxReadyForInteraction(V2MP_Device* device);
 
-V2MP_DoubleLL_Node* V2MP_Device_GetOwnerNode(const V2MP_Device* device);
-void V2MP_Device_SetOwnerNode(V2MP_Device* device, V2MP_DoubleLL_Node* node);
+V2MPSC_DoubleLL_Node* V2MP_Device_GetOwnerNode(const V2MP_Device* device);
+void V2MP_Device_SetOwnerNode(V2MP_Device* device, V2MPSC_DoubleLL_Node* node);
 
 bool V2MP_Device_Poll(V2MP_Device* device);
 

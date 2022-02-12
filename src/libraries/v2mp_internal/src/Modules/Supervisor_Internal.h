@@ -5,7 +5,7 @@
 #include "V2MPInternal/Modules/Supervisor.h"
 #include "V2MPInternal/Modules/Mainboard.h"
 #include "Modules/Supervisor_Action.h"
-#include "V2MPInternal/Components/DoubleLinkedList.h"
+#include "SharedComponents/DoubleLinkedList.h"
 
 typedef struct MemorySegment
 {
@@ -15,8 +15,8 @@ typedef struct MemorySegment
 
 struct V2MP_Supervisor
 {
-	V2MP_DoubleLL* newActions;
-	V2MP_DoubleLL* ongoingActions;
+	V2MPSC_DoubleLL* newActions;
+	V2MPSC_DoubleLL* ongoingActions;
 
 	MemorySegment programCS;
 	MemorySegment programDS;

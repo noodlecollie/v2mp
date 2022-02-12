@@ -10,7 +10,7 @@ extern "C" {
 #endif
 
 typedef struct V2MP_DevicePort V2MP_DevicePort;
-struct V2MP_CircularBuffer;
+struct V2MPSC_CircularBuffer;
 struct V2MP_Device;
 
 V2MP_Word V2MP_DevicePort_GetAddress(const V2MP_DevicePort* port);

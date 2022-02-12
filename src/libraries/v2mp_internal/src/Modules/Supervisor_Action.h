@@ -3,7 +3,7 @@
 
 #include "V2MPInternal/Defs.h"
 #include "V2MPInternal/Modules/Supervisor.h"
-#include "V2MPInternal/Components/DoubleLinkedList.h"
+#include "SharedComponents/DoubleLinkedList.h"
 
 #define V2MP_SUPERVISOR_ACTION_LIST \
 	LIST_ITEM(SVAT_LOAD_WORD = 0, V2MP_Supervisor_HandleLoadWord) \
@@ -54,7 +54,7 @@ typedef struct V2MP_Supervisor_Action
 bool V2MP_Supervisor_CreateActionLists(V2MP_Supervisor* supervisor);
 void V2MP_Supervisor_DestroyActionLists(V2MP_Supervisor* supervisor);
 V2MP_Supervisor_Action* V2MP_Supervisor_CreateNewAction(V2MP_Supervisor* supervisor);
-V2MP_DoubleLL_Node* V2MP_Supervisor_CloneToOngoingAction(V2MP_Supervisor* supervisor, V2MP_DoubleLL_Node* createAfter, V2MP_Supervisor_Action* template);
+V2MPSC_DoubleLL_Node* V2MP_Supervisor_CloneToOngoingAction(V2MP_Supervisor* supervisor, V2MPSC_DoubleLL_Node* createAfter, V2MP_Supervisor_Action* template);
 bool V2MP_Supervisor_ResolveOutstandingActions(V2MP_Supervisor* supervisor);
 
 #endif // V2MP_MODULES_SUPERVISOR_POSTINSTRUCTIONACTION_H

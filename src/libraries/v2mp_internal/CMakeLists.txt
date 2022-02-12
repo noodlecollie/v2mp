@@ -1,8 +1,4 @@
 add_library(${TARGETNAME_V2MP_INTERNAL} STATIC
-	src/Components/CircularBuffer.c
-	src/Components/DoubleLinkedList.c
-	src/Components/HexTree.c
-
 	src/Modules/CPU_DevicePortOperations.c
 	src/Modules/CPU_Instructions.c
 	src/Modules/CPU_Internal.c
@@ -26,6 +22,10 @@ add_library(${TARGETNAME_V2MP_INTERNAL} STATIC
 
 target_include_directories(${TARGETNAME_V2MP_INTERNAL} PUBLIC include)
 target_include_directories(${TARGETNAME_V2MP_INTERNAL} PRIVATE src)
+
+target_link_libraries(${TARGETNAME_V2MP_INTERNAL} PUBLIC
+	${TARGETNAME_SHARED_COMPONENTS}
+)
 
 target_link_libraries(${TARGETNAME_V2MP_INTERNAL} PRIVATE
 	${TARGETNAME_BASEUTIL}

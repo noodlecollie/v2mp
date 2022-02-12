@@ -1,6 +1,6 @@
 #include "V2MPInternal/Modules/Device.h"
 #include "V2MPInternal/Modules/DevicePort.h"
-#include "V2MPInternal/Components/CircularBuffer.h"
+#include "SharedComponents/CircularBuffer.h"
 #include "BaseUtil/Util.h"
 #include "Modules/Device_Internal.h"
 #include "Modules/DevicePort_Internal.h"
@@ -61,7 +61,7 @@ size_t V2MP_Device_WriteToConnectedMailbox(V2MP_Device* device, const V2MP_Byte*
 		return 0;
 	}
 
-	return V2MP_CircularBuffer_WriteData(V2MP_DevicePort_GetMailbox(device->connectedPort), data, dataSize);
+	return V2MPSC_CircularBuffer_WriteData(V2MP_DevicePort_GetMailbox(device->connectedPort), data, dataSize);
 }
 
 size_t V2MP_Device_ReadFromConnectedMailbox(V2MP_Device* device, V2MP_Byte* outBuffer, size_t outBufferSize)
@@ -71,7 +71,7 @@ size_t V2MP_Device_ReadFromConnectedMailbox(V2MP_Device* device, V2MP_Byte* outB
 		return 0;
 	}
 
-	return V2MP_CircularBuffer_ReadData(V2MP_DevicePort_GetMailbox(device->connectedPort), outBuffer, outBufferSize);
+	return V2MPSC_CircularBuffer_ReadData(V2MP_DevicePort_GetMailbox(device->connectedPort), outBuffer, outBufferSize);
 }
 
 size_t V2MP_Device_CopyFromConnectedMailbox(V2MP_Device* device, V2MP_Byte* outBuffer, size_t outBufferSize)
@@ -81,7 +81,7 @@ size_t V2MP_Device_CopyFromConnectedMailbox(V2MP_Device* device, V2MP_Byte* outB
 		return 0;
 	}
 
-	return V2MP_CircularBuffer_CopyData(V2MP_DevicePort_GetMailbox(device->connectedPort), outBuffer, outBufferSize);
+	return V2MPSC_CircularBuffer_CopyData(V2MP_DevicePort_GetMailbox(device->connectedPort), outBuffer, outBufferSize);
 }
 
 bool V2MP_Device_HasConnectedMailbox(const V2MP_Device* device)

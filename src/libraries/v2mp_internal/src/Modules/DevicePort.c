@@ -1,5 +1,5 @@
 #include "V2MPInternal/Modules/DevicePort.h"
-#include "V2MPInternal/Components/CircularBuffer.h"
+#include "SharedComponents/CircularBuffer.h"
 #include "Modules/DevicePort_Internal.h"
 #include "Modules/Device_Internal.h"
 
@@ -51,27 +51,27 @@ bool V2MP_DevicePort_HasMailbox(const V2MP_DevicePort* port)
 
 bool V2MP_DevicePort_IsMailboxEmpty(const V2MP_DevicePort* port)
 {
-	return (port && port->mailbox) ? V2MP_CircularBuffer_IsEmpty(port->mailbox) : true;
+	return (port && port->mailbox) ? V2MPSC_CircularBuffer_IsEmpty(port->mailbox) : true;
 }
 
 bool V2MP_DevicePort_IsMailboxFull(const V2MP_DevicePort* port)
 {
-	return (port && port->mailbox) ? V2MP_CircularBuffer_IsFull(port->mailbox) : false;
+	return (port && port->mailbox) ? V2MPSC_CircularBuffer_IsFull(port->mailbox) : false;
 }
 
 size_t V2MP_DevicePort_MailboxCapacity(const V2MP_DevicePort* port)
 {
-	return (port && port->mailbox) ? V2MP_CircularBuffer_Capacity(port->mailbox) : 0;
+	return (port && port->mailbox) ? V2MPSC_CircularBuffer_Capacity(port->mailbox) : 0;
 }
 
 size_t V2MP_DevicePort_MailboxBytesFree(const V2MP_DevicePort* port)
 {
-	return (port && port->mailbox) ? V2MP_CircularBuffer_BytesFree(port->mailbox) : 0;
+	return (port && port->mailbox) ? V2MPSC_CircularBuffer_BytesFree(port->mailbox) : 0;
 }
 
 size_t V2MP_DevicePort_MailboxBytesUsed(const V2MP_DevicePort* port)
 {
-	return (port && port->mailbox) ? V2MP_CircularBuffer_BytesUsed(port->mailbox) : 0;
+	return (port && port->mailbox) ? V2MPSC_CircularBuffer_BytesUsed(port->mailbox) : 0;
 }
 
 V2MP_DeviceMailboxController V2MP_DevicePort_GetMailboxController(const V2MP_DevicePort* port)
@@ -93,13 +93,13 @@ V2MP_DevicePortMailboxState V2MP_DevicePort_GetMailboxState(const V2MP_DevicePor
 
 	if ( port->mailboxStateWhenDeviceRelinquished == V2MP_DPMS_READABLE )
 	{
-		return V2MP_CircularBuffer_IsEmpty(port->mailbox)
+		return V2MPSC_CircularBuffer_IsEmpty(port->mailbox)
 			? V2MP_DPMS_EXHAUSTED
 			: V2MP_DPMS_READABLE;
 	}
 	else
 	{
-		return V2MP_CircularBuffer_IsFull(port->mailbox)
+		return V2MPSC_CircularBuffer_IsFull(port->mailbox)
 			? V2MP_DPMS_EXHAUSTED
 			: V2MP_DPMS_WRITEABLE;
 	}

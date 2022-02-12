@@ -1,8 +1,8 @@
 #include <string.h>
 #include "Modules/Supervisor_Action.h"
 #include "Modules/Supervisor_Internal.h"
-#include "V2MPInternal/Components/DoubleLinkedList.h"
-#include "V2MPInternal/Components/CircularBuffer.h"
+#include "SharedComponents/DoubleLinkedList.h"
+#include "SharedComponents/CircularBuffer.h"
 #include "V2MPInternal/Modules/MemoryStore.h"
 #include "V2MPInternal/Modules/DevicePortCollection.h"
 #include "V2MPInternal/Modules/DevicePort.h"
@@ -35,7 +35,7 @@ typedef struct DataTransferContext
 	V2MP_Supervisor* supervisor;
 	V2MP_DevicePort* port;
 	V2MP_Device* device;
-	V2MP_CircularBuffer* mailbox;
+	V2MPSC_CircularBuffer* mailbox;
 	V2MP_CPU* cpu;
 	V2MP_Supervisor_Action* action;
 } DataTransferContext;
@@ -139,8 +139,8 @@ static ActionResult HandleDirectDataTransferRead(DataTransferContext* context)
 	V2MP_Word destWord = 0;
 	V2MP_Word sr = 0;
 
-	origBytesInMailbox = V2MP_CircularBuffer_BytesUsed(context->mailbox);
-	bytesRead = V2MP_CircularBuffer_ReadData(context->mailbox, (uint8_t*)&destWord, sizeof(destWord));
+	origBytesInMailbox = V2MPSC_CircularBuffer_BytesUsed(context->mailbox);
+	bytesRead = V2MPSC_CircularBuffer_ReadData(context->mailbox, (uint8_t*)&destWord, sizeof(destWord));
 
 	if ( bytesRead < 1 || bytesRead > 2 )
 	{
@@ -156,7 +156,7 @@ static ActionResult HandleDirectDataTransferRead(DataTransferContext* context)
 		sr |= V2MP_CPU_SR_C;
 	}
 
-	if ( V2MP_CircularBuffer_IsEmpty(context->mailbox) )
+	if ( V2MPSC_CircularBuffer_IsEmpty(context->mailbox) )
 	{
 		sr |= V2MP_CPU_SR_Z;
 	}
@@ -215,8 +215,8 @@ static ActionResult HandleIndirectDataTransferRead(DataTransferContext* context)
 
 	V2MP_DevicePort_SetMailboxBusy(context->port, true);
 
-	origBytesInMailbox = V2MP_CircularBuffer_BytesUsed(context->mailbox);
-	bytesReadFromMailbox = V2MP_CircularBuffer_ReadData(context->mailbox, dsData, bytesToRead);
+	origBytesInMailbox = V2MPSC_CircularBuffer_BytesUsed(context->mailbox);
+	bytesReadFromMailbox = V2MPSC_CircularBuffer_ReadData(context->mailbox, dsData, bytesToRead);
 
 	if ( exceededSegment )
 	{
@@ -248,7 +248,7 @@ static ActionResult HandleIndirectDataTransferRead(DataTransferContext* context)
 		SVACTION_DEVDT_ARG_DS_ADDR(context->action) += (V2MP_Word)bytesReadFromMailbox;
 		SVACTION_DEVDT_ARG_DS_SIZE(context->action) -= (V2MP_Word)bytesReadFromMailbox;
 
-		if ( SVACTION_DEVDT_ARG_DS_SIZE(context->action) < 1 || V2MP_CircularBuffer_IsEmpty(context->mailbox) )
+		if ( SVACTION_DEVDT_ARG_DS_SIZE(context->action) < 1 || V2MPSC_CircularBuffer_IsEmpty(context->mailbox) )
 		{
 			SVACTION_DEVDT_ARG_FLAGS(context->action) &= ~SVACTION_DEVDT_FLAG_IS_IN_PROGRESS;
 		}
@@ -283,8 +283,8 @@ static ActionResult HandleDirectDataTransferWrite(DataTransferContext* context)
 	V2MP_Word sr = 0;
 
 	srcWord = V2MP_CPU_GetLinkRegister(context->cpu);
-	origBytesFree = V2MP_CircularBuffer_BytesFree(context->mailbox);
-	bytesWritten = V2MP_CircularBuffer_WriteData(context->mailbox, (const uint8_t*)&srcWord, sizeof(srcWord));
+	origBytesFree = V2MPSC_CircularBuffer_BytesFree(context->mailbox);
+	bytesWritten = V2MPSC_CircularBuffer_WriteData(context->mailbox, (const uint8_t*)&srcWord, sizeof(srcWord));
 
 	if ( bytesWritten < 1 || bytesWritten > 2 )
 	{
@@ -294,7 +294,7 @@ static ActionResult HandleDirectDataTransferWrite(DataTransferContext* context)
 
 	V2MP_CPU_SetR1(context->cpu, (V2MP_Word)bytesWritten);
 
-	if ( V2MP_CircularBuffer_IsFull(context->mailbox) )
+	if ( V2MPSC_CircularBuffer_IsFull(context->mailbox) )
 	{
 		sr |= V2MP_CPU_SR_Z;
 	}
@@ -358,8 +358,8 @@ static ActionResult HandleIndirectDataTransferWrite(DataTransferContext* context
 
 	V2MP_DevicePort_SetMailboxBusy(context->port, true);
 
-	origBytesFreeInMailbox = V2MP_CircularBuffer_BytesFree(context->mailbox);
-	bytesWrittenToMailbox = V2MP_CircularBuffer_WriteData(context->mailbox, dsData, bytesToWrite);
+	origBytesFreeInMailbox = V2MPSC_CircularBuffer_BytesFree(context->mailbox);
+	bytesWrittenToMailbox = V2MPSC_CircularBuffer_WriteData(context->mailbox, dsData, bytesToWrite);
 
 	if ( exceededSegment )
 	{
@@ -391,7 +391,7 @@ static ActionResult HandleIndirectDataTransferWrite(DataTransferContext* context
 		SVACTION_DEVDT_ARG_DS_ADDR(context->action) += (V2MP_Word)bytesWrittenToMailbox;
 		SVACTION_DEVDT_ARG_DS_SIZE(context->action) -= (V2MP_Word)bytesWrittenToMailbox;
 
-		if ( SVACTION_DEVDT_ARG_DS_SIZE(context->action) < 1 || V2MP_CircularBuffer_IsFull(context->mailbox) )
+		if ( SVACTION_DEVDT_ARG_DS_SIZE(context->action) < 1 || V2MPSC_CircularBuffer_IsFull(context->mailbox) )
 		{
 			SVACTION_DEVDT_ARG_FLAGS(context->action) &= ~SVACTION_DEVDT_FLAG_IS_IN_PROGRESS;
 		}
@@ -607,17 +607,17 @@ static ActionResult V2MP_Supervisor_HandleGetUsableByteCount(V2MP_Supervisor* su
 
 	if ( port )
 	{
-		V2MP_CircularBuffer* mailbox = V2MP_DevicePort_GetMailbox(port);
+		V2MPSC_CircularBuffer* mailbox = V2MP_DevicePort_GetMailbox(port);
 
 		if ( mailbox )
 		{
 			if ( V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_READABLE )
 			{
-				count = (V2MP_Word)V2MP_CircularBuffer_BytesUsed(mailbox);
+				count = (V2MP_Word)V2MPSC_CircularBuffer_BytesUsed(mailbox);
 			}
 			else if ( V2MP_DevicePort_GetMailboxState(port) == V2MP_DPMS_WRITEABLE )
 			{
-				count = (V2MP_Word)V2MP_CircularBuffer_BytesFree(mailbox);
+				count = (V2MP_Word)V2MPSC_CircularBuffer_BytesFree(mailbox);
 			}
 		}
 	}
@@ -719,8 +719,8 @@ bool V2MP_Supervisor_CreateActionLists(V2MP_Supervisor* supervisor)
 		return false;
 	}
 
-	supervisor->newActions = V2MP_DoubleLL_AllocateAndInit(sizeof(V2MP_Supervisor_Action), NULL);
-	supervisor->ongoingActions = V2MP_DoubleLL_AllocateAndInit(sizeof(V2MP_Supervisor_Action), NULL);
+	supervisor->newActions = V2MPSC_DoubleLL_AllocateAndInit(sizeof(V2MP_Supervisor_Action), NULL);
+	supervisor->ongoingActions = V2MPSC_DoubleLL_AllocateAndInit(sizeof(V2MP_Supervisor_Action), NULL);
 
 	return supervisor->newActions != NULL && supervisor->ongoingActions != NULL;
 }
@@ -732,16 +732,16 @@ void V2MP_Supervisor_DestroyActionLists(V2MP_Supervisor* supervisor)
 		return;
 	}
 
-	V2MP_DoubleLL_DeinitAndFree(supervisor->newActions);
+	V2MPSC_DoubleLL_DeinitAndFree(supervisor->newActions);
 	supervisor->newActions = NULL;
 
-	V2MP_DoubleLL_DeinitAndFree(supervisor->ongoingActions);
+	V2MPSC_DoubleLL_DeinitAndFree(supervisor->ongoingActions);
 	supervisor->ongoingActions = NULL;
 }
 
 V2MP_Supervisor_Action* V2MP_Supervisor_CreateNewAction(V2MP_Supervisor* supervisor)
 {
-	V2MP_DoubleLL_Node* node;
+	V2MPSC_DoubleLL_Node* node;
 	V2MP_Supervisor_Action* action;
 
 	if ( !supervisor )
@@ -749,7 +749,7 @@ V2MP_Supervisor_Action* V2MP_Supervisor_CreateNewAction(V2MP_Supervisor* supervi
 		return NULL;
 	}
 
-	node = V2MP_DoubleLL_AppendToTail(supervisor->newActions);
+	node = V2MPSC_DoubleLL_AppendToTail(supervisor->newActions);
 
 	if ( !node )
 	{
@@ -766,9 +766,9 @@ V2MP_Supervisor_Action* V2MP_Supervisor_CreateNewAction(V2MP_Supervisor* supervi
 	return action;
 }
 
-V2MP_DoubleLL_Node* V2MP_Supervisor_CloneToOngoingAction(V2MP_Supervisor* supervisor, V2MP_DoubleLL_Node* createAfter, V2MP_Supervisor_Action* template)
+V2MPSC_DoubleLL_Node* V2MP_Supervisor_CloneToOngoingAction(V2MP_Supervisor* supervisor, V2MPSC_DoubleLL_Node* createAfter, V2MP_Supervisor_Action* template)
 {
-	V2MP_DoubleLL_Node* node;
+	V2MPSC_DoubleLL_Node* node;
 	V2MP_Supervisor_Action* action;
 
 	if ( !supervisor || !template )
@@ -778,11 +778,11 @@ V2MP_DoubleLL_Node* V2MP_Supervisor_CloneToOngoingAction(V2MP_Supervisor* superv
 
 	if ( createAfter )
 	{
-		node = V2MP_DoubleLL_CreateAfter(supervisor->ongoingActions, createAfter);
+		node = V2MPSC_DoubleLL_CreateAfter(supervisor->ongoingActions, createAfter);
 	}
 	else
 	{
-		node = V2MP_DoubleLL_PrependToHead(supervisor->ongoingActions);
+		node = V2MPSC_DoubleLL_PrependToHead(supervisor->ongoingActions);
 	}
 
 	if ( !node )
@@ -802,19 +802,19 @@ V2MP_DoubleLL_Node* V2MP_Supervisor_CloneToOngoingAction(V2MP_Supervisor* superv
 
 bool V2MP_Supervisor_ResolveOutstandingActions(V2MP_Supervisor* supervisor)
 {
-	V2MP_DoubleLL_Node* node;
-	V2MP_DoubleLL_Node* lastProcessedOngoingActionNode = NULL;
+	V2MPSC_DoubleLL_Node* node;
+	V2MPSC_DoubleLL_Node* lastProcessedOngoingActionNode = NULL;
 
 	if ( !supervisor )
 	{
 		return false;
 	}
 
-	node = V2MP_DoubleLL_GetHead(supervisor->newActions);
+	node = V2MPSC_DoubleLL_GetHead(supervisor->newActions);
 
 	while ( node )
 	{
-		V2MP_DoubleLL_Node* next;
+		V2MPSC_DoubleLL_Node* next;
 		ActionResult result;
 		V2MP_Supervisor_Action* action;
 
@@ -855,12 +855,12 @@ bool V2MP_Supervisor_ResolveOutstandingActions(V2MP_Supervisor* supervisor)
 	}
 	else
 	{
-		node = V2MP_DoubleLL_GetHead(supervisor->ongoingActions);
+		node = V2MPSC_DoubleLL_GetHead(supervisor->ongoingActions);
 	}
 
 	while ( node )
 	{
-		V2MP_DoubleLL_Node* next;
+		V2MPSC_DoubleLL_Node* next;
 		ActionResult result;
 		V2MP_Supervisor_Action* action;
 

@@ -1,7 +1,7 @@
 #include "V2MPInternal/Modules/DevicePortCollection.h"
 #include "V2MPInternal/Modules/DevicePort.h"
-#include "V2MPInternal/Components/DoubleLinkedList.h"
-#include "V2MPInternal/Components/HexTree.h"
+#include "SharedComponents/DoubleLinkedList.h"
+#include "SharedComponents/HexTree.h"
 #include "BaseUtil/Heap.h"
 #include "Modules/DevicePort_Internal.h"
 
@@ -12,8 +12,8 @@ typedef struct DevicePortEntry
 
 struct V2MP_DevicePortCollection
 {
-	V2MP_DoubleLL* portList;
-	V2MP_HexTreeNode* portTree;
+	V2MPSC_DoubleLL* portList;
+	V2MPSC_HexTreeNode* portTree;
 };
 
 static void DeinitDevicePortEntry(void* ptr)
@@ -31,8 +31,8 @@ V2MP_DevicePortCollection* V2MP_DevicePortCollection_AllocateAndInit(void)
 		return NULL;
 	}
 
-	dpc->portList = V2MP_DoubleLL_AllocateAndInit(sizeof(DevicePortEntry), &DeinitDevicePortEntry);
-	dpc->portTree = V2MP_HexTree_AllocateAndInit();
+	dpc->portList = V2MPSC_DoubleLL_AllocateAndInit(sizeof(DevicePortEntry), &DeinitDevicePortEntry);
+	dpc->portTree = V2MPSC_HexTree_AllocateAndInit();
 
 	if ( !dpc->portList || !dpc->portTree )
 	{
@@ -50,15 +50,15 @@ void V2MP_DevicePortCollection_DeinitAndFree(V2MP_DevicePortCollection* dpc)
 		return;
 	}
 
-	V2MP_HexTree_DeinitAndFree(dpc->portTree);
-	V2MP_DoubleLL_DeinitAndFree(dpc->portList);
+	V2MPSC_HexTree_DeinitAndFree(dpc->portTree);
+	V2MPSC_DoubleLL_DeinitAndFree(dpc->portList);
 
 	BASEUTIL_FREE(dpc);
 }
 
 struct V2MP_DevicePort* V2MP_DevicePortCollection_CreatePort(V2MP_DevicePortCollection* dpc, V2MP_Word address)
 {
-	V2MP_DoubleLL_Node* node = NULL;
+	V2MPSC_DoubleLL_Node* node = NULL;
 
 	if ( !dpc )
 	{
@@ -69,7 +69,7 @@ struct V2MP_DevicePort* V2MP_DevicePortCollection_CreatePort(V2MP_DevicePortColl
 	{
 		DevicePortEntry* entry = NULL;
 
-		node = V2MP_DoubleLL_AppendToTail(dpc->portList);
+		node = V2MPSC_DoubleLL_AppendToTail(dpc->portList);
 
 		if ( !node )
 		{
@@ -84,7 +84,7 @@ struct V2MP_DevicePort* V2MP_DevicePortCollection_CreatePort(V2MP_DevicePortColl
 			break;
 		}
 
-		if ( !V2MP_HexTree_Insert(dpc->portTree, address, node) )
+		if ( !V2MPSC_HexTree_Insert(dpc->portTree, address, node) )
 		{
 			break;
 		}
@@ -105,14 +105,14 @@ struct V2MP_DevicePort* V2MP_DevicePortCollection_CreatePort(V2MP_DevicePortColl
 
 bool V2MP_DevicePortCollection_DestroyPort(V2MP_DevicePortCollection* dpc, V2MP_Word address)
 {
-	V2MP_DoubleLL_Node* node = NULL;
+	V2MPSC_DoubleLL_Node* node = NULL;
 
 	if ( !dpc )
 	{
 		return false;
 	}
 
-	node = (V2MP_DoubleLL_Node*)V2MP_HexTree_Remove(dpc->portTree, address);
+	node = (V2MPSC_DoubleLL_Node*)V2MPSC_HexTree_Remove(dpc->portTree, address);
 
 	if ( !node )
 	{
@@ -127,7 +127,7 @@ bool V2MP_DevicePortCollection_DestroyPort(V2MP_DevicePortCollection* dpc, V2MP_
 
 struct V2MP_DevicePort* V2MP_DevicePortCollection_GetPort(V2MP_DevicePortCollection* dpc, V2MP_Word address)
 {
-	V2MP_DoubleLL_Node* node = NULL;
+	V2MPSC_DoubleLL_Node* node = NULL;
 	DevicePortEntry* entry = NULL;
 
 	if ( !dpc )
@@ -135,7 +135,7 @@ struct V2MP_DevicePort* V2MP_DevicePortCollection_GetPort(V2MP_DevicePortCollect
 		return NULL;
 	}
 
-	node = (V2MP_DoubleLL_Node*)V2MP_HexTree_Find(dpc->portTree, address);
+	node = (V2MPSC_DoubleLL_Node*)V2MPSC_HexTree_Find(dpc->portTree, address);
 
 	if ( !node )
 	{

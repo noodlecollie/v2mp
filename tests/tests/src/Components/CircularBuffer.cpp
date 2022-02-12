@@ -1,6 +1,6 @@
 #include <cstring>
 #include "catch2/catch.hpp"
-#include "V2MPInternal/Components/CircularBuffer.h"
+#include "SharedComponents/CircularBuffer.h"
 
 static constexpr size_t DEFAULT_CAPACITY = 32;
 
@@ -8,25 +8,25 @@ SCENARIO("Initialising a circular buffer", "[components]")
 {
 	WHEN("A circular buffer is initialised with a capacity of zero")
 	{
-		V2MP_CircularBuffer* cb = V2MP_CircularBuffer_AllocateAndInit(0);
+		V2MPSC_CircularBuffer* cb = V2MPSC_CircularBuffer_AllocateAndInit(0);
 
 		THEN("A null pointer is returned")
 		{
 			REQUIRE(cb == nullptr);
-			REQUIRE_NOTHROW(V2MP_CircularBuffer_DeinitAndFree(cb));
+			REQUIRE_NOTHROW(V2MPSC_CircularBuffer_DeinitAndFree(cb));
 		}
 	}
 
 	AND_WHEN("A circular buffer is initialised with a non-zero capacity")
 	{
-		V2MP_CircularBuffer* cb = V2MP_CircularBuffer_AllocateAndInit(DEFAULT_CAPACITY);
+		V2MPSC_CircularBuffer* cb = V2MPSC_CircularBuffer_AllocateAndInit(DEFAULT_CAPACITY);
 
 		THEN("The circular buffer returned is valid")
 		{
 			REQUIRE(cb != nullptr);
 		}
 
-		V2MP_CircularBuffer_DeinitAndFree(cb);
+		V2MPSC_CircularBuffer_DeinitAndFree(cb);
 	}
 }
 
@@ -34,12 +34,12 @@ SCENARIO("Querying circular buffer capacity", "[components]")
 {
 	GIVEN("A valid circular buffer")
 	{
-		V2MP_CircularBuffer* cb = V2MP_CircularBuffer_AllocateAndInit(DEFAULT_CAPACITY);
+		V2MPSC_CircularBuffer* cb = V2MPSC_CircularBuffer_AllocateAndInit(DEFAULT_CAPACITY);
 		REQUIRE(cb);
 
 		WHEN("The circular buffer's capacity is fetched")
 		{
-			const size_t capacity = V2MP_CircularBuffer_Capacity(cb);
+			const size_t capacity = V2MPSC_CircularBuffer_Capacity(cb);
 
 			THEN("The reported capacity matches the capacity the buffer was initialised with")
 			{
@@ -48,7 +48,7 @@ SCENARIO("Querying circular buffer capacity", "[components]")
 
 			AND_WHEN("The circular buffer's free space is fetched")
 			{
-				const size_t freeSpace = V2MP_CircularBuffer_BytesFree(cb);
+				const size_t freeSpace = V2MPSC_CircularBuffer_BytesFree(cb);
 
 				THEN("The reported free space is correct")
 				{
@@ -59,7 +59,7 @@ SCENARIO("Querying circular buffer capacity", "[components]")
 
 			AND_WHEN("The circular buffer's number of used bytes is fetched")
 			{
-				size_t usedBytes = V2MP_CircularBuffer_BytesUsed(cb);
+				size_t usedBytes = V2MPSC_CircularBuffer_BytesUsed(cb);
 
 				THEN("The number of used bytes is zero")
 				{
@@ -69,7 +69,7 @@ SCENARIO("Querying circular buffer capacity", "[components]")
 
 			AND_WHEN("The circular buffer is queried about being full")
 			{
-				const bool isFull = V2MP_CircularBuffer_IsFull(cb);
+				const bool isFull = V2MPSC_CircularBuffer_IsFull(cb);
 
 				THEN("The buffer is not reported as full.")
 				{
@@ -79,7 +79,7 @@ SCENARIO("Querying circular buffer capacity", "[components]")
 
 			AND_WHEN("The circular buffer is queried about being empty")
 			{
-				const bool isEmpty = V2MP_CircularBuffer_IsEmpty(cb);
+				const bool isEmpty = V2MPSC_CircularBuffer_IsEmpty(cb);
 
 				THEN("The buffer is reported as empty.")
 				{
@@ -88,7 +88,7 @@ SCENARIO("Querying circular buffer capacity", "[components]")
 			}
 		}
 
-		V2MP_CircularBuffer_DeinitAndFree(cb);
+		V2MPSC_CircularBuffer_DeinitAndFree(cb);
 	}
 }
 
@@ -96,7 +96,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 {
 	GIVEN("A valid circular buffer")
 	{
-		V2MP_CircularBuffer* cb = V2MP_CircularBuffer_AllocateAndInit(DEFAULT_CAPACITY);
+		V2MPSC_CircularBuffer* cb = V2MPSC_CircularBuffer_AllocateAndInit(DEFAULT_CAPACITY);
 		REQUIRE(cb);
 
 		WHEN("A small amount of data is written to the buffer")
@@ -107,7 +107,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 			origData.resize(dataString.length() + 1);
 			std::memcpy(origData.data(), dataString.c_str(), origData.size());
 
-			const size_t bytesWritten = V2MP_CircularBuffer_WriteData(
+			const size_t bytesWritten = V2MPSC_CircularBuffer_WriteData(
 				cb,
 				reinterpret_cast<const uint8_t*>(origData.data()),
 				origData.size()
@@ -115,15 +115,15 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 
 			THEN("The amount of data written is correct")
 			{
-				const size_t used = V2MP_CircularBuffer_BytesUsed(cb);
-				const size_t free = V2MP_CircularBuffer_BytesFree(cb);
+				const size_t used = V2MPSC_CircularBuffer_BytesUsed(cb);
+				const size_t free = V2MPSC_CircularBuffer_BytesFree(cb);
 
 				REQUIRE(bytesWritten == origData.size());
 				REQUIRE(used == origData.size());
 				REQUIRE(used == bytesWritten);
 				REQUIRE(free == DEFAULT_CAPACITY - origData.size());
-				REQUIRE_FALSE(V2MP_CircularBuffer_IsEmpty(cb));
-				REQUIRE_FALSE(V2MP_CircularBuffer_IsFull(cb));
+				REQUIRE_FALSE(V2MPSC_CircularBuffer_IsEmpty(cb));
+				REQUIRE_FALSE(V2MPSC_CircularBuffer_IsFull(cb));
 			}
 
 			AND_WHEN("The data is read from the buffer")
@@ -131,7 +131,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 				std::vector<char> readData;
 				readData.resize(origData.size());
 
-				const size_t bytesRead = V2MP_CircularBuffer_ReadData(
+				const size_t bytesRead = V2MPSC_CircularBuffer_ReadData(
 					cb,
 					reinterpret_cast<uint8_t*>(readData.data()),
 					readData.size()
@@ -153,7 +153,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 			origData.resize(dataString.length() + 1);
 			std::memcpy(origData.data(), dataString.c_str(), origData.size());
 
-			const size_t bytesWritten = V2MP_CircularBuffer_WriteData(
+			const size_t bytesWritten = V2MPSC_CircularBuffer_WriteData(
 				cb,
 				reinterpret_cast<const uint8_t*>(origData.data()),
 				origData.size()
@@ -163,9 +163,9 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 			{
 				REQUIRE(bytesWritten != origData.size());
 				REQUIRE(bytesWritten == DEFAULT_CAPACITY);
-				REQUIRE(bytesWritten == V2MP_CircularBuffer_Capacity(cb));
-				REQUIRE_FALSE(V2MP_CircularBuffer_IsEmpty(cb));
-				REQUIRE(V2MP_CircularBuffer_IsFull(cb));
+				REQUIRE(bytesWritten == V2MPSC_CircularBuffer_Capacity(cb));
+				REQUIRE_FALSE(V2MPSC_CircularBuffer_IsEmpty(cb));
+				REQUIRE(V2MPSC_CircularBuffer_IsFull(cb));
 			}
 
 			AND_WHEN("The data is read from the buffer")
@@ -173,7 +173,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 				std::vector<char> readData;
 				readData.resize(origData.size());
 
-				const size_t bytesRead = V2MP_CircularBuffer_ReadData(
+				const size_t bytesRead = V2MPSC_CircularBuffer_ReadData(
 					cb,
 					reinterpret_cast<uint8_t*>(readData.data()),
 					readData.size()
@@ -181,7 +181,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 
 				THEN("The data read back matches the beginning of the original data")
 				{
-					REQUIRE(bytesRead == V2MP_CircularBuffer_Capacity(cb));
+					REQUIRE(bytesRead == V2MPSC_CircularBuffer_Capacity(cb));
 					REQUIRE(bytesRead != origData.size());
 
 					std::vector<char> origDataPrefix(origData.cbegin(), origData.cbegin() + DEFAULT_CAPACITY);
@@ -196,7 +196,7 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 		{
 			std::vector<char> data;
 
-			const size_t bytesWritten = V2MP_CircularBuffer_WriteData(
+			const size_t bytesWritten = V2MPSC_CircularBuffer_WriteData(
 				cb,
 				reinterpret_cast<const uint8_t*>(data.data()),
 				data.size()
@@ -205,15 +205,15 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 			THEN("The amount of data written is zero")
 			{
 				REQUIRE(bytesWritten == 0);
-				REQUIRE(V2MP_CircularBuffer_IsEmpty(cb));
-				REQUIRE_FALSE(V2MP_CircularBuffer_IsFull(cb));
+				REQUIRE(V2MPSC_CircularBuffer_IsEmpty(cb));
+				REQUIRE_FALSE(V2MPSC_CircularBuffer_IsFull(cb));
 			}
 
 			AND_WHEN("The data is read from the buffer")
 			{
 				std::vector<char> readData(DEFAULT_CAPACITY, 'A');
 
-				const size_t bytesRead = V2MP_CircularBuffer_ReadData(
+				const size_t bytesRead = V2MPSC_CircularBuffer_ReadData(
 					cb,
 					reinterpret_cast<uint8_t*>(readData.data()),
 					readData.size()
@@ -227,6 +227,6 @@ SCENARIO("Modifying circular buffer contents", "[components]")
 			}
 		}
 
-		V2MP_CircularBuffer_DeinitAndFree(cb);
+		V2MPSC_CircularBuffer_DeinitAndFree(cb);
 	}
 }

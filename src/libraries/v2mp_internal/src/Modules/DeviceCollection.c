@@ -1,6 +1,6 @@
 #include "V2MPInternal/Modules/DeviceCollection.h"
 #include "V2MPInternal/Modules/Device.h"
-#include "V2MPInternal/Components/DoubleLinkedList.h"
+#include "SharedComponents/DoubleLinkedList.h"
 #include "BaseUtil/Heap.h"
 #include "Modules/Device_Internal.h"
 
@@ -11,7 +11,7 @@ typedef struct DeviceEntry
 
 struct V2MP_DeviceCollection
 {
-	V2MP_DoubleLL* deviceList;
+	V2MPSC_DoubleLL* deviceList;
 };
 
 static void DeinitDeviceEntry(void* ptr)
@@ -22,7 +22,7 @@ static void DeinitDeviceEntry(void* ptr)
 
 static V2MP_Device* GetNextDevice(const V2MP_DeviceCollection* dc, V2MP_Device* device)
 {
-	V2MP_DoubleLL_Node* node;
+	V2MPSC_DoubleLL_Node* node;
 	DeviceEntry* entry;
 
 	if ( !dc )
@@ -30,7 +30,7 @@ static V2MP_Device* GetNextDevice(const V2MP_DeviceCollection* dc, V2MP_Device* 
 		return NULL;
 	}
 
-	node = device ? V2MP_DoubleLLNode_GetNext(device->ownerNode) : V2MP_DoubleLL_GetHead(dc->deviceList);
+	node = device ? V2MP_DoubleLLNode_GetNext(device->ownerNode) : V2MPSC_DoubleLL_GetHead(dc->deviceList);
 
 	if ( !node )
 	{
@@ -56,7 +56,7 @@ V2MP_DeviceCollection* V2MP_DeviceCollection_AllocateAndInit(void)
 		return NULL;
 	}
 
-	dc->deviceList = V2MP_DoubleLL_AllocateAndInit(sizeof(DeviceEntry), &DeinitDeviceEntry);
+	dc->deviceList = V2MPSC_DoubleLL_AllocateAndInit(sizeof(DeviceEntry), &DeinitDeviceEntry);
 
 	if ( !dc->deviceList )
 	{
@@ -74,14 +74,14 @@ void V2MP_DeviceCollection_DeinitAndFree(V2MP_DeviceCollection* dc)
 		return;
 	}
 
-	V2MP_DoubleLL_DeinitAndFree(dc->deviceList);
+	V2MPSC_DoubleLL_DeinitAndFree(dc->deviceList);
 
 	BASEUTIL_FREE(dc);
 }
 
 struct V2MP_Device* V2MP_DeviceCollection_CreateDevice(V2MP_DeviceCollection* dc)
 {
-	V2MP_DoubleLL_Node* node;
+	V2MPSC_DoubleLL_Node* node;
 
 	if ( !dc )
 	{
@@ -92,7 +92,7 @@ struct V2MP_Device* V2MP_DeviceCollection_CreateDevice(V2MP_DeviceCollection* dc
 	{
 		DeviceEntry* entry = NULL;
 
-		node = V2MP_DoubleLL_AppendToTail(dc->deviceList);
+		node = V2MPSC_DoubleLL_AppendToTail(dc->deviceList);
 
 		if ( !node )
 		{
@@ -123,7 +123,7 @@ struct V2MP_Device* V2MP_DeviceCollection_CreateDevice(V2MP_DeviceCollection* dc
 
 bool V2MP_DeviceCollection_DestroyDevice(V2MP_DeviceCollection* dc, struct V2MP_Device* device)
 {
-	V2MP_DoubleLL_Node* node;
+	V2MPSC_DoubleLL_Node* node;
 
 	if ( !dc || !device )
 	{
@@ -145,7 +145,7 @@ bool V2MP_DeviceCollection_DestroyDevice(V2MP_DeviceCollection* dc, struct V2MP_
 
 size_t V2MP_DeviceCollection_GetDeviceCount(const V2MP_DeviceCollection* dc)
 {
-	return dc ? V2MP_DoubleLL_GetNodeCount(dc->deviceList) : 0;
+	return dc ? V2MPSC_DoubleLL_GetNodeCount(dc->deviceList) : 0;
 }
 
 struct V2MP_Device* V2MP_DeviceCollection_GetFirstDevice(const V2MP_DeviceCollection* dc)

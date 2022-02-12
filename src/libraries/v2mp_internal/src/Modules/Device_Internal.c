@@ -61,12 +61,12 @@ bool V2MP_Device_NotifyMailboxReadyForInteraction(V2MP_Device* device)
 	return true;
 }
 
-V2MP_DoubleLL_Node* V2MP_Device_GetOwnerNode(const V2MP_Device* device)
+V2MPSC_DoubleLL_Node* V2MP_Device_GetOwnerNode(const V2MP_Device* device)
 {
 	return device ? device->ownerNode : NULL;
 }
 
-void V2MP_Device_SetOwnerNode(V2MP_Device* device, V2MP_DoubleLL_Node* node)
+void V2MP_Device_SetOwnerNode(V2MP_Device* device, V2MPSC_DoubleLL_Node* node)
 {
 	if ( !device )
 	{

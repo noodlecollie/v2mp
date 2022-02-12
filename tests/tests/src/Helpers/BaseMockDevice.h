@@ -2,7 +2,7 @@
 
 #include "V2MPInternal/Modules/Device.h"
 #include "V2MPInternal/Modules/DevicePort.h"
-#include "V2MPInternal/Components/CircularBuffer.h"
+#include "SharedComponents/CircularBuffer.h"
 
 class BaseMockDevice
 {
