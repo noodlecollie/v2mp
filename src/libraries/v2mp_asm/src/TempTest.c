@@ -7,6 +7,17 @@
 #include "ParseContext.h"
 #include "Tokens/TokenMeta.h"
 
+FILE* OpenFile(const char* path, const char* mode)
+{
+#ifdef _WIN32
+	FILE* outFile = NULL;
+	fopen_s(&outFile, path, mode);
+	return outFile;
+#else
+	return fopen(path, mode);
+#endif
+};
+
 static void ReadAllTokens(V2MPAsm_ParseContext* context)
 {
 	for ( const char* tokenEnd; !V2MPAsm_ParseContext_InputIsAtEOF(context); V2MPAsm_ParseContext_SeekInput(context, tokenEnd) )
@@ -115,7 +126,7 @@ void V2MPAsm_TempTest_ReadFile(const char* filePath)
 		return;
 	}
 
-	inFile = fopen(filePath, "r");
+	inFile = OpenFile(filePath, "r");
 
 	if ( !inFile )
 	{
