@@ -76,7 +76,7 @@ struct V2MP_DevicePort* V2MP_DevicePortCollection_CreatePort(V2MP_DevicePortColl
 			break;
 		}
 
-		entry = (DevicePortEntry*)V2MP_DoubleLLNode_GetPayload(node);
+		entry = (DevicePortEntry*)V2MPSC_DoubleLLNode_GetPayload(node);
 		entry->port = V2MP_DevicePort_AllocateAndInit();
 
 		if ( !entry->port )
@@ -97,7 +97,7 @@ struct V2MP_DevicePort* V2MP_DevicePortCollection_CreatePort(V2MP_DevicePortColl
 
 	if ( node )
 	{
-		V2MP_DoubleLLNode_Destroy(node);
+		V2MPSC_DoubleLLNode_Destroy(node);
 	}
 
 	return NULL;
@@ -120,7 +120,7 @@ bool V2MP_DevicePortCollection_DestroyPort(V2MP_DevicePortCollection* dpc, V2MP_
 	}
 
 	// The contents of the node are cleaned up when the node is destroyed.
-	V2MP_DoubleLLNode_Destroy(node);
+	V2MPSC_DoubleLLNode_Destroy(node);
 
 	return true;
 }
@@ -142,7 +142,7 @@ struct V2MP_DevicePort* V2MP_DevicePortCollection_GetPort(V2MP_DevicePortCollect
 		return NULL;
 	}
 
-	entry = (DevicePortEntry*)V2MP_DoubleLLNode_GetPayload(node);
+	entry = (DevicePortEntry*)V2MPSC_DoubleLLNode_GetPayload(node);
 
 	return entry->port;
 }

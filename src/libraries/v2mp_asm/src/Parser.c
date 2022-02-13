@@ -54,3 +54,38 @@ bool V2MPAsm_Parser_Parse(V2MPAsm_Parser* parser)
 
 	return V2MPAsm_Parser_ExecuteParse(parser);
 }
+
+size_t V2MPAsm_Parser_GetExceptionCount(const V2MPAsm_Parser* parser)
+{
+	if ( !parser )
+	{
+		return 0;
+	}
+
+	return V2MPAsm_ParseContext_GetExceptionCount(parser->context);
+}
+
+V2MPAsm_Parser_ExceptionNode* V2MPAsm_Parser_GetFirstExceptionNode(const V2MPAsm_Parser* parser)
+{
+	if ( !parser )
+	{
+		return NULL;
+	}
+
+	return (V2MPAsm_Parser_ExceptionNode*)V2MPAsm_ParseContext_GetFirstException(parser->context);
+}
+
+V2MPAsm_Parser_ExceptionNode* V2MPAsm_Parser_GetNextExceptionNode(V2MPAsm_Parser_ExceptionNode* node)
+{
+	if ( !node )
+	{
+		return NULL;
+	}
+
+	return (V2MPAsm_Parser_ExceptionNode*)V2MPAsm_ParseContext_GetNextException((V2MPAsm_ParseContext_ExceptionNode*)node);
+}
+
+V2MPAsm_ParseException* V2MPAsm_Parser_GetExceptionFromNode(V2MPAsm_Parser_ExceptionNode* node)
+{
+	return node ? ((V2MPAsm_ParseContext_ExceptionNode*)node)->exception : NULL;
+}

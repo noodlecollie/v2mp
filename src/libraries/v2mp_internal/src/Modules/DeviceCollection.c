@@ -30,14 +30,14 @@ static V2MP_Device* GetNextDevice(const V2MP_DeviceCollection* dc, V2MP_Device* 
 		return NULL;
 	}
 
-	node = device ? V2MP_DoubleLLNode_GetNext(device->ownerNode) : V2MPSC_DoubleLL_GetHead(dc->deviceList);
+	node = device ? V2MPSC_DoubleLLNode_GetNext(device->ownerNode) : V2MPSC_DoubleLL_GetHead(dc->deviceList);
 
 	if ( !node )
 	{
 		return NULL;
 	}
 
-	entry = (DeviceEntry*)V2MP_DoubleLLNode_GetPayload(node);
+	entry = (DeviceEntry*)V2MPSC_DoubleLLNode_GetPayload(node);
 
 	if ( !entry )
 	{
@@ -99,7 +99,7 @@ struct V2MP_Device* V2MP_DeviceCollection_CreateDevice(V2MP_DeviceCollection* dc
 			break;
 		}
 
-		entry = (DeviceEntry*)V2MP_DoubleLLNode_GetPayload(node);
+		entry = (DeviceEntry*)V2MPSC_DoubleLLNode_GetPayload(node);
 		entry->device = V2MP_Device_AllocateAndInit();
 
 		if ( !entry->device )
@@ -115,7 +115,7 @@ struct V2MP_Device* V2MP_DeviceCollection_CreateDevice(V2MP_DeviceCollection* dc
 
 	if ( node )
 	{
-		V2MP_DoubleLLNode_Destroy(node);
+		V2MPSC_DoubleLLNode_Destroy(node);
 	}
 
 	return NULL;
@@ -132,13 +132,13 @@ bool V2MP_DeviceCollection_DestroyDevice(V2MP_DeviceCollection* dc, struct V2MP_
 
 	node = V2MP_Device_GetOwnerNode(device);
 
-	if ( !node || V2MP_DoubleLLNode_GetOwnerList(node) != dc->deviceList )
+	if ( !node || V2MPSC_DoubleLLNode_GetOwnerList(node) != dc->deviceList )
 	{
 		return false;
 	}
 
 	// This will clean up the contents of the device entry.
-	V2MP_DoubleLLNode_Destroy(node);
+	V2MPSC_DoubleLLNode_Destroy(node);
 
 	return true;
 }

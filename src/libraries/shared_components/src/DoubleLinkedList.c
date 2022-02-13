@@ -255,27 +255,27 @@ void V2MPSC_DoubleLL_Clear(V2MPSC_DoubleLL* list)
 	FreeAllNodes(list);
 }
 
-void* V2MP_DoubleLLNode_GetPayload(const V2MPSC_DoubleLL_Node* node)
+void* V2MPSC_DoubleLLNode_GetPayload(const V2MPSC_DoubleLL_Node* node)
 {
 	return node ? node->payload : NULL;
 }
 
-V2MPSC_DoubleLL* V2MP_DoubleLLNode_GetOwnerList(const V2MPSC_DoubleLL_Node* node)
+V2MPSC_DoubleLL* V2MPSC_DoubleLLNode_GetOwnerList(const V2MPSC_DoubleLL_Node* node)
 {
 	return node ? node->list : NULL;
 }
 
-V2MPSC_DoubleLL_Node* V2MP_DoubleLLNode_GetNext(const V2MPSC_DoubleLL_Node* node)
+V2MPSC_DoubleLL_Node* V2MPSC_DoubleLLNode_GetNext(const V2MPSC_DoubleLL_Node* node)
 {
 	return node ? node->next : NULL;
 }
 
-V2MPSC_DoubleLL_Node* V2MP_DoubleLLNode_GetPrev(const V2MPSC_DoubleLL_Node* node)
+V2MPSC_DoubleLL_Node* V2MPSC_DoubleLLNode_GetPrev(const V2MPSC_DoubleLL_Node* node)
 {
 	return node ? node->prev : NULL;
 }
 
-void V2MP_DoubleLLNode_Destroy(V2MPSC_DoubleLL_Node* node)
+void V2MPSC_DoubleLLNode_Destroy(V2MPSC_DoubleLL_Node* node)
 {
 	V2MPSC_DoubleLL* list;
 

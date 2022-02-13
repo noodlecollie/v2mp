@@ -756,7 +756,7 @@ V2MP_Supervisor_Action* V2MP_Supervisor_CreateNewAction(V2MP_Supervisor* supervi
 		return NULL;
 	}
 
-	action = (V2MP_Supervisor_Action*)V2MP_DoubleLLNode_GetPayload(node);
+	action = (V2MP_Supervisor_Action*)V2MPSC_DoubleLLNode_GetPayload(node);
 
 	if ( action )
 	{
@@ -790,7 +790,7 @@ V2MPSC_DoubleLL_Node* V2MP_Supervisor_CloneToOngoingAction(V2MP_Supervisor* supe
 		return NULL;
 	}
 
-	action = (V2MP_Supervisor_Action*)V2MP_DoubleLLNode_GetPayload(node);
+	action = (V2MP_Supervisor_Action*)V2MPSC_DoubleLLNode_GetPayload(node);
 
 	if ( action )
 	{
@@ -818,9 +818,9 @@ bool V2MP_Supervisor_ResolveOutstandingActions(V2MP_Supervisor* supervisor)
 		ActionResult result;
 		V2MP_Supervisor_Action* action;
 
-		action = (V2MP_Supervisor_Action*)V2MP_DoubleLLNode_GetPayload(node);
+		action = (V2MP_Supervisor_Action*)V2MPSC_DoubleLLNode_GetPayload(node);
 		result = ResolveAction(supervisor, action);
-		next = V2MP_DoubleLLNode_GetNext(node);
+		next = V2MPSC_DoubleLLNode_GetNext(node);
 
 		if ( result == AR_ONGOING )
 		{
@@ -838,7 +838,7 @@ bool V2MP_Supervisor_ResolveOutstandingActions(V2MP_Supervisor* supervisor)
 
 		}
 
-		V2MP_DoubleLLNode_Destroy(node);
+		V2MPSC_DoubleLLNode_Destroy(node);
 
 		if ( result == AR_FAILED )
 		{
@@ -851,7 +851,7 @@ bool V2MP_Supervisor_ResolveOutstandingActions(V2MP_Supervisor* supervisor)
 
 	if ( lastProcessedOngoingActionNode )
 	{
-		node = V2MP_DoubleLLNode_GetNext(lastProcessedOngoingActionNode);
+		node = V2MPSC_DoubleLLNode_GetNext(lastProcessedOngoingActionNode);
 	}
 	else
 	{
@@ -864,13 +864,13 @@ bool V2MP_Supervisor_ResolveOutstandingActions(V2MP_Supervisor* supervisor)
 		ActionResult result;
 		V2MP_Supervisor_Action* action;
 
-		action = (V2MP_Supervisor_Action*)V2MP_DoubleLLNode_GetPayload(node);
+		action = (V2MP_Supervisor_Action*)V2MPSC_DoubleLLNode_GetPayload(node);
 		result = ResolveAction(supervisor, action);
-		next = V2MP_DoubleLLNode_GetNext(node);
+		next = V2MPSC_DoubleLLNode_GetNext(node);
 
 		if ( result != AR_ONGOING )
 		{
-			V2MP_DoubleLLNode_Destroy(node);
+			V2MPSC_DoubleLLNode_Destroy(node);
 		}
 
 		if ( result == AR_FAILED )

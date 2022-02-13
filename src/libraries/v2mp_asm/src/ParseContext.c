@@ -3,6 +3,12 @@
 #include "BaseUtil/String.h"
 #include "ParseContext.h"
 #include "cwalk/cwalk.h"
+#include "ParseException_Internal.h"
+
+static void DestroyParseExceptionNode(void* payload)
+{
+	V2MPAsm_ParseException_DeinitAndFree(((V2MPAsm_ParseContext_ExceptionNode*)payload)->exception);
+}
 
 static inline void FreeFilePath(V2MPAsm_ParseContext* context)
 {
@@ -35,13 +41,20 @@ V2MPAsm_ParseContext* V2MPAsm_ParseContext_AllocateAndInit(void)
 			break;
 		}
 
+		context->exceptionsList = V2MPSC_DoubleLL_AllocateAndInit(sizeof(V2MPAsm_ParseContext_ExceptionNode), &DestroyParseExceptionNode);
+
+		if ( !context->exceptionsList )
+		{
+			break;
+		}
+
 		return context;
 	}
 	while ( false );
 
 	if ( context )
 	{
-		BASEUTIL_FREE(context);
+		V2MPAsm_ParseContext_DeinitAndFree(context);
 	}
 
 	return NULL;
@@ -54,8 +67,13 @@ void V2MPAsm_ParseContext_DeinitAndFree(V2MPAsm_ParseContext* context)
 		return;
 	}
 
+	V2MPSC_DoubleLL_DeinitAndFree(context->exceptionsList);
+	context->exceptionsList = NULL;
+
 	FreeFilePath(context);
+
 	V2MPAsm_InputFile_DeinitAndFree(context->inputFile);
+	context->inputFile = NULL;
 
 	BASEUTIL_FREE(context);
 }
@@ -159,4 +177,105 @@ void V2MPAsm_ParseContext_SetParseState(V2MPAsm_ParseContext* context, V2MPAsm_P
 	}
 
 	context->state = state;
+}
+
+size_t V2MPAsm_ParseContext_GetExceptionCount(const V2MPAsm_ParseContext* context)
+{
+	if ( !context )
+	{
+		return 0;
+	}
+
+	return V2MPSC_DoubleLL_GetNodeCount(context->exceptionsList);
+}
+
+V2MPAsm_ParseContext_ExceptionNode* V2MPAsm_ParseContext_AppendException(V2MPAsm_ParseContext* context)
+{
+	V2MPSC_DoubleLL_Node* listNode = NULL;
+
+	do
+	{
+		V2MPAsm_ParseContext_ExceptionNode* exceptionNode;
+
+		if ( !context )
+		{
+			break;
+		}
+
+		listNode = V2MPSC_DoubleLL_AppendToTail(context->exceptionsList);
+
+		if ( !listNode )
+		{
+			break;
+		}
+
+		exceptionNode = (V2MPAsm_ParseContext_ExceptionNode*)V2MPSC_DoubleLLNode_GetPayload(listNode);
+
+		if ( !exceptionNode )
+		{
+			break;
+		}
+
+		exceptionNode->exception = V2MPAsm_ParseException_AllocateAndInit();
+
+		if ( !exceptionNode->exception )
+		{
+			break;
+		}
+
+		exceptionNode->listNode = listNode;
+		V2MPAsm_ParseException_SetContext(exceptionNode->exception, context);
+
+		return exceptionNode;
+	}
+	while ( false );
+
+	if ( listNode )
+	{
+		V2MPSC_DoubleLLNode_Destroy(listNode);
+	}
+
+	return NULL;
+}
+
+V2MPAsm_ParseContext_ExceptionNode* V2MPAsm_ParseContext_GetFirstException(const V2MPAsm_ParseContext* context)
+{
+	V2MPSC_DoubleLL_Node* listNode;
+
+	if ( !context )
+	{
+		return NULL;
+	}
+
+	listNode = V2MPSC_DoubleLL_GetHead(context->exceptionsList);
+
+	return listNode ? (V2MPAsm_ParseContext_ExceptionNode*)V2MPSC_DoubleLLNode_GetPayload(listNode) : NULL;
+}
+
+V2MPAsm_ParseContext_ExceptionNode* V2MPAsm_ParseContext_GetNextException(const V2MPAsm_ParseContext_ExceptionNode* node)
+{
+	V2MPSC_DoubleLL_Node* listNode;
+
+	if ( !node )
+	{
+		return NULL;
+	}
+
+	listNode = V2MPSC_DoubleLLNode_GetNext(node->listNode);
+
+	return listNode ? (V2MPAsm_ParseContext_ExceptionNode*)V2MPSC_DoubleLLNode_GetPayload(listNode) : NULL;
+}
+
+void V2MPAsm_ParseContext_SetExceptionLocationFromContext(const V2MPAsm_ParseContext* context, V2MPAsm_ParseException* exception)
+{
+	if ( !context || !exception )
+	{
+		return;
+	}
+
+	V2MPAsm_ParseException_SetLineAndColumn(
+		exception,
+		V2MPAsm_ParseContext_GetInputLineNumber(context),
+		V2MPAsm_ParseContext_GetInputColumnNumber(context)
+	);
 }

@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include "V2MPAsm/ParseException.h"
+#include "SharedComponents/DoubleLinkedList.h"
 #include "BaseUtil/Filesystem.h"
 #include "InputFile.h"
 
@@ -19,7 +20,14 @@ typedef struct V2MPAsm_ParseContext
 	const char* fileName;
 
 	V2MPAsm_ParseState state;
+	V2MPSC_DoubleLL* exceptionsList;
 } V2MPAsm_ParseContext;
+
+typedef struct V2MPAsm_ParseContext_ExceptionNode
+{
+	V2MPSC_DoubleLL_Node* listNode;
+	V2MPAsm_ParseException* exception;
+} V2MPAsm_ParseContext_ExceptionNode;
 
 V2MPAsm_ParseContext* V2MPAsm_ParseContext_AllocateAndInit(void);
 void V2MPAsm_ParseContext_DeinitAndFree(V2MPAsm_ParseContext* context);
@@ -40,5 +48,12 @@ const char* V2MPAsm_ParseContext_GetBeginningOfNextToken(V2MPAsm_ParseContext* c
 
 V2MPAsm_ParseState V2MPAsm_ParseContext_GetParseState(const V2MPAsm_ParseContext* context);
 void V2MPAsm_ParseContext_SetParseState(V2MPAsm_ParseContext* context, V2MPAsm_ParseState state);
+
+size_t V2MPAsm_ParseContext_GetExceptionCount(const V2MPAsm_ParseContext* context);
+V2MPAsm_ParseContext_ExceptionNode* V2MPAsm_ParseContext_AppendException(V2MPAsm_ParseContext* context);
+V2MPAsm_ParseContext_ExceptionNode* V2MPAsm_ParseContext_GetFirstException(const V2MPAsm_ParseContext* context);
+V2MPAsm_ParseContext_ExceptionNode* V2MPAsm_ParseContext_GetNextException(const V2MPAsm_ParseContext_ExceptionNode* node);
+
+void V2MPAsm_ParseContext_SetExceptionLocationFromContext(const V2MPAsm_ParseContext* context, V2MPAsm_ParseException* exception);
 
 #endif // V2MPASM_PARSECONTEXT_H
