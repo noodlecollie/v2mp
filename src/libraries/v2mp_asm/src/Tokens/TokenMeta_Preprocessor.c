@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <ctype.h>
 #include "Tokens/TokenMeta_Preprocessor.h"
+#include "BaseUtil/String.h"
 
 static const char* FindEndOfToken(const char* token, V2MPAsm_TokenContext context)
 {

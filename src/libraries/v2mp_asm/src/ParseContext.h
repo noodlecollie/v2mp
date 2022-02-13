@@ -2,15 +2,23 @@
 #define V2MPASM_PARSECONTEXT_H
 
 #include <stdbool.h>
-#include "InputFile.h"
+#include "V2MPAsm/ParseException.h"
 #include "BaseUtil/Filesystem.h"
+#include "InputFile.h"
+
+typedef enum V2MPAsm_ParseState
+{
+	PARSESTATE_DEFAULT = 0,
+	PARSESTATE_TERMINATED
+} V2MPAsm_ParseState;
 
 typedef struct V2MPAsm_ParseContext
 {
 	V2MPAsm_InputFile* inputFile;
-
 	char* filePath;
 	const char* fileName;
+
+	V2MPAsm_ParseState state;
 } V2MPAsm_ParseContext;
 
 V2MPAsm_ParseContext* V2MPAsm_ParseContext_AllocateAndInit(void);
@@ -29,5 +37,8 @@ const char* V2MPAsm_ParseContext_GetInputCursor(const V2MPAsm_ParseContext* cont
 
 void V2MPAsm_ParseContext_SeekInput(V2MPAsm_ParseContext* context, const char* pos);
 const char* V2MPAsm_ParseContext_GetBeginningOfNextToken(V2MPAsm_ParseContext* context);
+
+V2MPAsm_ParseState V2MPAsm_ParseContext_GetParseState(const V2MPAsm_ParseContext* context);
+void V2MPAsm_ParseContext_SetParseState(V2MPAsm_ParseContext* context, V2MPAsm_ParseState state);
 
 #endif // V2MPASM_PARSECONTEXT_H

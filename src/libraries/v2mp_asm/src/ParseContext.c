@@ -145,3 +145,18 @@ const char* V2MPAsm_ParseContext_GetBeginningOfNextToken(V2MPAsm_ParseContext* c
 	V2MPAsm_InputFile_SkipWhitespace(context->inputFile);
 	return V2MPAsm_InputFile_GetCursor(context->inputFile);
 }
+
+V2MPAsm_ParseState V2MPAsm_ParseContext_GetParseState(const V2MPAsm_ParseContext* context)
+{
+	return context ? context->state : PARSESTATE_DEFAULT;
+}
+
+void V2MPAsm_ParseContext_SetParseState(V2MPAsm_ParseContext* context, V2MPAsm_ParseState state)
+{
+	if ( !context )
+	{
+		return;
+	}
+
+	context->state = state;
+}
