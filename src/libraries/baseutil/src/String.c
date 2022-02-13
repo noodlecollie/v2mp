@@ -91,3 +91,8 @@ const char* BaseUtil_String_NextWhitespace(const char* string)
 
 	return string;
 }
+
+bool BaseUtil_String_CharIsAlphanumericOrUnderscore(char ch)
+{
+	return isalnum(ch) || ch == '_';
+}

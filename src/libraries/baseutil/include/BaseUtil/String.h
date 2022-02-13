@@ -1,6 +1,8 @@
 #ifndef BASEUTIL_STRING_H
 #define BASEUTIL_STRING_H
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -16,6 +18,8 @@ const char* BaseUtil_String_BeginWithoutWhitespace(const char* origString);
 
 // Returns the first character of whitespace in the string.
 const char* BaseUtil_String_NextWhitespace(const char* string);
+
+bool BaseUtil_String_CharIsAlphanumericOrUnderscore(char ch);
 
 #ifdef __cplusplus
 } // extern "C"

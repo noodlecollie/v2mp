@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <ctype.h>
 #include "Tokens/TokenMeta_Name.h"
+#include "BaseUtil/String.h"
 
 static const char* FindEndOfToken(const char* token, V2MPAsm_TokenContext context)
 {
@@ -8,7 +9,7 @@ static const char* FindEndOfToken(const char* token, V2MPAsm_TokenContext contex
 
 	while ( *token )
 	{
-		if ( !isalnum(*token) && *token != '_' )
+		if ( !BaseUtil_String_CharIsAlphanumericOrUnderscore(*token) )
 		{
 			return token;
 		}
