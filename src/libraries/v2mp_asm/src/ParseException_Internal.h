@@ -36,6 +36,9 @@ struct V2MPAsm_ParseException
 	char* customDescription;
 };
 
+const char* V2MPAsm_ParseException_GetWarningString(V2MPAsm_ParseWarningType warning);
+const char* V2MPAsm_ParseException_GetErrorString(V2MPAsm_ParseWarningType error);
+
 V2MPAsm_ParseException* V2MPAsm_ParseException_AllocateAndInit(void);
 void V2MPAsm_ParseException_DeinitAndFree(V2MPAsm_ParseException* exception);
 
@@ -44,6 +47,7 @@ void V2MPAsm_ParseException_SetContext(V2MPAsm_ParseException* exception, struct
 
 void V2MPAsm_ParseException_SetWarning(V2MPAsm_ParseException* exception, V2MPAsm_ParseWarningType type);
 void V2MPAsm_ParseException_SetError(V2MPAsm_ParseException* exception, V2MPAsm_ParseErrorType type);
+const char* V2MPAsm_ParseException_GetWarningOrErrorString(const V2MPAsm_ParseException* exception);
 
 const char* V2MPAsm_ParseException_GetCustomDescription(const V2MPAsm_ParseException* exception);
 void V2MPAsm_ParseException_SetCustomDescription(V2MPAsm_ParseException* exception, const char* description);

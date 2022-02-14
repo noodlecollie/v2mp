@@ -1,6 +1,35 @@
 #include "ParseException_Internal.h"
 #include "BaseUtil/Heap.h"
 #include "BaseUtil/String.h"
+#include "BaseUtil/Util.h"
+
+const char* V2MPAsm_ParseException_GetWarningString(V2MPAsm_ParseWarningType warning)
+{
+#define LIST_ITEM(value, desc) desc,
+	static const char* const STRINGS[] =
+	{
+		V2MPASM_PARSEWARNINGTYPE_LIST
+	};
+#undef LIST_ITEM
+
+	return (size_t)warning < BASEUTIL_ARRAY_SIZE(STRINGS)
+		? STRINGS[(size_t)warning]
+		: "UNKNOWN";
+}
+
+const char* V2MPAsm_ParseException_GetErrorString(V2MPAsm_ParseWarningType error)
+{
+#define LIST_ITEM(value, desc) desc,
+	static const char* const STRINGS[] =
+	{
+		V2MPASM_PARSEERRORTYPE_LIST
+	};
+#undef LIST_ITEM
+
+	return (size_t)error < BASEUTIL_ARRAY_SIZE(STRINGS)
+		? STRINGS[(size_t)error]
+		: "UNKNOWN";
+}
 
 V2MPAsm_ParseException* V2MPAsm_ParseException_AllocateAndInit(void)
 {
@@ -58,6 +87,23 @@ void V2MPAsm_ParseException_SetError(V2MPAsm_ParseException* exception, V2MPAsm_
 
 	exception->type = V2MPASM_PARSEEXCEPTION_ERROR;
 	exception->warningOrErrorType = type;
+}
+
+const char* V2MPAsm_ParseException_GetWarningOrErrorString(const V2MPAsm_ParseException* exception)
+{
+	if ( !exception )
+	{
+		return NULL;
+	}
+
+	if ( exception->type == V2MPASM_PARSEEXCEPTION_WARNING )
+	{
+		return V2MPAsm_ParseException_GetWarningString((V2MPAsm_ParseWarningType)exception->warningOrErrorType);
+	}
+	else
+	{
+		return V2MPAsm_ParseException_GetErrorString((V2MPAsm_ParseErrorType)exception->warningOrErrorType);
+	}
 }
 
 const char* V2MPAsm_ParseError_GetCustomDescription(const V2MPAsm_ParseException* exception)
