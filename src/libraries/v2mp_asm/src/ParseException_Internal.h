@@ -11,7 +11,8 @@ struct V2MPAsm_ParseContext;
 #define V2MPASM_PARSEERRORTYPE_LIST \
 	LIST_ITEM(PARSEERROR_UNSPECIFIED = 0, "Unspecified error.") \
 	LIST_ITEM(PARSEERROR_INTERNAL, "Unexpected internal error.") \
-	LIST_ITEM(PARSEERROR_UNIMPLEMENTED, "Behaviour unimplemented.")
+	LIST_ITEM(PARSEERROR_UNIMPLEMENTED, "Behaviour unimplemented.") \
+	LIST_ITEM(PARSEERROR_UNRECOGNISED_INSTRUCTION, "Unrecognised instruction.")
 
 #define LIST_ITEM(value, desc) value,
 typedef enum V2MPAsm_ParseWarningType

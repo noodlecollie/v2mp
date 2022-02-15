@@ -24,6 +24,18 @@ static inline void FreeFilePath(V2MPAsm_ParseContext* context)
 	context->fileName = NULL;
 }
 
+static void FreeCurrentToken(V2MPAsm_ParseContext* context)
+{
+	if ( context->currentTokenBuffer )
+	{
+		BASEUTIL_FREE(context->currentTokenBuffer);
+		context->currentTokenBuffer = NULL;
+	}
+
+	context->currentTokenBufferSize = 0;
+	context->currentTokenLength = 0;
+}
+
 void CreateAndSetExceptionV(
 	V2MPAsm_ParseContext* context,
 	bool isError,
@@ -72,6 +84,12 @@ void CreateAndSetExceptionV(
 	}
 
 	V2MPAsm_ParseException_SetCustomDescription(node->exception, buffer);
+
+	V2MPAsm_ParseException_SetLineAndColumn(
+		node->exception,
+		V2MPAsm_ParseContext_GetInputLineNumber(context),
+		V2MPAsm_ParseContext_GetInputColumnNumber(context)
+	);
 }
 
 V2MPAsm_ParseContext* V2MPAsm_ParseContext_AllocateAndInit(void)
@@ -101,6 +119,8 @@ V2MPAsm_ParseContext* V2MPAsm_ParseContext_AllocateAndInit(void)
 			break;
 		}
 
+		context->currentTokenContext = TOKENCTX_DEFAULT;
+
 		return context;
 	}
 	while ( false );
@@ -124,6 +144,7 @@ void V2MPAsm_ParseContext_DeinitAndFree(V2MPAsm_ParseContext* context)
 	context->exceptionsList = NULL;
 
 	FreeFilePath(context);
+	FreeCurrentToken(context);
 
 	V2MPAsm_InputFile_DeinitAndFree(context->inputFile);
 	context->inputFile = NULL;
@@ -230,6 +251,77 @@ void V2MPAsm_ParseContext_SetParseState(V2MPAsm_ParseContext* context, V2MPAsm_P
 	}
 
 	context->state = state;
+}
+
+V2MPAsm_TokenContext V2MPAsm_ParseContext_GetTokenContext(const V2MPAsm_ParseContext* context)
+{
+	return context ? context->currentTokenContext : TOKENCTX_DEFAULT;
+}
+
+void V2MPAsm_ParseContext_SetTokenContext(V2MPAsm_ParseContext* context, V2MPAsm_TokenContext tokenContext)
+{
+	if ( !context )
+	{
+		return;
+	}
+
+	context->currentTokenContext = tokenContext;
+}
+
+bool V2MPAsm_ParseContext_SetCurrentToken(V2MPAsm_ParseContext* context, const char* begin, const char* end)
+{
+	size_t length;
+
+	if ( !context || (!begin && end) || (!end && begin) )
+	{
+		return false;
+	}
+
+	if ( !begin || !end || end < begin )
+	{
+		FreeCurrentToken(context);
+		return true;
+	}
+
+	length = end - begin;
+
+	if ( length >= context->currentTokenBufferSize )
+	{
+		char* newBuffer;
+
+		FreeCurrentToken(context);
+
+		newBuffer = (char*)BASEUTIL_MALLOC(length + 1);
+
+		if ( !newBuffer )
+		{
+			return false;
+		}
+
+		context->currentTokenBuffer = newBuffer;
+		context->currentTokenBufferSize = length + 1;
+	}
+
+	context->currentTokenLength = length;
+
+	if ( context->currentTokenLength > 0 )
+	{
+		memcpy(context->currentTokenBuffer, begin, context->currentTokenLength);
+	}
+
+	context->currentTokenBuffer[context->currentTokenLength] = '\0';
+
+	return true;
+}
+
+const char* V2MPAsm_ParseContext_GetCurrentToken(const V2MPAsm_ParseContext* context)
+{
+	return context ? context->currentTokenBuffer : NULL;
+}
+
+size_t V2MPAsm_ParseContext_GetCurrentTokenLength(const V2MPAsm_ParseContext* context)
+{
+	return context ? context->currentTokenLength : 0;
 }
 
 size_t V2MPAsm_ParseContext_GetExceptionCount(const V2MPAsm_ParseContext* context)

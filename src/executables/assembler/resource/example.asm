@@ -6,7 +6,7 @@
  * spans multiple lines.
  */
 
-_name name @#[notaname
+add _name name @#[notaname
 123 -123 +123
 
 [ThisIsALabel]

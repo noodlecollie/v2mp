@@ -8,6 +8,7 @@
 #include "BaseUtil/Filesystem.h"
 #include "InputFile.h"
 #include "ParseException_Internal.h"
+#include "Tokens/TokenMeta.h"
 
 typedef enum V2MPAsm_ParseState
 {
@@ -22,6 +23,12 @@ typedef struct V2MPAsm_ParseContext
 	const char* fileName;
 
 	V2MPAsm_ParseState state;
+
+	char* currentTokenBuffer;
+	size_t currentTokenBufferSize;
+	size_t currentTokenLength;
+	V2MPAsm_TokenContext currentTokenContext;
+
 	V2MPSC_DoubleLL* exceptionsList;
 } V2MPAsm_ParseContext;
 
@@ -50,6 +57,14 @@ const char* V2MPAsm_ParseContext_GetBeginningOfNextToken(V2MPAsm_ParseContext* c
 
 V2MPAsm_ParseState V2MPAsm_ParseContext_GetParseState(const V2MPAsm_ParseContext* context);
 void V2MPAsm_ParseContext_SetParseState(V2MPAsm_ParseContext* context, V2MPAsm_ParseState state);
+
+V2MPAsm_TokenContext V2MPAsm_ParseContext_GetTokenContext(const V2MPAsm_ParseContext* context);
+void V2MPAsm_ParseContext_SetTokenContext(V2MPAsm_ParseContext* context, V2MPAsm_TokenContext tokenContext);
+
+// Token length does not include the terminator.
+bool V2MPAsm_ParseContext_SetCurrentToken(V2MPAsm_ParseContext* context, const char* begin, const char* end);
+const char* V2MPAsm_ParseContext_GetCurrentToken(const V2MPAsm_ParseContext* context);
+size_t V2MPAsm_ParseContext_GetCurrentTokenLength(const V2MPAsm_ParseContext* context);
 
 size_t V2MPAsm_ParseContext_GetExceptionCount(const V2MPAsm_ParseContext* context);
 V2MPAsm_ParseContext_ExceptionNode* V2MPAsm_ParseContext_AppendException(V2MPAsm_ParseContext* context);

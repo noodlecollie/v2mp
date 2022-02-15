@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 
+#define V2MPASM_MAX_COMMAND_NAME_LENGTH 32
+
 typedef struct V2MPAsm_CommandArg
 {
 	const char* name;
@@ -17,6 +19,9 @@ typedef struct V2MPAsm_CommandMeta
 	size_t numArgs;
 } V2MPAsm_CommandMeta;
 
-const V2MPAsm_CommandMeta* V2MPAsm_CommandMeta_FindCommand(const char* name);
+void V2MPAsm_CommandMeta_InitTable(void);
+void V2MPAsm_CommandMeta_DestroyTable(void);
+
+const V2MPAsm_CommandMeta* V2MPAsm_CommandMeta_FindCommand(const char* name, size_t nameLength);
 
 #endif // V2MPASM_COMMANDMETA_H
