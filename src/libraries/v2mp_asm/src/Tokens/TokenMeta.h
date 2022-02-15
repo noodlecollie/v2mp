@@ -1,6 +1,8 @@
 #ifndef V2MPASM_TOKENMETA_H
 #define V2MPASM_TOKENMETA_H
 
+#include <stdbool.h>
+
 #define V2MPASM_TOKEN_TYPE_LIST \
 	LIST_ITEM(TOKEN_UNKNOWN = 0, NULL) \
 	LIST_ITEM(TOKEN_LINE_COMMENT, &V2MPAsm_TokenMeta_LineComment) \
@@ -42,6 +44,8 @@ const char* V2MPAsm_TokenMeta_GetTokenContextString(V2MPAsm_TokenContext tokenco
 
 V2MPAsm_TokenType V2MPAsm_TokenMeta_IdentifyToken(const char* str, V2MPAsm_TokenContext context);
 const V2MPAsm_TokenMeta* V2MPAsm_TokenMeta_GetMetaForTokenType(V2MPAsm_TokenType tokenType);
+
+bool V2MPAsm_TokenMeta_IsComment(V2MPAsm_TokenType tokenType);
 
 // These functions should be used, rather than calling function pointers directly on the metadata struct:
 

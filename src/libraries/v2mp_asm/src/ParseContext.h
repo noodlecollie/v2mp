@@ -2,10 +2,12 @@
 #define V2MPASM_PARSECONTEXT_H
 
 #include <stdbool.h>
+#include <stdarg.h>
 #include "V2MPAsm/ParseException.h"
 #include "SharedComponents/DoubleLinkedList.h"
 #include "BaseUtil/Filesystem.h"
 #include "InputFile.h"
+#include "ParseException_Internal.h"
 
 typedef enum V2MPAsm_ParseState
 {
@@ -55,5 +57,11 @@ V2MPAsm_ParseContext_ExceptionNode* V2MPAsm_ParseContext_GetFirstException(const
 V2MPAsm_ParseContext_ExceptionNode* V2MPAsm_ParseContext_GetNextException(const V2MPAsm_ParseContext_ExceptionNode* node);
 
 void V2MPAsm_ParseContext_SetExceptionLocationFromContext(const V2MPAsm_ParseContext* context, V2MPAsm_ParseException* exception);
+
+void V2MPAsm_ParseContext_CreateAndSetWarning(V2MPAsm_ParseContext* context, V2MPAsm_ParseWarningType warningType, const char* format, ...);
+void V2MPAsm_ParseContext_CreateAndSetWarningV(V2MPAsm_ParseContext* context, V2MPAsm_ParseWarningType warningType, const char* format, va_list args);
+
+void V2MPAsm_ParseContext_CreateAndSetError(V2MPAsm_ParseContext* context, V2MPAsm_ParseErrorType errorType, const char* format, ...);
+void V2MPAsm_ParseContext_CreateAndSetErrorV(V2MPAsm_ParseContext* context, V2MPAsm_ParseErrorType errorType, const char* format, va_list args);
 
 #endif // V2MPASM_PARSECONTEXT_H

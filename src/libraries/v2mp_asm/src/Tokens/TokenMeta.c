@@ -1,4 +1,5 @@
 #include "BaseUtil/Util.h"
+#include "BaseUtil/String.h"
 #include "Tokens/TokenMeta.h"
 #include "Tokens/TokenMeta_LineComment.h"
 #include "Tokens/TokenMeta_MultilineComment.h"
@@ -98,16 +99,28 @@ const V2MPAsm_TokenMeta* V2MPAsm_TokenMeta_GetMetaForTokenType(V2MPAsm_TokenType
 		: NULL;
 }
 
+bool V2MPAsm_TokenMeta_IsComment(V2MPAsm_TokenType tokenType)
+{
+	return tokenType == TOKEN_LINE_COMMENT || tokenType == TOKEN_MULTILINE_COMMENT;
+}
+
 const char* V2MPAsm_TokenMeta_FindEndOfToken(
 	const V2MPAsm_TokenMeta* metadata,
 	const char* token,
 	V2MPAsm_TokenContext context
 )
 {
-	if ( !metadata || !token || !metadata->findEndOfToken )
+	if ( !token )
 	{
 		return NULL;
 	}
 
-	return metadata->findEndOfToken(token, context);
+	if ( metadata && metadata->findEndOfToken )
+	{
+		return metadata->findEndOfToken(token, context);
+	}
+	else
+	{
+		return BaseUtil_String_NextWhitespace(token);
+	}
 }

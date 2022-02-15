@@ -1,9 +1,12 @@
 #include <string.h>
+#include <stdio.h>
 #include "BaseUtil/Heap.h"
 #include "BaseUtil/String.h"
 #include "ParseContext.h"
 #include "cwalk/cwalk.h"
 #include "ParseException_Internal.h"
+
+#define V2MPASM_PARSECONTEXT_EX_DESC_LENGTH 512
 
 static void DestroyParseExceptionNode(void* payload)
 {
@@ -19,6 +22,56 @@ static inline void FreeFilePath(V2MPAsm_ParseContext* context)
 
 	context->filePath = NULL;
 	context->fileName = NULL;
+}
+
+void CreateAndSetExceptionV(
+	V2MPAsm_ParseContext* context,
+	bool isError,
+	int exceptionSubtype,
+	const char* format,
+	va_list args
+)
+{
+	char* buffer;
+	V2MPAsm_ParseContext_ExceptionNode* node;
+
+	if ( !context || !format )
+	{
+		return;
+	}
+
+	node = V2MPAsm_ParseContext_AppendException(context);
+
+	if ( !node )
+	{
+		return;
+	}
+
+	buffer = (char*)BASEUTIL_MALLOC(V2MPASM_PARSECONTEXT_EX_DESC_LENGTH);
+
+	if ( buffer )
+	{
+		buffer[0] = '\0';
+
+		vsnprintf(buffer, V2MPASM_PARSECONTEXT_EX_DESC_LENGTH, format, args);
+		buffer[V2MPASM_PARSECONTEXT_EX_DESC_LENGTH - 1] = '\0';
+	}
+	else
+	{
+		static char dummyBuffer[] = { '\0' };
+		buffer = dummyBuffer;
+	}
+
+	if ( isError )
+	{
+		V2MPAsm_ParseException_SetError(node->exception, (V2MPAsm_ParseErrorType)exceptionSubtype);
+	}
+	else
+	{
+		V2MPAsm_ParseException_SetWarning(node->exception, (V2MPAsm_ParseWarningType)exceptionSubtype);
+	}
+
+	V2MPAsm_ParseException_SetCustomDescription(node->exception, buffer);
 }
 
 V2MPAsm_ParseContext* V2MPAsm_ParseContext_AllocateAndInit(void)
@@ -278,4 +331,30 @@ void V2MPAsm_ParseContext_SetExceptionLocationFromContext(const V2MPAsm_ParseCon
 		V2MPAsm_ParseContext_GetInputLineNumber(context),
 		V2MPAsm_ParseContext_GetInputColumnNumber(context)
 	);
+}
+
+void V2MPAsm_ParseContext_CreateAndSetWarning(V2MPAsm_ParseContext* context, V2MPAsm_ParseWarningType warningType, const char* format, ...)
+{
+	va_list list;
+	va_start(list, format);
+	V2MPAsm_ParseContext_CreateAndSetWarningV(context, warningType, format, list);
+	va_end(list);
+}
+
+void V2MPAsm_ParseContext_CreateAndSetWarningV(V2MPAsm_ParseContext* context, V2MPAsm_ParseWarningType warningType, const char* format, va_list args)
+{
+	CreateAndSetExceptionV(context, false, warningType, format, args);
+}
+
+void V2MPAsm_ParseContext_CreateAndSetError(V2MPAsm_ParseContext* context, V2MPAsm_ParseErrorType errorType, const char* format, ...)
+{
+	va_list list;
+	va_start(list, format);
+	V2MPAsm_ParseContext_CreateAndSetErrorV(context, errorType, format, list);
+	va_end(list);
+}
+
+void V2MPAsm_ParseContext_CreateAndSetErrorV(V2MPAsm_ParseContext* context, V2MPAsm_ParseErrorType errorType, const char* format, va_list args)
+{
+	CreateAndSetExceptionV(context, true, errorType, format, args);
 }

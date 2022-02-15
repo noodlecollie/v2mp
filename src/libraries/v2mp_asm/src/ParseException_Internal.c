@@ -17,7 +17,7 @@ const char* V2MPAsm_ParseException_GetWarningString(V2MPAsm_ParseWarningType war
 		: "UNKNOWN";
 }
 
-const char* V2MPAsm_ParseException_GetErrorString(V2MPAsm_ParseWarningType error)
+const char* V2MPAsm_ParseException_GetErrorString(V2MPAsm_ParseErrorType error)
 {
 #define LIST_ITEM(value, desc) desc,
 	static const char* const STRINGS[] =

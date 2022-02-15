@@ -6,11 +6,12 @@
 struct V2MPAsm_ParseContext;
 
 #define V2MPASM_PARSEWARNINGTYPE_LIST \
-	LIST_ITEM(PARSEWARNING_UNSPECIFIED = 0, "Unspecified warning")
+	LIST_ITEM(PARSEWARNING_UNSPECIFIED = 0, "Unspecified warning.")
 
 #define V2MPASM_PARSEERRORTYPE_LIST \
-	LIST_ITEM(PARSEERROR_UNSPECIFIED = 0, "Unspecified error") \
-	LIST_ITEM(PARSEERROR_INTERNAL, "Unexpected internal error")
+	LIST_ITEM(PARSEERROR_UNSPECIFIED = 0, "Unspecified error.") \
+	LIST_ITEM(PARSEERROR_INTERNAL, "Unexpected internal error.") \
+	LIST_ITEM(PARSEERROR_UNIMPLEMENTED, "Behaviour unimplemented.")
 
 #define LIST_ITEM(value, desc) value,
 typedef enum V2MPAsm_ParseWarningType
@@ -37,7 +38,7 @@ struct V2MPAsm_ParseException
 };
 
 const char* V2MPAsm_ParseException_GetWarningString(V2MPAsm_ParseWarningType warning);
-const char* V2MPAsm_ParseException_GetErrorString(V2MPAsm_ParseWarningType error);
+const char* V2MPAsm_ParseException_GetErrorString(V2MPAsm_ParseErrorType error);
 
 V2MPAsm_ParseException* V2MPAsm_ParseException_AllocateAndInit(void);
 void V2MPAsm_ParseException_DeinitAndFree(V2MPAsm_ParseException* exception);

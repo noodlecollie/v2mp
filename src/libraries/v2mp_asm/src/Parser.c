@@ -52,7 +52,8 @@ bool V2MPAsm_Parser_Parse(V2MPAsm_Parser* parser)
 		return false;
 	}
 
-	return V2MPAsm_Parser_ExecuteParse(parser);
+	V2MPAsm_Parser_ExecuteParse(parser);
+	return true;
 }
 
 size_t V2MPAsm_Parser_GetExceptionCount(const V2MPAsm_Parser* parser)

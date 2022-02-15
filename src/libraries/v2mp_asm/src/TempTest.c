@@ -4,8 +4,7 @@
 #include "BaseUtil/Heap.h"
 #include "BaseUtil/String.h"
 #include "V2MPAsm/TempTest.h"
-#include "ParseContext.h"
-#include "Tokens/TokenMeta.h"
+#include "V2MPAsm/Parser.h"
 
 FILE* OpenFile(const char* path, const char* mode)
 {
@@ -16,79 +15,42 @@ FILE* OpenFile(const char* path, const char* mode)
 #else
 	return fopen(path, mode);
 #endif
-};
-
-static void ReadAllTokens(V2MPAsm_ParseContext* context)
-{
-	for ( const char* tokenEnd; !V2MPAsm_ParseContext_InputIsAtEOF(context); V2MPAsm_ParseContext_SeekInput(context, tokenEnd) )
-	{
-		char tokenBuffer[512];
-		const char* tokenBegin;
-		V2MPAsm_TokenType tokenType;
-		const V2MPAsm_TokenMeta* tokenMeta;
-		size_t length;
-
-		tokenBuffer[0] = '\0';
-		tokenEnd = NULL;
-		tokenBegin = V2MPAsm_ParseContext_GetBeginningOfNextToken(context);
-
-		if ( V2MPAsm_ParseContext_InputIsAtEOF(context) )
-		{
-			break;
-		}
-
-		tokenType = V2MPAsm_TokenMeta_IdentifyToken(tokenBegin, TOKENCTX_DEFAULT);
-		tokenMeta = V2MPAsm_TokenMeta_GetMetaForTokenType(tokenType);
-
-		if ( tokenMeta )
-		{
-			tokenEnd = V2MPAsm_TokenMeta_FindEndOfToken(tokenMeta, tokenBegin, TOKENCTX_DEFAULT);
-		}
-
-		if ( !tokenEnd )
-		{
-			// Default to skipping whitespace.
-			tokenEnd = BaseUtil_String_NextWhitespace(tokenBegin);
-		}
-
-		length = tokenEnd - tokenBegin;
-
-		if ( length < sizeof(tokenBuffer) )
-		{
-			memcpy(tokenBuffer, tokenBegin, length);
-			tokenBuffer[length] = '\0';
-		}
-		else
-		{
-			snprintf(tokenBuffer, sizeof(tokenBuffer), "<Token length %zu exceeded max length of %zu>", length, sizeof(tokenBuffer) - 1);
-		}
-
-		printf(
-			"%s token of length %zu found at %zu:%zu: %s\n",
-			V2MPAsm_TokenMeta_GetTokenTypeString(tokenType),
-			length,
-			V2MPAsm_ParseContext_GetInputLineNumber(context),
-			V2MPAsm_ParseContext_GetInputColumnNumber(context),
-			tokenBuffer
-		);
-	}
 }
 
 static void ParseFileData(const char* filePath, const char* buffer, size_t length)
 {
-	V2MPAsm_ParseContext* context = V2MPAsm_ParseContext_AllocateAndInit();
+	V2MPAsm_Parser* parser = V2MPAsm_Parser_AllocateAndInit();
 
-	if ( !context )
+	if ( !parser )
 	{
-		printf("Failed to create V2MPAsm_ParseContext\n");
+		printf("Failed to create V2MPAsm_Parser\n");
 		return;
 	}
 
-	V2MPAsm_ParseContext_SetInput(context, filePath, buffer, length);
+	V2MPAsm_Parser_SetInput(parser, filePath, buffer, length);
 
-	ReadAllTokens(context);
+	if ( V2MPAsm_Parser_Parse(parser) )
+	{
+		V2MPAsm_Parser_ExceptionNode* node;
 
-	V2MPAsm_ParseContext_DeinitAndFree(context);
+		for ( node = V2MPAsm_Parser_GetFirstExceptionNode(parser); node; node = V2MPAsm_Parser_GetNextExceptionNode(node) )
+		{
+			V2MPAsm_ParseException* exception;
+			char exDesc[512];
+
+			exception = V2MPAsm_Parser_GetExceptionFromNode(node);
+			V2MPAsm_ParseException_ToString(exception, exDesc, sizeof(exDesc));
+
+			printf("Parse exception: %s\n", exDesc);
+
+		}
+	}
+	else
+	{
+		printf("Failed to run Parse() on file.\n");
+	}
+
+	V2MPAsm_Parser_DeinitAndFree(parser);
 }
 
 static void ReadFileFromDisk(const char* filePath, FILE* inFile)
