@@ -760,7 +760,7 @@ V2MP_Supervisor_Action* V2MP_Supervisor_CreateNewAction(V2MP_Supervisor* supervi
 
 	if ( action )
 	{
-		memset(action, 0, sizeof(*action));
+		BASEUTIL_ZERO_STRUCT_PTR(action);
 	}
 
 	return action;

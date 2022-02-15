@@ -1,3 +1,4 @@
+#include <string.h>
 #include "SharedComponents/CircularBuffer.h"
 #include "BaseUtil/Util.h"
 #include "BaseUtil/Heap.h"
@@ -147,7 +148,7 @@ V2MPSC_CircularBuffer* V2MPSC_CircularBuffer_AllocateAndInit(size_t capacity)
 
 	if ( !cb->buffer )
 	{
-		free(cb);
+		BASEUTIL_FREE(cb);
 		return NULL;
 	}
 
@@ -164,10 +165,10 @@ void V2MPSC_CircularBuffer_DeinitAndFree(V2MPSC_CircularBuffer* cb)
 
 	if ( cb->buffer )
 	{
-		free(cb->buffer);
+		BASEUTIL_FREE(cb->buffer);
 	}
 
-	free(cb);
+	BASEUTIL_FREE(cb);
 }
 
 size_t V2MPSC_CircularBuffer_Capacity(const V2MPSC_CircularBuffer* cb)

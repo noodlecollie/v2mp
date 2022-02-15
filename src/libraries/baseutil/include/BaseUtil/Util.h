@@ -1,14 +1,20 @@
 #ifndef BASEUTIL_UTIL_H
 #define BASEUTIL_UTIL_H
 
-#include <string.h>
-#include <stdlib.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define BASEUTIL_ZERO_STRUCT_PTR(ptr) memset((ptr), 0, sizeof(*(ptr)))
+#include <stddef.h>
+
+void* BaseUtil_MemSet(void* ptr, int value, size_t numBytes);
+
+static inline void* BaseUtil_SetToZero(void* ptr, size_t numBytes)
+{
+	return BaseUtil_MemSet(ptr, 0, numBytes);
+}
+
+#define BASEUTIL_ZERO_STRUCT_PTR(ptr) BaseUtil_SetToZero((ptr), sizeof(*(ptr)))
 
 #define BASEUTIL_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define BASEUTIL_MAX(a, b) ((a) > (b) ? (a) : (b))
