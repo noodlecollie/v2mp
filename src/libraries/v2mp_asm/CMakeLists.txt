@@ -4,8 +4,8 @@ configure_file(
 )
 
 add_library(${TARGETNAME_V2MP_ASM}
-	src/Commands/CommandMeta_Add.c
-	src/Commands/CommandMeta.c
+	src/Instructions/InstructionMeta_Add.c
+	src/Instructions/InstructionMeta.c
 
 	src/Tokens/TokenMeta_Label.c
 	src/Tokens/TokenMeta_LineComment.c

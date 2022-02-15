@@ -3,19 +3,19 @@
 #include "ParseException_Internal.h"
 #include "ParseException_Internal.h"
 #include "Tokens/TokenMeta.h"
-#include "Commands/CommandMeta.h"
+#include "Instructions/InstructionMeta.h"
 
 // REMOVE ME
 #include <stdio.h>
 
 static void InitResources()
 {
-	V2MPAsm_CommandMeta_InitTable();
+	V2MPAsm_InstructionMeta_InitTable();
 }
 
 static void DestroyResources()
 {
-	V2MPAsm_CommandMeta_DestroyTable();
+	V2MPAsm_InstructionMeta_DestroyTable();
 }
 
 static void SkipToken(V2MPAsm_ParseContext* context, V2MPAsm_TokenType tokenType)
@@ -35,7 +35,7 @@ static void ParseName(V2MPAsm_ParseContext* context)
 {
 	const char* begin;
 	const char* end;
-	const V2MPAsm_CommandMeta* commandMeta;
+	const V2MPAsm_InstructionMeta* instructionMeta;
 
 	begin = V2MPAsm_ParseContext_GetInputCursor(context);
 
@@ -58,15 +58,15 @@ static void ParseName(V2MPAsm_ParseContext* context)
 		return;
 	}
 
-	commandMeta = V2MPAsm_CommandMeta_FindCommand(
+	instructionMeta = V2MPAsm_InstructionMeta_FindCommand(
 		V2MPAsm_ParseContext_GetCurrentToken(context),
 		V2MPAsm_ParseContext_GetCurrentTokenLength(context)
 	);
 
-	if ( commandMeta )
+	if ( instructionMeta )
 	{
 		// TODO: Handle this properly
-		printf("Parsed command: %s\n", commandMeta->name);
+		printf("Parsed instruction name: %s\n", instructionMeta->name);
 
 		V2MPAsm_ParseContext_SeekInput(context, end);
 	}
