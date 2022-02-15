@@ -63,6 +63,7 @@ void V2MPAsm_ParseContext_SetTokenContext(V2MPAsm_ParseContext* context, V2MPAsm
 
 // Token length does not include the terminator.
 bool V2MPAsm_ParseContext_SetCurrentToken(V2MPAsm_ParseContext* context, const char* begin, const char* end);
+bool V2MPAsm_ParseContext_SetCurrentTokenFromInput(V2MPAsm_ParseContext* context, V2MPAsm_TokenType tokenType);
 const char* V2MPAsm_ParseContext_GetCurrentToken(const V2MPAsm_ParseContext* context);
 size_t V2MPAsm_ParseContext_GetCurrentTokenLength(const V2MPAsm_ParseContext* context);
 
@@ -78,5 +79,8 @@ void V2MPAsm_ParseContext_CreateAndSetWarningV(V2MPAsm_ParseContext* context, V2
 
 void V2MPAsm_ParseContext_CreateAndSetError(V2MPAsm_ParseContext* context, V2MPAsm_ParseErrorType errorType, const char* format, ...);
 void V2MPAsm_ParseContext_CreateAndSetErrorV(V2MPAsm_ParseContext* context, V2MPAsm_ParseErrorType errorType, const char* format, va_list args);
+
+void V2MPAsm_ParseContext_TerminateWithError(V2MPAsm_ParseContext* context, V2MPAsm_ParseErrorType errorType, const char* format, ...);
+void V2MPAsm_ParseContext_TerminateWithErrorV(V2MPAsm_ParseContext* context, V2MPAsm_ParseErrorType errorType, const char* format, va_list args);
 
 #endif // V2MPASM_PARSECONTEXT_H

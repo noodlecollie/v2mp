@@ -314,6 +314,26 @@ bool V2MPAsm_ParseContext_SetCurrentToken(V2MPAsm_ParseContext* context, const c
 	return true;
 }
 
+bool V2MPAsm_ParseContext_SetCurrentTokenFromInput(V2MPAsm_ParseContext* context, V2MPAsm_TokenType tokenType)
+{
+	const char* begin;
+	const V2MPAsm_TokenMeta* tokenMeta;
+
+	if ( !context )
+	{
+		return false;
+	}
+
+	begin = V2MPAsm_ParseContext_GetInputCursor(context);
+	tokenMeta = V2MPAsm_TokenMeta_GetMetaForTokenType(tokenType);
+
+	return V2MPAsm_ParseContext_SetCurrentToken(
+		context,
+		begin,
+		V2MPAsm_TokenMeta_FindEndOfToken(tokenMeta, begin, context->currentTokenContext)
+	);
+}
+
 const char* V2MPAsm_ParseContext_GetCurrentToken(const V2MPAsm_ParseContext* context)
 {
 	return context ? context->currentTokenBuffer : NULL;
@@ -448,5 +468,29 @@ void V2MPAsm_ParseContext_CreateAndSetError(V2MPAsm_ParseContext* context, V2MPA
 
 void V2MPAsm_ParseContext_CreateAndSetErrorV(V2MPAsm_ParseContext* context, V2MPAsm_ParseErrorType errorType, const char* format, va_list args)
 {
+	if ( !context )
+	{
+		return;
+	}
+
 	CreateAndSetExceptionV(context, true, errorType, format, args);
+}
+
+void V2MPAsm_ParseContext_TerminateWithError(V2MPAsm_ParseContext* context, V2MPAsm_ParseErrorType errorType, const char* format, ...)
+{
+	va_list list;
+	va_start(list, format);
+	V2MPAsm_ParseContext_TerminateWithErrorV(context, errorType, format, list);
+	va_end(list);
+}
+
+void V2MPAsm_ParseContext_TerminateWithErrorV(V2MPAsm_ParseContext* context, V2MPAsm_ParseErrorType errorType, const char* format, va_list args)
+{
+	if ( !context )
+	{
+		return;
+	}
+
+	V2MPAsm_ParseContext_CreateAndSetErrorV(context, errorType, format, args);
+	V2MPAsm_ParseContext_SetParseState(context, PARSESTATE_TERMINATED);
 }
