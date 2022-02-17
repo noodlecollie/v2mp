@@ -5,6 +5,7 @@ configure_file(
 
 add_library(${TARGETNAME_V2MP_ASM}
 	src/CodewordDescriptors/CWD_Base.c
+	src/CodewordDescriptors/CWD_Factory.c
 	src/CodewordDescriptors/CWD_Instruction.c
 
 	src/Instructions/InstructionMeta_Add.c

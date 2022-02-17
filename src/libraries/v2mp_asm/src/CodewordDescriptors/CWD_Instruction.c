@@ -1,6 +1,34 @@
 #include "CodewordDescriptors/CWD_Instruction.h"
+#include "CodewordDescriptors/CWD_Base.h"
+#include "BaseUtil/Heap.h"
 
-V2MPAsm_Word V2MPAsm_CWD_Instruction_MakeMachineCodeWord(const V2MP_CWD_Instruction* cwdInstruction)
+static void* Create(void)
+{
+	return BASEUTIL_CALLOC_STRUCT(V2MPAsm_CWDInstruction);
+}
+
+static void Destroy(void* ptr)
+{
+	if ( ptr )
+	{
+		BASEUTIL_FREE(ptr);
+	}
+}
+
+const V2MP_CWD_Factory V2MP_CWDInstruction_Factory =
+{
+	&Create,
+	&Destroy
+};
+
+V2MPAsm_CWDInstruction* V2MPAsm_CWDInstruction_Cast(const struct V2MPAsm_CWDBase* cwdBase)
+{
+	return (cwdBase && cwdBase->type == V2MPASM_CWD_INSTRUCTION)
+		? (V2MPAsm_CWDInstruction*)cwdBase->data
+		: NULL;
+}
+
+V2MPAsm_Word V2MPAsm_CWDInstruction_MakeMachineCodeWord(const V2MPAsm_CWDInstruction* cwdInstruction)
 {
 	if ( !cwdInstruction )
 	{
