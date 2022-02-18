@@ -7,6 +7,7 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/CodewordDescriptors/CWD_Base.c
 	src/CodewordDescriptors/CWD_Factory.c
 	src/CodewordDescriptors/CWD_Instruction.c
+	src/CodewordDescriptors/CWDList.c
 
 	src/Instructions/InstructionMeta_Add.c
 	src/Instructions/InstructionMeta.c
