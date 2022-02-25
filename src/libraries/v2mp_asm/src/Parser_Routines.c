@@ -1,12 +1,9 @@
 #include "BaseUtil/Util.h"
 #include "Parser_Routines.h"
 #include "ParseException_Internal.h"
-#include "ParseException_Internal.h"
 #include "Tokens/TokenMeta.h"
 #include "Instructions/InstructionMeta.h"
-
-// REMOVE ME
-#include <stdio.h>
+#include "Parser_ParseInstruction.h"
 
 static void InitResources()
 {
@@ -60,34 +57,15 @@ static bool SetCurrentTokenOnContext(V2MPAsm_ParseContext* context, V2MPAsm_Toke
 	return true;
 }
 
-static void ParseName(V2MPAsm_ParseContext* context)
+static void PrepareToBuildInstruction(V2MPAsm_ParseContext* context)
 {
-	const V2MPAsm_InstructionMeta* instructionMeta;
-
 	if ( !SetCurrentTokenOnContext(context, TOKEN_NAME) )
 	{
 		return;
 	}
 
-	instructionMeta = V2MPAsm_InstructionMeta_FindCommand(
-		V2MPAsm_ParseContext_GetCurrentToken(context),
-		V2MPAsm_ParseContext_GetCurrentTokenLength(context)
-	);
-
-	if ( !instructionMeta )
-	{
-		V2MPAsm_ParseContext_TerminateWithError(
-			context,
-			PARSEERROR_UNRECOGNISED_INSTRUCTION,
-			"\"%s\" was not recognised as a CPU instruction or an alias.",
-			V2MPAsm_ParseContext_GetCurrentToken(context)
-		);
-
-		return;
-	}
-
-	// TODO: Handle this properly
-	printf("Parsed instruction name: %s\n", instructionMeta->name);
+	// Move into instructio parsing mode
+	context->state = PARSESTATE_BUILDING_INSTRUCTION;
 }
 
 static void ParseDefault(V2MPAsm_ParseContext* context)
@@ -104,20 +82,27 @@ static void ParseDefault(V2MPAsm_ParseContext* context)
 		return;
 	}
 
-	if ( tokenType != TOKEN_NAME )
+	switch ( tokenType )
 	{
-		// TODO: Implement properly.
-		V2MPAsm_ParseContext_TerminateWithError(
-			context,
-			PARSEERROR_UNIMPLEMENTED,
-			"Parsing token of type \"%s\" is not yet implemented.",
-			V2MPAsm_TokenMeta_GetTokenTypeString(tokenType)
-		);
+		case TOKEN_NAME:
+		{
+			PrepareToBuildInstruction(context);
+			break;
+		}
 
-		return;
+		// TODO: Implement support for other token types!
+		default:
+		{
+			V2MPAsm_ParseContext_TerminateWithError(
+				context,
+				PARSEERROR_UNIMPLEMENTED,
+				"Parsing token of type \"%s\" is not yet implemented.",
+				V2MPAsm_TokenMeta_GetTokenTypeString(tokenType)
+			);
+
+			break;
+		}
 	}
-
-	ParseName(context);
 }
 
 void V2MPAsm_Parser_ExecuteParse(V2MPAsm_Parser* parser)
@@ -136,6 +121,12 @@ void V2MPAsm_Parser_ExecuteParse(V2MPAsm_Parser* parser)
 			case PARSESTATE_DEFAULT:
 			{
 				ParseDefault(parser->context);
+				break;
+			}
+
+			case PARSESTATE_BUILDING_INSTRUCTION:
+			{
+				V2MPAsm_Parser_ParseInstruction(parser);
 				break;
 			}
 

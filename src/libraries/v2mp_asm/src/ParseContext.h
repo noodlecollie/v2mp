@@ -9,11 +9,14 @@
 #include "InputFile.h"
 #include "ParseException_Internal.h"
 #include "Tokens/TokenMeta.h"
+#include "CodewordDescriptors/CWDList.h"
+#include "CodewordDescriptors/CWD_Base.h"
 
 typedef enum V2MPAsm_ParseState
 {
 	PARSESTATE_DEFAULT = 0,
-	PARSESTATE_TERMINATED
+	PARSESTATE_TERMINATED,
+	PARSESTATE_BUILDING_INSTRUCTION
 } V2MPAsm_ParseState;
 
 typedef struct V2MPAsm_ParseContext
@@ -28,6 +31,9 @@ typedef struct V2MPAsm_ParseContext
 	size_t currentTokenBufferSize;
 	size_t currentTokenLength;
 	V2MPAsm_TokenContext currentTokenContext;
+
+	V2MPAsm_CWDList* cwdList;
+	V2MPAsm_CWDBase* currentCWD;
 
 	V2MPSC_DoubleLL* exceptionsList;
 } V2MPAsm_ParseContext;
@@ -66,6 +72,8 @@ bool V2MPAsm_ParseContext_SetCurrentToken(V2MPAsm_ParseContext* context, const c
 bool V2MPAsm_ParseContext_SetCurrentTokenFromInput(V2MPAsm_ParseContext* context, V2MPAsm_TokenType tokenType);
 const char* V2MPAsm_ParseContext_GetCurrentToken(const V2MPAsm_ParseContext* context);
 size_t V2MPAsm_ParseContext_GetCurrentTokenLength(const V2MPAsm_ParseContext* context);
+V2MPAsm_CWDBase* V2MPAsm_ParseContext_AppendNewCWDAsCurrent(V2MPAsm_ParseContext* context, V2MPAsm_CWD_Type cwdType);
+V2MPAsm_CWDBase* V2MPAsm_ParseContext_GetCurrentCWD(const V2MPAsm_ParseContext* context);
 
 size_t V2MPAsm_ParseContext_GetExceptionCount(const V2MPAsm_ParseContext* context);
 V2MPAsm_ParseContext_ExceptionNode* V2MPAsm_ParseContext_AppendException(V2MPAsm_ParseContext* context);

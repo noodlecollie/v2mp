@@ -88,6 +88,7 @@ const V2MPAsm_InstructionMeta* V2MPAsm_InstructionMeta_FindCommand(const char* n
 	buffer[nameLength] = '\0';
 
 	HASH_FIND_STR(InstructionTable, buffer, item);
+	BASEUTIL_FREE(buffer);
 
 	return item ? item->instructionMeta : NULL;
 }

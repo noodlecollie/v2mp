@@ -119,6 +119,13 @@ V2MPAsm_ParseContext* V2MPAsm_ParseContext_AllocateAndInit(void)
 			break;
 		}
 
+		context->cwdList = V2MPAsm_CWDList_AllocateAndInit();
+
+		if ( !context->cwdList )
+		{
+			break;
+		}
+
 		context->currentTokenContext = TOKENCTX_DEFAULT;
 
 		return context;
@@ -139,6 +146,9 @@ void V2MPAsm_ParseContext_DeinitAndFree(V2MPAsm_ParseContext* context)
 	{
 		return;
 	}
+
+	V2MPAsm_CWDList_DeinitAndFree(context->cwdList);
+	context->cwdList = NULL;
 
 	V2MPSC_DoubleLL_DeinitAndFree(context->exceptionsList);
 	context->exceptionsList = NULL;
@@ -342,6 +352,22 @@ const char* V2MPAsm_ParseContext_GetCurrentToken(const V2MPAsm_ParseContext* con
 size_t V2MPAsm_ParseContext_GetCurrentTokenLength(const V2MPAsm_ParseContext* context)
 {
 	return context ? context->currentTokenLength : 0;
+}
+
+V2MPAsm_CWDBase* V2MPAsm_ParseContext_AppendNewCWDAsCurrent(V2MPAsm_ParseContext* context, V2MPAsm_CWD_Type cwdType)
+{
+	if ( !context )
+	{
+		return NULL;
+	}
+
+	context->currentCWD = V2MPAsm_CWDList_AppendNew(context->cwdList, cwdType);
+	return context->currentCWD;
+}
+
+V2MPAsm_CWDBase* V2MPAsm_ParseContext_GetCurrentCWD(const V2MPAsm_ParseContext* context)
+{
+	return context ? context->currentCWD : NULL;
 }
 
 size_t V2MPAsm_ParseContext_GetExceptionCount(const V2MPAsm_ParseContext* context)

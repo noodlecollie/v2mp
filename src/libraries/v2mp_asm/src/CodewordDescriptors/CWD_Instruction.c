@@ -28,13 +28,23 @@ V2MPAsm_CWDInstruction* V2MPAsm_CWDInstruction_Cast(const struct V2MPAsm_CWDBase
 		: NULL;
 }
 
-V2MPAsm_Word V2MPAsm_CWDInstruction_MakeMachineCodeWord(const V2MPAsm_CWDInstruction* cwdInstruction)
+void V2MPAsm_CWDInstruction_SetInstructionMeta(V2MPAsm_CWDInstruction* cwd, const V2MPAsm_InstructionMeta* meta)
 {
-	if ( !cwdInstruction )
+	if ( !cwd )
 	{
-		return 0;
+		return;
+	}
+
+	cwd->instructionMeta = meta;
+}
+
+bool V2MPAsm_CWDInstruction_MakeMachineCodeWord(const V2MPAsm_CWDInstruction* cwdInstruction, V2MPAsm_Word* outWord)
+{
+	if ( !cwdInstruction || !outWord )
+	{
+		return false;
 	}
 
 	// TODO
-	return 0;
+	return false;
 }
