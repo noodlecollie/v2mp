@@ -7,7 +7,6 @@
 	LIST_ITEM(TOKEN_UNKNOWN = 0, NULL) \
 	LIST_ITEM(TOKEN_LINE_COMMENT, &V2MPAsm_TokenMeta_LineComment) \
 	LIST_ITEM(TOKEN_MULTILINE_COMMENT, &V2MPAsm_TokenMeta_MultilineComment) \
-	LIST_ITEM(TOKEN_PREPROCESSOR, &V2MPAsm_TokenMeta_Preprocessor) \
 	LIST_ITEM(TOKEN_NUMERIC_LITERAL, &V2MPAsm_TokenMeta_NumericLiteral) \
 	LIST_ITEM(TOKEN_NAME, &V2MPAsm_TokenMeta_Name) \
 	LIST_ITEM(TOKEN_LABEL, &V2MPAsm_TokenMeta_Label) \

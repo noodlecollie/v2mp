@@ -3,7 +3,6 @@
 #include "Tokens/TokenMeta.h"
 #include "Tokens/TokenMeta_LineComment.h"
 #include "Tokens/TokenMeta_MultilineComment.h"
-#include "Tokens/TokenMeta_Preprocessor.h"
 #include "Tokens/TokenMeta_NumericLiteral.h"
 #include "Tokens/TokenMeta_Name.h"
 #include "Tokens/TokenMeta_Label.h"
@@ -21,11 +20,6 @@ V2MPAsm_TokenType V2MPAsm_TokenMeta_IdentifyToken(const char* str)
 	if ( !str || !(*str) )
 	{
 		return TOKEN_UNKNOWN;
-	}
-
-	if ( *str == '#' )
-	{
-		return TOKEN_PREPROCESSOR;
 	}
 
 	if ( *str == '/' )
