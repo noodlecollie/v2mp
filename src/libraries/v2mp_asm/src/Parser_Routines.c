@@ -21,8 +21,7 @@ static void SkipToken(V2MPAsm_ParseContext* context, V2MPAsm_TokenType tokenType
 
 	end = V2MPAsm_TokenMeta_FindEndOfToken(
 		V2MPAsm_TokenMeta_GetMetaForTokenType(tokenType),
-		V2MPAsm_ParseContext_GetInputCursor(context),
-		V2MPAsm_ParseContext_GetTokenContext(context)
+		V2MPAsm_ParseContext_GetInputCursor(context)
 	);
 
 	V2MPAsm_ParseContext_SeekInput(context, end);
@@ -37,8 +36,7 @@ static bool SetCurrentTokenOnContext(V2MPAsm_ParseContext* context, V2MPAsm_Toke
 
 	end = V2MPAsm_TokenMeta_FindEndOfToken(
 		V2MPAsm_TokenMeta_GetMetaForTokenType(tokenType),
-		begin,
-		V2MPAsm_ParseContext_GetTokenContext(context)
+		begin
 	);
 
 	if ( !V2MPAsm_ParseContext_SetCurrentToken(context, begin, end) )
@@ -74,9 +72,9 @@ static void ParseDefault(V2MPAsm_ParseContext* context)
 	V2MPAsm_TokenType tokenType;
 
 	token = V2MPAsm_ParseContext_GetBeginningOfNextToken(context);
-	tokenType = V2MPAsm_TokenMeta_IdentifyToken(token, V2MPAsm_ParseContext_GetTokenContext(context));
+	tokenType = V2MPAsm_TokenMeta_IdentifyToken(token);
 
-	if ( V2MPAsm_TokenMeta_IsComment(tokenType)  )
+	if ( V2MPAsm_TokenMeta_IsComment(tokenType) )
 	{
 		SkipToken(context, tokenType);
 		return;

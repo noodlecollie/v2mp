@@ -1,10 +1,8 @@
 #include <stddef.h>
 #include "Tokens/TokenMeta_Label.h"
 
-static const char* FindEndOfToken(const char* token, V2MPAsm_TokenContext context)
+static const char* FindEndOfToken(const char* token)
 {
-	(void)context;
-
 	// Skip first "["
 	++token;
 

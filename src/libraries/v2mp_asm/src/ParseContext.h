@@ -30,7 +30,6 @@ typedef struct V2MPAsm_ParseContext
 	char* currentTokenBuffer;
 	size_t currentTokenBufferSize;
 	size_t currentTokenLength;
-	V2MPAsm_TokenContext currentTokenContext;
 
 	V2MPAsm_CWDList* cwdList;
 	V2MPAsm_CWDBase* currentCWD;
@@ -63,9 +62,6 @@ const char* V2MPAsm_ParseContext_GetBeginningOfNextToken(V2MPAsm_ParseContext* c
 
 V2MPAsm_ParseState V2MPAsm_ParseContext_GetParseState(const V2MPAsm_ParseContext* context);
 void V2MPAsm_ParseContext_SetParseState(V2MPAsm_ParseContext* context, V2MPAsm_ParseState state);
-
-V2MPAsm_TokenContext V2MPAsm_ParseContext_GetTokenContext(const V2MPAsm_ParseContext* context);
-void V2MPAsm_ParseContext_SetTokenContext(V2MPAsm_ParseContext* context, V2MPAsm_TokenContext tokenContext);
 
 // Token length does not include the terminator.
 bool V2MPAsm_ParseContext_SetCurrentToken(V2MPAsm_ParseContext* context, const char* begin, const char* end);

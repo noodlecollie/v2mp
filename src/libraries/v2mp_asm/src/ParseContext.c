@@ -126,8 +126,6 @@ V2MPAsm_ParseContext* V2MPAsm_ParseContext_AllocateAndInit(void)
 			break;
 		}
 
-		context->currentTokenContext = TOKENCTX_DEFAULT;
-
 		return context;
 	}
 	while ( false );
@@ -263,21 +261,6 @@ void V2MPAsm_ParseContext_SetParseState(V2MPAsm_ParseContext* context, V2MPAsm_P
 	context->state = state;
 }
 
-V2MPAsm_TokenContext V2MPAsm_ParseContext_GetTokenContext(const V2MPAsm_ParseContext* context)
-{
-	return context ? context->currentTokenContext : TOKENCTX_DEFAULT;
-}
-
-void V2MPAsm_ParseContext_SetTokenContext(V2MPAsm_ParseContext* context, V2MPAsm_TokenContext tokenContext)
-{
-	if ( !context )
-	{
-		return;
-	}
-
-	context->currentTokenContext = tokenContext;
-}
-
 bool V2MPAsm_ParseContext_SetCurrentToken(V2MPAsm_ParseContext* context, const char* begin, const char* end)
 {
 	size_t length;
@@ -340,7 +323,7 @@ bool V2MPAsm_ParseContext_SetCurrentTokenFromInput(V2MPAsm_ParseContext* context
 	return V2MPAsm_ParseContext_SetCurrentToken(
 		context,
 		begin,
-		V2MPAsm_TokenMeta_FindEndOfToken(tokenMeta, begin, context->currentTokenContext)
+		V2MPAsm_TokenMeta_FindEndOfToken(tokenMeta, begin)
 	);
 }
 

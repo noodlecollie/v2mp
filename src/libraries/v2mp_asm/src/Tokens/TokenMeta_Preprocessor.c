@@ -3,10 +3,8 @@
 #include "Tokens/TokenMeta_Preprocessor.h"
 #include "BaseUtil/String.h"
 
-static const char* FindEndOfToken(const char* token, V2MPAsm_TokenContext context)
+static const char* FindEndOfToken(const char* token)
 {
-	(void)context;
-
 	// Skip first "#"
 	token += 1;
 

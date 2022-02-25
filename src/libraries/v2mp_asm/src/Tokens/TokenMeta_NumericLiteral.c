@@ -3,10 +3,8 @@
 #include <ctype.h>
 #include "Tokens/TokenMeta_NumericLiteral.h"
 
-static const char* FindEndOfHexToken(const char* token, V2MPAsm_TokenContext context)
+static const char* FindEndOfHexToken(const char* token)
 {
-	(void)context;
-
 	// Skip first "0x"
 	token += 2;
 
@@ -24,10 +22,8 @@ static const char* FindEndOfHexToken(const char* token, V2MPAsm_TokenContext con
 	return token;
 }
 
-static const char* FindEndOfBinaryToken(const char* token, V2MPAsm_TokenContext context)
+static const char* FindEndOfBinaryToken(const char* token)
 {
-	(void)context;
-
 	// Skip first "0b"
 	token += 2;
 
@@ -45,11 +41,9 @@ static const char* FindEndOfBinaryToken(const char* token, V2MPAsm_TokenContext 
 	return token;
 }
 
-static const char* FindEndOfDecimalToken(const char* token, V2MPAsm_TokenContext context)
+static const char* FindEndOfDecimalToken(const char* token)
 {
 	bool precedingSignAllowed = true;
-
-	(void)context;
 
 	for ( ; *token; ++token )
 	{
@@ -70,21 +64,21 @@ static const char* FindEndOfDecimalToken(const char* token, V2MPAsm_TokenContext
 	return token;
 }
 
-static const char* FindEndOfToken(const char* token, V2MPAsm_TokenContext context)
+static const char* FindEndOfToken(const char* token)
 {
 	if ( *token == '0' )
 	{
 		if ( *(token + 1) == 'x' || *(token + 1) == 'X' )
 		{
-			return FindEndOfHexToken(token, context);
+			return FindEndOfHexToken(token);
 		}
 		else if ( *(token + 1) == 'b' || *(token + 1) == 'B' )
 		{
-			return FindEndOfBinaryToken(token, context);
+			return FindEndOfBinaryToken(token);
 		}
 	}
 
-	return FindEndOfDecimalToken(token, context);
+	return FindEndOfDecimalToken(token);
 }
 
 const V2MPAsm_TokenMeta V2MPAsm_TokenMeta_NumericLiteral =

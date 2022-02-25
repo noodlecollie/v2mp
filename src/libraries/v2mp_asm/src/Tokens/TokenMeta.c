@@ -8,8 +8,21 @@
 #include "Tokens/TokenMeta_Name.h"
 #include "Tokens/TokenMeta_Label.h"
 
-static V2MPAsm_TokenType IdentifyTokenInDefaultContext(const char* str)
+const char* V2MPAsm_TokenMeta_GetTokenTypeString(V2MPAsm_TokenType tokenType)
 {
+	const V2MPAsm_TokenMeta* meta;
+
+	meta = V2MPAsm_TokenMeta_GetMetaForTokenType(tokenType);
+	return meta ? meta->typeName : "Unknown";
+}
+
+V2MPAsm_TokenType V2MPAsm_TokenMeta_IdentifyToken(const char* str)
+{
+	if ( !str || !(*str) )
+	{
+		return TOKEN_UNKNOWN;
+	}
+
 	if ( *str == '#' )
 	{
 		return TOKEN_PREPROCESSOR;
@@ -47,44 +60,6 @@ static V2MPAsm_TokenType IdentifyTokenInDefaultContext(const char* str)
 	return TOKEN_UNKNOWN;
 }
 
-const char* V2MPAsm_TokenMeta_GetTokenTypeString(V2MPAsm_TokenType tokenType)
-{
-	const V2MPAsm_TokenMeta* meta;
-
-	meta = V2MPAsm_TokenMeta_GetMetaForTokenType(tokenType);
-	return meta ? meta->typeName : "Unknown";
-}
-
-const char* V2MPAsm_TokenMeta_GetTokenContextString(V2MPAsm_TokenContext tokencontext)
-{
-#define LIST_ITEM(value, name) name,
-	static const char* const CONTEXT_STRINGS[] =
-	{
-		V2MPASM_TOKEN_CONTEXT_LIST
-	};
-#undef LIST_ITEM
-
-	return (size_t)tokencontext < BASEUTIL_ARRAY_SIZE(CONTEXT_STRINGS)
-		? CONTEXT_STRINGS[(size_t)tokencontext]
-		: "<INVALID>";
-}
-
-V2MPAsm_TokenType V2MPAsm_TokenMeta_IdentifyToken(const char* str, V2MPAsm_TokenContext context)
-{
-	if ( !str || !(*str) )
-	{
-		return TOKEN_UNKNOWN;
-	}
-
-	switch ( context )
-	{
-		default:
-		{
-			return IdentifyTokenInDefaultContext(str);
-		}
-	}
-}
-
 const V2MPAsm_TokenMeta* V2MPAsm_TokenMeta_GetMetaForTokenType(V2MPAsm_TokenType tokenType)
 {
 #define LIST_ITEM(value, metaEntry) metaEntry,
@@ -106,8 +81,7 @@ bool V2MPAsm_TokenMeta_IsComment(V2MPAsm_TokenType tokenType)
 
 const char* V2MPAsm_TokenMeta_FindEndOfToken(
 	const V2MPAsm_TokenMeta* metadata,
-	const char* token,
-	V2MPAsm_TokenContext context
+	const char* token
 )
 {
 	if ( !token )
@@ -117,7 +91,7 @@ const char* V2MPAsm_TokenMeta_FindEndOfToken(
 
 	if ( metadata && metadata->findEndOfToken )
 	{
-		return metadata->findEndOfToken(token, context);
+		return metadata->findEndOfToken(token);
 	}
 	else
 	{

@@ -12,21 +12,11 @@
 	LIST_ITEM(TOKEN_NAME, &V2MPAsm_TokenMeta_Name) \
 	LIST_ITEM(TOKEN_LABEL, &V2MPAsm_TokenMeta_Label) \
 
-#define V2MPASM_TOKEN_CONTEXT_LIST \
-	LIST_ITEM(TOKENCTX_DEFAULT = 0, "Default")
-
 #define LIST_ITEM(value, metaEntry) value,
 typedef enum V2MPAsm_TokenType
 {
 	V2MPASM_TOKEN_TYPE_LIST
 } V2MPAsm_TokenType;
-#undef LIST_ITEM
-
-#define LIST_ITEM(value, name) value,
-typedef enum V2MPAsm_TokenContext
-{
-	V2MPASM_TOKEN_CONTEXT_LIST
-} V2MPAsm_TokenContext;
 #undef LIST_ITEM
 
 typedef struct V2MPAsm_TokenMeta
@@ -36,23 +26,18 @@ typedef struct V2MPAsm_TokenMeta
 
 	// Returns pointer to first character after end of token,
 	// or NULL if the token is unterminated.
-	const char* (*findEndOfToken)(const char* token, V2MPAsm_TokenContext context);
+	const char* (*findEndOfToken)(const char* token);
 } V2MPAsm_TokenMeta;
 
 const char* V2MPAsm_TokenMeta_GetTokenTypeString(V2MPAsm_TokenType tokenType);
-const char* V2MPAsm_TokenMeta_GetTokenContextString(V2MPAsm_TokenContext tokencontext);
 
-V2MPAsm_TokenType V2MPAsm_TokenMeta_IdentifyToken(const char* str, V2MPAsm_TokenContext context);
+V2MPAsm_TokenType V2MPAsm_TokenMeta_IdentifyToken(const char* str);
 const V2MPAsm_TokenMeta* V2MPAsm_TokenMeta_GetMetaForTokenType(V2MPAsm_TokenType tokenType);
 
 bool V2MPAsm_TokenMeta_IsComment(V2MPAsm_TokenType tokenType);
 
 // These functions should be used, rather than calling function pointers directly on the metadata struct:
 
-const char* V2MPAsm_TokenMeta_FindEndOfToken(
-	const V2MPAsm_TokenMeta* metadata,
-	const char* token,
-	V2MPAsm_TokenContext context
-);
+const char* V2MPAsm_TokenMeta_FindEndOfToken(const V2MPAsm_TokenMeta* metadata, const char* token);
 
 #endif // V2MPASM_TOKENMETA_H
