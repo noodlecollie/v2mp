@@ -34,6 +34,7 @@ void CreateAndSetExceptionV(
 {
 	char* buffer;
 	V2MPAsm_ParseContext_ExceptionNode* node;
+	bool bufferWasDynamic = false;
 
 	if ( !context || !format )
 	{
@@ -51,6 +52,7 @@ void CreateAndSetExceptionV(
 
 	if ( buffer )
 	{
+		bufferWasDynamic = true;
 		buffer[0] = '\0';
 
 		vsnprintf(buffer, V2MPASM_PARSECONTEXT_EX_DESC_LENGTH, format, args);
@@ -78,6 +80,11 @@ void CreateAndSetExceptionV(
 		V2MPAsm_ParseContext_GetInputLineNumber(context),
 		V2MPAsm_ParseContext_GetInputColumnNumber(context)
 	);
+
+	if ( bufferWasDynamic )
+	{
+		BASEUTIL_FREE(buffer);
+	}
 }
 
 V2MPAsm_ParseContext* V2MPAsm_ParseContext_AllocateAndInit(void)
@@ -192,6 +199,11 @@ const char* V2MPAsm_ParseContext_GetInputCursor(const V2MPAsm_ParseContext* cont
 	return context ? V2MPAsm_InputFile_GetCursor(context->inputFile) : NULL;
 }
 
+const char* V2MPAsm_ParseContext_GetEndOfCurrentLine(const V2MPAsm_ParseContext* context)
+{
+	return context ? V2MPAsm_InputFile_FindEndOfCurrentLine(context->inputFile) : NULL;
+}
+
 bool V2MPAsm_ParseContext_SetInput(V2MPAsm_ParseContext* context, const char* filePath, const char* data, size_t length)
 {
 	if ( !context )
@@ -242,15 +254,19 @@ void V2MPAsm_ParseContext_SeekInputToFirstTokenOnNextLine(V2MPAsm_ParseContext* 
 	V2MPAsm_InputFile_SkipToNextLine(context->inputFile);
 }
 
-const char* V2MPAsm_ParseContext_GetBeginningOfNextToken(V2MPAsm_ParseContext* context)
+void V2MPAsm_ParseContext_SkipWhitespace(V2MPAsm_ParseContext* context)
 {
 	if ( !context )
 	{
-		return NULL;
+		return;
 	}
 
 	V2MPAsm_InputFile_SkipWhitespace(context->inputFile);
-	return V2MPAsm_InputFile_GetCursor(context->inputFile);
+}
+
+V2MPAsm_TokenList* V2MPAsm_ParseContext_GetTokenList(const V2MPAsm_ParseContext* context)
+{
+	return context ? context->tokenList : NULL;
 }
 
 V2MPAsm_ParseState V2MPAsm_ParseContext_GetParseState(const V2MPAsm_ParseContext* context)

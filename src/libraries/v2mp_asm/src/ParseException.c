@@ -3,28 +3,29 @@
 #include "V2MPAsm/ParseException.h"
 #include "ParseException_Internal.h"
 #include "ParseContext.h"
+#include "BaseUtil/Util.h"
 
 V2MPAsm_ParseException_Type V2MPAsm_ParseException_GetType(const V2MPAsm_ParseException* exception)
 {
 	return exception ? exception->type : V2MPASM_PARSEEXCEPTION_ERROR;
 }
 
-void V2MPAsm_ParseException_ToString(const V2MPAsm_ParseException* exception, char* buffer, size_t length)
+size_t V2MPAsm_ParseException_ToString(const V2MPAsm_ParseException* exception, char* buffer, size_t length)
 {
 	const char* filePath = NULL;
-	const char* warningOrErrorString;
+	const char* descString;
 	int printfResult;
 
 	if ( !buffer || length < 1 )
 	{
-		return;
+		return 0;
 	}
 
 	buffer[0] = '\0';
 
 	if ( !exception )
 	{
-		return;
+		return 0;
 	}
 
 	if ( exception->context )
@@ -32,44 +33,41 @@ void V2MPAsm_ParseException_ToString(const V2MPAsm_ParseException* exception, ch
 		filePath = V2MPAsm_ParseContext_GetFilePath(exception->context);
 	}
 
-	warningOrErrorString = V2MPAsm_ParseException_GetWarningOrErrorString(exception);
+	descString = V2MPAsm_ParseException_GetCustomDescription(exception);
 
-	// Should never happen
-	if ( !warningOrErrorString )
+	if ( !descString || !(*descString) )
 	{
-		warningOrErrorString = "UNKNOWN";
+		descString = V2MPAsm_ParseException_GetWarningOrErrorString(exception);
+
+		// Should never happen
+		if ( !descString )
+		{
+			descString = "UNKNOWN";
+		}
 	}
 
-	// file_path:line:column warning/error: desc
+	// file_path:line:column warning/error: desc [-Wexception-id]
 	printfResult = snprintf(
 		buffer,
 		length,
-		"%s%s%zu:%zu %s: %s",
+		"%s%s%zu:%zu %s: %s [-W%s]",
 		filePath ? filePath : "",
 		filePath ? ":" : "",
 		exception->line,
 		exception->column,
 		exception->type == V2MPASM_PARSEEXCEPTION_WARNING ? "warning" : "error",
-		warningOrErrorString
+		descString,
+		V2MPAsm_ParseException_GetWarningOrErrorID(exception)
 	);
-
-	buffer[length - 1] = '\0';
 
 	if ( printfResult < 0 )
 	{
 		// Something went wrong.
 		buffer[0] = '\0';
-		return;
+		return 0;
 	}
 
-	if ( !exception->customDescription || (size_t)printfResult >= length )
-	{
-		return;
-	}
-
-	buffer += (size_t)printfResult;
-	length -= (size_t)printfResult;
-
-	snprintf(buffer, length, " %s", exception->customDescription);
-	buffer[length] = '\0';
+	// Just in case:
+	buffer[length - 1] = '\0';
+	return (size_t)printfResult;
 }

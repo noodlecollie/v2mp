@@ -19,6 +19,7 @@ V2MPAsm_TokenList* V2MPAsm_TokenList_AllocateAndInit(void);
 void V2MPAsm_TokenList_DeinitAndFree(V2MPAsm_TokenList* list);
 size_t V2MPAsm_TokenList_GetTokenCount(const V2MPAsm_TokenList* list);
 
+void V2MPAsm_TokenList_Clear(V2MPAsm_TokenList* list);
 V2MPAsm_TokenListEntry* V2MPAsm_TokenList_AppendNewEntry(V2MPAsm_TokenList* list, const char* token, size_t length);
 
 V2MPAsm_TokenListEntry* V2MPAsm_TokenList_GetFirstEntry(const V2MPAsm_TokenList* list);

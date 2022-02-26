@@ -183,3 +183,23 @@ void V2MPAsm_InputFile_SkipToNextLine(V2MPAsm_InputFile* inputFile)
 		V2MPAsm_InputFile_SkipToCursor(inputFile, cursor);
 	}
 }
+
+const char* V2MPAsm_InputFile_FindEndOfCurrentLine(const V2MPAsm_InputFile* inputFile)
+{
+	const char* cursor;
+
+	if ( !V2MPAsm_InputFile_IsValid(inputFile) )
+	{
+		return NULL;
+	}
+
+	for ( cursor = inputFile->cursor; *cursor; ++cursor )
+	{
+		if ( *cursor == '\n' )
+		{
+			break;
+		}
+	}
+
+	return cursor;
+}

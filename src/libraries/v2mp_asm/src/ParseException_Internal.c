@@ -5,7 +5,21 @@
 
 const char* V2MPAsm_ParseException_GetWarningString(V2MPAsm_ParseWarningType warning)
 {
-#define LIST_ITEM(value, desc) desc,
+#define LIST_ITEM(value, id, desc) desc,
+	static const char* const STRINGS[] =
+	{
+		V2MPASM_PARSEWARNINGTYPE_LIST
+	};
+#undef LIST_ITEM
+
+	return (size_t)warning < BASEUTIL_ARRAY_SIZE(STRINGS)
+		? STRINGS[(size_t)warning]
+		: "UNKNOWN";
+}
+
+const char* V2MPAsm_ParseException_GetWarningID(V2MPAsm_ParseWarningType warning)
+{
+#define LIST_ITEM(value, id, desc) id,
 	static const char* const STRINGS[] =
 	{
 		V2MPASM_PARSEWARNINGTYPE_LIST
@@ -19,7 +33,21 @@ const char* V2MPAsm_ParseException_GetWarningString(V2MPAsm_ParseWarningType war
 
 const char* V2MPAsm_ParseException_GetErrorString(V2MPAsm_ParseErrorType error)
 {
-#define LIST_ITEM(value, desc) desc,
+#define LIST_ITEM(value, id, desc) desc,
+	static const char* const STRINGS[] =
+	{
+		V2MPASM_PARSEERRORTYPE_LIST
+	};
+#undef LIST_ITEM
+
+	return (size_t)error < BASEUTIL_ARRAY_SIZE(STRINGS)
+		? STRINGS[(size_t)error]
+		: "UNKNOWN";
+}
+
+const char* V2MPAsm_ParseException_GetErrorID(V2MPAsm_ParseErrorType error)
+{
+#define LIST_ITEM(value, id, desc) id,
 	static const char* const STRINGS[] =
 	{
 		V2MPASM_PARSEERRORTYPE_LIST
@@ -106,7 +134,24 @@ const char* V2MPAsm_ParseException_GetWarningOrErrorString(const V2MPAsm_ParseEx
 	}
 }
 
-const char* V2MPAsm_ParseError_GetCustomDescription(const V2MPAsm_ParseException* exception)
+const char* V2MPAsm_ParseException_GetWarningOrErrorID(const V2MPAsm_ParseException* exception)
+{
+	if ( !exception )
+	{
+		return NULL;
+	}
+
+	if ( exception->type == V2MPASM_PARSEEXCEPTION_WARNING )
+	{
+		return V2MPAsm_ParseException_GetWarningID((V2MPAsm_ParseWarningType)exception->warningOrErrorType);
+	}
+	else
+	{
+		return V2MPAsm_ParseException_GetErrorID((V2MPAsm_ParseErrorType)exception->warningOrErrorType);
+	}
+}
+
+const char* V2MPAsm_ParseException_GetCustomDescription(const V2MPAsm_ParseException* exception)
 {
 	return exception ? exception->customDescription : NULL;
 }
@@ -151,18 +196,4 @@ void V2MPAsm_ParseException_SetLineAndColumn(V2MPAsm_ParseException* exception, 
 
 	exception->line = line;
 	exception->column = column;
-}
-
-void V2MPAsm_ParseException_ToStringInternal(
-	const V2MPAsm_ParseException* exception,
-	const char* filePath,
-	char* buffer,
-	size_t length
-)
-{
-	// TODO
-	(void)exception;
-	(void)filePath;
-	(void)buffer;
-	(void)length;
 }

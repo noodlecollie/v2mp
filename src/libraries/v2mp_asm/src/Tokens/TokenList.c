@@ -57,6 +57,16 @@ size_t V2MPAsm_TokenList_GetTokenCount(const V2MPAsm_TokenList* list)
 	return list ? V2MPSC_DoubleLL_GetNodeCount(list->doubleLL) : 0;
 }
 
+void V2MPAsm_TokenList_Clear(V2MPAsm_TokenList* list)
+{
+	if ( !list )
+	{
+		return;
+	}
+
+	V2MPSC_DoubleLL_Clear(list->doubleLL);
+}
+
 V2MPAsm_TokenListEntry* V2MPAsm_TokenList_AppendNewEntry(V2MPAsm_TokenList* list, const char* token, size_t length)
 {
 	V2MPSC_DoubleLL_Node* node;

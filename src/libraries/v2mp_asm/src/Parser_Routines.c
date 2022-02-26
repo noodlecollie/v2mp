@@ -32,7 +32,8 @@ static void ParseDefault(V2MPAsm_ParseContext* context)
 	const char* token;
 	V2MPAsm_TokenType tokenType;
 
-	token = V2MPAsm_ParseContext_GetBeginningOfNextToken(context);
+	V2MPAsm_ParseContext_SkipWhitespace(context);
+	token = V2MPAsm_ParseContext_GetInputCursor(context);
 	tokenType = V2MPAsm_TokenMeta_IdentifyToken(token);
 
 	if ( V2MPAsm_TokenMeta_IsComment(tokenType) )
@@ -94,7 +95,7 @@ void V2MPAsm_Parser_ExecuteParse(V2MPAsm_Parser* parser)
 				V2MPAsm_ParseContext_TerminateWithError(
 					parser->context,
 					PARSEERROR_INTERNAL,
-					"Unknown internal state encountered."
+					"Internal error: unknown internal state encountered."
 				);
 
 				break;

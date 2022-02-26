@@ -6,22 +6,24 @@
 struct V2MPAsm_ParseContext;
 
 #define V2MPASM_PARSEWARNINGTYPE_LIST \
-	LIST_ITEM(PARSEWARNING_UNSPECIFIED = 0, "Unspecified warning.")
+	LIST_ITEM(PARSEWARNING_UNSPECIFIED = 0, "unspecified", "Unspecified warning.")
 
 #define V2MPASM_PARSEERRORTYPE_LIST \
-	LIST_ITEM(PARSEERROR_UNSPECIFIED = 0, "Unspecified error.") \
-	LIST_ITEM(PARSEERROR_INTERNAL, "Unexpected internal error.") \
-	LIST_ITEM(PARSEERROR_UNIMPLEMENTED, "Behaviour unimplemented.") \
-	LIST_ITEM(PARSEERROR_UNRECOGNISED_INSTRUCTION, "Unrecognised instruction.")
+	LIST_ITEM(PARSEERROR_UNSPECIFIED = 0, "unspecified", "Unspecified error.") \
+	LIST_ITEM(PARSEERROR_INTERNAL, "internal-error", "Unexpected internal error.") \
+	LIST_ITEM(PARSEERROR_UNIMPLEMENTED, "unimplemented", "Behaviour unimplemented.") \
+	LIST_ITEM(PARSEERROR_UNRECOGNISED_INSTRUCTION, "unrecognised-instruction", "Unrecognised instruction.") \
+	LIST_ITEM(PARSEERROR_UNEXPECTED_TOKEN, "unexpected-token", "Unexpected token encountered.") \
+	LIST_ITEM(PARSEERROR_UNRECOGNISED_TOKEN, "unrecognised-token", "Unrecognised token.")
 
-#define LIST_ITEM(value, desc) value,
+#define LIST_ITEM(value, id, desc) value,
 typedef enum V2MPAsm_ParseWarningType
 {
 	V2MPASM_PARSEWARNINGTYPE_LIST
 } V2MPAsm_ParseWarningType;
 #undef LIST_ITEM
 
-#define LIST_ITEM(value, desc) value,
+#define LIST_ITEM(value, id, desc) value,
 typedef enum V2MPAsm_ParseErrorType
 {
 	V2MPASM_PARSEERRORTYPE_LIST
@@ -39,7 +41,9 @@ struct V2MPAsm_ParseException
 };
 
 const char* V2MPAsm_ParseException_GetWarningString(V2MPAsm_ParseWarningType warning);
+const char* V2MPAsm_ParseException_GetWarningID(V2MPAsm_ParseWarningType warning);
 const char* V2MPAsm_ParseException_GetErrorString(V2MPAsm_ParseErrorType error);
+const char* V2MPAsm_ParseException_GetErrorID(V2MPAsm_ParseErrorType error);
 
 V2MPAsm_ParseException* V2MPAsm_ParseException_AllocateAndInit(void);
 void V2MPAsm_ParseException_DeinitAndFree(V2MPAsm_ParseException* exception);
@@ -50,6 +54,7 @@ void V2MPAsm_ParseException_SetContext(V2MPAsm_ParseException* exception, struct
 void V2MPAsm_ParseException_SetWarning(V2MPAsm_ParseException* exception, V2MPAsm_ParseWarningType type);
 void V2MPAsm_ParseException_SetError(V2MPAsm_ParseException* exception, V2MPAsm_ParseErrorType type);
 const char* V2MPAsm_ParseException_GetWarningOrErrorString(const V2MPAsm_ParseException* exception);
+const char* V2MPAsm_ParseException_GetWarningOrErrorID(const V2MPAsm_ParseException* exception);
 
 const char* V2MPAsm_ParseException_GetCustomDescription(const V2MPAsm_ParseException* exception);
 void V2MPAsm_ParseException_SetCustomDescription(V2MPAsm_ParseException* exception, const char* description);
