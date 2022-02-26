@@ -137,3 +137,33 @@ size_t V2MPAsm_TokenListEntry_GetTokenLength(const V2MPAsm_TokenListEntry* entry
 {
 	return entry ? entry->tokenLength : 0;
 }
+
+size_t V2MPAsm_TokenListEntry_GetTokenLine(const V2MPAsm_TokenListEntry* entry)
+{
+	return entry ? entry->inputLine : 0;
+}
+
+void V2MPAsm_TokenListEntry_SetTokenLine(V2MPAsm_TokenListEntry* entry, size_t line)
+{
+	if ( !entry )
+	{
+		return;
+	}
+
+	entry->inputLine = line;
+}
+
+size_t V2MPAsm_TokenListEntry_GetTokenColumn(const V2MPAsm_TokenListEntry* entry)
+{
+	return entry ? entry->inputColumn : 0;
+}
+
+void V2MPAsm_TokenListEntry_SetTokenColumn(V2MPAsm_TokenListEntry* entry, size_t column)
+{
+	if ( !entry )
+	{
+		return;
+	}
+
+	entry->inputColumn = column;
+}

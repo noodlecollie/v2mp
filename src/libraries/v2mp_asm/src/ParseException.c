@@ -46,17 +46,18 @@ size_t V2MPAsm_ParseException_ToString(const V2MPAsm_ParseException* exception, 
 		}
 	}
 
-	// file_path:line:column warning/error: desc [-Wexception-id]
+	// file_path:line:column warning/error: desc [-Werror=exception-id]
 	printfResult = snprintf(
 		buffer,
 		length,
-		"%s%s%zu:%zu %s: %s [-W%s]",
+		"%s%s%zu:%zu %s: %s [-W%s=%s]",
 		filePath ? filePath : "",
 		filePath ? ":" : "",
 		exception->line,
 		exception->column,
 		exception->type == V2MPASM_PARSEEXCEPTION_WARNING ? "warning" : "error",
 		descString,
+		exception->type == V2MPASM_PARSEEXCEPTION_WARNING ? "warning" : "error",
 		V2MPAsm_ParseException_GetWarningOrErrorID(exception)
 	);
 

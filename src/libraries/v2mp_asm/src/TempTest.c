@@ -41,7 +41,7 @@ static void ParseFileData(const char* filePath, const char* buffer, size_t lengt
 			exception = V2MPAsm_Parser_GetExceptionFromNode(node);
 			V2MPAsm_ParseException_ToString(exception, exDesc, sizeof(exDesc));
 
-			printf("Parse exception: %s\n", exDesc);
+			printf("%s\n", exDesc);
 
 		}
 	}

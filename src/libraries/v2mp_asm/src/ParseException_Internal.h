@@ -1,9 +1,12 @@
 #ifndef V2MPASM_PARSEEXCEPTION_INTERNAL_H
 #define V2MPASM_PARSEEXCEPTION_INTERNAL_H
 
+#include <stdarg.h>
 #include "V2MPAsm/ParseException.h"
 
 struct V2MPAsm_ParseContext;
+
+#define V2MPASM_PARSEEXCEPTION_FORMAT_DESC_MAX_LENGTH 512
 
 #define V2MPASM_PARSEWARNINGTYPE_LIST \
 	LIST_ITEM(PARSEWARNING_UNSPECIFIED = 0, "unspecified", "Unspecified warning.")
@@ -58,6 +61,8 @@ const char* V2MPAsm_ParseException_GetWarningOrErrorID(const V2MPAsm_ParseExcept
 
 const char* V2MPAsm_ParseException_GetCustomDescription(const V2MPAsm_ParseException* exception);
 void V2MPAsm_ParseException_SetCustomDescription(V2MPAsm_ParseException* exception, const char* description);
+void V2MPAsm_ParseException_FormatCustomDescription(V2MPAsm_ParseException* exception, const char* format, ...);
+void V2MPAsm_ParseException_FormatCustomDescriptionV(V2MPAsm_ParseException* exception, const char* format, va_list args);
 
 size_t V2MPAsm_ParseException_GetLine(const V2MPAsm_ParseException* exception);
 size_t V2MPAsm_ParseException_GetColumn(const V2MPAsm_ParseException* exception);

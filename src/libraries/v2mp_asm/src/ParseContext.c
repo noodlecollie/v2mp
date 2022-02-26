@@ -1,12 +1,9 @@
 #include <string.h>
-#include <stdio.h>
 #include "BaseUtil/Heap.h"
 #include "BaseUtil/String.h"
 #include "ParseContext.h"
 #include "cwalk/cwalk.h"
 #include "ParseException_Internal.h"
-
-#define V2MPASM_PARSECONTEXT_EX_DESC_LENGTH 512
 
 static void DestroyParseExceptionNode(void* payload)
 {
@@ -32,9 +29,7 @@ void CreateAndSetExceptionV(
 	va_list args
 )
 {
-	char* buffer;
 	V2MPAsm_ParseContext_ExceptionNode* node;
-	bool bufferWasDynamic = false;
 
 	if ( !context || !format )
 	{
@@ -48,22 +43,6 @@ void CreateAndSetExceptionV(
 		return;
 	}
 
-	buffer = (char*)BASEUTIL_MALLOC(V2MPASM_PARSECONTEXT_EX_DESC_LENGTH);
-
-	if ( buffer )
-	{
-		bufferWasDynamic = true;
-		buffer[0] = '\0';
-
-		vsnprintf(buffer, V2MPASM_PARSECONTEXT_EX_DESC_LENGTH, format, args);
-		buffer[V2MPASM_PARSECONTEXT_EX_DESC_LENGTH - 1] = '\0';
-	}
-	else
-	{
-		static char dummyBuffer[] = { '\0' };
-		buffer = dummyBuffer;
-	}
-
 	if ( isError )
 	{
 		V2MPAsm_ParseException_SetError(node->exception, (V2MPAsm_ParseErrorType)exceptionSubtype);
@@ -73,18 +52,13 @@ void CreateAndSetExceptionV(
 		V2MPAsm_ParseException_SetWarning(node->exception, (V2MPAsm_ParseWarningType)exceptionSubtype);
 	}
 
-	V2MPAsm_ParseException_SetCustomDescription(node->exception, buffer);
+	V2MPAsm_ParseException_FormatCustomDescriptionV(node->exception, format, args);
 
 	V2MPAsm_ParseException_SetLineAndColumn(
 		node->exception,
 		V2MPAsm_ParseContext_GetInputLineNumber(context),
 		V2MPAsm_ParseContext_GetInputColumnNumber(context)
 	);
-
-	if ( bufferWasDynamic )
-	{
-		BASEUTIL_FREE(buffer);
-	}
 }
 
 V2MPAsm_ParseContext* V2MPAsm_ParseContext_AllocateAndInit(void)

@@ -1,9 +1,62 @@
+#include <stdarg.h>
 #include "Parser_ParseInstruction.h"
 #include "Instructions/InstructionMeta.h"
 #include "ParseException_Internal.h"
 #include "CodewordDescriptors/CWD_Instruction.h"
 #include "Tokens/TokenMeta.h"
 #include "BaseUtil/Heap.h"
+
+static void TerminateWithErrorV(
+	V2MPAsm_ParseContext* context,
+	V2MPAsm_ParseErrorType errorType,
+	const V2MPAsm_TokenListEntry* tokenEntry,
+	const char* format,
+	va_list args
+)
+{
+	V2MPAsm_ParseContext_ExceptionNode* node;
+
+	node = V2MPAsm_ParseContext_AppendException(context);
+
+	if ( !node )
+	{
+		// Should never happen, but what else can we do?
+		return;
+	}
+
+	V2MPAsm_ParseException_SetError(node->exception, errorType);
+
+	V2MPAsm_ParseException_SetLineAndColumn(node->exception,
+		V2MPAsm_TokenListEntry_GetTokenLine(tokenEntry),
+		V2MPAsm_TokenListEntry_GetTokenColumn(tokenEntry)
+	);
+
+	V2MPAsm_ParseException_FormatCustomDescriptionV(node->exception, format, args);
+
+	V2MPAsm_ParseContext_SetParseState(context, PARSESTATE_TERMINATED);
+}
+
+static inline void TerminateWithError(
+	V2MPAsm_ParseContext* context,
+	V2MPAsm_ParseErrorType errorType,
+	const V2MPAsm_TokenListEntry* tokenEntry,
+	const char* format,
+	...
+)
+{
+	va_list list;
+	va_start(list, format);
+
+	TerminateWithErrorV(
+		context,
+		errorType,
+		tokenEntry,
+		format,
+		list
+	);
+
+	va_end(list);
+}
 
 static bool AddTokenToList(V2MPAsm_ParseContext* context)
 {
@@ -12,6 +65,7 @@ static bool AddTokenToList(V2MPAsm_ParseContext* context)
 	const V2MPAsm_TokenMeta* tokenMeta;
 	const char* begin;
 	const char* end;
+	V2MPAsm_TokenListEntry* tokenEntry;
 
 	tokenList = V2MPAsm_ParseContext_GetTokenList(context);
 
@@ -88,7 +142,9 @@ static bool AddTokenToList(V2MPAsm_ParseContext* context)
 		return false;
 	}
 
-	if ( !V2MPAsm_TokenList_AppendNewEntry(tokenList, begin, end - begin) )
+	tokenEntry = V2MPAsm_TokenList_AppendNewEntry(tokenList, begin, end - begin);
+
+	if ( !tokenEntry )
 	{
 		V2MPAsm_ParseContext_TerminateWithError(
 			context,
@@ -98,6 +154,9 @@ static bool AddTokenToList(V2MPAsm_ParseContext* context)
 
 		return false;
 	}
+
+	V2MPAsm_TokenListEntry_SetTokenLine(tokenEntry, V2MPAsm_ParseContext_GetInputLineNumber(context));
+	V2MPAsm_TokenListEntry_SetTokenColumn(tokenEntry, V2MPAsm_ParseContext_GetInputColumnNumber(context));
 
 	V2MPAsm_ParseContext_SeekInput(context, end);
 	return true;
@@ -194,12 +253,31 @@ static bool CreateInitialInstruction(V2MPAsm_ParseContext* context)
 
 static bool AddInstructionArgument(V2MPAsm_ParseContext* context, V2MPAsm_TokenListEntry* tokenEntry)
 {
-	(void)tokenEntry;
+	V2MPAsm_TokenType tokenType;
 
+	tokenType = V2MPAsm_TokenMeta_IdentifyToken(tokenEntry->token);
+
+	// TODO: Support more than just numbers
+	if ( tokenType != TOKEN_NUMERIC_LITERAL )
+	{
+		TerminateWithError(
+			context,
+			PARSEERROR_UNEXPECTED_TOKEN,
+			tokenEntry,
+			"Expected a numeric literal but got \"%s\".",
+			tokenEntry->token
+		);
+
+		return false;
+	}
+
+	// TODO: Validate range of argument
+
+	// TODO: Add argument to CWD
 	V2MPAsm_ParseContext_TerminateWithError(
 		context,
 		PARSEERROR_UNIMPLEMENTED,
-		"Implement adding instruction args."
+		"Need to implement adding argument to instruction."
 	);
 
 	return false;

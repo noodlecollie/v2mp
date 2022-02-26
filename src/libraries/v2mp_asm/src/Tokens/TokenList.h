@@ -8,6 +8,8 @@ typedef struct V2MPAsm_TokenListEntry
 	V2MPSC_DoubleLL_Node* ownerNode;
 	char* token;
 	size_t tokenLength;
+	size_t inputLine;
+	size_t inputColumn;
 } V2MPAsm_TokenListEntry;
 
 typedef struct V2MPAsm_TokenList
@@ -27,5 +29,10 @@ V2MPAsm_TokenListEntry* V2MPAsm_TokenList_GetNextEntry(const V2MPAsm_TokenListEn
 
 char* V2MPAsm_TokenListEntry_GetToken(const V2MPAsm_TokenListEntry* entry);
 size_t V2MPAsm_TokenListEntry_GetTokenLength(const V2MPAsm_TokenListEntry* entry);
+
+size_t V2MPAsm_TokenListEntry_GetTokenLine(const V2MPAsm_TokenListEntry* entry);
+void V2MPAsm_TokenListEntry_SetTokenLine(V2MPAsm_TokenListEntry* entry, size_t line);
+size_t V2MPAsm_TokenListEntry_GetTokenColumn(const V2MPAsm_TokenListEntry* entry);
+void V2MPAsm_TokenListEntry_SetTokenColumn(V2MPAsm_TokenListEntry* entry, size_t column);
 
 #endif // V2MPASM_TOKENLIST_H

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "ParseException_Internal.h"
 #include "BaseUtil/Heap.h"
 #include "BaseUtil/String.h"
@@ -175,6 +176,47 @@ void V2MPAsm_ParseException_SetCustomDescription(V2MPAsm_ParseException* excepti
 	}
 
 	exception->customDescription = BaseUtil_String_Duplicate(description);
+}
+
+void V2MPAsm_ParseException_FormatCustomDescription(V2MPAsm_ParseException* exception, const char* format, ...)
+{
+	va_list list;
+	va_start(list, format);
+	V2MPAsm_ParseException_FormatCustomDescriptionV(exception, format, list);
+	va_end(list);
+}
+
+void V2MPAsm_ParseException_FormatCustomDescriptionV(V2MPAsm_ParseException* exception, const char* format, va_list args)
+{
+	char* buffer;
+
+	if ( !exception || !format )
+	{
+		return;
+	}
+
+	V2MPAsm_ParseException_SetCustomDescription(exception, NULL);
+
+	buffer = (char*)BASEUTIL_MALLOC(V2MPASM_PARSEEXCEPTION_FORMAT_DESC_MAX_LENGTH);
+
+	if ( !buffer )
+	{
+		return;
+	}
+
+	buffer[0] = '\0';
+
+	if ( vsnprintf(buffer, V2MPASM_PARSEEXCEPTION_FORMAT_DESC_MAX_LENGTH, format, args) > 0 )
+	{
+		buffer[V2MPASM_PARSEEXCEPTION_FORMAT_DESC_MAX_LENGTH - 1] = '\0';
+	}
+	else
+	{
+		buffer[0] = '\0';
+	}
+
+	V2MPAsm_ParseException_SetCustomDescription(exception, buffer);
+	BASEUTIL_FREE(buffer);
 }
 
 size_t V2MPAsm_ParseException_GetLine(const V2MPAsm_ParseException* exception)
