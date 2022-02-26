@@ -29,5 +29,6 @@ bool V2MPAsm_InputFile_IsEOF(const V2MPAsm_InputFile* inputFile);
 
 void V2MPAsm_InputFile_SkipWhitespace(V2MPAsm_InputFile* inputFile);
 void V2MPAsm_InputFile_SkipToCursor(V2MPAsm_InputFile* inputFile, const char* newCursor);
+void V2MPAsm_InputFile_SkipToNextLine(V2MPAsm_InputFile* inputFile);
 
 #endif // V2MPASM_INPUTFILE_H

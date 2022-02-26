@@ -150,3 +150,36 @@ void V2MPAsm_InputFile_SkipToCursor(V2MPAsm_InputFile* inputFile, const char* ne
 		WindCursorBackward(inputFile, newCursor);
 	}
 }
+
+void V2MPAsm_InputFile_SkipToNextLine(V2MPAsm_InputFile* inputFile)
+{
+	size_t currentLine;
+
+	if ( !V2MPAsm_InputFile_IsValid(inputFile) )
+	{
+		return;
+	}
+
+	currentLine = inputFile->curLineNo;
+	V2MPAsm_InputFile_SkipWhitespace(inputFile);
+
+	while ( inputFile->curLineNo == currentLine )
+	{
+		const char* cursor = inputFile->cursor;
+
+		// Skip the current token
+		while ( *cursor && !isspace(*cursor) )
+		{
+			++cursor;
+		}
+
+		// Skip any subsequent whitespace
+		while ( *cursor && isspace(*cursor) )
+		{
+			++cursor;
+		}
+
+		// Move the actual cursor on to this position
+		V2MPAsm_InputFile_SkipToCursor(inputFile, cursor);
+	}
+}

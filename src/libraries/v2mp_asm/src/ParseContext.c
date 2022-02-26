@@ -235,6 +235,16 @@ void V2MPAsm_ParseContext_SeekInput(V2MPAsm_ParseContext* context, const char* p
 	V2MPAsm_InputFile_SkipToCursor(context->inputFile, pos);
 }
 
+void V2MPAsm_ParseContext_SeekInputToFirstTokenOnNextLine(V2MPAsm_ParseContext* context)
+{
+	if ( !context )
+	{
+		return;
+	}
+
+	V2MPAsm_InputFile_SkipToNextLine(context->inputFile);
+}
+
 const char* V2MPAsm_ParseContext_GetBeginningOfNextToken(V2MPAsm_ParseContext* context)
 {
 	if ( !context )

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "Tokens/TokenList.h"
 #include "BaseUtil/Heap.h"
 #include "BaseUtil/String.h"

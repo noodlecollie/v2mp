@@ -58,6 +58,7 @@ size_t V2MPAsm_ParseContext_GetInputColumnNumber(const V2MPAsm_ParseContext* con
 const char* V2MPAsm_ParseContext_GetInputCursor(const V2MPAsm_ParseContext* context);
 
 void V2MPAsm_ParseContext_SeekInput(V2MPAsm_ParseContext* context, const char* pos);
+void V2MPAsm_ParseContext_SeekInputToFirstTokenOnNextLine(V2MPAsm_ParseContext* context);
 const char* V2MPAsm_ParseContext_GetBeginningOfNextToken(V2MPAsm_ParseContext* context);
 
 V2MPAsm_ParseState V2MPAsm_ParseContext_GetParseState(const V2MPAsm_ParseContext* context);
