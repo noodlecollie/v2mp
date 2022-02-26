@@ -3,6 +3,7 @@
 #include "ParseException_Internal.h"
 #include "CodewordDescriptors/CWD_Instruction.h"
 #include "Tokens/TokenMeta.h"
+#include "BaseUtil/Heap.h"
 
 static bool AddTokenToList(V2MPAsm_ParseContext* context)
 {
@@ -32,11 +33,30 @@ static bool AddTokenToList(V2MPAsm_ParseContext* context)
 
 	if ( tokenType == TOKEN_UNKNOWN )
 	{
+		char* buffer = NULL;
+		const char* tokenEnd;
+
+		tokenEnd = V2MPAsm_TokenMeta_FindEndOfToken(
+			V2MPAsm_TokenMeta_GetMetaForTokenType(tokenType),
+			begin
+		);
+
+		if ( tokenEnd )
+		{
+			buffer = V2MPAsm_ParseContext_CopyFromInputCursor(context, tokenEnd - begin);
+		}
+
 		V2MPAsm_ParseContext_TerminateWithError(
 			context,
 			PARSEERROR_UNRECOGNISED_TOKEN,
-			"Unrecognised token encountered."
+			"Unrecognised token encountered: \"%s\"",
+			buffer ? buffer : ""
 		);
+
+		if ( buffer )
+		{
+			BASEUTIL_FREE(buffer);
+		}
 
 		return false;
 	}
@@ -91,7 +111,7 @@ static bool PopulateTokenList(V2MPAsm_ParseContext* context)
 	tokenList = V2MPAsm_ParseContext_GetTokenList(context);
 	V2MPAsm_TokenList_Clear(tokenList);
 
-	end = V2MPAsm_ParseContext_GetEndOfCurrentLine(context);
+	end = V2MPAsm_ParseContext_GetEndOfInputLine(context);
 
 	if ( !end )
 	{
@@ -172,6 +192,46 @@ static bool CreateInitialInstruction(V2MPAsm_ParseContext* context)
 	return true;
 }
 
+static bool AddInstructionArgument(V2MPAsm_ParseContext* context, V2MPAsm_TokenListEntry* tokenEntry)
+{
+	(void)tokenEntry;
+
+	V2MPAsm_ParseContext_TerminateWithError(
+		context,
+		PARSEERROR_UNIMPLEMENTED,
+		"Implement adding instruction args."
+	);
+
+	return false;
+}
+
+static bool PopulateInstructionArguments(V2MPAsm_ParseContext* context)
+{
+	V2MPAsm_TokenListEntry* tokenEntry;
+
+	tokenEntry = V2MPAsm_TokenList_GetFirstEntry(V2MPAsm_ParseContext_GetTokenList(context));
+
+	// Skip the first token as it's the instruction name.
+	tokenEntry = V2MPAsm_TokenList_GetNextEntry(tokenEntry);
+
+	for ( ; tokenEntry; tokenEntry = V2MPAsm_TokenList_GetNextEntry(tokenEntry) )
+	{
+		if ( !AddInstructionArgument(context, tokenEntry) )
+		{
+			return false;
+		}
+	}
+
+	// TODO: Validate the codeword descriptor.
+	V2MPAsm_ParseContext_TerminateWithError(
+		context,
+		PARSEERROR_UNIMPLEMENTED,
+		"Implement validation of codeword descriptor."
+	);
+
+	return false;
+}
+
 void V2MPAsm_Parser_ParseInstruction(V2MPAsm_Parser* parser)
 {
 	// Sanity:
@@ -186,15 +246,18 @@ void V2MPAsm_Parser_ParseInstruction(V2MPAsm_Parser* parser)
 		return;
 	}
 
-	if ( !PopulateTokenList(parser->context) ||
-	     !CreateInitialInstruction(parser->context) )
+	if ( !PopulateTokenList(parser->context) )
 	{
 		return;
 	}
 
-	V2MPAsm_ParseContext_TerminateWithError(
-		parser->context,
-		PARSEERROR_UNIMPLEMENTED,
-		"Instruction parsing still to be implemented."
-	);
+	if ( !CreateInitialInstruction(parser->context) )
+	{
+		return;
+	}
+
+	if ( !PopulateInstructionArguments(parser->context) )
+	{
+		return;
+	}
 }

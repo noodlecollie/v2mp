@@ -54,7 +54,10 @@ bool V2MPAsm_ParseContext_InputIsAtEOF(const V2MPAsm_ParseContext* context);
 size_t V2MPAsm_ParseContext_GetInputLineNumber(const V2MPAsm_ParseContext* context);
 size_t V2MPAsm_ParseContext_GetInputColumnNumber(const V2MPAsm_ParseContext* context);
 const char* V2MPAsm_ParseContext_GetInputCursor(const V2MPAsm_ParseContext* context);
-const char* V2MPAsm_ParseContext_GetEndOfCurrentLine(const V2MPAsm_ParseContext* context);
+const char* V2MPAsm_ParseContext_GetEndOfInputLine(const V2MPAsm_ParseContext* context);
+
+// The caller takes ownership of the buffer that is returned.
+char* V2MPAsm_ParseContext_CopyFromInputCursor(const V2MPAsm_ParseContext* context, size_t length);
 
 void V2MPAsm_ParseContext_SeekInput(V2MPAsm_ParseContext* context, const char* pos);
 void V2MPAsm_ParseContext_SeekInputToFirstTokenOnNextLine(V2MPAsm_ParseContext* context);

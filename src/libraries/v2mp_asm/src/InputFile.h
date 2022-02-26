@@ -33,4 +33,7 @@ void V2MPAsm_InputFile_SkipToNextLine(V2MPAsm_InputFile* inputFile);
 
 const char* V2MPAsm_InputFile_FindEndOfCurrentLine(const V2MPAsm_InputFile* inputFile);
 
+// The caller takes ownership of the buffer that is returned.
+char* V2MPAsm_InputFile_CopyFromCursor(const V2MPAsm_InputFile* inputFile, size_t length);
+
 #endif // V2MPASM_INPUTFILE_H

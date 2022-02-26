@@ -199,9 +199,14 @@ const char* V2MPAsm_ParseContext_GetInputCursor(const V2MPAsm_ParseContext* cont
 	return context ? V2MPAsm_InputFile_GetCursor(context->inputFile) : NULL;
 }
 
-const char* V2MPAsm_ParseContext_GetEndOfCurrentLine(const V2MPAsm_ParseContext* context)
+const char* V2MPAsm_ParseContext_GetEndOfInputLine(const V2MPAsm_ParseContext* context)
 {
 	return context ? V2MPAsm_InputFile_FindEndOfCurrentLine(context->inputFile) : NULL;
+}
+
+char* V2MPAsm_ParseContext_CopyFromInputCursor(const V2MPAsm_ParseContext* context, size_t length)
+{
+	return context ? V2MPAsm_InputFile_CopyFromCursor(context->inputFile, length) : NULL;
 }
 
 bool V2MPAsm_ParseContext_SetInput(V2MPAsm_ParseContext* context, const char* filePath, const char* data, size_t length)

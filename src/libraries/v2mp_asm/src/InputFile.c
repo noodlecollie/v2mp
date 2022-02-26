@@ -203,3 +203,29 @@ const char* V2MPAsm_InputFile_FindEndOfCurrentLine(const V2MPAsm_InputFile* inpu
 
 	return cursor;
 }
+
+char* V2MPAsm_InputFile_CopyFromCursor(const V2MPAsm_InputFile* inputFile, size_t length)
+{
+	char* buffer;
+	const char* cursor;
+
+	if ( !V2MPAsm_InputFile_IsValid(inputFile) )
+	{
+		return NULL;
+	}
+
+	buffer = (char*)BASEUTIL_MALLOC(length + 1);
+
+	if ( !buffer )
+	{
+		return NULL;
+	}
+
+	for ( cursor = inputFile->cursor; *cursor && (size_t)(cursor - inputFile->cursor) < length; ++cursor )
+	{
+		buffer[cursor - inputFile->cursor] = *cursor;
+	}
+
+	buffer[cursor - inputFile->cursor] = '\0';
+	return buffer;
+}
