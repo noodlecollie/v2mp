@@ -11,6 +11,7 @@
 #include "Tokens/TokenMeta.h"
 #include "CodewordDescriptors/CWDList.h"
 #include "CodewordDescriptors/CWD_Base.h"
+#include "Tokens/TokenList.h"
 
 typedef enum V2MPAsm_ParseState
 {
@@ -27,10 +28,7 @@ typedef struct V2MPAsm_ParseContext
 
 	V2MPAsm_ParseState state;
 
-	char* currentTokenBuffer;
-	size_t currentTokenBufferSize;
-	size_t currentTokenLength;
-
+	V2MPAsm_TokenList* tokenList;
 	V2MPAsm_CWDList* cwdList;
 	V2MPAsm_CWDBase* currentCWD;
 
@@ -64,11 +62,6 @@ const char* V2MPAsm_ParseContext_GetBeginningOfNextToken(V2MPAsm_ParseContext* c
 V2MPAsm_ParseState V2MPAsm_ParseContext_GetParseState(const V2MPAsm_ParseContext* context);
 void V2MPAsm_ParseContext_SetParseState(V2MPAsm_ParseContext* context, V2MPAsm_ParseState state);
 
-// Token length does not include the terminator.
-bool V2MPAsm_ParseContext_SetCurrentToken(V2MPAsm_ParseContext* context, const char* begin, const char* end);
-bool V2MPAsm_ParseContext_SetCurrentTokenFromInput(V2MPAsm_ParseContext* context, V2MPAsm_TokenType tokenType);
-const char* V2MPAsm_ParseContext_GetCurrentToken(const V2MPAsm_ParseContext* context);
-size_t V2MPAsm_ParseContext_GetCurrentTokenLength(const V2MPAsm_ParseContext* context);
 V2MPAsm_CWDBase* V2MPAsm_ParseContext_AppendNewCWDAsCurrent(V2MPAsm_ParseContext* context, V2MPAsm_CWD_Type cwdType);
 V2MPAsm_CWDBase* V2MPAsm_ParseContext_GetCurrentCWD(const V2MPAsm_ParseContext* context);
 

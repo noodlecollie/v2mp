@@ -27,45 +27,6 @@ static void SkipToken(V2MPAsm_ParseContext* context, V2MPAsm_TokenType tokenType
 	V2MPAsm_ParseContext_SeekInput(context, end);
 }
 
-static bool SetCurrentTokenOnContext(V2MPAsm_ParseContext* context, V2MPAsm_TokenType tokenType)
-{
-	const char* begin;
-	const char* end;
-
-	begin = V2MPAsm_ParseContext_GetInputCursor(context);
-
-	end = V2MPAsm_TokenMeta_FindEndOfToken(
-		V2MPAsm_TokenMeta_GetMetaForTokenType(tokenType),
-		begin
-	);
-
-	if ( !V2MPAsm_ParseContext_SetCurrentToken(context, begin, end) )
-	{
-		V2MPAsm_ParseContext_TerminateWithError(
-			context,
-			PARSEERROR_INTERNAL,
-			"Could not allocate memory to parse token of length %zu characters.",
-			BASEUTIL_MAX((size_t)(end - begin), 0)
-		);
-
-		return false;
-	}
-
-	V2MPAsm_ParseContext_SeekInput(context, end);
-	return true;
-}
-
-static void PrepareToBuildInstruction(V2MPAsm_ParseContext* context)
-{
-	if ( !SetCurrentTokenOnContext(context, TOKEN_NAME) )
-	{
-		return;
-	}
-
-	// Move into instructio parsing mode
-	context->state = PARSESTATE_BUILDING_INSTRUCTION;
-}
-
 static void ParseDefault(V2MPAsm_ParseContext* context)
 {
 	const char* token;
@@ -84,7 +45,7 @@ static void ParseDefault(V2MPAsm_ParseContext* context)
 	{
 		case TOKEN_NAME:
 		{
-			PrepareToBuildInstruction(context);
+			context->state = PARSESTATE_BUILDING_INSTRUCTION;
 			break;
 		}
 

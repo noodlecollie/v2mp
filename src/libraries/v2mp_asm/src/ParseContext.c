@@ -24,18 +24,6 @@ static inline void FreeFilePath(V2MPAsm_ParseContext* context)
 	context->fileName = NULL;
 }
 
-static void FreeCurrentToken(V2MPAsm_ParseContext* context)
-{
-	if ( context->currentTokenBuffer )
-	{
-		BASEUTIL_FREE(context->currentTokenBuffer);
-		context->currentTokenBuffer = NULL;
-	}
-
-	context->currentTokenBufferSize = 0;
-	context->currentTokenLength = 0;
-}
-
 void CreateAndSetExceptionV(
 	V2MPAsm_ParseContext* context,
 	bool isError,
@@ -126,6 +114,13 @@ V2MPAsm_ParseContext* V2MPAsm_ParseContext_AllocateAndInit(void)
 			break;
 		}
 
+		context->tokenList = V2MPAsm_TokenList_AllocateAndInit();
+
+		if ( !context->tokenList )
+		{
+			break;
+		}
+
 		return context;
 	}
 	while ( false );
@@ -145,6 +140,9 @@ void V2MPAsm_ParseContext_DeinitAndFree(V2MPAsm_ParseContext* context)
 		return;
 	}
 
+	V2MPAsm_TokenList_DeinitAndFree(context->tokenList);
+	context->tokenList = NULL;
+
 	V2MPAsm_CWDList_DeinitAndFree(context->cwdList);
 	context->cwdList = NULL;
 
@@ -152,7 +150,6 @@ void V2MPAsm_ParseContext_DeinitAndFree(V2MPAsm_ParseContext* context)
 	context->exceptionsList = NULL;
 
 	FreeFilePath(context);
-	FreeCurrentToken(context);
 
 	V2MPAsm_InputFile_DeinitAndFree(context->inputFile);
 	context->inputFile = NULL;
@@ -269,82 +266,6 @@ void V2MPAsm_ParseContext_SetParseState(V2MPAsm_ParseContext* context, V2MPAsm_P
 	}
 
 	context->state = state;
-}
-
-bool V2MPAsm_ParseContext_SetCurrentToken(V2MPAsm_ParseContext* context, const char* begin, const char* end)
-{
-	size_t length;
-
-	if ( !context || (!begin && end) || (!end && begin) )
-	{
-		return false;
-	}
-
-	if ( !begin || !end || end < begin )
-	{
-		FreeCurrentToken(context);
-		return true;
-	}
-
-	length = end - begin;
-
-	if ( length >= context->currentTokenBufferSize )
-	{
-		char* newBuffer;
-
-		FreeCurrentToken(context);
-
-		newBuffer = (char*)BASEUTIL_MALLOC(length + 1);
-
-		if ( !newBuffer )
-		{
-			return false;
-		}
-
-		context->currentTokenBuffer = newBuffer;
-		context->currentTokenBufferSize = length + 1;
-	}
-
-	context->currentTokenLength = length;
-
-	if ( context->currentTokenLength > 0 )
-	{
-		memcpy(context->currentTokenBuffer, begin, context->currentTokenLength);
-	}
-
-	context->currentTokenBuffer[context->currentTokenLength] = '\0';
-
-	return true;
-}
-
-bool V2MPAsm_ParseContext_SetCurrentTokenFromInput(V2MPAsm_ParseContext* context, V2MPAsm_TokenType tokenType)
-{
-	const char* begin;
-	const V2MPAsm_TokenMeta* tokenMeta;
-
-	if ( !context )
-	{
-		return false;
-	}
-
-	begin = V2MPAsm_ParseContext_GetInputCursor(context);
-	tokenMeta = V2MPAsm_TokenMeta_GetMetaForTokenType(tokenType);
-
-	return V2MPAsm_ParseContext_SetCurrentToken(
-		context,
-		begin,
-		V2MPAsm_TokenMeta_FindEndOfToken(tokenMeta, begin)
-	);
-}
-
-const char* V2MPAsm_ParseContext_GetCurrentToken(const V2MPAsm_ParseContext* context)
-{
-	return context ? context->currentTokenBuffer : NULL;
-}
-
-size_t V2MPAsm_ParseContext_GetCurrentTokenLength(const V2MPAsm_ParseContext* context)
-{
-	return context ? context->currentTokenLength : 0;
 }
 
 V2MPAsm_CWDBase* V2MPAsm_ParseContext_AppendNewCWDAsCurrent(V2MPAsm_ParseContext* context, V2MPAsm_CWD_Type cwdType)

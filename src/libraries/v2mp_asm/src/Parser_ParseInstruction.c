@@ -3,49 +3,49 @@
 #include "ParseException_Internal.h"
 #include "CodewordDescriptors/CWD_Instruction.h"
 
-void CreateInstructionCWDFromCurrentToken(V2MPAsm_ParseContext* context)
-{
-	const V2MPAsm_InstructionMeta* instructionMeta;
-	V2MPAsm_CWDInstruction* instructionCWD;
+// void CreateInstructionCWDFromCurrentToken(V2MPAsm_ParseContext* context)
+// {
+// 	const V2MPAsm_InstructionMeta* instructionMeta;
+// 	V2MPAsm_CWDInstruction* instructionCWD;
 
-	instructionMeta = V2MPAsm_InstructionMeta_FindCommand(
-		V2MPAsm_ParseContext_GetCurrentToken(context),
-		V2MPAsm_ParseContext_GetCurrentTokenLength(context)
-	);
+// 	instructionMeta = V2MPAsm_InstructionMeta_FindCommand(
+// 		V2MPAsm_ParseContext_GetCurrentToken(context),
+// 		V2MPAsm_ParseContext_GetCurrentTokenLength(context)
+// 	);
 
-	if ( !instructionMeta )
-	{
-		V2MPAsm_ParseContext_TerminateWithError(
-			context,
-			PARSEERROR_UNRECOGNISED_INSTRUCTION,
-			"\"%s\" was not recognised as a CPU instruction or an alias.",
-			V2MPAsm_ParseContext_GetCurrentToken(context)
-		);
+// 	if ( !instructionMeta )
+// 	{
+// 		V2MPAsm_ParseContext_TerminateWithError(
+// 			context,
+// 			PARSEERROR_UNRECOGNISED_INSTRUCTION,
+// 			"\"%s\" was not recognised as a CPU instruction or an alias.",
+// 			V2MPAsm_ParseContext_GetCurrentToken(context)
+// 		);
 
-		return;
-	}
+// 		return;
+// 	}
 
-	instructionCWD = V2MPAsm_CWDInstruction_Cast(
-		V2MPAsm_ParseContext_AppendNewCWDAsCurrent(context, V2MPASM_CWD_INSTRUCTION)
-	);
+// 	instructionCWD = V2MPAsm_CWDInstruction_Cast(
+// 		V2MPAsm_ParseContext_AppendNewCWDAsCurrent(context, V2MPASM_CWD_INSTRUCTION)
+// 	);
 
-	if ( !instructionCWD )
-	{
-		V2MPAsm_ParseContext_TerminateWithError(
-			context,
-			PARSEERROR_INTERNAL,
-			"Could not create instruction data for \"%s\"",
-			V2MPAsm_ParseContext_GetCurrentToken(context)
-		);
+// 	if ( !instructionCWD )
+// 	{
+// 		V2MPAsm_ParseContext_TerminateWithError(
+// 			context,
+// 			PARSEERROR_INTERNAL,
+// 			"Could not create instruction data for \"%s\"",
+// 			V2MPAsm_ParseContext_GetCurrentToken(context)
+// 		);
 
-		return;
-	}
+// 		return;
+// 	}
 
-	V2MPAsm_CWDInstruction_SetInstructionMeta(instructionCWD, instructionMeta);
+// 	V2MPAsm_CWDInstruction_SetInstructionMeta(instructionCWD, instructionMeta);
 
-	// We now have an instruction codeword - return so that the next time we come around,
-	// we can parse the arguments for the codeword.
-}
+// 	// We now have an instruction codeword - return so that the next time we come around,
+// 	// we can parse the arguments for the codeword.
+// }
 
 void V2MPAsm_Parser_ParseInstruction(V2MPAsm_Parser* parser)
 {
@@ -61,13 +61,9 @@ void V2MPAsm_Parser_ParseInstruction(V2MPAsm_Parser* parser)
 		return;
 	}
 
-	if ( !V2MPAsm_ParseContext_GetCurrentCWD(parser->context) )
-	{
-		CreateInstructionCWDFromCurrentToken(parser->context);
-		return;
-	}
+	// TODO: Clear the token list, parse everything on the current line,
+	// and add all tokens to the list.
 
-	// TODO: Parse the instruction
 	V2MPAsm_ParseContext_TerminateWithError(
 		parser->context,
 		PARSEERROR_UNIMPLEMENTED,
