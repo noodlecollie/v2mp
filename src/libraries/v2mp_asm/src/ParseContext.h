@@ -11,7 +11,6 @@
 #include "Tokens/TokenMeta.h"
 #include "CodewordDescriptors/CWDList.h"
 #include "CodewordDescriptors/CWD_Base.h"
-#include "Tokens/TokenList.h"
 
 typedef enum V2MPAsm_ParseState
 {
@@ -28,9 +27,11 @@ typedef struct V2MPAsm_ParseContext
 
 	V2MPAsm_ParseState state;
 
-	V2MPAsm_TokenList* tokenList;
 	V2MPAsm_CWDList* cwdList;
 	V2MPAsm_CWDBase* currentCWD;
+
+	char* currentToken;
+	size_t currentTokenLength;
 
 	V2MPSC_DoubleLL* exceptionsList;
 } V2MPAsm_ParseContext;
@@ -63,7 +64,9 @@ void V2MPAsm_ParseContext_SeekInput(V2MPAsm_ParseContext* context, const char* p
 void V2MPAsm_ParseContext_SeekInputToFirstTokenOnNextLine(V2MPAsm_ParseContext* context);
 void V2MPAsm_ParseContext_SkipWhitespace(V2MPAsm_ParseContext* context);
 
-V2MPAsm_TokenList* V2MPAsm_ParseContext_GetTokenList(const V2MPAsm_ParseContext* context);
+char* V2MPAsm_ParseContext_SetCurrentToken(V2MPAsm_ParseContext* context, const char* begin, const char* end);
+char* V2MPAsm_ParseContext_GetCurrentToken(const V2MPAsm_ParseContext* context);
+size_t V2MPAsm_ParseContext_GetCurrentTokenLength(const V2MPAsm_ParseContext* context);
 
 V2MPAsm_ParseState V2MPAsm_ParseContext_GetParseState(const V2MPAsm_ParseContext* context);
 void V2MPAsm_ParseContext_SetParseState(V2MPAsm_ParseContext* context, V2MPAsm_ParseState state);

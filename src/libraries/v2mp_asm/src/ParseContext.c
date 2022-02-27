@@ -95,13 +95,6 @@ V2MPAsm_ParseContext* V2MPAsm_ParseContext_AllocateAndInit(void)
 			break;
 		}
 
-		context->tokenList = V2MPAsm_TokenList_AllocateAndInit();
-
-		if ( !context->tokenList )
-		{
-			break;
-		}
-
 		return context;
 	}
 	while ( false );
@@ -121,8 +114,13 @@ void V2MPAsm_ParseContext_DeinitAndFree(V2MPAsm_ParseContext* context)
 		return;
 	}
 
-	V2MPAsm_TokenList_DeinitAndFree(context->tokenList);
-	context->tokenList = NULL;
+	if ( context->currentToken )
+	{
+		BASEUTIL_FREE(context->currentToken);
+		context->currentToken = NULL;
+	}
+
+	context->currentTokenLength = 0;
 
 	V2MPAsm_CWDList_DeinitAndFree(context->cwdList);
 	context->cwdList = NULL;
@@ -243,9 +241,52 @@ void V2MPAsm_ParseContext_SkipWhitespace(V2MPAsm_ParseContext* context)
 	V2MPAsm_InputFile_SkipWhitespace(context->inputFile);
 }
 
-V2MPAsm_TokenList* V2MPAsm_ParseContext_GetTokenList(const V2MPAsm_ParseContext* context)
+char* V2MPAsm_ParseContext_SetCurrentToken(V2MPAsm_ParseContext* context, const char* begin, const char* end)
 {
-	return context ? context->tokenList : NULL;
+	size_t length;
+
+	if ( !context )
+	{
+		return NULL;
+	}
+
+	if ( context->currentToken )
+	{
+		BASEUTIL_FREE(context->currentToken);
+		context->currentToken = NULL;
+	}
+
+	context->currentTokenLength = 0;
+
+	if ( !begin || !end || end <= begin )
+	{
+		return NULL;
+	}
+
+	length = end - begin;
+	context->currentToken = (char*)BASEUTIL_MALLOC(length + 1);
+
+	if ( !context->currentToken )
+	{
+		return NULL;
+	}
+
+	context->currentTokenLength = length;
+
+	memcpy(context->currentToken, begin, length);
+	context->currentToken[length] = '\0';
+
+	return context->currentToken;
+}
+
+char* V2MPAsm_ParseContext_GetCurrentToken(const V2MPAsm_ParseContext* context)
+{
+	return context ? context->currentToken : NULL;
+}
+
+size_t V2MPAsm_ParseContext_GetCurrentTokenLength(const V2MPAsm_ParseContext* context)
+{
+	return context ? context->currentTokenLength : 0;
 }
 
 V2MPAsm_ParseState V2MPAsm_ParseContext_GetParseState(const V2MPAsm_ParseContext* context)

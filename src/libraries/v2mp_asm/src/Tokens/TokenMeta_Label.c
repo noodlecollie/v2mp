@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include "Tokens/TokenMeta_Label.h"
+#include "BaseUtil/String.h"
 
 static const char* FindEndOfToken(const char* token)
 {

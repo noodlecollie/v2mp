@@ -107,7 +107,8 @@ bool BaseUtil_String_ToLongInt(const char* str, const char** end, int base, long
 		return false;
 	}
 
-	*output = strtol(str, end ? end : &localEnd, base);
+	// Why is the first argument to strtol const, and the second one not??
+	*output = strtol(str, (char**)(end ? end : &localEnd), base);
 
 	if ( *output != 0 )
 	{
