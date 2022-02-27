@@ -18,7 +18,8 @@ struct V2MPAsm_ParseContext;
 	LIST_ITEM(PARSEERROR_UNRECOGNISED_INSTRUCTION, "unrecognised-instruction", "Unrecognised instruction.") \
 	LIST_ITEM(PARSEERROR_UNEXPECTED_TOKEN, "unexpected-token", "Unexpected token encountered.") \
 	LIST_ITEM(PARSEERROR_UNRECOGNISED_TOKEN, "unrecognised-token", "Unrecognised token.") \
-	LIST_ITEM(PARSEERROR_UNTERMINATED_TOKEN, "unterminated-token", "Unterminated token.")
+	LIST_ITEM(PARSEERROR_UNTERMINATED_TOKEN, "unterminated-token", "Unterminated token.") \
+	LIST_ITEM(PARSEERROR_INSUFFICIENT_ARGS, "insufficient-instr-args", "Not enough instruction arguments.") \
 
 #define LIST_ITEM(value, id, desc) value,
 typedef enum V2MPAsm_ParseWarningType

@@ -105,9 +105,26 @@ static bool CreateInitialInstruction(V2MPAsm_ParseContext* context)
 	return true;
 }
 
+static const char* ProcessInstructionArgument(V2MPAsm_ParseContext* context)
+{
+	V2MPAsm_ParseContext_TerminateWithError(
+		context,
+		PARSEERROR_UNIMPLEMENTED,
+		"Implement parsing of instruction arguments."
+	);
+
+	return NULL;
+}
 
 void V2MPAsm_Parser_ParseInstruction(V2MPAsm_Parser* parser)
 {
+	const char* beginningOfInstruction;
+	size_t beginLineNo;
+	V2MPAsm_CWDInstruction* instructionCWD;
+	const V2MPAsm_InstructionMeta* instructionMeta;
+	size_t totalArgs;
+	size_t argsProcessed;
+
 	// Sanity:
 	if ( V2MPAsm_ParseContext_GetParseState(parser->context) != PARSESTATE_BUILDING_INSTRUCTION )
 	{
@@ -120,15 +137,74 @@ void V2MPAsm_Parser_ParseInstruction(V2MPAsm_Parser* parser)
 		return;
 	}
 
+	beginningOfInstruction = V2MPAsm_ParseContext_GetInputCursor(parser->context);
+
 	if ( !CreateInitialInstruction(parser->context) )
 	{
 		return;
 	}
 
-	// TODO: Parse arguments
-	V2MPAsm_ParseContext_TerminateWithError(
-		parser->context,
-		PARSEERROR_UNIMPLEMENTED,
-		"Implement parsing of instruction arguments."
-	);
+	beginLineNo = V2MPAsm_ParseContext_GetInputLineNumber(parser->context);
+	instructionCWD = V2MPAsm_CWDInstruction_Cast(V2MPAsm_ParseContext_GetCurrentCWD(parser->context));
+	instructionMeta = V2MPAsm_CWDInstruction_GetInstructionMeta(instructionCWD);
+	totalArgs = V2MPAsm_InstructionMeta_GetArgCount(instructionMeta);
+
+	for ( argsProcessed = 0;
+	      V2MPAsm_ParseContext_GetInputLineNumber(parser->context) == beginLineNo;
+	      ++argsProcessed)
+	{
+		const char* endOfToken = NULL;
+
+		if ( argsProcessed < totalArgs )
+		{
+			endOfToken = ProcessInstructionArgument(parser->context);
+		}
+		else
+		{
+			const char* begin;
+			V2MPAsm_TokenType tokenType;
+			const V2MPAsm_TokenMeta* tokenMeta;
+
+			begin = V2MPAsm_ParseContext_GetInputCursor(parser->context);
+			tokenType = V2MPAsm_TokenMeta_IdentifyToken(begin);
+			tokenMeta = V2MPAsm_TokenMeta_GetMetaForTokenType(tokenType);
+			endOfToken = V2MPAsm_TokenMeta_FindEndOfToken(tokenMeta, begin);
+
+			if ( !endOfToken )
+			{
+				V2MPAsm_ParseContext_TerminateWithError(
+					parser->context,
+					PARSEERROR_INTERNAL,
+					"Internal error: could not determine end of token."
+				);
+			}
+		}
+
+		if ( !endOfToken )
+		{
+			// Something went wrong and an error has been set.
+			return;
+		}
+
+		V2MPAsm_ParseContext_SeekInput(parser->context, endOfToken);
+		V2MPAsm_ParseContext_SkipWhitespace(parser->context);
+	}
+
+	if ( argsProcessed != totalArgs )
+	{
+		V2MPAsm_ParseContext_SeekInput(parser->context, beginningOfInstruction);
+
+		V2MPAsm_ParseContext_TerminateWithError(
+			parser->context,
+			PARSEERROR_INSUFFICIENT_ARGS,
+			"Expected %zu %s for \"%s\" instruction, but was given %zu %s.",
+			totalArgs,
+			totalArgs == 1 ? "argument" : "arguments",
+			V2MPAsm_InstructionMeta_GetName(instructionMeta),
+			argsProcessed,
+			argsProcessed == 1 ? "argument" : "arguments"
+		);
+
+		return;
+	}
 }
