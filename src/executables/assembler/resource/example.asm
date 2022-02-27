@@ -6,8 +6,6 @@
  * spans multiple lines.
  */
 
-add _name name @#[notaname
-123 -123 +123
+add 0 0 0
 
-[ThisIsALabel]
-#preprocessor extraArg
+:label

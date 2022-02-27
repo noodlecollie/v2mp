@@ -21,6 +21,8 @@ const char* BaseUtil_String_NextWhitespace(const char* string);
 
 bool BaseUtil_String_CharIsAlphanumericOrUnderscore(char ch);
 
+bool BaseUtil_String_ToLongInt(const char* str, const char** end, int base, long int* output);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

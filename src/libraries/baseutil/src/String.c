@@ -1,5 +1,6 @@
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include "BaseUtil/String.h"
 #include "BaseUtil/Heap.h"
 
@@ -95,4 +96,25 @@ const char* BaseUtil_String_NextWhitespace(const char* string)
 bool BaseUtil_String_CharIsAlphanumericOrUnderscore(char ch)
 {
 	return isalnum(ch) || ch == '_';
+}
+
+bool BaseUtil_String_ToLongInt(const char* str, const char** end, int base, long int* output)
+{
+	const char* localEnd = NULL;
+
+	if ( !str || !(*str) || !output )
+	{
+		return false;
+	}
+
+	*output = strtol(str, end ? end : &localEnd, base);
+
+	if ( *output != 0 )
+	{
+		return true;
+	}
+
+	// If the number was not valid and 0 was returned, the "end" pointer
+	// will be set to be equal to the "str" pointer.
+	return (end ? (*end) : localEnd) > str;
 }

@@ -28,6 +28,11 @@ V2MPAsm_CWDInstruction* V2MPAsm_CWDInstruction_Cast(const struct V2MPAsm_CWDBase
 		: NULL;
 }
 
+const V2MPAsm_InstructionMeta* V2MPAsm_CWDInstruction_GetInstructionMeta(const V2MPAsm_CWDInstruction* cwd)
+{
+	return cwd ? cwd->instructionMeta : NULL;
+}
+
 void V2MPAsm_CWDInstruction_SetInstructionMeta(V2MPAsm_CWDInstruction* cwd, const V2MPAsm_InstructionMeta* meta)
 {
 	if ( !cwd )

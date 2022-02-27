@@ -24,4 +24,8 @@ void V2MPAsm_InstructionMeta_DestroyTable(void);
 
 const V2MPAsm_InstructionMeta* V2MPAsm_InstructionMeta_FindCommand(const char* name, size_t nameLength);
 
+const char* V2MPAsm_InstructionMeta_GetName(const V2MPAsm_InstructionMeta* meta);
+size_t V2MPAsm_InstructionMeta_GetArgCount(const V2MPAsm_InstructionMeta* meta);
+const V2MPAsm_InstructionArg* V2MPAsm_InstructionMeta_GetArg(const V2MPAsm_InstructionMeta* meta, size_t index);
+
 #endif // V2MPASM_INSTRUCTIONMETA_H

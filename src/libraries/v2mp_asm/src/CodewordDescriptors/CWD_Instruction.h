@@ -16,7 +16,10 @@ typedef struct V2MPAsm_CWDInstruction
 extern const V2MP_CWD_Factory V2MP_CWDInstruction_Factory;
 
 V2MPAsm_CWDInstruction* V2MPAsm_CWDInstruction_Cast(const struct V2MPAsm_CWDBase* cwdBase);
+
+const V2MPAsm_InstructionMeta* V2MPAsm_CWDInstruction_GetInstructionMeta(const V2MPAsm_CWDInstruction* cwd);
 void V2MPAsm_CWDInstruction_SetInstructionMeta(V2MPAsm_CWDInstruction* cwd, const V2MPAsm_InstructionMeta* meta);
+
 bool V2MPAsm_CWDInstruction_MakeMachineCodeWord(const V2MPAsm_CWDInstruction* cwdInstruction, V2MPAsm_Word* outWord);
 
 #endif // V2MPASM_CWD_INSTRUCTION_H

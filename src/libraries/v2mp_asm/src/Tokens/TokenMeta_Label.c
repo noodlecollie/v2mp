@@ -3,21 +3,21 @@
 
 static const char* FindEndOfToken(const char* token)
 {
-	// Skip first "["
+	// Skip first ":"
 	++token;
 
 	while ( *token )
 	{
-		if ( *token == ']' )
+		if ( !BaseUtil_String_CharIsAlphanumericOrUnderscore(*token) )
 		{
-			return token + 1;
+			return token;
 		}
 
 		++token;
 	}
 
-	// Token was unterminated.
-	return NULL;
+	// Ending with an EOF is fine (although useless).
+	return token;
 }
 
 const V2MPAsm_TokenMeta V2MPAsm_TokenMeta_Label =

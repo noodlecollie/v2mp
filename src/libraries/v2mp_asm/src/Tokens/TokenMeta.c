@@ -35,14 +35,13 @@ V2MPAsm_TokenType V2MPAsm_TokenMeta_IdentifyToken(const char* str)
 		}
 	}
 
-	if ( *str == '[' )
+	if ( *str == ':' )
 	{
 		return TOKEN_LABEL;
 	}
 
 	if ( (*str >= '0' && *str <= '9') || *str == '-' || *str == '+' )
 	{
-		// TODO: Handle binary and hex too
 		return TOKEN_NUMERIC_LITERAL;
 	}
 
