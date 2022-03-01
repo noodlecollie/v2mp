@@ -112,3 +112,18 @@ const V2MPAsm_InstructionArg* V2MPAsm_InstructionMeta_GetArg(const V2MPAsm_Instr
 
 	return &meta->args[index];
 }
+
+const char* V2MPasm_InstructionArg_GetName(const V2MPAsm_InstructionArg* arg)
+{
+	return arg ? arg->name : NULL;
+}
+
+size_t V2MPasm_InstructionArg_GetHighBitIndex(const V2MPAsm_InstructionArg* arg)
+{
+	return arg ? arg->highBitIndex : 0;
+}
+
+size_t V2MPasm_InstructionArg_GetNumBits(const V2MPAsm_InstructionArg* arg)
+{
+	return arg ? arg->numBits : 0;
+}

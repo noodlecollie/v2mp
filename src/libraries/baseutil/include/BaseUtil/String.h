@@ -23,6 +23,12 @@ bool BaseUtil_String_CharIsAlphanumericOrUnderscore(char ch);
 
 bool BaseUtil_String_ToLongInt(const char* str, const char** end, int base, long int* output);
 
+// Returns 10 for decimal, 16 for hex, 2 for binary, or 0 if
+// the base could not be determined.
+// Note that this function does not validate whether the entire
+// string represents a number - it only looks at the prefix.
+int BaseUtil_String_GetBaseFromNumberPrefix(const char* str);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

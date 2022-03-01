@@ -9,7 +9,8 @@ struct V2MPAsm_ParseContext;
 #define V2MPASM_PARSEEXCEPTION_FORMAT_DESC_MAX_LENGTH 512
 
 #define V2MPASM_PARSEWARNINGTYPE_LIST \
-	LIST_ITEM(PARSEWARNING_UNSPECIFIED = 0, "unspecified", "Unspecified warning.")
+	LIST_ITEM(PARSEWARNING_UNSPECIFIED = 0, "unspecified", "Unspecified warning.") \
+	LIST_ITEM(PARSEWARNING_ARG_OUT_OF_RANGE, "arg-out-of-range", "Instruction argument is out of range.")
 
 #define V2MPASM_PARSEERRORTYPE_LIST \
 	LIST_ITEM(PARSEERROR_UNSPECIFIED = 0, "unspecified", "Unspecified error.") \
@@ -20,6 +21,7 @@ struct V2MPAsm_ParseContext;
 	LIST_ITEM(PARSEERROR_UNRECOGNISED_TOKEN, "unrecognised-token", "Unrecognised token.") \
 	LIST_ITEM(PARSEERROR_UNTERMINATED_TOKEN, "unterminated-token", "Unterminated token.") \
 	LIST_ITEM(PARSEERROR_INSUFFICIENT_ARGS, "insufficient-instr-args", "Not enough instruction arguments.") \
+	LIST_ITEM(PARSEERROR_INVALID_NUMERIC_LITERAL, "invalid-numeric-literal", "Invalid numeric literal.")
 
 #define LIST_ITEM(value, id, desc) value,
 typedef enum V2MPAsm_ParseWarningType

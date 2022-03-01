@@ -119,3 +119,33 @@ bool BaseUtil_String_ToLongInt(const char* str, const char** end, int base, long
 	// will be set to be equal to the "str" pointer.
 	return (end ? (*end) : localEnd) > str;
 }
+
+int BaseUtil_String_GetBaseFromNumberPrefix(const char* str)
+{
+	if ( !str )
+	{
+		return 0;
+	}
+
+	if ( str[0] == '0' )
+	{
+		if ( str[1] == 'X' || str[1] == 'x' )
+		{
+			return 16;
+		}
+
+		if ( str[1] == 'B' || str[1] == 'b' )
+		{
+			return 2;
+		}
+
+		return 10;
+	}
+
+	if ( str[0] >= '1' && str[0] <= '9' )
+	{
+		return 10;
+	}
+
+	return 0;
+}

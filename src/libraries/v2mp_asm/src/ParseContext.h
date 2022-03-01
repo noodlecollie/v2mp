@@ -90,4 +90,11 @@ void V2MPAsm_ParseContext_CreateAndSetErrorV(V2MPAsm_ParseContext* context, V2MP
 void V2MPAsm_ParseContext_TerminateWithError(V2MPAsm_ParseContext* context, V2MPAsm_ParseErrorType errorType, const char* format, ...);
 void V2MPAsm_ParseContext_TerminateWithErrorV(V2MPAsm_ParseContext* context, V2MPAsm_ParseErrorType errorType, const char* format, va_list args);
 
+// Helper for reporting internal errors which should never occur:
+#define PARSECONTEXT_INTERNAL_ERRORV(context, fmt, ...) \
+	V2MPAsm_ParseContext_TerminateWithError((context), PARSEERROR_INTERNAL, "Internal error at %s:%d. " fmt, __FILE__, __LINE__, __VA_ARGS__)
+
+#define PARSECONTEXT_INTERNAL_ERROR(context, str) \
+	V2MPAsm_ParseContext_TerminateWithError((context), PARSEERROR_INTERNAL, "Internal error at %s:%d. " str, __FILE__, __LINE__)
+
 #endif // V2MPASM_PARSECONTEXT_H

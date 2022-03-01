@@ -127,7 +127,9 @@ void V2MPAsm_InputFile_SkipWhitespace(V2MPAsm_InputFile* inputFile)
 
 void V2MPAsm_InputFile_SkipToCursor(V2MPAsm_InputFile* inputFile, const char* newCursor)
 {
-	if ( !V2MPAsm_InputFile_IsValid(inputFile) || !newCursor || newCursor == inputFile->cursor )
+	if ( !V2MPAsm_InputFile_IsValid(inputFile) ||
+	     !newCursor ||
+	     newCursor == inputFile->cursor )
 	{
 		return;
 	}
@@ -139,6 +141,11 @@ void V2MPAsm_InputFile_SkipToCursor(V2MPAsm_InputFile* inputFile, const char* ne
 		inputFile->curLineNo = 0;
 
 		return;
+	}
+
+	if ( newCursor > inputFile->data + inputFile->length )
+	{
+		newCursor = inputFile->data + inputFile->length;
 	}
 
 	if ( newCursor > inputFile->cursor )

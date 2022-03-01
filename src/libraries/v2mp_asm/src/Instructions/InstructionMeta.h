@@ -28,4 +28,8 @@ const char* V2MPAsm_InstructionMeta_GetName(const V2MPAsm_InstructionMeta* meta)
 size_t V2MPAsm_InstructionMeta_GetArgCount(const V2MPAsm_InstructionMeta* meta);
 const V2MPAsm_InstructionArg* V2MPAsm_InstructionMeta_GetArg(const V2MPAsm_InstructionMeta* meta, size_t index);
 
+const char* V2MPasm_InstructionArg_GetName(const V2MPAsm_InstructionArg* arg);
+size_t V2MPasm_InstructionArg_GetHighBitIndex(const V2MPAsm_InstructionArg* arg);
+size_t V2MPasm_InstructionArg_GetNumBits(const V2MPAsm_InstructionArg* arg);
+
 #endif // V2MPASM_INSTRUCTIONMETA_H

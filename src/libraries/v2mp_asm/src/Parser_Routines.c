@@ -92,10 +92,9 @@ void V2MPAsm_Parser_ExecuteParse(V2MPAsm_Parser* parser)
 
 			default:
 			{
-				V2MPAsm_ParseContext_TerminateWithError(
+				PARSECONTEXT_INTERNAL_ERROR(
 					parser->context,
-					PARSEERROR_INTERNAL,
-					"Internal error: unknown internal state encountered."
+					"Unknown internal state encountered."
 				);
 
 				break;
