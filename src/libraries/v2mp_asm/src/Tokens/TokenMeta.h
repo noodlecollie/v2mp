@@ -10,6 +10,7 @@
 	LIST_ITEM(TOKEN_NUMERIC_LITERAL, &V2MPAsm_TokenMeta_NumericLiteral) \
 	LIST_ITEM(TOKEN_NAME, &V2MPAsm_TokenMeta_Name) \
 	LIST_ITEM(TOKEN_LABEL, &V2MPAsm_TokenMeta_Label) \
+	LIST_ITEM(TOKEN_LABEL_REFERENCE, &V2MPAsm_TokenMeta_LabelReference)
 
 #define LIST_ITEM(value, metaEntry) value,
 typedef enum V2MPAsm_TokenType
@@ -22,6 +23,10 @@ typedef struct V2MPAsm_TokenMeta
 {
 	V2MPAsm_TokenType type;
 	const char* typeName;
+
+	// Returns true if the token is of the type specified
+	// by this metadata object, or false otherwise.
+	bool (*isTokenOfThisType)(const char* token);
 
 	// Returns pointer to first character after end of token,
 	// or NULL if the token is unterminated.

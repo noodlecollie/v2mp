@@ -14,6 +14,7 @@ add_library(${TARGETNAME_V2MP_ASM}
 
 	src/Tokens/TokenList.c
 	src/Tokens/TokenMeta_Label.c
+	src/Tokens/TokenMeta_LabelReference.c
 	src/Tokens/TokenMeta_LineComment.c
 	src/Tokens/TokenMeta_MultilineComment.c
 	src/Tokens/TokenMeta_Name.c

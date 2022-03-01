@@ -1,6 +1,11 @@
 #include <stddef.h>
 #include "Tokens/TokenMeta_LineComment.h"
 
+static bool IsTokenOfThisType(const char* token)
+{
+	return token[0] == '/' && token[1] == '/';
+}
+
 static const char* FindEndOfToken(const char* token)
 {
 	// Skip first "//"
@@ -25,5 +30,6 @@ const V2MPAsm_TokenMeta V2MPAsm_TokenMeta_LineComment =
 	TOKEN_LINE_COMMENT,
 	"Line Comment",
 
+	&IsTokenOfThisType,
 	&FindEndOfToken
 };

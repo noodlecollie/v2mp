@@ -9,3 +9,6 @@
 add 0 0 0
 
 :label
+add 0 0 ~:label
+add 0 0 +:label
+add 0 0 -:label

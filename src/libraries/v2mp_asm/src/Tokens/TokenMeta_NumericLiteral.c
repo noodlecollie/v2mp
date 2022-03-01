@@ -3,6 +3,21 @@
 #include <ctype.h>
 #include "Tokens/TokenMeta_NumericLiteral.h"
 
+static bool IsTokenOfThisType(const char* token)
+{
+	if ( token[0] >= '0' && token[0] <= '9' )
+	{
+		return true;
+	}
+
+	if ( token[0] == '+' || token[0] == '-' )
+	{
+		return token[1] >= '0' && token[1] <= '9';
+	}
+
+	return false;
+}
+
 static const char* FindEndOfHexToken(const char* token)
 {
 	// Skip first "0x"
@@ -86,5 +101,6 @@ const V2MPAsm_TokenMeta V2MPAsm_TokenMeta_NumericLiteral =
 	TOKEN_NUMERIC_LITERAL,
 	"Numeric Literal",
 
+	&IsTokenOfThisType,
 	&FindEndOfToken
 };

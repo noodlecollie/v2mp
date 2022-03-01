@@ -6,6 +6,14 @@
 #include "Tokens/TokenMeta_NumericLiteral.h"
 #include "Tokens/TokenMeta_Name.h"
 #include "Tokens/TokenMeta_Label.h"
+#include "Tokens/TokenMeta_LabelReference.h"
+
+#define LIST_ITEM(value, metaEntry) metaEntry,
+static const V2MPAsm_TokenMeta* const TOKEN_METADATA[] =
+{
+	V2MPASM_TOKEN_TYPE_LIST
+};
+#undef LIST_ITEM
 
 const char* V2MPAsm_TokenMeta_GetTokenTypeString(V2MPAsm_TokenType tokenType)
 {
@@ -17,37 +25,16 @@ const char* V2MPAsm_TokenMeta_GetTokenTypeString(V2MPAsm_TokenType tokenType)
 
 V2MPAsm_TokenType V2MPAsm_TokenMeta_IdentifyToken(const char* str)
 {
-	if ( !str || !(*str) )
-	{
-		return TOKEN_UNKNOWN;
-	}
+	size_t index;
 
-	if ( *str == '/' )
+	for ( index = 0; index < BASEUTIL_ARRAY_SIZE(TOKEN_METADATA); ++index )
 	{
-		if ( *(str + 1) == '/' )
+		if ( TOKEN_METADATA[index] &&
+		     TOKEN_METADATA[index]->isTokenOfThisType &&
+		     TOKEN_METADATA[index]->isTokenOfThisType(str) )
 		{
-			return TOKEN_LINE_COMMENT;
+			return TOKEN_METADATA[index]->type;
 		}
-
-		if ( *(str + 1) == '*' )
-		{
-			return TOKEN_MULTILINE_COMMENT;
-		}
-	}
-
-	if ( *str == ':' )
-	{
-		return TOKEN_LABEL;
-	}
-
-	if ( (*str >= '0' && *str <= '9') || *str == '-' || *str == '+' )
-	{
-		return TOKEN_NUMERIC_LITERAL;
-	}
-
-	if ( (*str >= 'A' && *str <= 'Z') || (*str >= 'a' && *str <= 'z') || *str == '_' )
-	{
-		return TOKEN_NAME;
 	}
 
 	return TOKEN_UNKNOWN;
@@ -55,13 +42,6 @@ V2MPAsm_TokenType V2MPAsm_TokenMeta_IdentifyToken(const char* str)
 
 const V2MPAsm_TokenMeta* V2MPAsm_TokenMeta_GetMetaForTokenType(V2MPAsm_TokenType tokenType)
 {
-#define LIST_ITEM(value, metaEntry) metaEntry,
-	static const V2MPAsm_TokenMeta* const TOKEN_METADATA[] =
-	{
-		V2MPASM_TOKEN_TYPE_LIST
-	};
-#undef LIST_ITEM
-
 	return (size_t)tokenType < BASEUTIL_ARRAY_SIZE(TOKEN_METADATA)
 		? TOKEN_METADATA[(size_t)tokenType]
 		: NULL;

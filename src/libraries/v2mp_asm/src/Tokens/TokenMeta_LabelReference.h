@@ -1,0 +1,8 @@
+#ifndef V2MPASM_TOKENS_TOKENMETA_LABELREFERENCE_H
+#define V2MPASM_TOKENS_TOKENMETA_LABELREFERENCE_H
+
+#include "Tokens/TokenMeta.h"
+
+extern const V2MPAsm_TokenMeta V2MPAsm_TokenMeta_LabelReference;
+
+#endif // V2MPASM_TOKENS_TOKENMETA_LABELREFERENCE_H
