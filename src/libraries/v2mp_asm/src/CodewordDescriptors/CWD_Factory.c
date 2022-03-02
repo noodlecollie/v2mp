@@ -1,6 +1,7 @@
 #include "BaseUtil/Util.h"
 #include "CodewordDescriptors/CWD_Factory.h"
 #include "CodewordDescriptors/CWD_Instruction.h"
+#include "CodewordDescriptors/CWD_Label.h"
 
 const V2MP_CWD_Factory* V2MPAsm_CWD_GetFactory(V2MPAsm_CWD_Type type)
 {

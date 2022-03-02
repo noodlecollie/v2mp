@@ -6,7 +6,7 @@
 #define V2MP_CWD_TYPE_LIST \
 	LIST_ITEM(V2MPASM_CWD_INVALID = 0, NULL) \
 	LIST_ITEM(V2MPASM_CWD_INSTRUCTION, &V2MP_CWDInstruction_Factory) \
-	LIST_ITEM(V2MPASM_CWD_LABEL, NULL)
+	LIST_ITEM(V2MPASM_CWD_LABEL, &V2MP_CWDLabel_Factory)
 
 #define LIST_ITEM(value, factory) value,
 typedef enum V2MPAsm_CWD_Type
