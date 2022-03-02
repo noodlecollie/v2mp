@@ -186,6 +186,7 @@ static const char* ProcessInstructionArgument(V2MPAsm_ParseContext* context, siz
 	int base = 0;
 	long int argAsNumber = 0;
 	V2MPAsm_Word argAsWord = 0;
+	V2MPAsm_CWDInstruction_Arg* instructionArg;
 
 	V2MPAsm_ParseContext_SkipWhitespace(context);
 	begin = V2MPAsm_ParseContext_GetInputCursor(context);
@@ -284,7 +285,23 @@ static const char* ProcessInstructionArgument(V2MPAsm_ParseContext* context, siz
 		return NULL;
 	}
 
-	V2MPAsm_CWDInstruction_SetInstructionArg(instructionCWD, argIndex, argAsWord);
+	instructionArg = V2MPAsm_CWDInstruction_GetInstructionArg(instructionCWD, argIndex);
+
+	if ( !instructionArg )
+	{
+		PARSECONTEXT_INTERNAL_ERRORV(
+			context,
+			"Could not fetch instruction data for \"%s\" argument %zu",
+			begin,
+			argIndex
+		);
+
+		return NULL;
+	}
+
+	instructionArg->isLabelRef = false;
+	instructionArg->value.numericValue = argAsWord;
+
 	return end;
 }
 
