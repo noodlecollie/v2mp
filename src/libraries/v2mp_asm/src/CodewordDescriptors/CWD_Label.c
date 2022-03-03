@@ -40,12 +40,12 @@ V2MPAsm_CWDLabel* V2MPAsm_CWDLabel_Cast(const struct V2MPAsm_CWDBase* cwdBase)
 		: NULL;
 }
 
-const char* V2MPAsm_Label_GetName(const V2MPAsm_CWDLabel* label)
+const char* V2MPAsm_CWDLabel_GetName(const V2MPAsm_CWDLabel* label)
 {
 	return label ? label->name : NULL;
 }
 
-bool V2MPAsm_Label_SetName(V2MPAsm_CWDLabel* label, const char* name)
+bool V2MPAsm_CWDLabel_SetName(V2MPAsm_CWDLabel* label, const char* name)
 {
 	if ( !label )
 	{

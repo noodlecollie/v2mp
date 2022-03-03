@@ -383,7 +383,7 @@ void V2MPAsm_Parser_ParseInstruction(V2MPAsm_Parser* parser)
 
 		V2MPAsm_ParseContext_TerminateWithError(
 			parser->context,
-			PARSEERROR_INSUFFICIENT_ARGS,
+			PARSEERROR_INCORRECT_ARGS,
 			"Expected %zu %s for \"%s\" instruction, but was given %zu %s.",
 			totalArgs,
 			totalArgs == 1 ? "argument" : "arguments",

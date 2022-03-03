@@ -27,6 +27,7 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/ParseException_Internal.c
 	src/ParseException.c
 	src/Parser_ParseInstruction.c
+	src/Parser_ParseLabel.c
 	src/Parser_Routines.c
 	src/Parser.c
 	src/TempTest.c

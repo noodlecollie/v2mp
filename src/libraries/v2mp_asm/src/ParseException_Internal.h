@@ -20,7 +20,7 @@ struct V2MPAsm_ParseContext;
 	LIST_ITEM(PARSEERROR_UNEXPECTED_TOKEN, "unexpected-token", "Unexpected token encountered.") \
 	LIST_ITEM(PARSEERROR_UNRECOGNISED_TOKEN, "unrecognised-token", "Unrecognised token.") \
 	LIST_ITEM(PARSEERROR_UNTERMINATED_TOKEN, "unterminated-token", "Unterminated token.") \
-	LIST_ITEM(PARSEERROR_INSUFFICIENT_ARGS, "insufficient-instr-args", "Not enough instruction arguments.") \
+	LIST_ITEM(PARSEERROR_INCORRECT_ARGS, "incorrect-args", "Incorrect arguments for instruction.") \
 	LIST_ITEM(PARSEERROR_INVALID_NUMERIC_LITERAL, "invalid-numeric-literal", "Invalid numeric literal.")
 
 #define LIST_ITEM(value, id, desc) value,

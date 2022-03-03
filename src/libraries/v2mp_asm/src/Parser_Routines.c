@@ -4,6 +4,7 @@
 #include "Tokens/TokenMeta.h"
 #include "Instructions/InstructionMeta.h"
 #include "Parser_ParseInstruction.h"
+#include "Parser_ParseLabel.h"
 
 static void InitResources()
 {
@@ -46,7 +47,13 @@ static void ParseDefault(V2MPAsm_ParseContext* context)
 	{
 		case TOKEN_NAME:
 		{
-			context->state = PARSESTATE_BUILDING_INSTRUCTION;
+			V2MPAsm_ParseContext_SetParseState(context, PARSESTATE_BUILDING_INSTRUCTION);
+			break;
+		}
+
+		case TOKEN_LABEL:
+		{
+			V2MPAsm_ParseContext_SetParseState(context, PARSESTATE_RECORDING_LABEL);
 			break;
 		}
 
@@ -87,6 +94,12 @@ void V2MPAsm_Parser_ExecuteParse(V2MPAsm_Parser* parser)
 			case PARSESTATE_BUILDING_INSTRUCTION:
 			{
 				V2MPAsm_Parser_ParseInstruction(parser);
+				break;
+			}
+
+			case PARSESTATE_RECORDING_LABEL:
+			{
+				V2MPAsm_Parser_ParseLabel(parser);
 				break;
 			}
 
