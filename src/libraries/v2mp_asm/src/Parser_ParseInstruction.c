@@ -6,6 +6,7 @@
 #include "Tokens/TokenMeta.h"
 #include "BaseUtil/Heap.h"
 #include "BaseUtil/String.h"
+#include "Tokens/TokenMeta_LabelReference.h"
 
 static inline V2MPAsm_Word DetermineMaxValue(size_t numBits)
 {
@@ -128,7 +129,7 @@ static bool CreateInitialInstruction(V2MPAsm_ParseContext* context)
 	return true;
 }
 
-static bool ValidateArg(V2MPAsm_ParseContext* context, V2MPAsm_CWDInstruction* cwd, size_t argIndex, V2MPAsm_Word arg)
+static bool ValidateNumericalArg(V2MPAsm_ParseContext* context, V2MPAsm_CWDInstruction* cwd, size_t argIndex, V2MPAsm_Word arg)
 {
 	const V2MPAsm_InstructionMeta* instructionMeta;
 	const V2MPAsm_InstructionArg* instructionArg;
@@ -176,6 +177,135 @@ static bool ValidateArg(V2MPAsm_ParseContext* context, V2MPAsm_CWDInstruction* c
 	return true;
 }
 
+static bool AddNumericArgument(V2MPAsm_ParseContext* context, V2MPAsm_CWDInstruction* instructionCWD, size_t argIndex)
+{
+	const char* begin;
+	int base = 0;
+	long int argAsNumber = 0;
+	V2MPAsm_Word argAsWord = 0;
+	V2MPAsm_CWDInstruction_Arg* instructionArg;
+
+	begin = V2MPAsm_ParseContext_GetCurrentToken(context);
+	base = BaseUtil_String_GetBaseFromNumberPrefix(begin);
+
+	if ( base == 0 )
+	{
+		V2MPAsm_ParseContext_TerminateWithError(
+			context,
+			PARSEERROR_INVALID_NUMERIC_LITERAL,
+			"Numeric literal \"%s\" specified an invalid base."
+		);
+
+		return false;
+	}
+
+	if ( !BaseUtil_String_ToLongInt(begin, NULL, base, &argAsNumber) )
+	{
+		V2MPAsm_ParseContext_TerminateWithError(
+			context,
+			PARSEERROR_INVALID_NUMERIC_LITERAL,
+			"Numeric literal \"%s\" did not represent a valid number."
+		);
+
+		return false;
+	}
+
+	argAsWord = (V2MPAsm_Word)argAsNumber;
+
+	if ( !ValidateNumericalArg(context, instructionCWD, argIndex, argAsWord) )
+	{
+		// Error will have been set.
+		return false;
+	}
+
+	instructionArg = V2MPAsm_CWDInstruction_GetInstructionArg(instructionCWD, argIndex);
+
+	if ( !instructionArg )
+	{
+		PARSECONTEXT_INTERNAL_ERRORV(
+			context,
+			"Could not fetch instruction data when processing argument \"%s\"",
+			begin
+		);
+
+		return false;
+	}
+
+	if ( !V2MPAsm_CWDInstructionArg_SetNumericValue(instructionArg, argAsWord) )
+	{
+		PARSECONTEXT_INTERNAL_ERRORV(
+			context,
+			"Could not set instruction data when processing argument \"%s\"",
+			begin
+		);
+
+		return false;
+	}
+
+	return true;
+}
+
+static bool AddLabelRefArgument(V2MPAsm_ParseContext* context, V2MPAsm_CWDInstruction* instructionCWD, size_t argIndex)
+{
+	const char* begin;
+	V2MPAsm_CWDInstruction_Arg* instructionArg;
+	V2MPAsm_LabelReferenceType labelRefType;
+	const char* labelName;
+
+	begin = V2MPAsm_ParseContext_GetCurrentToken(context);
+	instructionArg = V2MPAsm_CWDInstruction_GetInstructionArg(instructionCWD, argIndex);
+
+	if ( !instructionArg )
+	{
+		PARSECONTEXT_INTERNAL_ERRORV(
+			context,
+			"Could not fetch instruction data when processing argument \"%s\"",
+			begin
+		);
+
+		return false;
+	}
+
+	labelRefType = V2MPAsm_LabelReference_GetReferenceType(begin);
+
+	if ( labelRefType == LABELREF_INVALID )
+	{
+		PARSECONTEXT_INTERNAL_ERRORV(
+			context,
+			"Could not deduce label reference type from \"%s\"",
+			begin
+		);
+
+		return false;
+	}
+
+	labelName = V2MPAsm_LabelReference_GetLabelName(begin);
+
+	if ( !labelName )
+	{
+		V2MPAsm_ParseContext_TerminateWithError(
+			context,
+			PARSEERROR_EMPTY_TOKEN,
+			"No label name was provided for this label reference."
+		);
+
+		return false;
+	}
+
+	if ( !V2MPAsm_CWDInstructionArg_SetLabelRef(instructionArg, labelName, labelRefType) )
+	{
+		PARSECONTEXT_INTERNAL_ERRORV(
+			context,
+			"Could not set instruction data when processing argument \"%s\"",
+			begin
+		);
+
+		return false;
+	}
+
+	return true;
+}
+
 static const char* ProcessInstructionArgument(V2MPAsm_ParseContext* context, size_t argIndex)
 {
 	const char* begin;
@@ -183,10 +313,6 @@ static const char* ProcessInstructionArgument(V2MPAsm_ParseContext* context, siz
 	V2MPAsm_TokenType tokenType;
 	const V2MPAsm_TokenMeta* tokenMeta;
 	V2MPAsm_CWDInstruction* instructionCWD;
-	int base = 0;
-	long int argAsNumber = 0;
-	V2MPAsm_Word argAsWord = 0;
-	V2MPAsm_CWDInstruction_Arg* instructionArg;
 
 	V2MPAsm_ParseContext_SkipWhitespace(context);
 	begin = V2MPAsm_ParseContext_GetInputCursor(context);
@@ -228,79 +354,55 @@ static const char* ProcessInstructionArgument(V2MPAsm_ParseContext* context, siz
 		return NULL;
 	}
 
-	if ( tokenType != TOKEN_NUMERIC_LITERAL )
-	{
-		V2MPAsm_ParseContext_TerminateWithError(
-			context,
-			PARSEERROR_UNEXPECTED_TOKEN,
-			"Expected numeric literal as argument to instruction, but got \"%s\".",
-			begin
-		);
-
-		return NULL;
-	}
-
-	base = BaseUtil_String_GetBaseFromNumberPrefix(begin);
-
-	if ( base == 0 )
-	{
-		V2MPAsm_ParseContext_TerminateWithError(
-			context,
-			PARSEERROR_INVALID_NUMERIC_LITERAL,
-			"Numeric literal \"%s\" specified an invalid base."
-		);
-
-		return NULL;
-	}
-
-	if ( !BaseUtil_String_ToLongInt(begin, NULL, base, &argAsNumber) )
-	{
-		V2MPAsm_ParseContext_TerminateWithError(
-			context,
-			PARSEERROR_INVALID_NUMERIC_LITERAL,
-			"Numeric literal \"%s\" did not represent a valid number."
-		);
-
-		return NULL;
-	}
-
 	instructionCWD = V2MPAsm_CWDInstruction_Cast(V2MPAsm_ParseContext_GetCurrentCWD(context));
 
 	if ( !instructionCWD )
 	{
 		PARSECONTEXT_INTERNAL_ERRORV(
 			context,
-			"Could not create instruction data for \"%s\"",
+			"Could not create instruction data when processing argument \"%s\"",
 			begin
 		);
 
-		return NULL;
+		return false;
 	}
 
-	argAsWord = (V2MPAsm_Word)argAsNumber;
-
-	if ( !ValidateArg(context, instructionCWD, argIndex, argAsWord) )
+	switch ( tokenType )
 	{
-		// Error will have been set.
-		return NULL;
+		case TOKEN_NUMERIC_LITERAL:
+		{
+			if ( !AddNumericArgument(context, instructionCWD, argIndex) )
+			{
+				// Error will have been set.
+				return NULL;
+			}
+
+			break;
+		}
+
+		case TOKEN_LABEL_REFERENCE:
+		{
+			if ( !AddLabelRefArgument(context, instructionCWD, argIndex) )
+			{
+				// Error will have been set.
+				return NULL;
+			}
+
+			break;
+		}
+
+		default:
+		{
+			V2MPAsm_ParseContext_TerminateWithError(
+				context,
+				PARSEERROR_UNEXPECTED_TOKEN,
+				"Expected numeric literal as argument to instruction, but got \"%s\".",
+				begin
+			);
+
+			return NULL;
+		}
 	}
-
-	instructionArg = V2MPAsm_CWDInstruction_GetInstructionArg(instructionCWD, argIndex);
-
-	if ( !instructionArg )
-	{
-		PARSECONTEXT_INTERNAL_ERRORV(
-			context,
-			"Could not fetch instruction data for \"%s\" argument %zu",
-			begin,
-			argIndex
-		);
-
-		return NULL;
-	}
-
-	instructionArg->isLabelRef = false;
-	instructionArg->value.numericValue = argAsWord;
 
 	return end;
 }

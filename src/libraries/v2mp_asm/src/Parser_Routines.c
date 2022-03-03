@@ -34,6 +34,15 @@ static void ParseDefault(V2MPAsm_ParseContext* context)
 	V2MPAsm_TokenType tokenType;
 
 	V2MPAsm_ParseContext_SkipWhitespace(context);
+
+	if ( V2MPAsm_ParseContext_InputIsAtEOF(context) )
+	{
+		// TODO: Set state to final pass, where label references
+		// are resolved, rather than terminating.
+		V2MPAsm_ParseContext_SetParseState(context, PARSESTATE_TERMINATED);
+		return;
+	}
+
 	token = V2MPAsm_ParseContext_GetInputCursor(context);
 	tokenType = V2MPAsm_TokenMeta_IdentifyToken(token);
 

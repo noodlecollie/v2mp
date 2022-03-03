@@ -1,12 +1,13 @@
 #include "CodewordDescriptors/CWD_Instruction.h"
 #include "CodewordDescriptors/CWD_Base.h"
 #include "BaseUtil/Heap.h"
+#include "BaseUtil/String.h"
 
 static inline void FreeArg(V2MPAsm_CWDInstruction_Arg* arg)
 {
-	if ( arg->isLabelRef && arg->value.labelName )
+	if ( arg->isLabelRef && arg->value.labelRef.labelName )
 	{
-		BASEUTIL_FREE(arg->value.labelName);
+		BASEUTIL_FREE(arg->value.labelRef.labelName);
 	}
 }
 
@@ -115,6 +116,50 @@ size_t V2MPAsm_CWDInstruction_GetInstructionArgCount(const V2MPAsm_CWDInstructio
 V2MPAsm_CWDInstruction_Arg* V2MPAsm_CWDInstruction_GetInstructionArg(const V2MPAsm_CWDInstruction* cwd, size_t index)
 {
 	return (cwd && index < cwd->numArgs) ? &cwd->args[index] : 0;
+}
+
+bool V2MPAsm_CWDInstructionArg_SetNumericValue(V2MPAsm_CWDInstruction_Arg* arg, V2MPAsm_Word value)
+{
+	if ( !arg )
+	{
+		return false;
+	}
+
+	FreeArg(arg);
+
+	arg->isLabelRef = false;
+	arg->value.numericValue = value;
+
+	return true;
+}
+
+bool V2MPAsm_CWDInstructionArg_SetLabelRef(
+	V2MPAsm_CWDInstruction_Arg* arg,
+	const char* labelName,
+	V2MPAsm_LabelReferenceType refType
+)
+{
+	char* labelNameDuplicate;
+
+	if ( !arg || !labelName )
+	{
+		return false;
+	}
+
+	labelNameDuplicate = BaseUtil_String_Duplicate(labelName);
+
+	if ( !labelNameDuplicate )
+	{
+		return false;
+	}
+
+	FreeArg(arg);
+
+	arg->isLabelRef = true;
+	arg->value.labelRef.labelName = labelNameDuplicate;
+	arg->value.labelRef.refType = refType;
+
+	return true;
 }
 
 bool V2MPAsm_CWDInstruction_MakeMachineCodeWord(const V2MPAsm_CWDInstruction* cwdInstruction, V2MPAsm_Word* outWord)
