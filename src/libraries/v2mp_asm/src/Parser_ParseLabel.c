@@ -1,4 +1,5 @@
 #include "Parser_ParseLabel.h"
+#include "Parser_Internal.h"
 #include "CodewordDescriptors/CWD_Label.h"
 
 void V2MPAsm_Parser_ParseLabel(V2MPAsm_Parser* parser)
@@ -97,6 +98,8 @@ void V2MPAsm_Parser_ParseLabel(V2MPAsm_Parser* parser)
 
 		return;
 	}
+
+	V2MPAsm_CWDLabel_SetLine(cwdLabel, V2MPAsm_ParseContext_GetInputLineNumber(parser->context));
 
 	V2MPAsm_ParseContext_SeekInput(parser->context, end);
 	V2MPAsm_ParseContext_SetParseState(parser->context, PARSESTATE_DEFAULT);

@@ -1,5 +1,6 @@
 #include <stdarg.h>
 #include "Parser_ParseInstruction.h"
+#include "Parser_Internal.h"
 #include "Instructions/InstructionMeta.h"
 #include "ParseException_Internal.h"
 #include "CodewordDescriptors/CWD_Instruction.h"

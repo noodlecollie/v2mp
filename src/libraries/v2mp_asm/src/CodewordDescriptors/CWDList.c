@@ -141,3 +141,8 @@ V2MPAsm_CWDBase* V2MPAsm_CWDList_AppendNew(V2MPAsm_CWDList* list, V2MPAsm_CWD_Ty
 
 	return NULL;
 }
+
+V2MPAsm_CWDBase* V2MPAsm_CWDList_GetItem(V2MPAsm_CWDList* list, size_t index)
+{
+	return (list && index <= list->size) ? list->head[index] : NULL;
+}

@@ -304,6 +304,11 @@ void V2MPAsm_ParseContext_SetParseState(V2MPAsm_ParseContext* context, V2MPAsm_P
 	context->state = state;
 }
 
+V2MPAsm_CWDList* V2MPAsm_ParseContext_GetCWDList(const V2MPAsm_ParseContext* context)
+{
+	return context ? context->cwdList : NULL;
+}
+
 V2MPAsm_CWDBase* V2MPAsm_ParseContext_AppendNewCWDAsCurrent(V2MPAsm_ParseContext* context, V2MPAsm_CWD_Type cwdType)
 {
 	if ( !context )

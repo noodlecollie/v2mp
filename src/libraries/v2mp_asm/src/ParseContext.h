@@ -17,7 +17,8 @@ typedef enum V2MPAsm_ParseState
 	PARSESTATE_DEFAULT = 0,
 	PARSESTATE_TERMINATED,
 	PARSESTATE_BUILDING_INSTRUCTION,
-	PARSESTATE_RECORDING_LABEL
+	PARSESTATE_RECORDING_LABEL,
+	PARSESTATE_RESOLVING_REFERENCES
 } V2MPAsm_ParseState;
 
 typedef struct V2MPAsm_ParseContext
@@ -72,6 +73,7 @@ size_t V2MPAsm_ParseContext_GetCurrentTokenLength(const V2MPAsm_ParseContext* co
 V2MPAsm_ParseState V2MPAsm_ParseContext_GetParseState(const V2MPAsm_ParseContext* context);
 void V2MPAsm_ParseContext_SetParseState(V2MPAsm_ParseContext* context, V2MPAsm_ParseState state);
 
+V2MPAsm_CWDList* V2MPAsm_ParseContext_GetCWDList(const V2MPAsm_ParseContext* context);
 V2MPAsm_CWDBase* V2MPAsm_ParseContext_AppendNewCWDAsCurrent(V2MPAsm_ParseContext* context, V2MPAsm_CWD_Type cwdType);
 V2MPAsm_CWDBase* V2MPAsm_ParseContext_GetCurrentCWD(const V2MPAsm_ParseContext* context);
 

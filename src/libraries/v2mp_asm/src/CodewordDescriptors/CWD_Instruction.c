@@ -53,7 +53,7 @@ const V2MP_CWD_Factory V2MP_CWDInstruction_Factory =
 	&Destroy
 };
 
-V2MPAsm_CWDInstruction* V2MPAsm_CWDInstruction_Cast(const struct V2MPAsm_CWDBase* cwdBase)
+V2MPAsm_CWDInstruction* V2MPAsm_CWDInstruction_Cast(struct V2MPAsm_CWDBase* cwdBase)
 {
 	return (cwdBase && cwdBase->type == V2MPASM_CWD_INSTRUCTION)
 		? (V2MPAsm_CWDInstruction*)cwdBase->data

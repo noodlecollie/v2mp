@@ -5,6 +5,7 @@
 #include "Instructions/InstructionMeta.h"
 #include "Parser_ParseInstruction.h"
 #include "Parser_ParseLabel.h"
+#include "Parser_ResolveReferences.h"
 
 static void InitResources()
 {
@@ -37,9 +38,8 @@ static void ParseDefault(V2MPAsm_ParseContext* context)
 
 	if ( V2MPAsm_ParseContext_InputIsAtEOF(context) )
 	{
-		// TODO: Set state to final pass, where label references
-		// are resolved, rather than terminating.
-		V2MPAsm_ParseContext_SetParseState(context, PARSESTATE_TERMINATED);
+		// Entire file is parsed.
+		V2MPAsm_ParseContext_SetParseState(context, PARSESTATE_RESOLVING_REFERENCES);
 		return;
 	}
 
@@ -109,6 +109,12 @@ void V2MPAsm_Parser_ExecuteParse(V2MPAsm_Parser* parser)
 			case PARSESTATE_RECORDING_LABEL:
 			{
 				V2MPAsm_Parser_ParseLabel(parser);
+				break;
+			}
+
+			case PARSESTATE_RESOLVING_REFERENCES:
+			{
+				V2MPAsm_Parser_ResolveReferences(parser);
 				break;
 			}
 

@@ -33,7 +33,7 @@ const V2MP_CWD_Factory V2MP_CWDLabel_Factory =
 	&Destroy
 };
 
-V2MPAsm_CWDLabel* V2MPAsm_CWDLabel_Cast(const struct V2MPAsm_CWDBase* cwdBase)
+V2MPAsm_CWDLabel* V2MPAsm_CWDLabel_Cast(struct V2MPAsm_CWDBase* cwdBase)
 {
 	return (cwdBase && cwdBase->type == V2MPASM_CWD_LABEL)
 		? (V2MPAsm_CWDLabel*)cwdBase->data
@@ -66,4 +66,19 @@ bool V2MPAsm_CWDLabel_SetName(V2MPAsm_CWDLabel* label, const char* name)
 	label->name = BaseUtil_String_Duplicate(name);
 
 	return label->name != NULL;
+}
+
+size_t V2MPAsm_CWDLabel_GetLine(const V2MPAsm_CWDLabel* label)
+{
+	return label ? label->line : 0;
+}
+
+void V2MPAsm_CWDLabel_SetLine(V2MPAsm_CWDLabel* label, size_t line)
+{
+	if ( !label )
+	{
+		return ;
+	}
+
+	label->line = line;
 }

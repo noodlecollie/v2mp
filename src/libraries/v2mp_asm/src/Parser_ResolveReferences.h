@@ -1,0 +1,8 @@
+#ifndef V2MPASM_PARSER_RESOLVEREFERENCES_H
+#define V2MPASM_PARSER_RESOLVEREFERENCES_H
+
+#include "V2MPAsm/Parser.h"
+
+void V2MPAsm_Parser_ResolveReferences(V2MPAsm_Parser* parser);
+
+#endif // V2MPASM_PARSER_RESOLVEREFERENCES_H
