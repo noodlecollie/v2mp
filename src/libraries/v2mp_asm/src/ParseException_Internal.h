@@ -23,7 +23,8 @@ struct V2MPAsm_ParseContext;
 	LIST_ITEM(PARSEERROR_EMPTY_TOKEN, "empty-token", "Empty token.") \
 	LIST_ITEM(PARSEERROR_INCORRECT_ARGS, "incorrect-args", "Incorrect arguments for instruction.") \
 	LIST_ITEM(PARSEERROR_INVALID_NUMERIC_LITERAL, "invalid-numeric-literal", "Invalid numeric literal.") \
-	LIST_ITEM(PARSEERROR_DUPLICATE_LABEL, "duplicate-label", "Duplicate label encountered.")
+	LIST_ITEM(PARSEERROR_DUPLICATE_LABEL, "duplicate-label", "Duplicate label encountered.") \
+	LIST_ITEM(PARSEERROR_ADDRESS_SPACE_EXCEEDED, "address-space-exceeded", "Address space was exceeded.")
 
 #define LIST_ITEM(value, id, desc) value,
 typedef enum V2MPAsm_ParseWarningType
