@@ -107,7 +107,7 @@ size_t V2MPAsm_CWDList_GetSize(const V2MPAsm_CWDList* list)
 
 V2MPAsm_CWDBase* V2MPAsm_CWDList_AppendNew(V2MPAsm_CWDList* list, V2MPAsm_CWD_Type type)
 {
-	V2MPAsm_CWDBase* cwd;
+	V2MPAsm_CWDBase* cwd = NULL;
 
 	do
 	{

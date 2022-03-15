@@ -9,6 +9,9 @@ extern "C" {
 
 void* BaseUtil_MemSet(void* ptr, int value, size_t numBytes);
 
+// Wraps exit() so that uthash "unreachable code" warnings are not thrown on Windows.
+void BaseUtil_ExitProcess(int code);
+
 static inline void* BaseUtil_SetToZero(void* ptr, size_t numBytes)
 {
 	return BaseUtil_MemSet(ptr, 0, numBytes);

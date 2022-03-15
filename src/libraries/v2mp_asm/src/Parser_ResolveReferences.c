@@ -223,18 +223,21 @@ static bool ResolveLabelAddressesForArg(
 		case LABELREF_DISTANCE:
 		{
 			// TODO: We need to know the address of the current instruction.
+			return false;
 			break;
 		}
 
 		case LABELREF_MSB:
 		{
 			// TODO
+			return false;
 			break;
 		}
 
 		case LABELREF_LSB:
 		{
 			// TODO
+			return false;
 			break;
 		}
 

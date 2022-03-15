@@ -26,6 +26,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define UTHASH_VERSION 2.3.0
 
+// MODIFICATION FOR V2MP: HASH_BLOOM_TEST being defined to 1 causes a "conditional
+// expression is constant" warning for MSVC. To avert this, we create the following macro
+// to use instead:
+#ifdef HASH_BLOOM
+#define HASH_BLOOM_TEST_COMPARISON(head, hashval) (HASH_BLOOM_TEST((head)->hh.tbl, hashval) != 0)
+#else
+#define HASH_BLOOM_TEST_COMPARISON(head, hashval) (1)
+#endif
+
 #include <string.h>   /* memcmp, memset, strlen */
 #include <stddef.h>   /* ptrdiff_t */
 #include <stdlib.h>   /* exit */
@@ -157,7 +166,7 @@ do {                                                                            
   if (head) {                                                                    \
     unsigned _hf_bkt;                                                            \
     HASH_TO_BKT(hashval, (head)->hh.tbl->num_buckets, _hf_bkt);                  \
-    if (HASH_BLOOM_TEST((head)->hh.tbl, hashval) != 0) {                         \
+    if (HASH_BLOOM_TEST_COMPARISON(head, hashval)) {                         \
       HASH_FIND_IN_BKT((head)->hh.tbl, hh, (head)->hh.tbl->buckets[ _hf_bkt ], keyptr, keylen, hashval, out); \
     }                                                                            \
   }                                                                              \

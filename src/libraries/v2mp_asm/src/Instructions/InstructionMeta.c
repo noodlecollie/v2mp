@@ -82,7 +82,7 @@ const V2MPAsm_InstructionMeta* V2MPAsm_InstructionMeta_FindCommand(const char* n
 
 	for ( index = 0; index < nameLength; ++index )
 	{
-		buffer[index] = tolower(name[index]);
+		buffer[index] = (char)tolower(name[index]);
 	}
 
 	buffer[nameLength] = '\0';
