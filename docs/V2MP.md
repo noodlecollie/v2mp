@@ -132,7 +132,7 @@ The general-purpose registers do not have any special significance for most inst
 
 ## Memory Model
 
-The CPU addresses three separate memory segments: the read-only code segment (`CS`), and the read-write data segment (`DS`), and the read-write stack segment (`SS`). The program counter's address **always** refers to the code segment, instructions to read from or write to memory **always** refer to the data segment, and instructions to push to or pop from the stack **always** refer to the stack segment. This means that under this memory model, code cannot be executed from modifiable memory, and data for use in general-purpose registers cannot be directly loaded from the code segment. Some instructions, however, do support packing numerical literals into their operand bits, and these can affect the values in general-purpose registers.
+The CPU addresses three separate memory segments: the read-only code segment (`CS`), the read-write data segment (`DS`), and the read-write stack segment (`SS`). The program counter's address **always** refers to the code segment; instructions to read from or write to memory **always** refer to the data segment; and instructions to push to or pop from the stack **always** refer to the stack segment. This means that under this memory model, code cannot be executed from writable memory, and data for use in general-purpose registers cannot be directly loaded from the code segment. Some instructions, however, do support packing numerical literals into their operand bits, and these can affect the values in general-purpose registers.
 
 ```
         CS                                              DS
@@ -168,13 +168,13 @@ The V2MP memory model does not directly support dynamic memory allocation: memor
 
 The [`LDST`](#6h-loadstore-ldst) instruction loads or stores single words from or to `DS`. The [`DPO`](#Ah-device-port-operation-dpo) instruction can transfer data between a device port and an address in `DS`.
 
-The [`STK`](#Bh-stack-operation-stk) instruction pushes or pops register onto or off of the stack in `SS`.
+The [`STK`](#Bh-stack-operation-stk) instruction pushes or pops one or more registers onto or off of the stack in `SS`.
 
 The [`CBX`](#7h-conditional-branch-cbx) instruction makes reference to an address in `CS` which the program counter `PC` should be set to if the branch condition is met. Other arithmetic instructions may directly modify the contents of `PC` to point to different addresses in `CS`.
 
 ## Device Ports
 
-V2MP programs can communicate with other devices in the system using device ports. These are identified using a 16-bit address and numbered starting from `0`. Port `0` is the supervisor request port, and is always attached to the supervisor device; other ports may or may not be attached to devices.
+V2MP programs can communicate with other devices in the system using device ports. These are identified using a 16-bit address and numbered starting from `0`. Port `0` is the supervisor request port, and is **always** attached to the supervisor device; other ports may or may not be attached to devices.
 
 ### Mailboxes
 
@@ -190,7 +190,7 @@ If a device port has no device attached to it, it is considered "disconnected". 
 
 If a port does have a device attached to it, it is considered "connected".
 
-A connected port's mailbox is controlled either by the running program or by the device. If the mailbox is controlled by the device, the mailbox's state is considered "unavailable", and the program is not allowed to perform any operations on the mailbox using the [`DPO`](#Ah-device-port-operation-dpo) instruction. If the [`DPO`](#Ah-device-port-operation-dpo) instruction is used on an unavailable mailbox, an [`IDO`](#faults) fault will be raised.
+A connected port's mailbox is controlled either by the running program or by the device. If the mailbox is controlled by the device, the mailbox's state is considered "unavailable" by the program, and the program is not allowed to perform any operations on the mailbox using the [`DPO`](#Ah-device-port-operation-dpo) instruction. If the [`DPO`](#Ah-device-port-operation-dpo) instruction is used on an unavailable mailbox, an [`IDO`](#faults) fault will be raised.
 
 Note that if a port is disconnected, its mailbox is always considered unavailable.
 
@@ -204,7 +204,7 @@ Once a mailbox becomes exhausted, the program may not initiate any more data tra
 
 When control of the mailbox is passed back to the device, the mailbox reverts to being unavailable. The device is able to either consume the message that was written to the mailbox by the program, or write its own message into the mailbox for the program. It may do neither of these straight away, but must leave the mailbox in either a readable or writable state when control of the mailbox is passed back to the program.
 
-When the program passes control of the mailbox to the device, it may do so from any of the readable, writable, or exhausted states. However, if an indirect data transfer is in progress into or out of the mailbox, actual control of the mailbox is not passed to the device until the data transfer has finished. In this interim time, the supervisor retains control of the mailbox.
+When the program passes control of the mailbox to the device, it may do so from any of the readable, writable, or exhausted states. However, if an indirect data transfer is in progress into or out of the mailbox, actual control of the mailbox is not passed to the device until the data transfer has finished. In this interim time, the supervisor retains control of the mailbox, and the program sees the mailbox as being unavailable.
 
 If the program passes control of a readable mailbox back to the device, any remaining bytes in the mailbox are discarded by the supervisor before control of the mailbox is transferred.
 
@@ -281,8 +281,6 @@ If the add operation overflows the destination register, `SR[C]` is set; otherwi
 If the add operation results in a value of `0` in the destination register, `SR[Z]` is set; otherwise, it is cleared.
 
 All other bits in `SR` are always cleared.
-
-A useful aspect to note is that an all-zero instruction word corresponds to the instruction "add zero to register `R0`". This can be used as a "nop" instruction.
 
 ### `1h`: Subtract (`SUB`)
 
@@ -669,3 +667,9 @@ The possible faults raised by the processor are described below.
 | `08h` | `DEV` | Device Error | Raised if a device encounters an internal error. This fault indicates an exceptional issue with a device in the system, and is not expected to be accommodated by a program. Under normal operation, this fault should never be raised. | Supervisor, when interacting with a device |
 | `09h` | `SOF` | Stack overflow or underflow | Raised when a stack operation overflows or underflows the stack space. | [`STK`](#Bh-stack-operation-stk) |
 | `0Ah` | `DIV` | Division by zero | Raised when a [`DIV`](#3h-divide-div) operation is performed with a divisor of `0`. | [`DIV`](#3h-divide-div) |
+
+## Points to Resolve
+
+* Is it a very good idea to require that the program take responsibility for handling if/when a device mailbox changes its size? This sounds like it could add a lot of complexity to a program, and might run against the simple design philosophy of this project.
+* Adding 0 to a register is not strictly speaking a NOP instruction, as it may not retain the value in the status register. We may need an actual NOP instruction.
+* Is it a good idea to treat LR and the other register involved in a MUL instruction as being "concatenated" into a 32-bit word? Would it be better to treat one as an unsigned factor, and the other as a signed factor?
