@@ -4,6 +4,7 @@
 #include "BaseUtil/Heap.h"
 #include "BaseUtil/Util.h"
 
+#define uthash_fatal(msg) BaseUtil_ExitProcess(-1)
 #define uthash_malloc(sz) BASEUTIL_MALLOC(sz)
 #define uthash_free(ptr, sz) BASEUTIL_FREE(ptr)
 #define uthash_bzero(a,n) BaseUtil_SetToZero(a, n)
