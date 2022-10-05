@@ -38,7 +38,7 @@ This instruction would be assembled to the following machine code word:
    0000   00         01       00000000
 ```
 
-If an instruction is specified with an incorrect number of arguments, an error is raised when the assembler parses the file. Aliases may be defined tfor convenience - see the [Preprocessor](#preprocessor) section later.
+If an instruction is specified with an incorrect number of arguments, an error is raised when the assembler parses the file. Aliases may be defined for convenience - see the [Preprocessor](#preprocessor) section later.
 
 ## Numerical Literals
 
