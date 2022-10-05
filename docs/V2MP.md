@@ -8,26 +8,21 @@ The specification for the virtual processor is outlined in this file.
 * [Documentation Conventions](#documentation-conventions)
 * [CPU](#cpu)
 * [Memory Model](#memory-model)
-* [Device Ports](#device-ports)
 * [Instruction Set](#instruction-set)
-  * [0h ADD: Add](#0h-add-add)
-  * [1h SUB: Subtract](#1h-subtract-sub)
-  * [2h MUL: Multiply](#2h-multiply-mul)
-  * [3h DIV: Divide](#3h-divide-div)
-  * [4h ASGN: Assign](#4h-assign-asgn)
-  * [5h SHFT: Bit Shift](#5h-bit-shift-shft)
-  * [6h BITW: Bitwise Operation](#6h-bitwise-operation-bitw)
-  * [7h CBX: Conditional Branch](#7h-conditional-branch-cbx)
-  * [8h LDST: Load/Store](#6h-loadstore-ldst)
-  * [9h DPQ: Device Port Query](#9h-device-port-query-dpq)
-  * [Ah DPO: Device Port Operation](#Ah-device-port-operation-dpo)
-    * [Usable Byte Count](#usable-byte-count-00b)
-    * [Relinquish Mailbox](#relinquish-mailbox-01b)
-    * [Read](#read-10b)
-    * [Write](#write-11b)
-  * [Bh STK: Stack Operation](#Bh-stack-operation-stk)
-  * [Fh HCF: Halt](#fh-halt-hcf)
+  * [0h NOP: No Operation](#0h-no-operation-nop)
+  * [1h ADD: Add](#1h-add-add)
+  * [2h SUB: Subtract](#2h-subtract-sub)
+  * [3h MUL: Multiply](#3h-multiply-mul)
+  * [4h DIV: Divide](#4h-divide-div)
+  * [5h ASGN: Assign](#5h-assign-asgn)
+  * [6h SHFT: Bit Shift](#6h-bit-shift-shft)
+  * [7h BITW: Bitwise Operation](#7h-bitwise-operation-bitw)
+  * [8h CBX: Conditional Branch](#8h-conditional-branch-cbx)
+  * [9h LDST: Load/Store](#9h-loadstore-ldst)
+  * [Ah STK: Stack Operation](#ah-stack-operation-stk)
+  * [Bh SIG: Raise Signal](#bh-raise-signal-sig)
 * [Faults](#faults)
+* [Signals](#signals)
 
 ## Documentation Conventions
 
@@ -159,83 +154,19 @@ The program may also specify how much memory is allocated for `SS`, but the cont
 The following restrictions apply to any memory access (in `CS`, `DS`, or `SS`), via any register (`PC` or general-purpose):
 
 * When accessing a unit of memory (eg. a 2-byte word), the address of the access must be aligned to a multiple of the size of the unit. If this is not the case, an [`ALGN`](#faults) fault will be raised.
-  * Although the processor itself can only load and store individual words using the [`LDST`](#6h-loadstore-ldst) instruction, other instructions such as [`DPO`](#Ah-device-port-operation-dpo) can access memory segments at single-byte granularity. As such, alignment restrictions do not apply to these operations.
 * The address of the access must be within the size of the segment. Although 64KB of memory from each segment is addressable, the entire memory space might not be used if the program is not that large, and so will not be allocated by the supervisor. If access is attempted to a memory address outside of either segment, a [`SEG`](#faults) fault will be raised.
 
-The V2MP memory model does not directly support dynamic memory allocation: memory segments are of a fixed size. However, supervisor calls may be used to manipulate memory pages themselves at runtime, eg. to swap one page out for another.
+The V2MP memory model does not directly support dynamic memory allocation: memory segments are of a fixed size. However, supervisor functionality may be used to manipulate memory pages themselves at runtime, eg. to swap one page out for another.
 
 ### Relevant Instructions
 
-The [`LDST`](#6h-loadstore-ldst) instruction loads or stores single words from or to `DS`. The [`DPO`](#Ah-device-port-operation-dpo) instruction can transfer data between a device port and an address in `DS`.
+The [`LDST`](#9h-loadstore-ldst) instruction loads or stores single words from or to `DS`.
 
-The [`STK`](#Bh-stack-operation-stk) instruction pushes or pops one or more registers onto or off of the stack in `SS`.
+The [`STK`](#ah-stack-operation-stk) instruction pushes or pops one or more registers onto or off of the stack in `SS`.
 
-The [`CBX`](#7h-conditional-branch-cbx) instruction makes reference to an address in `CS` which the program counter `PC` should be set to if the branch condition is met. Other arithmetic instructions may directly modify the contents of `PC` to point to different addresses in `CS`.
+The [`CBX`](#8h-conditional-branch-cbx) instruction makes reference to an address in `CS` which the program counter `PC` should be set to if the branch condition is met. Other arithmetic instructions may directly modify the contents of `PC` to point to different addresses in `CS`.
 
-## Device Ports
-
-V2MP programs can communicate with other devices in the system using device ports. These are identified using a 16-bit address and numbered starting from `0`. Port `0` is the supervisor request port, and is **always** attached to the supervisor device; other ports may or may not be attached to devices.
-
-### Mailboxes
-
-Each port contains a mailbox. The mailbox has space for a certain number of bytes, and is used to perform half-duplex communications with the device on the port. The format of the messages between the program and the device depends entirely on what the device expects.
-
-The program can query the number of bytes currently available in a device's mailbox, either for reading or for writing. If required, a device may change the size of its mailbox dynamically at runtime, though this is not recommended without the device first informing the program. The mailbox is at all times expected to be large enough to accommodate any single, complete message - messages whose sizes are larger than the maximum space in the mailbox are not supported.
-
-### State
-
-All descriptions of state in this section describe the state as seen from the program's point of view (ie. as reported by a [`DPQ`](#Ah-device-port-query-dpq) instruction).
-
-If a device port has no device attached to it, it is considered "disconnected". A disconnected port may not be operated on using a [`DPO`](#Ah-device-port-operation-dpo) instruction; if this occurs, an [`IDO`](#faults) fault will be raised.
-
-If a port does have a device attached to it, it is considered "connected".
-
-A connected port's mailbox is controlled either by the running program or by the device. If the mailbox is controlled by the device, the mailbox's state is considered "unavailable" by the program, and the program is not allowed to perform any operations on the mailbox using the [`DPO`](#Ah-device-port-operation-dpo) instruction. If the [`DPO`](#Ah-device-port-operation-dpo) instruction is used on an unavailable mailbox, an [`IDO`](#faults) fault will be raised.
-
-Note that if a port is disconnected, its mailbox is always considered unavailable.
-
-If a connected port's mailbox is controlled by the program, it may be in one of three exclusive states:
-
-* **Readable**: there is at least one byte in the mailbox that has not yet been read by the program.
-* **Writable**: there is at least one byte of free space in the mailbox that has not yet been written to by the program.
-* **Exhausted**: depending on the previous state, either all the bytes have been consumed from the mailbox by the program, or all available bytes in the mailbox have been written to by the program. All ongoing data transfers must have completed before a mailbox can move to an exhausted state.
-
-Once a mailbox becomes exhausted, the program may not initiate any more data transfers in either direction. If a data transfer is attempted on an exhausted mailbox, an [`IDO`](#faults) fault will be raised. The program should pass control of an exhausted mailbox back to the device.
-
-When control of the mailbox is passed back to the device, the mailbox reverts to being unavailable. The device is able to either consume the message that was written to the mailbox by the program, or write its own message into the mailbox for the program. It may do neither of these straight away, but must leave the mailbox in either a readable or writable state when control of the mailbox is passed back to the program.
-
-When the program passes control of the mailbox to the device, it may do so from any of the readable, writable, or exhausted states. However, if an indirect data transfer is in progress into or out of the mailbox, actual control of the mailbox is not passed to the device until the data transfer has finished. In this interim time, the supervisor retains control of the mailbox, and the program sees the mailbox as being unavailable.
-
-If the program passes control of a readable mailbox back to the device, any remaining bytes in the mailbox are discarded by the supervisor before control of the mailbox is transferred.
-
-### Data Transfer
-
-Two methods of data transfer are supported when reading from or writing to a device port mailbox:
-
-* **Direct data transfer**: a single word from a CPU register is written to the mailbox, or a single word from the mailbox is read into a CPU register. This data transfer always completes in one clock cycle.
-* **Indirect data transfer**: given a memory address and a maximum number of bytes, both of which are held in CPU registers, one or more bytes are either read from the mailbox into the specified `DS` address, or written from the specified `DS` address into the mailbox. The data transfer is performed by the supervisor, and may take more than one clock cycle.
-
-If an indirect data transfer is in progress into or out of a mailbox, the mailbox is considered "busy". No new data transfers of any kind may be initiated on a mailbox while it is busy, or an [`IDO`](#faults) fault will be raised. Because of this, an unavailable or exhausted mailbox is never considered busy.
-
-When passing a message using indirect data transfer, it is assumed that a memory buffer of at least the specified size is present in `DS` at the given address. Until the indirect data transfer has completed, accessing this buffer in any way may cause undefined behaviour.
-
-### State Diagram
-
-The following diagram describes the state transitions allowed for a port's mailbox when the port is connected to a device.
-
-![Device port state diagram](img/device-port-state-diagram.png)
-
-### Connected State Diagram
-
-The following diagram describes the state transitions allowed when a device is connected to or disconnected from a port.
-
-A transition to a disconnected state may only happen if the port's mailbox is not being controlled by the program. Once control is handed back to the device its status is checked, and the port falls back to being disconnected if there is no longer a device attached.
-
-![Device port connected state diagram](img/device-port-connected-state-diagram.png)
-
-### Relevant Instructions
-
-The [`DPQ`](#9h-device-port-query-dpq) and [`DPO`](#Ah-device-port-operation-dpo) instructions are used to respectively query a device port's state, and to perform an operation on a device port.
+The [`SIG`](#bh-raise-signal-sig) instruction raises signals that are acted upon by the supervisor. The supervisor can be used to perform system-level operations regarding the memory space that is accessible by the program.
 
 ## Instruction Set
 
@@ -258,13 +189,26 @@ Some instructions make reference to a register in the CPU using a 2-bit identifi
 * `10b` refers to `LR`.
 * `11b` refers to `PC`.
 
-### `0h`: Add (`ADD`)
+### `0h`: No Operation (`NOP`)
+
+Performs no operation.
+
+```
+ NOP
+|0000|............|
+```
+
+All operand bits `[11 0]` must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
+
+All registers are left at their current values apart from `PC`, which is incremented to the next instruction.
+
+### `1h`: Add (`ADD`)
 
 Increments the value in a register.
 
 ```
  ADD
-|0000|AABBCCCCCCCC|
+|0001|AABBCCCCCCCC|
 ```
 
 * Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
@@ -282,13 +226,13 @@ If the add operation results in a value of `0` in the destination register, `SR[
 
 All other bits in `SR` are always cleared.
 
-### `1h`: Subtract (`SUB`)
+### `2h`: Subtract (`SUB`)
 
 Decrements the value in a register.
 
 ```
  SUB
-|0001|AABBCCCCCCCC|
+|0010|AABBCCCCCCCC|
 ```
 
 * Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
@@ -306,13 +250,13 @@ If the subtraction operation results in a value of `0` in the destination regist
 
 All other bits in `SR` are always cleared.
 
-### `2h`: Multiply (`MUL`)
+### `3h`: Multiply (`MUL`)
 
 Multiplies a register by a value.
 
 ```
  MUL
-|0010|ABC.DDDDDDDD|
+|0011|ABC.DDDDDDDD|
 ```
 
 * Operand bit `[11] (A)` specifies whether `R0` or `R1` is used as the destination register for the operation. If `A` is `0` then `R0` is used; if `A` is `1` then `R1` is used.
@@ -325,13 +269,13 @@ After the instruction is executed, the destination register as specified by oper
 
 If the result of the multiplication did not fit into the target register, `SR[C]` is set; otherwise, it is cleared. If the result is zero, `SR[Z]` is set; otherwise, it is. All other bits in `SR` are cleared.
 
-### `3h`: Divide (`DIV`)
+### `4h`: Divide (`DIV`)
 
 Divides a register by a value.
 
 ```
  DIV
-|0011|ABC.DDDDDDDD|
+|0100|ABC.DDDDDDDD|
 ```
 
 * Operand bit `[11] (A)` specifies whether `R0` or `R1` is used as the destination register for the operation. If `A` is `0` then `R0` is used; if `A` is `1` then `R1` is used.
@@ -346,13 +290,13 @@ After the instruction is executed, the destination register as specified by oper
 
 If the remainder of the result is not zero, `SR[C]` is set; otherwise, it is cleared. If the quotient of the result is zero, `SR[Z]` is set; otherwise, it is cleared. All other bits in `SR` are cleared.
 
-### `4h`: Assign (`ASGN`)
+### `5h`: Assign (`ASGN`)
 
 Assigns a value to a register.
 
 ```
  ASGN
-|0100|AABBCCCCCCCC|
+|0101|AABBCCCCCCCC|
 ```
 
 * Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
@@ -381,13 +325,13 @@ If `A` and `B` are the same, `PC` may not be assigned to, since the range of val
 
 In all cases described for this instruction, `SR[Z]` is set if the eventual value in the destination register is zero; otherwise, it is cleared. All other bits in `SR` are cleared.
 
-### `5h`: Bit Shift (`SHFT`)
+### `6h`: Bit Shift (`SHFT`)
 
 Shifts the bits in a register left or right.
 
 ```
  SHFT
-|0101|AABB...CCCCC|
+|0110|AABB...CCCCC|
 ```
 
 * Operand bits `[11 10] (A)` specify the two-bit identifier of the register whose value determines the magnitude of the shift. The contents of the register are treated as a signed 16-bit value.
@@ -403,13 +347,13 @@ When shifting bits, a negative magnitude implies a right shift (dividing the val
 
 If after the operation the remaining value in the register is zero, `SR[Z]` is set to `1`; otherwise, it is set to `0`. Additionally, if any `1` bits were shifted off the end of the register during the operation, `SR[C]` is set to `1`; otherwise, it is set to `0`. All other bits in `SR` are set to `0`.
 
-### `6h`: Bitwise Operation (`BITW`)
+### `7h`: Bitwise Operation (`BITW`)
 
 Performs a bitwise operation between two register values.
 
 ```
  BITW
-|0110|AABBCCD.EEEE|
+|0111|AABBCCD.EEEE|
 ```
 
 * Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source of the bit mask.
@@ -435,13 +379,13 @@ In all cases, operand bit `[4]` is reserved for future use, and must be set to `
 
 If the resulting value in the destination register is zero, `SR[Z]` is set to `1`; otherwise, it is set to `0`. All other bits in `SR` are set to `0`.
 
-### `7h` Conditional Branch (`CBX`)
+### `8h` Conditional Branch (`CBX`)
 
 Decided whether or not to modify the value of the program counter `PC`, depending on the current state of the status register `SR`.
 
 ```
  CBX
-|0111|AB..CCCCCCCC|
+|1000|AB..CCCCCCCC|
 ```
 
 * Operand bit `[11] (A)` specifies how the value of `PC` should be modified:
@@ -455,13 +399,13 @@ Operand bits `[9 8]` are reserved for future use, and must be set to `0`. If thi
 
 After this instruction, `SR[Z]` will be set to `1` if the condition was not met. If the condition was met, and `PC` was set, `SR[Z]` will be set to `0`. All other bits in `SR` will be set to `0`.
 
-### `8h`: Load/Store (`LDST`)
+### `9h`: Load/Store (`LDST`)
 
 Depending on the operands, either loads a value from a location in memory, or stores a value to a location in memory.
 
 ```
  LDST
-|1000|ABB.........|
+|1001|ABB.........|
 ```
 
 * Operand bit `[11] (A)` specifies the mode of the operation:
@@ -477,146 +421,13 @@ If the memory address specified by `LR` is not aligned to a word boundary, an [`
 
 If the value that is loaded or stored to or from the register is zero, `SR[Z]` is set; otherwise, it is cleared. All other bits in `SR` are always cleared.
 
-### `9h` Device Port Query (`DPQ`)
-
-Queries the state of a device communications port, and sets the status register `SR` appropriately.
-
-```
- DPQ
-|1001|.........AAA|
-```
-
-The number of the port to be queried is held in `R0`. Additionally, operand bits `[2 0] (A)` specify the type of query to perform:
-
-* If operand bits `[2 0] (A)` are set to `000b (0h)`, the instruction queries the connected state of the port - ie. whether there is a device currently attached to the port.
-* If operand bits `[2 0] (A)` are set to `001b (1h)`, the instruction queries whether the port's mailbox is readable and not busy - ie. whether a data transfer can be initiated from the mailbox.
-* If operand bits `[2 0] (A)` are set to `010b (2h)`, the instruction queries whether the port's mailbox is writable and not busy - ie. whether a data transfer can be initiated to the mailbox.
-* If operand bits `[2 0] (A)` are set to `011b (3h)`, the instruction queries whether the port's mailbox is exhausted - ie. whether control of the mailbox should be passed back to the device.
-* If operand bits `[2 0] (A)` are set to `100b (4h)`, the instruction queries whether the port's mailbox is busy - ie. whether a data transfer is currently in progress. This query is useful to determine whether the data transfer buffer in memory should currently be considered off-limits for the CPU to access.
-* If operand bits `[2 0] (A)` are set to `101b (5h)`, the instruction queries whether the port's mailbox is under the program's control - ie. whether it is readable, writable, or exhausted. The mailbox's busy state does not affect the result of the query. This query is equivalent to asking whether the port's mailbox is _not_ unavailable.
-
-Values `110b (6h)` and `111b (7h)` are reserved. If operand bits `[2 0] (A)` are set to any of these values, a [`RES`](#faults) fault will be raised.
-
-Operand bits `[11 3]` in the instruction word are reserved, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
-
-After the instruction is executed, `SR[Z]` is set based on the query type. The convention followed is to set `SR[Z]`, as the "zero" status bit, to indicate the _absence_ of the state being queried for. Therefore, conditionally branching on the presence of `SR[Z]` implies "branch on failure" - that the `PC` jump occurs if the state queried for was _not_ present. If `SR[Z]` is cleared, this implies success - that the state queried for _was_ present.
-
-* If `A` is `000b (0h)`, `SR[Z]` will be set if there _is not_ a device attached to the port, and will be cleared if there _is_ a device attached.
-* If `A` is `001b (1h)`, `SR[Z]` will be set if the port's mailbox was readable but busy, or if it was not readable at all. `SR[Z]` will be cleared if the port's mailbox was readable and not busy.
-* If `A` is `010b (2h)`, `SR[Z]` will be set if the port's mailbox was writable but busy, or if it was not writable at all. `SR[Z]` will be cleared if the port's mailbox was writable and not busy.
-* If `A` is `011b (3h)`, `SR[Z]` will be set if the port's mailbox _was not_ exhausted, and will be cleared if it _was_ exhausted. Note that if the mailbox was not exhausted, it could be in any other state, including unavailable.
-* If `A` is `100b (4h)`, `SR[Z]` will be set if the port's mailbox _was not_ busy, and will be cleared if it _was_ busy.
-* If `A` is `101b (5h)`, `SR[Z]` will be set if the port's mailbox _was not_ under the program's control (ie. the device had control), and will be cleared if it _was_ under the program's control.
-
-All other bits in `SR` will be set to `0`.
-
-### `Ah` Device Port Operation (`DPO`)
-
-Performs an operation on a device communications port.
-
-```
- DPO
-|1010|A.........BB|
-```
-
-The number of the port to use is held in `R0`. Operand bit `[11] (A)` is used to specify the type of data transfer used for a read or a write:
-
-* If operand bit `[11] (A)` is `0`, this means that a read or write will be performed using **direct data transfer**.
-* If operand bit `[11] (A)` is `1`, this means that a read or write will be performed using **indirect data transfer**.
-
-Additionally, operand bits `[1 0] (B)` are used to specify the type of operation that will take place:
-
-* If operand bits `[1 0] (B)` are set to `00b (0h)`, the usable byte count is fetched.
-* If operand bits `[1 0] (B)` are set to `01b (1h)`, control of the port's mailbox is relinquished by the program.
-* If operand bits `[1 0] (B)` are set to `10b (2h)`, a read is performed.
-* If operand bits `[1 0] (B)` are set to `11b (3h)`, a write is performed.
-
-For any operation, operand bits `[10 2]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
-
-If any operation is performed on a device port that is disconnected, an [`IDO`](#faults) fault will be raised.
-
-The different supported operations, specified by operand `B`, are explained below.
-
-#### Usable Byte Count (`00b`)
-
-If operand bits `[1 0] (B)` are set to `00b (0h)`, the operation fetches the number of usable bytes in the mailbox of the device port specified by `R0`. The number of usable bytes is placed into `LR`.
-
-The purpose of the usable bytes depends on whether the mailbox is in a readable or writable state (remember that a mailbox cannot be both readable and writable at the same time).
-
-* If the mailbox is in a readable state, the number of usable bytes corresponds to the number of bytes left to read from the mailbox.
-* If the mailbox is in a writable state, the number of useable bytes corresponds to the number of bytes left that can be written to in the mailbox.
-
-If the port is not connected to a device, the mailbox is exhausted, or the mailbox is not controlled by the program, the number of usable bytes is `0`.
-
-When the instruction is executed, operand bit `[11] (A)` must be set to `0`. If it is not, a [`RES`](#faults) fault will be raised.
-
-After the instruction has been executed, `SR[Z]` is set or cleared depending on the number of usable bytes returned. If the number of usable bytes was `0`, `SR[Z]` is set to `1`; otherwise, `SR[Z]` is set to `0`. All other bits in `SR` are set to `0`.
-
-#### Relinquish Mailbox (`01b`)
-
-If operand bits `[1 0] (B)` are set to `01b (1h)`, control of the mailbox of the device port specified by `R0` is relinquished by the program. If the program does not have control of the mailbox when the instruction is executed, nothing happens.
-
-When the instruction is executed, operand bit `[11] (A)` must be set to `0`. If it is not, a [`RES`](#faults) fault will be raised.
-
-After the instruction has been executed, `SR[Z]` is cleared if the program had control of the mailbox initially. `SR[Z]` is set if the program did not have control of the mailbox when the instruction was executed.
-
-#### Read (`10b`)
-
-If operand bits `[1 0] (B)` are set to `10b (2h)`, the operation initiates a read from the mailbox of the device port specified by `R0`. The type of data transfer is set by operand bit `[11] (A)`.
-
-If the operation is attempted when the mailbox is not readable or is busy, an [`IDO`](#faults) fault will be raised.
-
-**Direct Data Transfer**
-
-If operand bit `[11] (A)` is `0`, a direct data transfer is performed for the read. A  little-endian word of data is read from the device port's mailbox and placed into `LR`. If the mailbox only contained one byte of data, the most significant byte read into `LR` is always `00h`. The number of bytes read (either `1` or `2`) is placed into `R1`.
-
-After the instruction is executed, `SR[C]` is set if there were two or more bytes in the mailbox at the point the read was executed, and is cleared if there was only one byte in the mailbox when the read was executed.
-
-`SR[Z]` is cleared if there were bytes left to read in the mailbox after the data transfer, and is set if there were no more bytes in the mailbox after the data transfer.
-
-**Indirect Data Transfer**
-
-If operand bit `[11] (A)` is `1`, an indirect data transfer is initiated for the read. The value of `LR` specifies the address in `DS` to which to copy the data from the device port's mailbox, and the value in `R1` specifies the maximum number of bytes to copy. It is assumed that there is a data buffer at the address pointed to by `LR` which is large enough to hold at least as many bytes as are specified in `R1`. If the supervisor attempts to write off the end of `DS` during the data transfer, a [`SEG`](#faults) fault is raised. Additionally, if `R1` is `0`, an [`IDO`](#faults) fault is raised.
-
-Once the instruction is executed, the mailbox becomes busy, and the supervisor begins copying data out of the mailbox and into the buffer that was pointed to by `LR`. `R1` is set to hold the number of bytes that are being transferred - this may be less than the number originally requested, if this number was greater than the number of bytes left in the mailbox.
-
-While the mailbox is busy, the data buffer originally pointed to by `R1` should not be accessed by the CPU, or undefined behaviour may result. Once the mailbox is no longer busy, the indirect data transfer has ended and the memory may be safely accessed.
-
-After the instruction is executed, `SR[Z]` is set if there will be no more bytes left in the mailbox after the read operation completes, and is cleared if there will still be bytes in the mailbox after the operation.
-
-`SR[C]` is cleared if the buffer in `DS` will be completely filled by the data being transferred from the mailbox, and is set if the buffer will not be completely filled.
-
-#### Write (`11b`)
-
-If operand bits `[1 0] (B)` are set to `11b (2h)`, the operation initiates a write to the mailbox of the device port specified by `R0`. The type of data transfer is set by operand bit `[11] (A)`.
-
-**Direct Data Transfer**
-
-If operand bit `[11] (A)` is `0`, a direct data transfer is performed for the write. A  little-endian word of data is written to the device port's mailbox from `LR`. If the mailbox only has one byte of writable space left, the lower byte of `LR` is written to the mailbox, and the upper byte is discarded. The number of bytes written (either `1` or `2`) is placed into `R1`.
-
-After the instruction is executed, `SR[Z]` is set if there is no more space left in the mailbox after the write, and is cleared if there are free bytes still available in the mailbox after the write.
-
-`SR[C]` is set if the mailbox had fewer than `2` bytes available, and is cleared if the entirety of the written word fitted into the mailbox.
-
-**Indirect Data Transfer**
-
-If operand bit `[11] (A)` is `1`, an indirect data transfer is initiated for the write. The value of `LR` specifies the address in `DS` from which to copy the data to the device port's mailbox, and the value in `R1` specifies the maximum number of bytes to copy. It is assumed that there is a data buffer at the address pointed to by `LR` which holds at least as many bytes as are specified in `R1`. If the supervisor attempts to read off the end of `DS` during the data transfer, a [`SEG`](#faults) fault is raised. Additionally, if `R1` is `0`, an [`IDO`](#faults) fault is raised.
-
-Once the instruction is executed, the mailbox becomes busy, and the supervisor begins copying data into the mailbox from the buffer that was pointed to by `LR`. `R1` is set to hold the number of bytes that are being transferred - this may be less than the number originally requested, if this number was greater than the number of free bytes left in the mailbox.
-
-While the mailbox is busy, the data buffer originally pointed to by `R1` should not be accessed by the CPU, or undefined behaviour may result. Once the mailbox is no longer busy, the indirect data transfer has ended and the memory may be safely accessed.
-
-After the instruction is executed, `SR[Z]` is set if there will be no more space left in the mailbox after the write, and is cleared if there will still be at least one byte of space left in the mailbox after the write.
-
-`SR[C]` is set if there were more bytes specified in the write than there were free bytes in the mailbox, and is cleared if the entirety of the write fitted into the mailbox.
-
-### `Bh`: Stack Operation (`STK`)
+### `Ah`: Stack Operation (`STK`)
 
 Pushes or pops register values from the stack.
 
 ```
  STK
-|1011|A.......BCDE|
+|1010|A.......BCDE|
 ```
 
 * Operand bit `[11] (A)` specifies whether the operation is a push or pop. If `A` is set then the operation is a push; if `A` is not set then the operation is a pop.
@@ -640,16 +451,24 @@ If a push operation overflows the stack, or a pop operation underflows the stack
 
 The status register `SR` is unaffected by the instruction, and its existing value is maintained.
 
-### `Fh`: Halt (`HCF`)
+### `Bh`: Raise Signal (`SIG`)
 
-Also known as "halt and catch fire". This instruction stops the processor, leaves all registers as they are, and raises an [`HCF`](#faults) fault.
+Raises a signal to be handled by the supervisor.
 
 ```
- HCF
-|1111|AAAAAAAAAAAA|
+ SIG
+|1011|............|
 ```
 
-Operand bits `[11 0] (A)` function as an argument to the fault. They do not have any significant meaning to the instruction, but are passed on to the fault handler.
+All operand bits `[11 0]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
+
+The code representing the signal being raised is specified by `R0`. See the [Signals](#signals) section for a complete list of signal codes. If the value of `R0` does not correspond to a recognised signal, a [`INS`](#faults) fault is raised.
+
+The registers `R1` and `LR` may be treated as arguments to the signal, depending on which signal is raised. If a signal does not make use of `R1` or `LR`, the value in the register is ignored and left unchanged. If a signal does make use of `R1` and/or `LR`, the values in the registers used by the signal may be modified in response to the signal.
+
+Additionally, memory in any of the `CS`, `DS` or `SS` segments may be modified by the supervisor in response to the signal, depending on the functionality implemented by the supervisor when responding to the signal.
+
+Signals which make use of any registers or memory segments will describe the nature of their use, and any side-effects that may occur in response to the signal being raised. See the [Signals](#signals) section for complete documentation on available signals.
 
 ## Faults
 
@@ -657,19 +476,18 @@ The possible faults raised by the processor are described below.
 
 | Index | Code | Name | Description | Triggered By |
 | ----- | ---- | ---- | ----------- | ------------ |
-| `01h` | `HCF` | Halt and Catch Fire | Raised by the [`HCF`](#fh-halt-hcf) instruction to indicate that the processor has halted. | [`HCF`](#fh-halt-hcf) |
 | `02h` | `RES` | Reserved Bits Set | Raised when an instruction is decoded and one or more reserved bits are set to `1`. | Execution of any instruction |
-| `03h` | `ALGN` | Alignment Violation | Raised when an unaligned memory address is dereferenced in `CS` or `DS`. | [`LDST`](#6h-loadstore-ldst), or upon fetching the next instruction using `PC`. |
-| `04h` | `SEG` | Segment Access Violation | Raised when an address outside `CS` or `DS` is dereferenced. | [`LDST`](#6h-loadstore-ldst), [`DPO`](#Ah-device-port-operation-dpo), or upon fetching the next instruction using `PC` |
-| `05h` | `IDO` | Invalid Device Operation | Raised when an operation is attempted on a port which is not in the correct state for the operation. | [`DPO`](#Ah-device-port-operation-dpo) |
+| `03h` | `ALGN` | Alignment Violation | Raised when an unaligned memory address is dereferenced in `CS` or `DS`. | [`LDST`](#9h-loadstore-ldst), or upon fetching the next instruction using `PC`. |
+| `04h` | `SEG` | Segment Access Violation | Raised when an address outside `CS` or `DS` is dereferenced. | [`LDST`](#9h-loadstore-ldst), or upon fetching the next instruction using `PC` |
 | `06h` | `INI` | Invalid Instruction | Raised when an unrecognised instruction opcode is decoded. | Decoding of an instruction |
-| `07h` | `SPV` | Supervisor Error | Raised if the supervisor encounters an internal error. This fault indicates an exceptional issue with the supervisor code itself, and is not expected to be accommodated by a program. Under normal operation, this fault should never be raised. | Supervisor |
-| `08h` | `DEV` | Device Error | Raised if a device encounters an internal error. This fault indicates an exceptional issue with a device in the system, and is not expected to be accommodated by a program. Under normal operation, this fault should never be raised. | Supervisor, when interacting with a device |
-| `09h` | `SOF` | Stack overflow or underflow | Raised when a stack operation overflows or underflows the stack space. | [`STK`](#Bh-stack-operation-stk) |
-| `0Ah` | `DIV` | Division by zero | Raised when a [`DIV`](#3h-divide-div) operation is performed with a divisor of `0`. | [`DIV`](#3h-divide-div) |
+| `09h` | `SOF` | Stack overflow or underflow | Raised when a stack operation overflows or underflows the stack space. | [`STK`](#ah-stack-operation-stk) |
+| `0Ah` | `DIV` | Division by zero | Raised when a [`DIV`](#4h-divide-div) operation is performed with a divisor of `0`. | [`DIV`](#4h-divide-div) |
+| `0Bh` | `INS` | Invalid Signal | Raised when an unrecognised signal code is provided to the [`SIG`](#bh-raise-signal-sig) instruction. | [`SIG`](#bh-raise-signal-sig) |
+
+## Signals
+
+**TODO**
 
 ## Points to Resolve
 
-* Is it a very good idea to require that the program take responsibility for handling if/when a device mailbox changes its size? This sounds like it could add a lot of complexity to a program, and might run against the simple design philosophy of this project.
-* Adding 0 to a register is not strictly speaking a NOP instruction, as it may not retain the value in the status register. We may need an actual NOP instruction.
 * Is it a good idea to treat LR and the other register involved in a MUL instruction as being "concatenated" into a 32-bit word? Would it be better to treat one as an unsigned factor, and the other as a signed factor?
