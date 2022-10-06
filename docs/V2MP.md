@@ -21,8 +21,9 @@ The specification for the virtual processor is outlined in this file.
   * [9h LDST: Load/Store](#9h-loadstore-ldst)
   * [Ah STK: Stack Operation](#ah-stack-operation-stk)
   * [Bh SIG: Raise Signal](#bh-raise-signal-sig)
-* [Faults](#faults)
 * [Signals](#signals)
+  * [0000h: End Program](#0000h-end-program)
+* [Faults](#faults)
 
 ## Documentation Conventions
 
@@ -470,6 +471,16 @@ Additionally, memory in any of the `CS`, `DS` or `SS` segments may be modified b
 
 Signals which make use of any registers or memory segments will describe the nature of their use, and any side-effects that may occur in response to the signal being raised. See the [Signals](#signals) section for complete documentation on available signals.
 
+## Signals
+
+Possible signals that may be raised by the [`SIG`](#bh-raise-signal-sig) instruction are described below.
+
+### `0000h`: End Program
+
+This signal indicates that the program has finished. `R1` indicates an exit code. By convention, this should be `0` if the program completed its task successfully, and non-`0` if an error occurred. **TODO:** define common error codes?
+
+Upon receipt of this signal, the supervisor will terminate the program and the processor will no longer be simulated.
+
 ## Faults
 
 The possible faults raised by the processor are described below.
@@ -483,10 +494,6 @@ The possible faults raised by the processor are described below.
 | `09h` | `SOF` | Stack overflow or underflow | Raised when a stack operation overflows or underflows the stack space. | [`STK`](#ah-stack-operation-stk) |
 | `0Ah` | `DIV` | Division by zero | Raised when a [`DIV`](#4h-divide-div) operation is performed with a divisor of `0`. | [`DIV`](#4h-divide-div) |
 | `0Bh` | `INS` | Invalid Signal | Raised when an unrecognised signal code is provided to the [`SIG`](#bh-raise-signal-sig) instruction. | [`SIG`](#bh-raise-signal-sig) |
-
-## Signals
-
-**TODO**
 
 ## Points to Resolve
 
