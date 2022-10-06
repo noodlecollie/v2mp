@@ -14,6 +14,7 @@ add_executable(V2MP_Tests
 	src/Instructions/DivideInstruction.cpp
 	src/Instructions/LoadStoreInstruction.cpp
 	src/Instructions/MultiplyInstruction.cpp
+	src/Instructions/NopInstruction.cpp
 	src/Instructions/StackOperationInstruction.cpp
 	src/Instructions/SubtractInstruction.cpp
 

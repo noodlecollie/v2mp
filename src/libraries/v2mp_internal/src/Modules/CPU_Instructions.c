@@ -100,8 +100,13 @@ static bool Execute_ADDOrSUB(V2MP_CPU* cpu, bool isAdd)
 
 static bool Execute_NOP(V2MP_CPU* cpu)
 {
-	// Do absolutely nothing
-	(void)cpu;
+	if ( V2MP_OP_NOP_RESBITS(cpu->ir) != 0 )
+	{
+		SetFault(cpu, V2MP_FAULT_RES, 0);
+		return true;
+	}
+
+	// Do absolutely nothing.
 	return true;
 }
 

@@ -201,7 +201,7 @@ Performs no operation.
 
 All operand bits `[11 0]` must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
-All registers are left at their current values apart from `PC`, which is incremented to the next instruction.
+All registers are left at their current values. Note that `PC` will already have been incremented to the next instruction before the `NOP` instruction is executed.
 
 ### `1h`: Add (`ADD`)
 

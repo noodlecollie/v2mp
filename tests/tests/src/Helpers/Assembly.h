@@ -20,24 +20,6 @@ namespace Asm
 		NOT = 0x3
 	};
 
-	enum class DevicePortQuery : uint8_t
-	{
-		CONNECTED = 0x0,
-		READABLE_NOT_BUSY = 0x1,
-		WRITEABLE_NOT_BUSY = 0x2,
-		EXHAUSTED = 0x3,
-		BUSY = 0x4,
-		CONTROLLED_BY_PROGRAM = 0x5
-	};
-
-	enum class DevicePortOperation : uint8_t
-	{
-		USABLE_BYTE_COUNT = 0x0,
-		RELINQUISH_MAILBOX = 0x1,
-		READ = 0x2,
-		WRITE = 0x3
-	};
-
 	constexpr inline V2MP_Word FaultFromWord(V2MP_Word faultWord)
 	{
 		return (faultWord & 0xF000) >> 12;

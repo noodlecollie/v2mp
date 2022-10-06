@@ -7,6 +7,8 @@
 
 #define V2MP_OPCODE(instr) ((instr) >> 12)
 
+#define V2MP_OP_NOP_RESBITS(instr) ((instr) & 0x0FFF)
+
 #define V2MP_OP_LDST_IS_STORE(instr) ((instr) & (1 << 11))
 #define V2MP_OP_LDST_REGINDEX(instr) (((instr) & 0x0600) >> 9)
 #define V2MP_OP_LDST_RESBITS(instr) ((instr) & 0x01FF)
