@@ -220,3 +220,13 @@ void V2MP_Supervisor_RequestStackPop(V2MP_Supervisor* supervisor, V2MP_Word regF
 	SVACTION_STACK_REG_FLAGS(action) = regFlags;
 	SVACTION_STACK_IS_PUSH(action) = (V2MP_Word)false;
 }
+
+void V2MP_Supervisor_RaiseSignal(V2MP_Supervisor* supervisor, V2MP_Word signal, V2MP_Word r1, V2MP_Word lr, V2MP_Word sp)
+{
+	// TODO: Implement how to handle signals
+	(void)supervisor;
+	(void)signal;
+	(void)r1;
+	(void)lr;
+	(void)sp;
+}

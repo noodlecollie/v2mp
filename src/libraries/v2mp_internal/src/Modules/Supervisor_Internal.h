@@ -80,4 +80,6 @@ void V2MP_Supervisor_RequestStoreWordToDS(V2MP_Supervisor* supervisor, V2MP_Word
 void V2MP_Supervisor_RequestStackPush(V2MP_Supervisor* supervisor, V2MP_Word regFlags);
 void V2MP_Supervisor_RequestStackPop(V2MP_Supervisor* supervisor, V2MP_Word regFlags);
 
+void V2MP_Supervisor_RaiseSignal(V2MP_Supervisor* supervisor, V2MP_Word signal, V2MP_Word r1, V2MP_Word lr, V2MP_Word sp);
+
 #endif // V2MP_MODULES_SUPERVISOR_INTERNAL_H

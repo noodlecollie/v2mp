@@ -607,9 +607,26 @@ static bool Execute_STK(V2MP_CPU* cpu)
 
 static bool Execute_SIG(V2MP_CPU* cpu)
 {
-	// TODO
-	(void)cpu;
-	return false;
+	if ( !cpu->supervisorInterface.raiseSignal )
+	{
+		return false;
+	}
+
+	if ( V2MP_OP_SIG_RESBITS(cpu->ir) != 0 )
+	{
+		SetFault(cpu, V2MP_FAULT_RES, 0);
+		return true;
+	}
+
+	cpu->supervisorInterface.raiseSignal(
+		cpu->supervisorInterface.supervisor,
+		cpu->r0,
+		cpu->r1,
+		cpu->lr,
+		cpu->sp
+	);
+
+	return true;
 }
 
 static bool Execute_Unassigned(V2MP_CPU* cpu)

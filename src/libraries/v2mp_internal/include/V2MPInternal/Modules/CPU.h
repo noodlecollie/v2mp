@@ -25,6 +25,9 @@ typedef struct V2MP_CPU_SupervisorInterface
 	void (*requestStackPush)(void* supervisor, V2MP_Word regFlags);
 	void (*requestStackPop)(void* supervisor, V2MP_Word regFlags);
 
+	// SIG
+	void (*raiseSignal)(void* supervisor, V2MP_Word signal, V2MP_Word r1, V2MP_Word lr, V2MP_Word sp);
+
 } V2MP_CPU_SupervisorInterface;
 
 V2MP_CPU* V2MP_CPU_AllocateAndInit(void);

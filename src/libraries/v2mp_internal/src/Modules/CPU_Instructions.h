@@ -52,6 +52,8 @@
 #define V2MP_OP_STK_PC(instr) (((instr) & 0x0008) != 0)
 #define V2MP_OP_STK_RESBITS(instr) ((instr) & 0x07F0)
 
+#define V2MP_OP_SIG_RESBITS(instr) ((instr) & 0x0FFF)
+
 bool V2MP_CPU_ExecuteInstructionInternal(V2MP_CPU* cpu);
 
 #endif // V2MP_MODULES_CPU_INSTRUCTIONS_H

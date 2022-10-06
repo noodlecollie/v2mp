@@ -7,6 +7,7 @@ void RequestLoadWordFromDS(void* opaqueSv, V2MP_Word address, V2MP_RegisterIndex
 void RequestStoreWordToDS(void* opaqueSv, V2MP_Word address, V2MP_Word wordToStore);
 void RequestStackPush(void* opaqueSv, V2MP_Word regFlags);
 void RequestStackPop(void* opaqueSv, V2MP_Word regFlags);
+void RaiseSignal(void* opaqueSv, V2MP_Word signal, V2MP_Word r1, V2MP_Word lr, V2MP_Word sp);
 
 void V2MP_Supervisor_CreateCPUInterface(V2MP_Supervisor* supervisor, V2MP_CPU_SupervisorInterface* interface)
 {
@@ -22,6 +23,7 @@ void V2MP_Supervisor_CreateCPUInterface(V2MP_Supervisor* supervisor, V2MP_CPU_Su
 	interface->requestStoreWordToDS = &RequestStoreWordToDS;
 	interface->requestStackPush = &RequestStackPush;
 	interface->requestStackPop = &RequestStackPop;
+	interface->raiseSignal = &RaiseSignal;
 }
 
 V2MP_Word FetchInstructionWord(void* opaqueSv, V2MP_Word address, V2MP_Word* destReg)
@@ -47,4 +49,9 @@ void RequestStackPush(void* opaqueSv, V2MP_Word regFlags)
 void RequestStackPop(void* opaqueSv, V2MP_Word regFlags)
 {
 	V2MP_Supervisor_RequestStackPop((V2MP_Supervisor*)opaqueSv, regFlags);
+}
+
+void RaiseSignal(void* opaqueSv, V2MP_Word signal, V2MP_Word r1, V2MP_Word lr, V2MP_Word sp)
+{
+	V2MP_Supervisor_RaiseSignal((V2MP_Supervisor*)opaqueSv, signal, r1, lr, sp);
 }
