@@ -30,6 +30,7 @@ SCENARIO("NOP: Executing instruction does not modify values in registers", "[ins
 				CHECK(vm.GetR0() == VAL_R0);
 				CHECK(vm.GetR1() == VAL_R1);
 				CHECK(vm.GetLR() == VAL_LR);
+				CHECK(vm.GetPC() == VAL_PC);
 				CHECK(vm.GetSR() == VAL_SR);
 			}
 		}

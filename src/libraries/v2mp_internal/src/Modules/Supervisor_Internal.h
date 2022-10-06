@@ -23,6 +23,9 @@ struct V2MP_Supervisor
 	MemorySegment programSS;
 
 	V2MP_Mainboard* mainboard;
+
+	bool programHasExited;
+	V2MP_Word programExitCode;
 };
 
 static inline void ResetProgramMemorySegment(MemorySegment* seg)

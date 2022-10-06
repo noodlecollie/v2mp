@@ -175,6 +175,9 @@ bool V2MP_Supervisor_LoadProgram(
 		memcpy(rawMemory + supervisor->programDS.base, ds, supervisor->programDS.lengthInBytes);
 	}
 
+	supervisor->programHasExited = false;
+	supervisor->programExitCode = 0;
+
 	return true;
 }
 
@@ -201,6 +204,16 @@ void V2MP_Supervisor_ClearProgram(V2MP_Supervisor* supervisor)
 bool V2MP_Supervisor_IsProgramLoaded(const V2MP_Supervisor* supervisor)
 {
 	return supervisor && supervisor->programCS.lengthInBytes > 0;
+}
+
+bool V2MP_Supervisor_HasProgramExited(const V2MP_Supervisor* supervisor)
+{
+	return supervisor ? supervisor->programHasExited : false;
+}
+
+V2MP_Word V2MP_Supervisor_ProgramExitCode(const V2MP_Supervisor* supervisor)
+{
+	return supervisor ? supervisor->programExitCode : 0;
 }
 
 bool V2MP_Supervisor_ExecuteClockCycle(V2MP_Supervisor* supervisor)

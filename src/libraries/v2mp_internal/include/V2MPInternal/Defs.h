@@ -43,6 +43,11 @@ typedef enum V2MP_Fault
 	V2MP_FAULT_SPV = 0x8,
 } V2MP_Fault;
 
+typedef enum V2MP_SignalCode
+{
+	V2MP_SIGNAL_END_PROGRAM = 0x0000
+} V2MP_SignalCode;
+
 typedef enum V2MP_RegisterIndex
 {
 	V2MP_REGID_R0 = 0x0,

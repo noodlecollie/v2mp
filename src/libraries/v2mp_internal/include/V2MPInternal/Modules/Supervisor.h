@@ -29,6 +29,8 @@ bool V2MP_Supervisor_LoadProgram(
 
 void V2MP_Supervisor_ClearProgram(V2MP_Supervisor* supervisor);
 bool V2MP_Supervisor_IsProgramLoaded(const V2MP_Supervisor* supervisor);
+bool V2MP_Supervisor_HasProgramExited(const V2MP_Supervisor* supervisor);
+V2MP_Word V2MP_Supervisor_ProgramExitCode(const V2MP_Supervisor* supervisor);
 
 bool V2MP_Supervisor_ExecuteClockCycle(V2MP_Supervisor* supervisor);
 bool V2MP_Supervisor_ExecuteSingleInstruction(V2MP_Supervisor* supervisor, V2MP_Word instruction);

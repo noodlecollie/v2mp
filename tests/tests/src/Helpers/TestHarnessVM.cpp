@@ -2,6 +2,7 @@
 #include <cstring>
 #include "Helpers/TestHarnessVM.h"
 #include "SharedComponents/CircularBuffer.h"
+#include "V2MPInternal/Modules/Supervisor.h"
 
 const V2MP_Word TestHarnessVM_StartsInvalid::INVALID_WORD = 0xDEAD;
 
@@ -157,6 +158,16 @@ void TestHarnessVM::ResetCPU()
 bool TestHarnessVM::Execute(V2MP_Word instruction)
 {
 	return V2MP_Supervisor_ExecuteSingleInstruction(GetSupervisor(), instruction);
+}
+
+bool TestHarnessVM::HasProgramExited() const
+{
+	return V2MP_Supervisor_HasProgramExited(GetSupervisor());
+}
+
+V2MP_Word TestHarnessVM::GetProgramExitCode() const
+{
+	return V2MP_Supervisor_ProgramExitCode(GetSupervisor());
 }
 
 bool TestHarnessVM::GetCSWord(V2MP_Word address, V2MP_Word& outWord) const

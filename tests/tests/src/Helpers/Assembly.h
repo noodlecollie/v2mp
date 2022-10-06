@@ -32,7 +32,7 @@ namespace Asm
 
 	constexpr inline V2MP_Word NOP()
 	{
-		return 0;
+		return (V2MP_OP_NOP << 12);
 	}
 
 	constexpr inline V2MP_Word LOAD(uint8_t destReg)
@@ -220,5 +220,10 @@ namespace Asm
 			| static_cast<V2MP_Word>(1 << 10)
 			| static_cast<V2MP_Word>(1 << 9)
 			| (static_cast<V2MP_Word>(multiplicand) & 0xFF);
+	}
+
+	constexpr inline V2MP_Word SIG()
+	{
+		return (V2MP_OP_SIG << 12);
 	}
 }

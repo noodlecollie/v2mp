@@ -1,5 +1,6 @@
 #include <string.h>
 #include "Modules/Supervisor_Internal.h"
+#include "V2MPInternal/Defs.h"
 #include "V2MPInternal/Modules/CPU.h"
 #include "V2MPInternal/Modules/MemoryStore.h"
 #include "V2MPInternal/Modules/Mainboard.h"
@@ -221,12 +222,30 @@ void V2MP_Supervisor_RequestStackPop(V2MP_Supervisor* supervisor, V2MP_Word regF
 	SVACTION_STACK_IS_PUSH(action) = (V2MP_Word)false;
 }
 
+// This is very limited for the moment. When we add more than a handful of signals,
+// this will need to be expanded into something better.
 void V2MP_Supervisor_RaiseSignal(V2MP_Supervisor* supervisor, V2MP_Word signal, V2MP_Word r1, V2MP_Word lr, V2MP_Word sp)
 {
-	// TODO: Implement how to handle signals
-	(void)supervisor;
-	(void)signal;
-	(void)r1;
 	(void)lr;
 	(void)sp;
+
+	if ( !supervisor )
+	{
+		return;
+	}
+
+	if ( signal != V2MP_SIGNAL_END_PROGRAM )
+	{
+		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_INS, 0));
+		return;
+	}
+
+	if ( supervisor->programHasExited )
+	{
+		// Ignore
+		return;
+	}
+
+	supervisor->programHasExited = true;
+	supervisor->programExitCode = r1;
 }

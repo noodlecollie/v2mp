@@ -189,6 +189,9 @@ public:
 	void ResetCPU();
 	bool Execute(V2MP_Word instruction);
 
+	bool HasProgramExited() const;
+	V2MP_Word GetProgramExitCode() const;
+
 	bool GetCSWord(V2MP_Word address, V2MP_Word& outWord) const;
 	bool GetDSWord(V2MP_Word address, V2MP_Word& outWord) const;
 
