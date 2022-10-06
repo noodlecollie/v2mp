@@ -43,13 +43,6 @@
 #define V2MP_OP_CBX_OFFSET(instr) ((instr) & 0x00FF)
 #define V2MP_OP_CBX_RESBITS(instr) ((instr) & 0x0300)
 
-#define V2MP_OP_DPQ_QUERY_TYPE(instr) ((instr) & 0x0007)
-#define V2MP_OP_DPQ_RESBITS(instr) ((instr) & 0x0FF8)
-
-#define V2MP_OP_DPO_INDIRECT_TRANSFER(instr) (((instr) & 0x0800) != 0)
-#define V2MP_OP_DPO_OPERATION_TYPE(instr) ((instr) & 0x0003)
-#define V2MP_OP_DPO_RESBITS(instr) ((instr) & 0x07FC)
-
 #define V2MP_OP_STK_PUSH(instr) (((instr) & 0x0800) != 0)
 #define V2MP_OP_STK_R0(instr) (((instr) & 0x0001) != 0)
 #define V2MP_OP_STK_R1(instr) (((instr) & 0x0002) != 0)

@@ -2,12 +2,9 @@
 #include "V2MPInternal/Modules/Supervisor.h"
 #include "V2MPInternal/Modules/CPU.h"
 #include "V2MPInternal/Modules/MemoryStore.h"
-#include "V2MPInternal/Modules/DeviceCollection.h"
-#include "V2MPInternal/Modules/Device.h"
 #include "BaseUtil/Heap.h"
 #include "Modules/Supervisor_Internal.h"
 #include "Modules/Supervisor_CPUInterface.h"
-#include "Modules/Device_Internal.h"
 
 static void DetachFromMainboard(V2MP_Supervisor* supervisor)
 {
@@ -45,45 +42,9 @@ static void AttachToMainboard(V2MP_Supervisor* supervisor)
 	}
 }
 
-static bool PollAllDevices(V2MP_Supervisor* supervisor)
-{
-	V2MP_DeviceCollection* devices;
-	V2MP_Device* device;
-	bool allSuccessful = true;
-
-	devices = V2MP_Mainboard_GetDeviceCollection(supervisor->mainboard);
-
-	if ( !devices )
-	{
-		return false;
-	}
-
-	for ( device = V2MP_DeviceCollection_GetFirstDevice(devices);
-	      device;
-	      device = V2MP_DeviceCollection_GetNext(devices, device) )
-	{
-		if ( !V2MP_Device_Poll(device) )
-		{
-			allSuccessful = false;
-		}
-	}
-
-	if ( !allSuccessful )
-	{
-		V2MP_Supervisor_SetCPUFault(supervisor, V2MP_CPU_MAKE_FAULT_WORD(V2MP_FAULT_DEV, 0));
-	}
-
-	return true;
-}
-
 static bool HandlePostInstructionTasks(V2MP_Supervisor* supervisor)
 {
 	if ( !V2MP_Supervisor_ResolveOutstandingActions(supervisor) )
-	{
-		return false;
-	}
-
-	if ( !PollAllDevices(supervisor) )
 	{
 		return false;
 	}

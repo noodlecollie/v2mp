@@ -1,9 +1,6 @@
 add_executable(V2MP_Tests
 	src/Components/CircularBuffer.cpp
 
-	src/Helpers/BaseMockDevice.cpp
-	src/Helpers/EmitterMockDevice.cpp
-	src/Helpers/SinkMockDevice.cpp
 	src/Helpers/TestHarnessVM.cpp
 
 	src/Instructions/AddInstruction.cpp
@@ -14,18 +11,11 @@ add_executable(V2MP_Tests
 	src/Instructions/BitwiseORInstruction.cpp
 	src/Instructions/BitwiseXORInstruction.cpp
 	src/Instructions/ConditionalBranchInstruction.cpp
-	src/Instructions/DevicePortOperationInstruction.cpp
-	src/Instructions/DevicePortQueryInstruction.cpp
-	src/Instructions/DevicePortReadInstruction.cpp
-	src/Instructions/DevicePortWriteInstruction.cpp
 	src/Instructions/DivideInstruction.cpp
-	src/Instructions/HaltInstruction.cpp
 	src/Instructions/LoadStoreInstruction.cpp
 	src/Instructions/MultiplyInstruction.cpp
 	src/Instructions/StackOperationInstruction.cpp
 	src/Instructions/SubtractInstruction.cpp
-
-	src/Modules/DevicePorts.cpp
 
 	src/Main.cpp
 )

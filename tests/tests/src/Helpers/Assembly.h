@@ -53,11 +53,6 @@ namespace Asm
 		return 0;
 	}
 
-	constexpr inline V2MP_Word HCF(V2MP_Word args = 0)
-	{
-		return (V2MP_OP_HCF << 12) | (args & 0x0FFF);
-	}
-
 	constexpr inline V2MP_Word LOAD(uint8_t destReg)
 	{
 		return (V2MP_OP_LDST << 12) | ((static_cast<V2MP_Word>(destReg & 0x3)) << 9);
@@ -170,19 +165,6 @@ namespace Asm
 		return (V2MP_OP_CBX << 12)
 			| static_cast<V2MP_Word>(1 << 10)
 			| (static_cast<V2MP_Word>(deltaWords) & 0x00FF);
-	}
-
-	constexpr inline V2MP_Word DPQ(DevicePortQuery query)
-	{
-		return (V2MP_OP_DPQ << 12)
-			| (static_cast<V2MP_Word>(query) & 0x0007);
-	}
-
-	constexpr inline V2MP_Word DPO(DevicePortOperation operation, bool useIndirectDataTransfer = false)
-	{
-		return (V2MP_OP_DPO << 12)
-			| (static_cast<V2MP_Word>(useIndirectDataTransfer ? 1 : 0) << 11)
-			| (static_cast<V2MP_Word>(operation) & 0x0003);
 	}
 
 	constexpr inline V2MP_Word PUSH(uint8_t regFlags)

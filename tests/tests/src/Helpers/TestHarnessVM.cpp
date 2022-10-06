@@ -59,26 +59,6 @@ const V2MP_MemoryStore* TestHarnessVM::GetMemoryStore() const
 	return V2MP_Mainboard_GetMemoryStore(GetMainboard());
 }
 
-V2MP_DevicePortCollection* TestHarnessVM::GetDevicePortCollection()
-{
-	return V2MP_Mainboard_GetDevicePortCollection(GetMainboard());
-}
-
-const V2MP_DevicePortCollection* TestHarnessVM::GetDevicePortCollection() const
-{
-	return V2MP_Mainboard_GetDevicePortCollection(GetMainboard());
-}
-
-V2MP_DeviceCollection* TestHarnessVM::GetDeviceCollection()
-{
-	return V2MP_Mainboard_GetDeviceCollection(GetMainboard());
-}
-
-const V2MP_DeviceCollection* TestHarnessVM::GetDeviceCollection() const
-{
-	return V2MP_Mainboard_GetDeviceCollection(GetMainboard());
-}
-
 bool TestHarnessVM::LoadProgram(const ProgramDef& prog)
 {
 	return V2MP_VirtualMachine_LoadProgram(
@@ -89,16 +69,6 @@ bool TestHarnessVM::LoadProgram(const ProgramDef& prog)
 		prog.GetDSWords(),
 		prog.GetSSWords()
 	);
-}
-
-V2MP_DevicePort* TestHarnessVM::CreatePort(V2MP_Word address)
-{
-	return V2MP_DevicePortCollection_CreatePort(GetDevicePortCollection(), address);
-}
-
-bool TestHarnessVM::DestroyPort(V2MP_Word address)
-{
-	return V2MP_DevicePortCollection_DestroyPort(GetDevicePortCollection(), address);
 }
 
 V2MP_Word TestHarnessVM::GetCPUFaultWord() const
@@ -225,12 +195,6 @@ bool TestHarnessVM::GetSSData(V2MP_Word address, size_t lengthInWords, std::vect
 	);
 }
 
-std::shared_ptr<BaseMockDevice> TestHarnessVM::GetBaseMockDevice(V2MP_Word address) const
-{
-	const auto it = m_MockDevices.find(address);
-	return it != m_MockDevices.end() ? it->second : std::shared_ptr<BaseMockDevice>();
-}
-
 void TestHarnessVM::ThrowExceptionIfNotInitialisedCorrectly(size_t totalRamInBytes)
 {
 	if ( !GetMainboard() )
@@ -257,76 +221,4 @@ void TestHarnessVM::ThrowExceptionIfNotInitialisedCorrectly(size_t totalRamInByt
 	{
 		throw InitException("Memory store internal memory bank could not be allocated");
 	}
-}
-
-bool TestHarnessVM::ConnectMockDeviceToPortInternal(std::shared_ptr<BaseMockDevice> mockDevice, V2MP_Word address)
-{
-	if ( !mockDevice || m_MockDevices.find(address) != m_MockDevices.end() )
-	{
-		return false;
-	}
-
-	V2MP_DevicePort* port = nullptr;
-	V2MP_Device* device = nullptr;
-	bool createdPort = false;
-
-	do
-	{
-		V2MP_DevicePortCollection* dpc = GetDevicePortCollection();
-
-		if ( !dpc )
-		{
-			break;
-		}
-
-		V2MP_DeviceCollection* dc = GetDeviceCollection();
-
-		if ( !dc )
-		{
-			break;
-		}
-
-		port = V2MP_DevicePortCollection_GetPort(dpc, address);
-
-		if ( !port )
-		{
-			port = V2MP_DevicePortCollection_CreatePort(dpc, address);
-			createdPort = true;
-
-			if ( !port )
-			{
-				break;
-			}
-		}
-
-		if ( V2MP_DevicePort_HasConnectedDevice(port) )
-		{
-			break;
-		}
-
-		device = V2MP_DeviceCollection_CreateDevice(dc);
-
-		if ( !device || !V2MP_DevicePort_ConnectDevice(port, device) )
-		{
-			break;
-		}
-
-		mockDevice->AttachToV2MPDevice(device);
-		m_MockDevices[address] = mockDevice;
-
-		return true;
-	}
-	while ( false );
-
-	if ( device )
-	{
-		V2MP_DeviceCollection_DestroyDevice(GetDeviceCollection(), device);
-	}
-
-	if ( port && createdPort )
-	{
-		V2MP_DevicePortCollection_DestroyPort(GetDevicePortCollection(), address);
-	}
-
-	return false;
 }

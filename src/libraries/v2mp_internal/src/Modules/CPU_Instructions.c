@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include "Modules/CPU_Instructions.h"
 #include "Modules/CPU_Internal.h"
-#include "Modules/CPU_DevicePortOperations.h"
 
 // Return value is false under exceptional circumstances
 // (eg. CPU was not set up with supervisor interface).
@@ -11,6 +10,7 @@
 // being returned.
 typedef bool (* InstructionCallback)(V2MP_CPU*);
 
+static bool Execute_NOP(V2MP_CPU* cpu);
 static bool Execute_ADD(V2MP_CPU* cpu);
 static bool Execute_SUB(V2MP_CPU* cpu);
 static bool Execute_MUL(V2MP_CPU* cpu);
@@ -20,30 +20,28 @@ static bool Execute_SHFT(V2MP_CPU* cpu);
 static bool Execute_BITW(V2MP_CPU* cpu);
 static bool Execute_CBX(V2MP_CPU* cpu);
 static bool Execute_LDST(V2MP_CPU* cpu);
-static bool Execute_DPQ(V2MP_CPU* cpu);
-static bool Execute_DPO(V2MP_CPU* cpu);
 static bool Execute_STK(V2MP_CPU* cpu);
+static bool Execute_SIG(V2MP_CPU* cpu);
 static bool Execute_Unassigned(V2MP_CPU* cpu);
-static bool Execute_HCF(V2MP_CPU* cpu);
 
 static const InstructionCallback INSTRUCTION_TABLE[0x10] =
 {
-	&Execute_ADD,			// 0x0
-	&Execute_SUB,			// 0x1
-	&Execute_MUL,			// 0x2
-	&Execute_DIV,			// 0x3
-	&Execute_ASGN,			// 0x4
-	&Execute_SHFT,			// 0x5
-	&Execute_BITW,			// 0x6
-	&Execute_CBX,			// 0x7
-	&Execute_LDST,			// 0x8
-	&Execute_DPQ,			// 0x9
-	&Execute_DPO,			// 0xA
-	&Execute_STK,			// 0xB
+	&Execute_NOP,			// 0x0
+	&Execute_ADD,			// 0x1
+	&Execute_SUB,			// 0x2
+	&Execute_MUL,			// 0x3
+	&Execute_DIV,			// 0x4
+	&Execute_ASGN,			// 0x5
+	&Execute_SHFT,			// 0x6
+	&Execute_BITW,			// 0x7
+	&Execute_CBX,			// 0x8
+	&Execute_LDST,			// 0x9
+	&Execute_STK,			// 0xA
+	&Execute_SIG,			// 0xB
 	&Execute_Unassigned,	// 0xC
 	&Execute_Unassigned,	// 0xD
 	&Execute_Unassigned,	// 0xE
-	&Execute_HCF			// 0xF
+	&Execute_Unassigned		// 0xF
 };
 
 static inline void SetFault(V2MP_CPU* cpu, V2MP_Fault fault, V2MP_Word args)
@@ -97,6 +95,13 @@ static bool Execute_ADDOrSUB(V2MP_CPU* cpu, bool isAdd)
 		cpu->sr |= V2MP_CPU_SR_Z;
 	}
 
+	return true;
+}
+
+static bool Execute_NOP(V2MP_CPU* cpu)
+{
+	// Do absolutely nothing
+	(void)cpu;
 	return true;
 }
 
@@ -535,89 +540,6 @@ static bool Execute_LDST(V2MP_CPU* cpu)
 	return true;
 }
 
-static bool Execute_DPQ(V2MP_CPU* cpu)
-{
-	if ( !cpu->supervisorInterface.performDevicePortQuery )
-	{
-		return false;
-	}
-
-	if ( V2MP_OP_DPQ_RESBITS(cpu->ir) != 0 )
-	{
-		SetFault(cpu, V2MP_FAULT_RES, 0);
-		return true;
-	}
-
-	switch ( V2MP_OP_DPQ_QUERY_TYPE(cpu->ir) )
-	{
-		case V2MP_DPQT_CONNECTED:
-		case V2MP_DPQT_READABLE_NOT_BUSY:
-		case V2MP_DPQT_WRITEABLE_NOT_BUSY:
-		case V2MP_DPQT_EXHAUSTED:
-		case V2MP_DPQT_BUSY:
-		case V2MP_DPQT_CONTROLLED_BY_PROGRAM:
-		{
-			cpu->supervisorInterface.performDevicePortQuery(
-				cpu->supervisorInterface.supervisor,
-				cpu->r0,
-				V2MP_OP_DPQ_QUERY_TYPE(cpu->ir)
-			);
-
-			break;
-		}
-
-		default:
-		{
-			SetFault(cpu, V2MP_FAULT_RES, 0);
-			break;
-		}
-	}
-
-	return true;
-}
-
-static bool Execute_DPO(V2MP_CPU* cpu)
-{
-	if ( V2MP_OP_DPO_RESBITS(cpu->ir) != 0 )
-	{
-		SetFault(cpu, V2MP_FAULT_RES, 0);
-		return true;
-	}
-
-	switch ( V2MP_OP_DPO_OPERATION_TYPE(cpu->ir) )
-	{
-		case V2MP_DPOT_USABLE_BYTE_COUNT:
-		{
-			return V2MP_CPU_DPO_UsableByteCount(cpu);
-		}
-
-		case V2MP_DPOT_RELINQUISH_MAILBOX:
-		{
-			return V2MP_CPU_DPO_RelinquishMailbox(cpu);
-		}
-
-		case V2MP_DPOT_READ:
-		{
-			return V2MP_OP_DPO_INDIRECT_TRANSFER(cpu->ir)
-				? V2MP_CPU_DPO_Read_IDT(cpu)
-				: V2MP_CPU_DPO_Read_DDT(cpu);
-		}
-
-		case V2MP_DPOT_WRITE:
-		{
-			return V2MP_OP_DPO_INDIRECT_TRANSFER(cpu->ir)
-				? V2MP_CPU_DPO_Write_IDT(cpu)
-				: V2MP_CPU_DPO_Write_DDT(cpu);
-		}
-
-		default:
-		{
-			SetFault(cpu, V2MP_FAULT_RES, 0);
-			return true;
-		}
-	}
-}
-
 static bool Execute_STK(V2MP_CPU* cpu)
 {
 	V2MP_Word regFlags = 0;
@@ -678,15 +600,16 @@ static bool Execute_STK(V2MP_CPU* cpu)
 	return true;
 }
 
+static bool Execute_SIG(V2MP_CPU* cpu)
+{
+	// TODO
+	(void)cpu;
+	return false;
+}
+
 static bool Execute_Unassigned(V2MP_CPU* cpu)
 {
 	SetFault(cpu, V2MP_FAULT_INI, cpu->ir >> 12);
-	return true;
-}
-
-static bool Execute_HCF(V2MP_CPU* cpu)
-{
-	SetFault(cpu, V2MP_FAULT_HCF, cpu->ir);
 	return true;
 }
 

@@ -487,13 +487,14 @@ The possible faults raised by the processor are described below.
 
 | Index | Code | Name | Description | Triggered By |
 | ----- | ---- | ---- | ----------- | ------------ |
-| `02h` | `RES` | Reserved Bits Set | Raised when an instruction is decoded and one or more reserved bits are set to `1`. | Execution of any instruction |
-| `03h` | `ALGN` | Alignment Violation | Raised when an unaligned memory address is dereferenced in `CS` or `DS`. | [`LDST`](#9h-loadstore-ldst), or upon fetching the next instruction using `PC`. |
-| `04h` | `SEG` | Segment Access Violation | Raised when an address outside `CS` or `DS` is dereferenced. | [`LDST`](#9h-loadstore-ldst), or upon fetching the next instruction using `PC` |
-| `06h` | `INI` | Invalid Instruction | Raised when an unrecognised instruction opcode is decoded. | Decoding of an instruction |
-| `09h` | `SOF` | Stack overflow or underflow | Raised when a stack operation overflows or underflows the stack space. | [`STK`](#ah-stack-operation-stk) |
-| `0Ah` | `DIV` | Division by zero | Raised when a [`DIV`](#4h-divide-div) operation is performed with a divisor of `0`. | [`DIV`](#4h-divide-div) |
-| `0Bh` | `INS` | Invalid Signal | Raised when an unrecognised signal code is provided to the [`SIG`](#bh-raise-signal-sig) instruction. | [`SIG`](#bh-raise-signal-sig) |
+| `01h` | `RES` | Reserved Bits Set | Raised when an instruction is decoded and one or more reserved bits are set to `1`. | Execution of any instruction |
+| `02h` | `ALGN` | Alignment Violation | Raised when an unaligned memory address is dereferenced in `CS` or `DS`. | [`LDST`](#9h-loadstore-ldst), or upon fetching the next instruction using `PC`. |
+| `03h` | `SEG` | Segment Access Violation | Raised when an address outside `CS` or `DS` is dereferenced. | [`LDST`](#9h-loadstore-ldst), or upon fetching the next instruction using `PC` |
+| `04h` | `INI` | Invalid Instruction | Raised when an unrecognised instruction opcode is decoded. | Decoding of an instruction |
+| `05h` | `SOF` | Stack overflow or underflow | Raised when a stack operation overflows or underflows the stack space. | [`STK`](#ah-stack-operation-stk) |
+| `06h` | `DIV` | Division by zero | Raised when a [`DIV`](#4h-divide-div) operation is performed with a divisor of `0`. | [`DIV`](#4h-divide-div) |
+| `07h` | `INS` | Invalid Signal | Raised when an unrecognised signal code is provided to the [`SIG`](#bh-raise-signal-sig) instruction. | [`SIG`](#bh-raise-signal-sig) |
+| `08h` | `SPV` | Supervisor Error | Raised if the supervisor encounters an internal error. This is an exceptional condition, and under normal circumstances this signal should never be raised. | Supervisor |
 
 ## Points to Resolve
 

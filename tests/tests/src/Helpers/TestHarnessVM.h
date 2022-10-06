@@ -11,11 +11,6 @@
 #include "V2MPInternal/Modules/Supervisor.h"
 #include "V2MPInternal/Modules/CPU.h"
 #include "V2MPInternal/Modules/MemoryStore.h"
-#include "V2MPInternal/Modules/DevicePortCollection.h"
-#include "V2MPInternal/Modules/DevicePort.h"
-#include "V2MPInternal/Modules/DeviceCollection.h"
-#include "V2MPInternal/Modules/Device.h"
-#include "Helpers/BaseMockDevice.h"
 
 class TestHarnessVM
 {
@@ -166,16 +161,7 @@ public:
 	V2MP_MemoryStore* GetMemoryStore();
 	const V2MP_MemoryStore* GetMemoryStore() const;
 
-	V2MP_DevicePortCollection* GetDevicePortCollection();
-	const V2MP_DevicePortCollection* GetDevicePortCollection() const;
-
-	V2MP_DeviceCollection* GetDeviceCollection();
-	const V2MP_DeviceCollection* GetDeviceCollection() const;
-
 	bool LoadProgram(const ProgramDef& prog);
-
-	V2MP_DevicePort* CreatePort(V2MP_Word address);
-	bool DestroyPort(V2MP_Word address);
 
 	V2MP_Word GetCPUFaultWord() const;
 	bool CPUHasFault() const;
@@ -209,25 +195,6 @@ public:
 	bool GetDSData(V2MP_Word address, size_t length, std::vector<V2MP_Byte>& outData);
 	bool GetSSData(V2MP_Word address, size_t lengthInWords, std::vector<V2MP_Word>& outWords);
 
-	template<typename T>
-	inline typename std::enable_if<std::is_base_of<BaseMockDevice, T>::value, std::shared_ptr<T>>::type
-	ConnectMockDeviceToPort(V2MP_Word address)
-	{
-		std::shared_ptr<T> mockDeviceSubclass = std::make_shared<T>();
-
-		return ConnectMockDeviceToPortInternal(std::static_pointer_cast<BaseMockDevice>(mockDeviceSubclass), address)
-			? mockDeviceSubclass
-			: std::shared_ptr<T>();
-	}
-
-	std::shared_ptr<BaseMockDevice> GetBaseMockDevice(V2MP_Word address) const;
-
-	template<typename T>
-	inline std::shared_ptr<T> GetMockDevice(V2MP_Word address) const
-	{
-		return std::dynamic_pointer_cast<T>(GetBaseMockDevice(address));
-	}
-
 protected:
 	virtual void OnCPUReset()
 	{
@@ -235,10 +202,8 @@ protected:
 
 private:
 	void ThrowExceptionIfNotInitialisedCorrectly(size_t totalRamInBytes);
-	bool ConnectMockDeviceToPortInternal(std::shared_ptr<BaseMockDevice> mockDevice, V2MP_Word address);
 
 	V2MP_VirtualMachine* m_VM;
-	std::unordered_map<V2MP_Word, std::shared_ptr<BaseMockDevice>> m_MockDevices;
 };
 
 class TestHarnessVM_StartsInvalid : public TestHarnessVM

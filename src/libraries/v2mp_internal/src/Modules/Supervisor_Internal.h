@@ -77,35 +77,6 @@ V2MP_Word V2MP_Supervisor_FetchInstructionWord(V2MP_Supervisor* supervisor, V2MP
 void V2MP_Supervisor_RequestLoadWordFromDS(V2MP_Supervisor* supervisor, V2MP_Word address, V2MP_RegisterIndex destReg);
 void V2MP_Supervisor_RequestStoreWordToDS(V2MP_Supervisor* supervisor, V2MP_Word address, V2MP_Word wordToStore);
 
-void V2MP_Supervisor_PerformDevicePortQuery(V2MP_Supervisor* supervisor, V2MP_Word port, V2MP_Word queryType);
-
-void V2MP_Supervisor_RequestDevicePortDirectRead(
-	V2MP_Supervisor* supervisor,
-	V2MP_Word port
-);
-
-void V2MP_Supervisor_RequestDevicePortIndirectRead(
-	V2MP_Supervisor* supervisor,
-	V2MP_Word port,
-	V2MP_Word dsSrcAddress,
-	V2MP_Word dsMaxBytes
-);
-
-void V2MP_Supervisor_RequestDevicePortDirectWrite(
-	V2MP_Supervisor* supervisor,
-	V2MP_Word port
-);
-
-void V2MP_Supervisor_RequestDevicePortIndirectWrite(
-	V2MP_Supervisor* supervisor,
-	V2MP_Word port,
-	V2MP_Word dsDestAddress,
-	V2MP_Word dsMaxBytes
-);
-
-void V2MP_Supervisor_RequestRelinquishMailbox(V2MP_Supervisor* supervisor, V2MP_Word port);
-void V2MP_Supervisor_RequestUsableByteCount(V2MP_Supervisor* supervisor, V2MP_Word port);
-
 void V2MP_Supervisor_RequestStackPush(V2MP_Supervisor* supervisor, V2MP_Word regFlags);
 void V2MP_Supervisor_RequestStackPop(V2MP_Supervisor* supervisor, V2MP_Word regFlags);
 
