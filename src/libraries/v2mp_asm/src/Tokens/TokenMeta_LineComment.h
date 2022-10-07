@@ -1,8 +1,0 @@
-#ifndef V2MPASM_TOKENS_TOKENMETA_LINECOMMENT_H
-#define V2MPASM_TOKENS_TOKENMETA_LINECOMMENT_H
-
-#include "Tokens/TokenMeta.h"
-
-extern const V2MPAsm_TokenMeta V2MPAsm_TokenMeta_LineComment;
-
-#endif // V2MPASM_TOKENS_TOKENMETA_LINECOMMENT_H

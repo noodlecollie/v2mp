@@ -4,34 +4,24 @@ configure_file(
 )
 
 add_library(${TARGETNAME_V2MP_ASM}
-	src/CodewordDescriptors/CWD_Base.c
-	src/CodewordDescriptors/CWD_Factory.c
-	src/CodewordDescriptors/CWD_Instruction.c
-	src/CodewordDescriptors/CWD_Label.c
-	src/CodewordDescriptors/CWDList.c
+	include/${TARGETNAME_V2MP_ASM}/Assembler.h
+	include/${TARGETNAME_V2MP_ASM}/Exception.h
 
-	src/Instructions/InstructionMeta_Add.c
-	src/Instructions/InstructionMeta.c
-
-	src/Tokens/TokenList.c
-	src/Tokens/TokenMeta_Label.c
-	src/Tokens/TokenMeta_LabelReference.c
-	src/Tokens/TokenMeta_LineComment.c
-	src/Tokens/TokenMeta_MultilineComment.c
-	src/Tokens/TokenMeta_Name.c
-	src/Tokens/TokenMeta_NumericLiteral.c
-	src/Tokens/TokenMeta.c
-
-	src/InputFile.c
-	src/ParseContext.c
-	src/ParseException_Internal.c
-	src/ParseException.c
-	src/Parser_ParseInstruction.c
-	src/Parser_ParseLabel.c
-	src/Parser_ResolveReferences.c
-	src/Parser_Routines.c
-	src/Parser.c
-	src/TempTest.c
+	src/Assembler/Assembler.h
+	src/Assembler/Assembler.cpp
+	src/Exceptions/AssemblerException.h
+	src/Exceptions/AssemblerException.cpp
+	src/Exceptions/PublicException.cpp
+	src/Exceptions/PublicExceptionIDs.h
+	src/Exceptions/PublicExceptionIDs.cpp
+	src/Files/FilePool.h
+	src/Files/FilePool.cpp
+	src/Files/InputFile.h
+	src/Files/InputFile.cpp
+	src/Interface_Assembler.h
+	src/Interface_Assembler.cpp
+	src/Interface_Exception.h
+	src/Interface_Exception.cpp
 )
 
 target_include_directories(${TARGETNAME_V2MP_ASM} PUBLIC include)
