@@ -13,14 +13,16 @@ namespace V2MPAsm
 			PublicWarningID warning,
 			const std::string& file = std::string(),
 			size_t line = 1,
-			size_t column = 0
+			size_t column = 0,
+			const std::string& message = std::string()
 		);
 
 		explicit PublicException(
 			PublicErrorID error,
 			const std::string& file = std::string(),
 			size_t line = 1,
-			size_t column = 0
+			size_t column = 0,
+			const std::string& message = std::string()
 		);
 
 		V2MPAsm_Exception_Type GetType() const;
@@ -38,5 +40,6 @@ namespace V2MPAsm
 		std::string m_File;
 		size_t m_Line = 1;
 		size_t m_Column = 0;
+		std::string m_Message;
 	};
 }

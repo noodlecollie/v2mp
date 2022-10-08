@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <fstream>
 #include "Files/InputFile.h"
 #include "Exceptions/AssemblerException.h"
 #include "Exceptions/PublicExceptionIDs.h"
@@ -23,5 +24,15 @@ namespace V2MPAsm
 	std::ifstream& InputFile::GetStream()
 	{
 		return m_Stream;
+	}
+
+	size_t InputFile::CalculateFileSize()
+	{
+		std::ifstream::pos_type currentPos = m_Stream.tellg();
+		m_Stream.seekg(0, m_Stream.end);
+		std::ifstream::pos_type endPos = m_Stream.tellg();
+		m_Stream.seekg(currentPos, m_Stream.beg);
+
+		return static_cast<size_t>(endPos);
 	}
 }

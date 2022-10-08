@@ -15,12 +15,13 @@ namespace V2MPAsm
 		PublicErrorID id,
 		const std::string& file,
 		size_t line,
-		size_t column
+		size_t column,
+		const std::string& message
 	)
 	{
 		return std::shared_ptr<V2MPAsm_Exception>(new V2MPAsm_Exception
 			{
-				PublicException(id, file, line, column)
+				PublicException(id, file, line, column, message)
 			}
 		);
 	}
@@ -28,19 +29,21 @@ namespace V2MPAsm
 	std::shared_ptr<V2MPAsm_Exception> CreateInternalErrorException(
 		const std::string& file,
 		size_t line,
-		size_t column
+		size_t column,
+		const std::string& message
 	)
 	{
-		return CreateErrorException(PublicErrorID::INTERNAL, file, line, column);
+		return CreateErrorException(PublicErrorID::INTERNAL, file, line, column, message);
 	}
 
 	std::shared_ptr<V2MPAsm_Exception> CreateUnimplementedException(
 		const std::string& file,
-		size_t line ,
-		size_t column
+		size_t line,
+		size_t column,
+		const std::string& message
 	)
 	{
-		return CreateErrorException(PublicErrorID::UNIMPLEMENTED, file, line, column);
+		return CreateErrorException(PublicErrorID::UNIMPLEMENTED, file, line, column, message);
 	}
 }
 

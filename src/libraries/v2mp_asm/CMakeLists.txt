@@ -18,6 +18,12 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/Files/FilePool.cpp
 	src/Files/InputFile.h
 	src/Files/InputFile.cpp
+	src/Files/InputReader.h
+	src/Files/InputReader.cpp
+	src/Parser/Parser.h
+	src/Parser/Parser.cpp
+	src/Parser/Tokeniser.h
+	src/Parser/Tokeniser.cpp
 	src/Interface_Assembler.h
 	src/Interface_Assembler.cpp
 	src/Interface_Exception.h

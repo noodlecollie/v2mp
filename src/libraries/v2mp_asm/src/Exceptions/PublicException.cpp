@@ -6,23 +6,37 @@ namespace V2MPAsm
 {
 	static constexpr const char* const PLACEHOLDER_FILE_NAME = "<unknown file>";
 
-	PublicException::PublicException(PublicWarningID warning, const std::string& file, size_t line, size_t column) :
+	PublicException::PublicException(
+		PublicWarningID warning,
+		const std::string& file,
+		size_t line,
+		size_t column,
+		const std::string& message
+	) :
 		m_Type(V2MPASM_EXCEPTION_WARNING),
 		m_ExceptionStringID(GetPublicWarningStringID(warning)),
 		m_ExceptionDesc(GetPublicWarningDescription(warning)),
 		m_File((!file.empty()) ? file : std::string(PLACEHOLDER_FILE_NAME)),
 		m_Line(line),
-		m_Column(column)
+		m_Column(column),
+		m_Message(message)
 	{
 	}
 
-	PublicException::PublicException(PublicErrorID error, const std::string& file, size_t line, size_t column) :
+	PublicException::PublicException(
+		PublicErrorID error,
+		const std::string& file,
+		size_t line,
+		size_t column,
+		const std::string& message
+	) :
 		m_Type(V2MPASM_EXCEPTION_ERROR),
 		m_ExceptionStringID(GetPublicErrorStringID(error)),
 		m_ExceptionDesc(GetPublicErrorDescription(error)),
 		m_File((!file.empty()) ? file : std::string(PLACEHOLDER_FILE_NAME)),
 		m_Line(line),
-		m_Column(column)
+		m_Column(column),
+		m_Message(message)
 	{
 	}
 
@@ -38,7 +52,14 @@ namespace V2MPAsm
 		stream
 			<< m_File << ":" << m_Line << ":" << m_Column
 			<< ExceptionTypeString(m_Type) << ": "
-			<< m_ExceptionDesc
+			<< m_ExceptionDesc;
+
+		if ( !m_Message.empty() )
+		{
+			stream << " " << m_Message;
+		}
+
+		stream
 			<< " [-Werror=" << m_ExceptionStringID << "]";
 
 		return stream.str();

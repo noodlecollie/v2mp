@@ -12,6 +12,7 @@ namespace V2MPAsm
 
 		std::string GetPath() const;
 		std::ifstream& GetStream();
+		size_t CalculateFileSize();
 
 	private:
 		std::string m_Path;

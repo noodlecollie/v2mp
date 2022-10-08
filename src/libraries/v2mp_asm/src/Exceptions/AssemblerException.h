@@ -10,8 +10,19 @@ namespace V2MPAsm
 	class AssemblerException : public std::exception
 	{
 	public:
-		AssemblerException(PublicErrorID errorID, const std::string& file, size_t line = 1, size_t column = 0);
-		AssemblerException(PublicWarningID warningID, const std::string& file, size_t line = 1, size_t column = 0);
+		AssemblerException(
+			PublicErrorID errorID,
+			const std::string& file = std::string(),
+			size_t line = 1,
+			size_t column = 0
+		);
+
+		AssemblerException(
+			PublicWarningID warningID,
+			const std::string& file = std::string(),
+			size_t line = 1,
+			size_t column = 0
+		);
 
 		PublicException& GetPublicException() noexcept;
 		const PublicException& GetPublicException() const noexcept;
