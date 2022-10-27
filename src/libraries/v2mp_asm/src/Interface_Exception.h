@@ -21,21 +21,21 @@ namespace V2MPAsm
 		PublicErrorID id,
 		const std::string& file = std::string(),
 		size_t line = 1,
-		size_t column = 0,
+		size_t column = 1,
 		const std::string& message = std::string()
 	);
 
 	std::shared_ptr<V2MPAsm_Exception> CreateInternalErrorException(
 		const std::string& file = std::string(),
 		size_t line = 1,
-		size_t column = 0,
+		size_t column = 1,
 		const std::string& message = std::string()
 	);
 
 	std::shared_ptr<V2MPAsm_Exception> CreateUnimplementedException(
 		const std::string& file = std::string(),
 		size_t line = 1,
-		size_t column = 0,
+		size_t column = 1,
 		const std::string& message = std::string()
 	);
 }

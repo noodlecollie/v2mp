@@ -7,13 +7,14 @@
 extern "C" {
 #endif
 
-API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_Create(const char* /* inputFile */, const char* /* outputFile */)
+API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_Create(const char* inputFile, const char* outputFile)
 {
 	try
 	{
 		std::unique_ptr<struct V2MPAsm_Assembler> assembler = std::make_unique<struct V2MPAsm_Assembler>();
 
-		// TODO: Provide inputs and outputs
+		assembler->inner.SetInputFileName(inputFile);
+		assembler->inner.SetOutputFileName(outputFile);
 
 		return assembler.release();
 	}

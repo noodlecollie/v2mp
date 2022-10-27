@@ -45,18 +45,22 @@ namespace V2MPAsm
 		return m_Type;
 	}
 
+	// file_path:line:column warning/error: desc [-Werror=exception-id]
 	std::string PublicException::ToString() const
 	{
 		std::stringstream stream;
 
 		stream
-			<< m_File << ":" << m_Line << ":" << m_Column
-			<< ExceptionTypeString(m_Type) << ": "
-			<< m_ExceptionDesc;
+			<< m_File << ":" << m_Line << ":" << m_Column << " "
+			<< ExceptionTypeString(m_Type) << ": ";
 
 		if ( !m_Message.empty() )
 		{
-			stream << " " << m_Message;
+			stream << m_Message;
+		}
+		else
+		{
+			stream << m_ExceptionDesc;
 		}
 
 		stream

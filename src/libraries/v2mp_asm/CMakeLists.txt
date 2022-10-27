@@ -20,6 +20,7 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/Files/InputFile.cpp
 	src/Files/InputReader.h
 	src/Files/InputReader.cpp
+	src/Utils/StringUtils.cpp
 	src/Parser/Parser.h
 	src/Parser/Parser.cpp
 	src/Parser/Tokeniser.h

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include "Exceptions/AssemblerException.h"
+#include "Exceptions/PublicExceptionIDs.h"
 
 namespace V2MPAsm
 {
@@ -9,22 +11,77 @@ namespace V2MPAsm
 	class Tokeniser
 	{
 	public:
+#define TOKEN_TYPE_LIST \
+	LIST_ITEM(EndOfFile, 1 << 0, "EndOfFile") \
+	LIST_ITEM(EndOfLine, 1 << 1, "EndOfLine") \
+	LIST_ITEM(AlnumString, 1 << 2, "AlnumString") \
+	LIST_ITEM(NumericLiteral, 1 << 3, "NumericLiteral") \
+	LIST_ITEM(LabelDefinition, 1 << 4, "LabelDefinition") \
+	LIST_ITEM(LabelReference, 1 << 5, "LabelReference") \
+	LIST_ITEM(PreprocessorCommand, 1 << 6, "PreprocessorCommand")
+
 		enum TokenType
 		{
-			EndOfFile = 1 << 0,
-			EndOfLine = 1 << 1,
-			AlnumString = 1 << 2,
-			NumericLiteral = 1 << 3,
-			LabelDefinition = 1 << 4,
-			LabelReference = 1 << 5
+#define LIST_ITEM(enumName, value, desc) enumName = value,
+			TOKEN_TYPE_LIST
+#undef LIST_ITEM
 		};
 
 		struct Token
 		{
 			TokenType type;
+			size_t line;
+			size_t column;
 			std::string token;
+
+			Token(TokenType inType, size_t inLine, size_t inColumn, const std::string& inToken = std::string()) :
+				type(inType),
+				line(inLine),
+				column(inColumn),
+				token(inToken)
+			{
+			}
+
+			Token(TokenType inType, size_t inLine, size_t inColumn, std::string&& inToken) :
+				type(inType),
+				line(inLine),
+				column(inColumn),
+				token(std::move(inToken))
+			{
+			}
 		};
 
-		Token EmitToken(InputReader& reader);
+		static std::string TokenName(TokenType tokenType);
+		Token EmitToken(InputReader& reader) const;
+
+	private:
+		class TokeniserException : public AssemblerException
+		{
+		public:
+			TokeniserException(InputReader& reader, PublicErrorID errorID, const std::string& message);
+			TokeniserException(InputReader& reader, PublicWarningID errorID, const std::string& message);
+
+			TokeniserException(
+				InputReader& reader,
+				PublicErrorID errorID,
+				size_t line,
+				size_t column,
+				const std::string& message
+			);
+
+			TokeniserException(
+				InputReader& reader,
+				PublicWarningID errorID,
+				size_t line,
+				size_t column,
+				const std::string& message
+			);
+		};
+
+		static std::string ExtractString(InputReader& reader, size_t begin = 0, size_t end = 0);
+
+		std::string ExtractNumericLiteral(InputReader& reader) const;
+		std::string ExtractLabelReference(InputReader& reader) const;
+		std::string ExtractLabelName(InputReader& reader) const;
 	};
 }

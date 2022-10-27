@@ -14,14 +14,16 @@ namespace V2MPAsm
 			PublicErrorID errorID,
 			const std::string& file = std::string(),
 			size_t line = 1,
-			size_t column = 0
+			size_t column = 1,
+			const std::string& message = std::string()
 		);
 
 		AssemblerException(
 			PublicWarningID warningID,
 			const std::string& file = std::string(),
 			size_t line = 1,
-			size_t column = 0
+			size_t column = 1,
+			const std::string& message = std::string()
 		);
 
 		PublicException& GetPublicException() noexcept;

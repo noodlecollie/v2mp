@@ -6,10 +6,11 @@ namespace V2MPAsm
 		PublicErrorID errorID,
 		const std::string& file,
 		size_t line,
-		size_t column
+		size_t column,
+		const std::string& message
 	) :
 		std::exception(),
-		m_Exception(errorID, file, line, column)
+		m_Exception(errorID, file, line, column, message)
 	{
 	}
 
@@ -17,10 +18,11 @@ namespace V2MPAsm
 		PublicWarningID warningID,
 		const std::string& file,
 		size_t line,
-		size_t column
+		size_t column,
+		const std::string& message
 	) :
 		std::exception(),
-		m_Exception(warningID, file, line, column)
+		m_Exception(warningID, file, line, column, message)
 	{
 	}
 

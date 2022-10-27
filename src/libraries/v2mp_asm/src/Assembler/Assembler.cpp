@@ -12,7 +12,7 @@ namespace V2MPAsm
 {
 	bool Assembler::Run() noexcept
 	{
-		m_ExceptionList = RunInternal();
+		m_ExceptionList = RunAndCompileExceptionList();
 		return m_ExceptionList.empty();
 	}
 
