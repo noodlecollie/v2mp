@@ -4,6 +4,7 @@
 #include "Files/InputReader.h"
 #include "Interface_Exception.h"
 #include "Parser/Tokeniser.h"
+#include "Utils/ParsingUtils.h"
 
 // REMOVE ME
 #include <iostream>
@@ -36,6 +37,6 @@ namespace V2MPAsm
 			}
 		}
 
-		return { CreateUnimplementedException(m_InputFile->GetPath(), 1, 1, "File parsing not implemented yet.") };
+		return { CreateUnimplementedException(m_InputFile->GetPath(), LINE_NUMBER_BASE, COLUMN_NUMBER_BASE, "File parsing not implemented yet.") };
 	}
 }

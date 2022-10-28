@@ -3,6 +3,7 @@
 #include <string>
 #include "V2MPAsm/Exception.h"
 #include "Exceptions/PublicExceptionIDs.h"
+#include "Utils/ParsingUtils.h"
 
 namespace V2MPAsm
 {
@@ -12,16 +13,16 @@ namespace V2MPAsm
 		explicit PublicException(
 			PublicWarningID warning,
 			const std::string& file = std::string(),
-			size_t line = 1,
-			size_t column = 1,
+			size_t line = LINE_NUMBER_BASE,
+			size_t column = COLUMN_NUMBER_BASE,
 			const std::string& message = std::string()
 		);
 
 		explicit PublicException(
 			PublicErrorID error,
 			const std::string& file = std::string(),
-			size_t line = 1,
-			size_t column = 1,
+			size_t line = LINE_NUMBER_BASE,
+			size_t column = COLUMN_NUMBER_BASE,
 			const std::string& message = std::string()
 		);
 
@@ -38,8 +39,8 @@ namespace V2MPAsm
 		std::string m_ExceptionStringID;
 		std::string m_ExceptionDesc;
 		std::string m_File;
-		size_t m_Line = 1;
-		size_t m_Column = 1;
+		size_t m_Line = LINE_NUMBER_BASE;
+		size_t m_Column = COLUMN_NUMBER_BASE;
 		std::string m_Message;
 	};
 }

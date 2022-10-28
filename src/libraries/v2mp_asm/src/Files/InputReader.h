@@ -4,6 +4,7 @@
 #include <vector>
 #include <functional>
 #include "Files/InputFile.h"
+#include "Utils/ParsingUtils.h"
 
 namespace V2MPAsm
 {
@@ -38,7 +39,7 @@ namespace V2MPAsm
 		std::shared_ptr<InputFile> m_File;
 		std::vector<char> m_Data;
 		size_t m_Position = 0;
-		size_t m_Line = 1;
-		size_t m_Column = 1;
+		size_t m_Line = LINE_NUMBER_BASE;
+		size_t m_Column = COLUMN_NUMBER_BASE;
 	};
 }

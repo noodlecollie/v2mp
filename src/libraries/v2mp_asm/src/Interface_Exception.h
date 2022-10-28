@@ -5,6 +5,7 @@
 #include <vector>
 #include "Exceptions/PublicException.h"
 #include "Exceptions/PublicExceptionIDs.h"
+#include "Utils/ParsingUtils.h"
 
 struct V2MPAsm_Exception
 {
@@ -20,22 +21,22 @@ namespace V2MPAsm
 	std::shared_ptr<V2MPAsm_Exception> CreateErrorException(
 		PublicErrorID id,
 		const std::string& file = std::string(),
-		size_t line = 1,
-		size_t column = 1,
+		size_t line = LINE_NUMBER_BASE,
+		size_t column = COLUMN_NUMBER_BASE,
 		const std::string& message = std::string()
 	);
 
 	std::shared_ptr<V2MPAsm_Exception> CreateInternalErrorException(
 		const std::string& file = std::string(),
-		size_t line = 1,
-		size_t column = 1,
+		size_t line = LINE_NUMBER_BASE,
+		size_t column = COLUMN_NUMBER_BASE,
 		const std::string& message = std::string()
 	);
 
 	std::shared_ptr<V2MPAsm_Exception> CreateUnimplementedException(
 		const std::string& file = std::string(),
-		size_t line = 1,
-		size_t column = 1,
+		size_t line = LINE_NUMBER_BASE,
+		size_t column = COLUMN_NUMBER_BASE,
 		const std::string& message = std::string()
 	);
 }

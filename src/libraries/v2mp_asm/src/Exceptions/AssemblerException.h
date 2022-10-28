@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include "Exceptions/PublicException.h"
 #include "Exceptions/PublicExceptionIDs.h"
+#include "Utils/ParsingUtils.h"
 
 namespace V2MPAsm
 {
@@ -13,16 +14,16 @@ namespace V2MPAsm
 		AssemblerException(
 			PublicErrorID errorID,
 			const std::string& file = std::string(),
-			size_t line = 1,
-			size_t column = 1,
+			size_t line = LINE_NUMBER_BASE,
+			size_t column = COLUMN_NUMBER_BASE,
 			const std::string& message = std::string()
 		);
 
 		AssemblerException(
 			PublicWarningID warningID,
 			const std::string& file = std::string(),
-			size_t line = 1,
-			size_t column = 1,
+			size_t line = LINE_NUMBER_BASE,
+			size_t column = COLUMN_NUMBER_BASE,
 			const std::string& message = std::string()
 		);
 

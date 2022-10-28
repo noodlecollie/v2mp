@@ -158,36 +158,55 @@ namespace V2MPAsm
 				);
 			}
 
-			if ( beginChar == '+' || beginChar == '-' )
-			{
-				// Could be a numeric literal or a label reference.
-				TokenType tokenType = std::isdigit(reader.PeekChar(1))
-					? TokenType::NumericLiteral
-					: TokenType::LabelReference;
-
-				const std::string tokenString = tokenType == TokenType::NumericLiteral
-					? ExtractNumericLiteral(reader)
-					: ExtractLabelReference(reader);
-
-				return Token(tokenType, beginLine, beginCol, tokenString);
-			}
-
-			if ( beginChar >= '0' && beginChar <= '9' )
+			if ( beginChar == '+' || beginChar == '-' || (beginChar >= '0' && beginChar <= '9') )
 			{
 				// Numeric literal.
 				return Token(TokenType::NumericLiteral, beginLine, beginCol, ExtractNumericLiteral(reader));
 			}
 
+			if ( beginChar == '<' )
+			{
+				// High byte selector.
+				reader.ReadChar();
+
+				return Token(
+					TokenType::HighSelector,
+					beginLine,
+					beginCol,
+					ExtractString(reader, beginPos, beginPos + 1)
+				);
+			}
+
+			if ( beginChar == '>' )
+			{
+				// Low byte selector.
+				reader.ReadChar();
+
+				return Token(
+					TokenType::LowSelector,
+					beginLine,
+					beginCol,
+					ExtractString(reader, beginPos, beginPos + 1)
+				);
+			}
+
 			if ( beginChar == '~' )
 			{
-				// Label reference.
-				return Token(TokenType::LabelReference, beginLine, beginCol, ExtractLabelReference(reader));
+				// Distance to a label.
+				reader.ReadChar();
+
+				return Token(
+					TokenType::DistanceSelector,
+					beginLine,
+					beginCol,
+					ExtractString(reader, beginPos, beginPos + 1)
+				);
 			}
 
 			if ( beginChar == ':' )
 			{
-				// Label definition.
-				return Token(TokenType::LabelDefinition, beginLine, beginCol, ExtractLabelName(reader));
+				// Label.
+				return Token(TokenType::Label, beginLine, beginCol, ExtractLabel(reader));
 			}
 
 			if ( IsLetterOrUnderscore(beginChar) )
@@ -281,18 +300,18 @@ namespace V2MPAsm
 			throw TokeniserException(reader, PublicErrorID::INVALID_NUMERIC_LITERAL, "Zero-length numeric literal.");
 		}
 
+		size_t length = endPos - beginPos;
+
+		if ( length <= beginOffset )
+		{
+			// We only had a prefix but no actual digits.
+			throw TokeniserException(reader, PublicErrorID::INVALID_NUMERIC_LITERAL, "Numeric literal prefix with no digits.");
+		}
+
 		return ExtractString(reader, beginPos, endPos);
 	}
 
-	std::string Tokeniser::ExtractLabelReference(InputReader& reader) const
-	{
-		size_t beginPos = reader.GetCurrentPosition();
-		reader.ReadChar();
-
-		return ExtractString(reader, beginPos, beginPos + 1) + ExtractLabelName(reader);
-	}
-
-	std::string Tokeniser::ExtractLabelName(InputReader& reader) const
+	std::string Tokeniser::ExtractLabel(InputReader& reader) const
 	{
 		size_t beginPos = reader.GetCurrentPosition();
 

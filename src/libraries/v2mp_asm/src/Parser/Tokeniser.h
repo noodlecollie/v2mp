@@ -16,9 +16,11 @@ namespace V2MPAsm
 	LIST_ITEM(EndOfLine, 1 << 1, "EndOfLine") \
 	LIST_ITEM(AlnumString, 1 << 2, "AlnumString") \
 	LIST_ITEM(NumericLiteral, 1 << 3, "NumericLiteral") \
-	LIST_ITEM(LabelDefinition, 1 << 4, "LabelDefinition") \
-	LIST_ITEM(LabelReference, 1 << 5, "LabelReference") \
-	LIST_ITEM(PreprocessorCommand, 1 << 6, "PreprocessorCommand")
+	LIST_ITEM(Label, 1 << 4, "Label") \
+	LIST_ITEM(HighSelector, 1 << 5, "HighSelector") \
+	LIST_ITEM(LowSelector, 1 << 6, "LowSelector") \
+	LIST_ITEM(DistanceSelector, 1 << 7, "DistanceSelector") \
+	LIST_ITEM(PreprocessorCommand, 1 << 8, "PreprocessorCommand")
 
 		enum TokenType
 		{
@@ -81,7 +83,6 @@ namespace V2MPAsm
 		static std::string ExtractString(InputReader& reader, size_t begin = 0, size_t end = 0);
 
 		std::string ExtractNumericLiteral(InputReader& reader) const;
-		std::string ExtractLabelReference(InputReader& reader) const;
-		std::string ExtractLabelName(InputReader& reader) const;
+		std::string ExtractLabel(InputReader& reader) const;
 	};
 }

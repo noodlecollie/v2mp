@@ -2,6 +2,7 @@
 #include "Files/InputReader.h"
 #include "Exceptions/AssemblerException.h"
 #include "Exceptions/PublicExceptionIDs.h"
+#include "Utils/ParsingUtils.h"
 
 namespace V2MPAsm
 {
@@ -171,7 +172,7 @@ namespace V2MPAsm
 		{
 			// New line
 			++m_Line;
-			m_Column = 1;
+			m_Column = COLUMN_NUMBER_BASE;
 		}
 		else
 		{
