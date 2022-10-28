@@ -3,6 +3,7 @@
 #include <memory>
 #include "Files/InputFile.h"
 #include "Interface_Exception.h"
+#include "Parser/Tokeniser.h"
 
 namespace V2MPAsm
 {
@@ -14,6 +15,15 @@ namespace V2MPAsm
 		ExceptionList ParseFile();
 
 	private:
+		enum class State
+		{
+			DEFAULT,
+			TERMINATED
+		};
+
+		State ProcessToken(const Tokeniser::Token& token);
+
 		std::shared_ptr<InputFile> m_InputFile;
+		State m_State = State::DEFAULT;
 	};
 }

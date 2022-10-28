@@ -60,15 +60,34 @@ namespace V2MPAsm
 		class TokeniserException : public AssemblerException
 		{
 		public:
-			TokeniserException(InputReader& reader, PublicErrorID errorID, const std::string& message);
-			TokeniserException(InputReader& reader, PublicWarningID errorID, const std::string& message);
+			enum class SkipBehaviour
+			{
+				NO_SKIP,
+				UNTIL_WHITESPACE,
+				ALNUM_OR_UNDERSCORE
+			};
+
+			TokeniserException(
+				InputReader& reader,
+				PublicErrorID errorID,
+				const std::string& message,
+				SkipBehaviour inSkipBehaviour = SkipBehaviour::UNTIL_WHITESPACE
+			);
+
+			TokeniserException(
+				InputReader& reader,
+				PublicWarningID errorID,
+				const std::string& message,
+				SkipBehaviour inSkipBehaviour = SkipBehaviour::UNTIL_WHITESPACE
+			);
 
 			TokeniserException(
 				InputReader& reader,
 				PublicErrorID errorID,
 				size_t line,
 				size_t column,
-				const std::string& message
+				const std::string& message,
+				SkipBehaviour inSkipBehaviour = SkipBehaviour::UNTIL_WHITESPACE
 			);
 
 			TokeniserException(
@@ -76,12 +95,16 @@ namespace V2MPAsm
 				PublicWarningID errorID,
 				size_t line,
 				size_t column,
-				const std::string& message
+				const std::string& message,
+				SkipBehaviour inSkipBehaviour = SkipBehaviour::UNTIL_WHITESPACE
 			);
+
+			SkipBehaviour skipBehaviour;
 		};
 
 		static std::string ExtractString(InputReader& reader, size_t begin = 0, size_t end = 0);
 
+		Token EmitTokenInternal(InputReader& reader) const;
 		std::string ExtractNumericLiteral(InputReader& reader) const;
 		std::string ExtractLabel(InputReader& reader) const;
 	};

@@ -26,6 +26,21 @@ namespace V2MPAsm
 		);
 	}
 
+	std::shared_ptr<V2MPAsm_Exception> CreateWarningException(
+		PublicWarningID id,
+		const std::string& file,
+		size_t line,
+		size_t column,
+		const std::string& message
+	)
+	{
+		return std::shared_ptr<V2MPAsm_Exception>(new V2MPAsm_Exception
+			{
+				PublicException(id, file, line, column, message)
+			}
+		);
+	}
+
 	std::shared_ptr<V2MPAsm_Exception> CreateInternalErrorException(
 		const std::string& file,
 		size_t line,
@@ -34,6 +49,16 @@ namespace V2MPAsm
 	)
 	{
 		return CreateErrorException(PublicErrorID::INTERNAL, file, line, column, message);
+	}
+
+	std::shared_ptr<V2MPAsm_Exception> CreateInternalWarningException(
+		const std::string& file,
+		size_t line,
+		size_t column,
+		const std::string& message
+	)
+	{
+		return CreateWarningException(PublicWarningID::INTERNAL, file, line, column, message);
 	}
 
 	std::shared_ptr<V2MPAsm_Exception> CreateUnimplementedException(

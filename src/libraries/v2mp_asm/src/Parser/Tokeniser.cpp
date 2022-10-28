@@ -1,4 +1,5 @@
 #include <cctype>
+#include <type_traits>
 #include <utility>
 #include "Exceptions/AssemblerException.h"
 #include "Exceptions/PublicExceptionIDs.h"
@@ -27,18 +28,22 @@ namespace V2MPAsm
 	Tokeniser::TokeniserException::TokeniserException(
 		InputReader& reader,
 		PublicErrorID errorID,
-		const std::string& message
+		const std::string& message,
+		SkipBehaviour inSkipBehaviour
 	) :
-		AssemblerException(errorID, reader.GetPath(), reader.GetCurrentLine(), reader.GetCurrentColumn(), message)
+		AssemblerException(errorID, reader.GetPath(), reader.GetCurrentLine(), reader.GetCurrentColumn(), message),
+		skipBehaviour(inSkipBehaviour)
 	{
 	}
 
 	Tokeniser::TokeniserException::TokeniserException(
 		InputReader& reader,
 		PublicWarningID errorID,
-		const std::string& message
+		const std::string& message,
+		SkipBehaviour inSkipBehaviour
 	) :
-		AssemblerException(errorID, reader.GetPath(), reader.GetCurrentLine(), reader.GetCurrentColumn(), message)
+		AssemblerException(errorID, reader.GetPath(), reader.GetCurrentLine(), reader.GetCurrentColumn(), message),
+		skipBehaviour(inSkipBehaviour)
 	{
 	}
 
@@ -47,9 +52,11 @@ namespace V2MPAsm
 		PublicErrorID errorID,
 		size_t line,
 		size_t column,
-		const std::string& message
+		const std::string& message,
+		SkipBehaviour inSkipBehaviour
 	) :
-		AssemblerException(errorID, reader.GetPath(), line, column, message)
+		AssemblerException(errorID, reader.GetPath(), line, column, message),
+		skipBehaviour(inSkipBehaviour)
 	{
 	}
 
@@ -58,9 +65,11 @@ namespace V2MPAsm
 		PublicWarningID errorID,
 		size_t line,
 		size_t column,
-		const std::string& message
+		const std::string& message,
+		SkipBehaviour inSkipBehaviour
 	) :
-		AssemblerException(errorID, reader.GetPath(), line, column, message)
+		AssemblerException(errorID, reader.GetPath(), line, column, message),
+		skipBehaviour(inSkipBehaviour)
 	{
 	}
 
@@ -85,6 +94,38 @@ namespace V2MPAsm
 	}
 
 	Tokeniser::Token Tokeniser::EmitToken(InputReader& reader) const
+	{
+		try
+		{
+			return EmitTokenInternal(reader);
+		}
+		catch ( const TokeniserException& ex )
+		{
+			switch ( ex.skipBehaviour )
+			{
+				case TokeniserException::SkipBehaviour::UNTIL_WHITESPACE:
+				{
+					reader.SkipUntilAnyOf(ANY_WHITESPACE);
+					break;
+				}
+
+				case TokeniserException::SkipBehaviour::ALNUM_OR_UNDERSCORE:
+				{
+					reader.SkipForAnyOf(&IsLetterNumberOrUnderscore);
+					break;
+				}
+
+				default:
+				{
+					break;
+				}
+			}
+
+			throw ex;
+		}
+	}
+
+	Tokeniser::Token Tokeniser::EmitTokenInternal(InputReader& reader) const
 	{
 		while ( true )
 		{
@@ -244,7 +285,8 @@ namespace V2MPAsm
 			PublicErrorID::UNRECOGNISED_TOKEN,
 			beginLine,
 			beginCol,
-			"Unrecognised token: " + ExtractString(reader, beginPos, reader.GetCurrentPosition())
+			"Unrecognised token: " + ExtractString(reader, beginPos, reader.GetCurrentPosition()),
+			TokeniserException::SkipBehaviour::NO_SKIP
 		);
 	}
 
@@ -284,10 +326,6 @@ namespace V2MPAsm
 				validDigits = VALID_DIGITS_BIN;
 				beginOffset += 2;
 			}
-			else if ( baseChar != '\0' && !std::isspace(baseChar) && !std::isdigit(baseChar) )
-			{
-				throw TokeniserException(reader, PublicErrorID::INVALID_NUMERIC_LITERAL, "Invalid numeric literal.");
-			}
 		}
 
 		reader.SkipChars(beginOffset);
@@ -297,7 +335,12 @@ namespace V2MPAsm
 
 		if ( endPos <= beginPos )
 		{
-			throw TokeniserException(reader, PublicErrorID::INVALID_NUMERIC_LITERAL, "Zero-length numeric literal.");
+			throw TokeniserException(
+				reader,
+				PublicErrorID::INVALID_NUMERIC_LITERAL,
+				"Zero-length numeric literal.",
+				TokeniserException::SkipBehaviour::NO_SKIP
+			);
 		}
 
 		size_t length = endPos - beginPos;
@@ -305,7 +348,12 @@ namespace V2MPAsm
 		if ( length <= beginOffset )
 		{
 			// We only had a prefix but no actual digits.
-			throw TokeniserException(reader, PublicErrorID::INVALID_NUMERIC_LITERAL, "Numeric literal prefix with no digits.");
+			throw TokeniserException(
+				reader,
+				PublicErrorID::INVALID_NUMERIC_LITERAL,
+				"Numeric literal prefix with no digits.",
+				TokeniserException::SkipBehaviour::NO_SKIP
+			);
 		}
 
 		return ExtractString(reader, beginPos, endPos);
@@ -321,7 +369,11 @@ namespace V2MPAsm
 		if ( std::isdigit(reader.PeekChar()) )
 		{
 			// Beginning of a label reference cannot be a number.
-			throw TokeniserException(reader, PublicErrorID::INVALID_LABEL_NAME, "Label name cannot begin with a number.");
+			throw TokeniserException(
+				reader,
+				PublicErrorID::INVALID_LABEL_NAME,
+				"Label name cannot begin with a number.",
+				TokeniserException::SkipBehaviour::ALNUM_OR_UNDERSCORE);
 		}
 
 		reader.SkipForAnyOf(&IsLetterNumberOrUnderscore);
@@ -331,7 +383,11 @@ namespace V2MPAsm
 		// We have +1 here because of the initial :.
 		if ( endPos <= beginPos + 1 )
 		{
-			throw TokeniserException(reader, PublicErrorID::INVALID_LABEL_NAME, "Zero-length label name.");
+			throw TokeniserException(
+				reader,
+				PublicErrorID::INVALID_LABEL_NAME,
+				"Zero-length label name.",
+				TokeniserException::SkipBehaviour::NO_SKIP);
 		}
 
 		return ExtractString(reader, beginPos, endPos);

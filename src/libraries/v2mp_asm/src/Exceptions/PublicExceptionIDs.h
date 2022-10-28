@@ -6,6 +6,7 @@ namespace V2MPAsm
 {
 #define PUBLICWARNINGTYPE_LIST \
 	LIST_ITEM(UNSPECIFIED = 0, "unspecified", "Unspecified warning.") \
+	LIST_ITEM(INTERNAL, "internal-warning", "Unexpected internal warning.") \
 	LIST_ITEM(ARG_OUT_OF_RANGE, "arg-out-of-range", "Instruction argument is out of range.") \
 	LIST_ITEM(UNTERMINATED_TOKEN, "unterminated-token", "Unterminated token.") \
 
@@ -16,6 +17,7 @@ namespace V2MPAsm
 	LIST_ITEM(UNIMPLEMENTED, "unimplemented", "Behaviour unimplemented.") \
 	LIST_ITEM(NON_EXISTENT_FILE, "non-existent-file", "File was not found on disk.") \
 	LIST_ITEM(ERROR_OPENING_FILE, "error-opening-file", "Could not open file.") \
+	LIST_ITEM(EXCEEDED_ERROR_COUNT, "exceeded-error-count", "Terminated parsing due to number of errors.") \
 	/* Tokenising stage: */ \
 	LIST_ITEM(UNRECOGNISED_TOKEN, "unrecognised-token", "Unrecognised token.") \
 	LIST_ITEM(UNTERMINATED_TOKEN, "unterminated-token", "Unterminated token.") \
