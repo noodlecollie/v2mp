@@ -5,11 +5,46 @@
 #include "Interface_Exception.h"
 #include "Parser/Tokeniser.h"
 #include "Utils/ParsingUtils.h"
+#include "Utils/ArrayUtils.h"
+#include "Parser/Tokeniser.h"
 
 namespace V2MPAsm
 {
+	using TokenType = Tokeniser::TokenType;
+
 	// Make this configurable?
 	static constexpr size_t MAX_ALLOWED_ERRORS = 20;
+
+	Parser::ParserException::ParserException(
+		InputReader& reader,
+		PublicErrorID errorID,
+		const std::string& message,
+		const std::optional<State>& inNextState
+	) :
+		AssemblerException(errorID, reader.GetPath(), reader.GetCurrentLine(), reader.GetCurrentColumn(), message),
+		nextState(inNextState)
+	{
+	}
+
+	Parser::ParserException::ParserException(
+		InputReader& reader,
+		PublicWarningID errorID,
+		const std::string& message,
+		const std::optional<State>& inNextState
+	) :
+		AssemblerException(errorID, reader.GetPath(), reader.GetCurrentLine(), reader.GetCurrentColumn(), message),
+		nextState(inNextState)
+	{
+	}
+
+	Parser::ParserException::ParserException(
+		const AssemblerException& ex,
+		const std::optional<State>& inNextState
+	) :
+		AssemblerException(ex),
+		nextState(inNextState)
+	{
+	}
 
 	Parser::Parser(const std::shared_ptr<InputFile>& inputFile) :
 		m_InputFile(inputFile)
@@ -22,7 +57,7 @@ namespace V2MPAsm
 		ExceptionList outList;
 		size_t recordedErrors = 0;
 
-		m_State = State::DEFAULT;
+		m_State = State::BEGIN_LINE;
 
 		while ( m_State != State::TERMINATED )
 		{
@@ -34,7 +69,7 @@ namespace V2MPAsm
 
 			try
 			{
-				m_State = ProcessToken(Tokeniser().EmitToken(reader));
+				AdvanceState(reader);
 			}
 			catch ( const AssemblerException& ex )
 			{
@@ -78,9 +113,123 @@ namespace V2MPAsm
 		return outList;
 	}
 
-	Parser::State Parser::ProcessToken(const Tokeniser::Token& /* token */)
+	void Parser::AdvanceState(InputReader& reader)
 	{
-		// TODO
-		return State::TERMINATED;
+		try
+		{
+			m_State = ProcessInputAndChooseNextState(reader);
+		}
+		catch ( const ParserException& ex )
+		{
+			if ( ex.nextState )
+			{
+				m_State = ex.nextState.value();
+			}
+
+			throw ex;
+		}
+		catch ( ... )
+		{
+			// This should never happen at this level - we always want to be throwing
+			// ParserExceptions from ProcessInputAndChooseNextState(). If we don't,
+			// the fail state to move to is not well-defined. For safety, terminate here.
+			m_State = State::TERMINATED;
+
+			throw AssemblerException(
+				PublicErrorID::INTERNAL,
+				reader.GetPath(),
+				reader.GetCurrentLine(),
+				reader.GetCurrentColumn(),
+				"An unhandled exception occurred during parsing."
+			);
+		}
+	}
+
+	Parser::State Parser::ProcessInputAndChooseNextState(InputReader& reader)
+	{
+		switch ( m_State )
+		{
+			case State::BEGIN_LINE:
+			{
+				return ProcessInput_BeginLine(reader);
+			};
+
+			default:
+			{
+				throw ParserException(
+					reader,
+					PublicErrorID::INTERNAL,
+					"Encountered unhandled parser state \"" + std::string(GetStateName(m_State)) + "\".",
+					State::TERMINATED
+				);
+			}
+		}
+	}
+
+	Parser::State Parser::ProcessInput_BeginLine(InputReader& reader)
+	{
+		constexpr uint32_t ALLOWED_TOKENS =
+			TokenType::EndOfFile |		// Reached end of file
+			TokenType::EndOfLine |		// Empty line
+			TokenType::AlnumString |	// Instruction name
+			TokenType::Label			// Label definition
+			;
+
+		const Tokeniser::Token token = GetNextToken(reader, ALLOWED_TOKENS);
+
+		if ( token.type == TokenType::EndOfFile )
+		{
+			return State::TERMINATED;
+		}
+
+		if ( token.type == TokenType::EndOfLine )
+		{
+			return State::BEGIN_LINE;
+		}
+
+		// TODO: Handle the other cases.
+		throw ParserException(
+			reader,
+			PublicErrorID::UNIMPLEMENTED,
+			"Processing instruction or label tokens is not yet implemented.",
+			State::TERMINATED
+		);
+	}
+
+	Tokeniser::Token Parser::GetNextToken(InputReader& reader, uint32_t allowedTokens, const std::optional<State>& failState) const
+	{
+		try
+		{
+			const Tokeniser::Token token = Tokeniser().EmitToken(reader);
+
+			if ( !(token.type & allowedTokens) )
+			{
+				throw ParserException(
+					reader,
+					PublicErrorID::UNEXPECTED_TOKEN,
+					"Encountered unexpected token of type \"" + Tokeniser::TokenName(token.type) + "\".",
+					failState
+				);
+			}
+
+			return token;
+		}
+		catch ( const AssemblerException& ex )
+		{
+			throw ParserException(ex, failState);
+		}
+	}
+
+	const char* Parser::GetStateName(State state)
+	{
+		static const char* const STATE_STRINGS[] =
+		{
+#define LIST_ITEM(name, desc) desc,
+			PARSER_STATE_LIST
+#undef LIST_ITEM
+		};
+
+		const size_t index = static_cast<size_t>(state);
+		return index < ArraySize(STATE_STRINGS) ? STATE_STRINGS[index] : "Unknown";
 	}
 }

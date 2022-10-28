@@ -21,6 +21,7 @@ namespace V2MPAsm
 	/* Tokenising stage: */ \
 	LIST_ITEM(UNRECOGNISED_TOKEN, "unrecognised-token", "Unrecognised token.") \
 	LIST_ITEM(UNTERMINATED_TOKEN, "unterminated-token", "Unterminated token.") \
+	LIST_ITEM(UNEXPECTED_TOKEN, "unexpected-token", "Unexpected token.") \
 	LIST_ITEM(INVALID_NUMERIC_LITERAL, "invalid-numeric-literal", "Invalid numeric literal.") \
 	LIST_ITEM(INVALID_LABEL_REFERENCE, "invalid-label-reference", "Invalid label reference.") \
 	LIST_ITEM(INVALID_LABEL_NAME, "invalid-label-definition", "Invalid label definition.") \
