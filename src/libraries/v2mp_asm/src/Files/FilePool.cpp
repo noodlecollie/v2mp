@@ -13,7 +13,7 @@ namespace V2MPAsm
 			throw AssemblerException(PublicErrorID::NON_EXISTENT_FILE, path);
 		}
 
-		const std::string canonicalPath = std::filesystem::canonical(path);
+		const std::string canonicalPath = std::filesystem::canonical(path).string();
 		const InputFileMap::iterator it = m_InputFileMap.find(canonicalPath);
 
 		if ( it != m_InputFileMap.end() )
@@ -35,11 +35,11 @@ namespace V2MPAsm
 
 	void FilePool::CloseInputFile(const std::string& path)
 	{
-		m_InputFileMap.erase(std::filesystem::canonical(path));
+		m_InputFileMap.erase(std::filesystem::canonical(path).string());
 	}
 
 	bool FilePool::IsInputFileOpen(const std::string& path) const
 	{
-		return m_InputFileMap.find(std::filesystem::canonical(path)) != m_InputFileMap.end();
+		return m_InputFileMap.find(std::filesystem::canonical(path).string()) != m_InputFileMap.end();
 	}
 }
