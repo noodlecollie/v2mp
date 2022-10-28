@@ -29,7 +29,7 @@ namespace V2MPAsm
 			std::cout
 				<< "Token @ line " << token.line << ", column " << token.column << ": "
 				<< Tokeniser::TokenName(token.type) << " \"" << token.token
-				<< "\" (legnth " << token.token.size() << ")" << std::endl;
+				<< "\" (length " << token.token.size() << ")" << std::endl;
 
 			if ( token.type == Tokeniser::TokenType::EndOfFile )
 			{
