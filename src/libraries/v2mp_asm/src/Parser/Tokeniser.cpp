@@ -77,7 +77,7 @@ namespace V2MPAsm
 	{
 		const std::pair<TokenType, std::string> TOKEN_NAMES[] =
 		{
-#define LIST_ITEM(enumName, value, desc) { TokenType::enumName, desc },
+#define LIST_ITEM(enumName, value, name, desc, printable) { TokenType::enumName, name },
 			TOKEN_TYPE_LIST
 #undef LIST_ITEM
 		};
@@ -91,6 +91,53 @@ namespace V2MPAsm
 		}
 
 		return "UnknownTokenType";
+	}
+
+	std::string Tokeniser::TokenReadableDescription(TokenType tokenType)
+	{
+		const std::pair<TokenType, std::string> TOKEN_DESCS[] =
+		{
+#define LIST_ITEM(enumName, value, name, desc, printable) { TokenType::enumName, desc },
+			TOKEN_TYPE_LIST
+#undef LIST_ITEM
+		};
+
+		for ( size_t index = 0; index < ArraySize(TOKEN_DESCS); ++index )
+		{
+			if ( TOKEN_DESCS[index].first == tokenType )
+			{
+				return TOKEN_DESCS[index].second;
+			}
+		}
+
+		return "unknown";
+	}
+
+	bool Tokeniser::TokenIsPrintable(TokenType tokenType)
+	{
+		const std::pair<TokenType, bool> TOKEN_PRINTABLE[] =
+		{
+#define LIST_ITEM(enumName, value, name, desc, printable) { TokenType::enumName, printable },
+			TOKEN_TYPE_LIST
+#undef LIST_ITEM
+		};
+
+		for ( size_t index = 0; index < ArraySize(TOKEN_PRINTABLE); ++index )
+		{
+			if ( TOKEN_PRINTABLE[index].first == tokenType )
+			{
+				return TOKEN_PRINTABLE[index].second;
+			}
+		}
+
+		return false;
+	}
+
+	std::string Tokeniser::TokenPrintableString(const Token& token)
+	{
+		return TokenIsPrintable(token.type)
+			? TokenReadableDescription(token.type) + ": " + token.token
+			: TokenReadableDescription(token.type);
 	}
 
 	Tokeniser::Token Tokeniser::EmitToken(InputReader& reader) const

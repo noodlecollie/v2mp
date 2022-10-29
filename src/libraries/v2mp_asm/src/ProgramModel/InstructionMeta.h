@@ -37,4 +37,5 @@ namespace V2MPAsm
 	};
 
 	const InstructionMeta* GetInstructionMeta(const std::string& instructionName);
+	const InstructionMeta& GetInstructionMeta(InstructionType instructionType);
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+#include <vector>
 #include "ProgramModel/InstructionMeta.h"
 
 namespace V2MPAsm
@@ -16,7 +18,11 @@ namespace V2MPAsm
 
 		InstructionType GetInstructionType() const;
 
+		std::vector<uint16_t>& GetArguments();
+		const std::vector<uint16_t>& GetArguments() const;
+
 	private:
 		InstructionType m_InstructionType = InstructionType::NOP;
+		std::vector<uint16_t> m_Arguments;
 	};
 }

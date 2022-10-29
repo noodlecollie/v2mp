@@ -36,4 +36,14 @@ namespace V2MPAsm
 	{
 		return m_InstructionType;
 	}
+
+	std::vector<uint16_t>& CodeWord::GetArguments()
+	{
+		return m_Arguments;
+	}
+
+	const std::vector<uint16_t>& CodeWord::GetArguments() const
+	{
+		return m_Arguments;
+	}
 }

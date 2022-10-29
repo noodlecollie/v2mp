@@ -1,14 +1,16 @@
+#include <memory>
 #include "Parser/Parser.h"
 #include "Exceptions/AssemblerException.h"
 #include "Exceptions/PublicExceptionIDs.h"
 #include "Files/InputReader.h"
 #include "Interface_Exception.h"
 #include "Parser/Tokeniser.h"
+#include "ProgramModel/CodeWord.h"
 #include "ProgramModel/ProgramModel.h"
 #include "Utils/ParsingUtils.h"
 #include "Utils/ArrayUtils.h"
 #include "Parser/Tokeniser.h"
-#include <memory>
+#include "ProgramModel/InstructionMeta.h"
 
 namespace V2MPAsm
 {
@@ -202,7 +204,17 @@ namespace V2MPAsm
 			case State::BEGIN_LINE:
 			{
 				return ProcessInput_BeginLine(reader);
-			};
+			}
+
+			case State::BUILD_CODE_WORD:
+			{
+				return ProcessInput_BuildCodeWord(reader);
+			}
+
+			case State::SKIP_LINE:
+			{
+				return ProcessInput_SkipLine(reader);
+			}
 
 			default:
 			{
@@ -247,15 +259,102 @@ namespace V2MPAsm
 		return ProcessInput_CreateLabel(reader, token);
 	}
 
-	Parser::State Parser::ProcessInput_CreateInstructionCodeWord(InputReader& reader, const Tokeniser::Token& /* token */)
+	Parser::State Parser::ProcessInput_BuildCodeWord(InputReader& reader)
 	{
-		// TODO: Handle creation of new instruction.
-		throw ParserException(
-			reader,
-			PublicErrorID::UNIMPLEMENTED,
-			"Creation of code word for instruction is not yet implemented.",
-			State::TERMINATED
-		);
+		constexpr uint32_t ALLOWED_ARG_TOKENS =
+			TokenType::NumericLiteral |		// Literal value
+			TokenType::HighSelector |		// High section of a label
+			TokenType::LowSelector |		// Low section of a label
+			TokenType::DistanceSelector		// Distance to a label
+			;
+
+		constexpr uint32_t ALLOWED_INSTRUCTION_TERMINATOR_TOKENS =
+			TokenType::EndOfFile |
+			TokenType::EndOfLine
+			;
+
+		constexpr uint32_t ALL_ALLOWED_TOKENS = ALLOWED_ARG_TOKENS | ALLOWED_INSTRUCTION_TERMINATOR_TOKENS;
+
+		CodeWord& codeWord = m_Data->programBuilder.GetCurrentCodeWord();
+		const InstructionMeta& instructionMeta = GetInstructionMeta(codeWord.GetInstructionType());
+		const bool moreArgumentsRequired = codeWord.GetArguments().size() < instructionMeta.args.size();
+
+		const uint32_t allowedTokens = moreArgumentsRequired
+			? ALLOWED_ARG_TOKENS
+			: ALLOWED_INSTRUCTION_TERMINATOR_TOKENS;
+
+		// Get any possible token, and then customise any exception based on the state we're in.
+		const Tokeniser::Token token = GetNextToken(reader, ALL_ALLOWED_TOKENS, State::SKIP_LINE);
+
+		if ( !(token.type & allowedTokens) )
+		{
+			if ( moreArgumentsRequired )
+			{
+				throw ParserException(
+					reader,
+					PublicErrorID::UNEXPECTED_TOKEN,
+					"Expected number or label reference, but got " + Tokeniser::TokenPrintableString(token),
+					State::SKIP_LINE
+				);
+			}
+			else
+			{
+				throw ParserException(
+					reader,
+					PublicErrorID::UNEXPECTED_TOKEN,
+					instructionMeta.key + " instruction expects " + std::to_string(instructionMeta.args.size()) + "arguments.",
+					State::SKIP_LINE
+				);
+			}
+		}
+
+		if ( token.type == TokenType::EndOfFile )
+		{
+			return State::TERMINATED;
+		}
+
+		if ( token.type == TokenType::EndOfLine )
+		{
+			return ProcessInput_ValidateAndCommitCodeWord(reader);
+		}
+
+		return ProcessInput_AddArgumentToCodeWord(reader, token);
+	}
+
+	Parser::State Parser::ProcessInput_SkipLine(InputReader& reader)
+	{
+		while ( true )
+		{
+			const Tokeniser::Token token = GetNextToken(reader, ~0, State::TERMINATED);
+
+			if ( token.type == TokenType::EndOfFile )
+			{
+				return State::TERMINATED;
+			}
+
+			if ( token.type == TokenType::EndOfLine )
+			{
+				return State::BEGIN_LINE;
+			}
+		}
+	}
+
+	Parser::State Parser::ProcessInput_CreateInstructionCodeWord(InputReader& reader, const Tokeniser::Token& token)
+	{
+		const InstructionMeta* instructionMeta = GetInstructionMeta(token.token);
+
+		if ( !instructionMeta )
+		{
+			throw ParserException(
+				reader,
+				PublicErrorID::UNRECOGNISED_INSTRUCTION,
+				"Unrecognised instruction: " + token.token,
+				State::SKIP_LINE
+			);
+		}
+
+		m_Data->programBuilder.PrepareCodeWord(instructionMeta->type);
+		return State::BUILD_CODE_WORD;
 	}
 
 	Parser::State Parser::ProcessInput_CreateLabel(InputReader& reader, const Tokeniser::Token& /* token */)
@@ -265,6 +364,28 @@ namespace V2MPAsm
 			reader,
 			PublicErrorID::UNIMPLEMENTED,
 			"Creation of label is not yet implemented.",
+			State::TERMINATED
+		);
+	}
+
+	Parser::State Parser::ProcessInput_AddArgumentToCodeWord(InputReader& reader, const Tokeniser::Token& /* token */)
+	{
+		// TODO: Deal with the argument actually passed in.
+		throw ParserException(
+			reader,
+			PublicErrorID::UNIMPLEMENTED,
+			"Instruction argument parsing is not yet implemented.",
+			State::TERMINATED
+		);
+	}
+
+	Parser::State Parser::ProcessInput_ValidateAndCommitCodeWord(InputReader& reader)
+	{
+		// TODO: Implement
+		throw ParserException(
+			reader,
+			PublicErrorID::UNIMPLEMENTED,
+			"Committing code word is not yet implemented.",
 			State::TERMINATED
 		);
 	}
@@ -280,7 +401,7 @@ namespace V2MPAsm
 				throw ParserException(
 					reader,
 					PublicErrorID::UNEXPECTED_TOKEN,
-					"Encountered unexpected token of type \"" + Tokeniser::TokenName(token.type) + "\".",
+					"Encountered unexpected " + Tokeniser::TokenPrintableString(token),
 					failState
 				);
 			}

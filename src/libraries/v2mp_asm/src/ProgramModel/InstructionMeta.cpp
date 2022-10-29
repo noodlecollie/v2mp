@@ -1,5 +1,5 @@
+#include <stdexcept>
 #include "ProgramModel/InstructionMeta.h"
-#include "Utils/StringUtils.h"
 
 namespace V2MPAsm
 {
@@ -122,5 +122,18 @@ namespace V2MPAsm
 		}
 
 		return nullptr;
+	}
+
+	const InstructionMeta& GetInstructionMeta(InstructionType instructionType)
+	{
+		for ( const InstructionMeta& meta : g_Instructions )
+		{
+			if ( meta.type == instructionType )
+			{
+				return meta;
+			}
+		}
+
+		throw std::logic_error("Missing instruction type");
 	}
 }

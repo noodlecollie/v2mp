@@ -36,7 +36,9 @@ namespace V2MPAsm
 	private:
 #define PARSER_STATE_LIST \
 	LIST_ITEM(BEGIN_LINE = 0, "BeginLine") \
-	LIST_ITEM(TERMINATED, "Terminated")
+	LIST_ITEM(TERMINATED, "Terminated") \
+	LIST_ITEM(SKIP_LINE, "SkipLine") \
+	LIST_ITEM(BUILD_CODE_WORD, "BuildCodeWord")
 
 		enum class State
 		{
@@ -87,9 +89,13 @@ namespace V2MPAsm
 		State ProcessInputAndChooseNextState(InputReader& reader);
 
 		State ProcessInput_BeginLine(InputReader& reader);
+		State ProcessInput_BuildCodeWord(InputReader& reader);
+		State ProcessInput_SkipLine(InputReader& reader);
 
 		State ProcessInput_CreateInstructionCodeWord(InputReader& reader, const Tokeniser::Token& token);
 		State ProcessInput_CreateLabel(InputReader& reader, const Tokeniser::Token& token);
+		State ProcessInput_AddArgumentToCodeWord(InputReader& reader, const Tokeniser::Token& token);
+		State ProcessInput_ValidateAndCommitCodeWord(InputReader& reader);
 
 		Tokeniser::Token GetNextToken(
 			InputReader& reader,
