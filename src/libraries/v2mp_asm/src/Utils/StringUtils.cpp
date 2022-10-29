@@ -1,5 +1,6 @@
 #include <string>
 #include <cstring>
+#include <algorithm>
 #include "Utils/StringUtils.h"
 
 namespace V2MPAsm
@@ -21,5 +22,19 @@ namespace V2MPAsm
 		}
 
 		return strLength;
+	}
+
+	std::string ToLowercase(const std::string& str)
+	{
+		std::string out(str);
+		std::transform(out.begin(), out.end(), out.begin(), ::tolower);
+		return out;
+	}
+
+	std::string ToUppercase(const std::string& str)
+	{
+		std::string out(str);
+		std::transform(out.begin(), out.end(), out.begin(), ::toupper);
+		return out;
 	}
 }

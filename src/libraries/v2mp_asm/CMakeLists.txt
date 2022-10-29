@@ -25,6 +25,10 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/Parser/Parser.cpp
 	src/Parser/Tokeniser.h
 	src/Parser/Tokeniser.cpp
+	src/ProgramModel/CodeWord.h
+	src/ProgramModel/InstructionMeta.h
+	src/ProgramModel/InstructionMeta.cpp
+	src/ProgramModel/ProgramModel.h
 	src/Interface_Assembler.h
 	src/Interface_Assembler.cpp
 	src/Interface_Exception.h
