@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include "ProgramModel/CodeWord.h"
+#include "ProgramModel/InstructionMeta.h"
 
 namespace V2MPAsm
 {
@@ -9,10 +11,17 @@ namespace V2MPAsm
 	class ProgramBuilder
 	{
 	public:
-		ProgramBuilder(const std::shared_ptr<ProgramModel>& model);
+		ProgramBuilder();
 		~ProgramBuilder();
 
+		CodeWord& PrepareCodeWord(InstructionType instructionType);
+		CodeWord& GetCurrentCodeWord();
+		void SubmitCurrentCodeWord();
+
+		std::unique_ptr<ProgramModel> TakeProgramModel();
+
 	private:
-		std::shared_ptr<ProgramModel> m_ProgramModel;
+		std::unique_ptr<ProgramModel> m_ProgramModel;
+		CodeWord m_CurrentCodeWord;
 	};
 }
