@@ -7,6 +7,8 @@
 #include "Interface_Exception.h"
 #include "Exceptions/AssemblerException.h"
 #include "Parser/Tokeniser.h"
+#include "ProgramModel/ProgramBuilder.h"
+#include "ProgramModel/ProgramModel.h"
 
 namespace V2MPAsm
 {
@@ -15,9 +17,21 @@ namespace V2MPAsm
 	class Parser
 	{
 	public:
-		Parser(const std::shared_ptr<InputFile>& inputFile);
+		struct ParseResult
+		{
+			std::unique_ptr<ProgramModel> programModel;
+			ExceptionList exceptions;
 
-		ExceptionList ParseFile();
+			ParseResult() = default;
+
+			// Move only.
+			ParseResult(const ParseResult& other) = delete;
+			ParseResult(ParseResult&& other) = default;
+			ParseResult& operator =(const ParseResult& other) = delete;
+			ParseResult& operator =(ParseResult&& other) = default;
+		};
+
+		ParseResult ParseFile(const std::shared_ptr<InputFile>& inputFile) noexcept;
 
 	private:
 #define PARSER_STATE_LIST \
@@ -56,8 +70,19 @@ namespace V2MPAsm
 			std::optional<State> nextState;
 		};
 
+		struct ParserData
+		{
+			std::shared_ptr<InputFile> inputfile;
+			State state = State::BEGIN_LINE;
+			ExceptionList exceptionList;
+			size_t recordedErrors = 0;
+			ProgramBuilder programBuilder;
+		};
+
 		static const char* GetStateName(State state);
 
+		void InitialiseLocalData(const std::shared_ptr<InputFile>& inputFile);
+		void ParseFileInternal();
 		void AdvanceState(InputReader& reader);
 		State ProcessInputAndChooseNextState(InputReader& reader);
 
@@ -72,7 +97,6 @@ namespace V2MPAsm
 			const std::optional<State>& failState = std::optional<State>()
 		) const;
 
-		std::shared_ptr<InputFile> m_InputFile;
-		State m_State = State::BEGIN_LINE;
+		std::unique_ptr<ParserData> m_Data;
 	};
 }

@@ -50,7 +50,12 @@ namespace V2MPAsm
 	ExceptionList Assembler::RunInternal()
 	{
 		FilePool filePool;
-		Parser parser(filePool.OpenInputFile(m_InputFile));
-		return parser.ParseFile();
+		Parser parser;
+
+		Parser::ParseResult result = parser.ParseFile(filePool.OpenInputFile(m_InputFile));
+
+		// TODO: Write program to disk
+
+		return result.exceptions;
 	}
 }

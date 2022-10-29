@@ -4,9 +4,11 @@
 #include "Files/InputReader.h"
 #include "Interface_Exception.h"
 #include "Parser/Tokeniser.h"
+#include "ProgramModel/ProgramModel.h"
 #include "Utils/ParsingUtils.h"
 #include "Utils/ArrayUtils.h"
 #include "Parser/Tokeniser.h"
+#include <memory>
 
 namespace V2MPAsm
 {
@@ -46,20 +48,70 @@ namespace V2MPAsm
 	{
 	}
 
-	Parser::Parser(const std::shared_ptr<InputFile>& inputFile) :
-		m_InputFile(inputFile)
+	Parser::ParseResult Parser::ParseFile(const std::shared_ptr<InputFile>& inputFile) noexcept
 	{
+		ParseResult result;
+
+		// No exceptions should make it this far up if everything is being used correctly,
+		// but we wrap the calls just in case.
+		try
+		{
+			InitialiseLocalData(inputFile);
+			ParseFileInternal();
+
+			result.exceptions = m_Data->exceptionList;
+
+			if ( m_Data->recordedErrors < 1 )
+			{
+				result.programModel = m_Data->programBuilder.TakeProgramModel();
+			}
+		}
+		catch ( const AssemblerException& ex )
+		{
+			result.programModel.reset();
+			result.exceptions.emplace_back(CreateException(ex.GetPublicException()));
+		}
+		catch ( ... )
+		{
+			result.programModel.reset();
+			result.exceptions.emplace_back(
+				CreateErrorException(
+					PublicErrorID::INTERNAL,
+					std::string(),
+					LINE_NUMBER_BASE,
+					COLUMN_NUMBER_BASE,
+					"An unhandled exception occurred while executing ParseFile()."
+				)
+			);
+		}
+
+		m_Data.reset();
+		return result;
 	}
 
-	ExceptionList Parser::ParseFile()
+	void Parser::InitialiseLocalData(const std::shared_ptr<InputFile>& inputFile)
 	{
-		InputReader reader(m_InputFile);
-		ExceptionList outList;
-		size_t recordedErrors = 0;
+		if ( !inputFile )
+		{
+			throw AssemblerException(
+				PublicErrorID::INTERNAL,
+				std::string(),
+				LINE_NUMBER_BASE,
+				COLUMN_NUMBER_BASE,
+				"Input file was not valid."
+			);
+		}
 
-		m_State = State::BEGIN_LINE;
+		m_Data = std::make_unique<ParserData>();
 
-		while ( m_State != State::TERMINATED )
+		m_Data->inputfile = inputFile;
+	}
+
+	void Parser::ParseFileInternal()
+	{
+		InputReader reader(m_Data->inputfile);
+
+		while ( m_Data->state != State::TERMINATED )
 		{
 			// It may be advantageous from an error reporting point of view to actually
 			// perform an iteration if the reader is at EOF but the state machine has
@@ -73,31 +125,31 @@ namespace V2MPAsm
 			}
 			catch ( const AssemblerException& ex )
 			{
-				outList.emplace_back(CreateException(ex.GetPublicException()));
+				m_Data->exceptionList.emplace_back(CreateException(ex.GetPublicException()));
 
 				if ( ex.GetPublicException().GetType() == V2MPASM_EXCEPTION_ERROR )
 				{
-					++recordedErrors;
+					++m_Data->recordedErrors;
 				}
 			}
 
-			if ( recordedErrors >= MAX_ALLOWED_ERRORS )
+			if ( m_Data->recordedErrors >= MAX_ALLOWED_ERRORS )
 			{
-				outList.emplace_back(
+				m_Data->exceptionList.emplace_back(
 					CreateErrorException(
 						PublicErrorID::EXCEEDED_ERROR_COUNT,
 						reader.GetPath(),
 						reader.GetCurrentLine(),
 						reader.GetCurrentColumn(),
-						"Encountered " + std::to_string(recordedErrors) + " errors, terminating parsing."
+						"Encountered " + std::to_string(m_Data->recordedErrors) + " errors, terminating parsing."
 					)
 				);
 
-				m_State = State::TERMINATED;
+				m_Data->state = State::TERMINATED;
 			}
-			else if ( readerWasEOF && m_State != State::TERMINATED )
+			else if ( readerWasEOF && m_Data->state != State::TERMINATED )
 			{
-				outList.emplace_back(
+				m_Data->exceptionList.emplace_back(
 					CreateInternalWarningException(
 						reader.GetPath(),
 						reader.GetCurrentLine(),
@@ -106,24 +158,22 @@ namespace V2MPAsm
 					)
 				);
 
-				m_State = State::TERMINATED;
+				m_Data->state = State::TERMINATED;
 			}
 		}
-
-		return outList;
 	}
 
 	void Parser::AdvanceState(InputReader& reader)
 	{
 		try
 		{
-			m_State = ProcessInputAndChooseNextState(reader);
+			m_Data->state = ProcessInputAndChooseNextState(reader);
 		}
 		catch ( const ParserException& ex )
 		{
 			if ( ex.nextState )
 			{
-				m_State = ex.nextState.value();
+				m_Data->state = ex.nextState.value();
 			}
 
 			throw ex;
@@ -133,7 +183,7 @@ namespace V2MPAsm
 			// This should never happen at this level - we always want to be throwing
 			// ParserExceptions from ProcessInputAndChooseNextState(). If we don't,
 			// the fail state to move to is not well-defined. For safety, terminate here.
-			m_State = State::TERMINATED;
+			m_Data->state = State::TERMINATED;
 
 			throw AssemblerException(
 				PublicErrorID::INTERNAL,
@@ -147,7 +197,7 @@ namespace V2MPAsm
 
 	Parser::State Parser::ProcessInputAndChooseNextState(InputReader& reader)
 	{
-		switch ( m_State )
+		switch ( m_Data->state )
 		{
 			case State::BEGIN_LINE:
 			{
@@ -159,7 +209,7 @@ namespace V2MPAsm
 				throw ParserException(
 					reader,
 					PublicErrorID::INTERNAL,
-					"Encountered unhandled parser state \"" + std::string(GetStateName(m_State)) + "\".",
+					"Encountered unhandled parser state \"" + std::string(GetStateName(m_Data->state)) + "\".",
 					State::TERMINATED
 				);
 			}
