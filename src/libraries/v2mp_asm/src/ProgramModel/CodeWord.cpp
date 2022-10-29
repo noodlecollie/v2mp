@@ -37,13 +37,18 @@ namespace V2MPAsm
 		return m_InstructionType;
 	}
 
-	std::vector<uint16_t>& CodeWord::GetArguments()
+	size_t CodeWord::GetArgumentCount() const
 	{
-		return m_Arguments;
+		return m_Arguments.size();
 	}
 
-	const std::vector<uint16_t>& CodeWord::GetArguments() const
+	void CodeWord::AddArgument(int32_t value)
 	{
-		return m_Arguments;
+		m_Arguments.emplace_back(value);
+	}
+
+	void CodeWord::AddArgument(LabelReference::ReferenceType refType, const std::string& labelName)
+	{
+		m_Arguments.emplace_back(refType, labelName);
 	}
 }

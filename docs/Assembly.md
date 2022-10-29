@@ -20,14 +20,14 @@ An assembly file is parsed one line at a time, and whitespace is used for delimi
 <instruction name> [instruction args ...]
 ```
 
-The first token is the mnemonic for the instruction, and subsequent tokens are arguments for this instruction.
+The first token is the mnemonic for the instruction in lowercase, and subsequent tokens are arguments for this instruction.
 
 At the most basic level, an instruction's arguments are expected to be numerical values that correspond to the arguments for the instruction, as defined in `V2MP.md`. This means that for an instruction like `ADD`, it must be invoked with exactly three arguments:
 
 ```
-// ADD <source_reg> <dest_reg> <literal_value>
+// add <source_reg> <dest_reg> <literal_value>
 // The following adds the value in R1 to that in R0:
-ADD 0 1 0
+add 0 1 0
 ```
 
 This instruction would be assembled to the following machine code word:
@@ -52,38 +52,46 @@ A token that begins with a digit `0-9` or a minus sign `-` is treated as a numer
 
 ## Labels
 
-A token that is enclosed within `[ ]` brackets is considered a label. A label defines a point in code to which the processor may branch later.
+A token that begins with `:` is considered a label. A label defines a point in code to which the processor may branch later.
 
-The name of a label may only contain alphanumeric characters `A-Z a-z 0-9` and underscores `_`, and may not begin with a number.
+The name of a label, formed by the string after the `:`, may only contain alphanumeric characters `A-Z a-z 0-9` and underscores `_`, and may not begin with a number.
 
 ```
 // A label to mark the beginning of a loop:
-[loop_begin]
+:loop_begin
 // ... further instructions below ...
 ```
 
-Labels may be used as arguments to instructions. Since a loop is a code memory address, and an there is not enough space to provide a full 16-bit address as an operand to an instruction, the following syntax is supported when referring to labels:
+Labels may be used as arguments to instructions. Since a label is a code memory address, and an there is not enough space to provide a full 16-bit address as an operand to an instruction, the following syntax is supported when referring to labels:
 
-* Prefixing a label name with `~` evaluates to an unsigned byte representing the distance in words between the address of the next instruction and the label.
-* Prefixing a label name with `+` evaluates to the upper byte of the label's unsigned address.
-* Prefixing a label name with `-` evaluates to the lower byte of the label's unsigned address.
+* Prefixing a label name with `~` evaluates to an **unsigned** byte representing the distance **in words** between the address of the next instruction and the label.
+* Prefixing a label name with `<` evaluates to the upper byte of the label's unsigned address.
+* Prefixing a label name with `>` evaluates to the lower byte of the label's unsigned address.
 
-This allows for the following methods of branching:
+This allows for the following methods of jumping to a new address. Note that in the case where `~` is used to add to or subtract from `PC`, the `ADD` and `SUB` commands treat the operand as the number of **words** to increment or decrement `PC` by.
 
 ```
-// Branching by subtracting from PC:
-[label1]
-ADD 0 0 1        // Add 1 to R0
-ADD 1 1 2        // Add 2 to R1
-SUB 3 3 ~label1  // Subtract 3 words (ie. a value of 6) from PC
-ADD 0 0 0        // This is the next instruction that PC would be pointing to
+// Loop by subtracting from PC:
+:label1
+add 0 0 1         // Add 1 to R0
+add 1 1 2         // Add 2 to R1
+sub 3 3 ~:label1  // Subtract 3 words from PC, to begin executing from :label1 again
+nop               // This is the next instruction that PC would otherwise be pointing to
 
-// Branching by bit shifting and assigning to PC:
-[label2]
-ASGN 3 3 +label2  // Assign upper byte of label address to LR
-SHFT 3 3 8        // Shift the value in LR left by 8 bits
-ADD 3 3 -label2   // Add lower byte of label address to LR
-ASGN 3 4 0        // Assign the value to PC
+// Jump by adding to PC:
+add 3 3 ~:label2  // Add 3 words to PC, to continue execution from :label2
+add 0 0 1         // +------------------------------------+
+add 0 0 1         // | These instructions will be skipped |
+add 0 0 1         // +------------------------------------+
+:label2
+nop               // No adds will have taken place by the time execution resumes from here
+
+// Jump by bit shifting and assigning to PC:
+:label3
+asgn 3 3 <:label3  // Assign upper byte of label address to LR
+shft 3 3 8         // Shift the value in LR left by 8 bits
+add 3 3 >:label3   // Add lower byte of label address to LR
+asgn 3 4 0         // Assign the value to PC
 
 ```
 
@@ -100,6 +108,8 @@ The following preprocessor commands are supported:
 ```
 
 ---
+
+Original notes (outdated):
 
 ```
 // Other files can be included for extra definitions:
@@ -153,12 +163,4 @@ BX_IF_R0_EQ_R1 0x1000
 // Numerical literals can either be decimal (default),
 // hex (prefixed by 0x), or binary (prefixed by 0b).
 
-// Labels are defined using:
-
-#label LabelName
-
-// Their address can be used in an instruction with
-// the '&' prefix:
-
-ASGN 2 &LabelName
 ```

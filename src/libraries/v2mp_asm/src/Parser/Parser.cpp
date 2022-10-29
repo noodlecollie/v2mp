@@ -277,7 +277,7 @@ namespace V2MPAsm
 
 		CodeWord& codeWord = m_Data->programBuilder.GetCurrentCodeWord();
 		const InstructionMeta& instructionMeta = GetInstructionMeta(codeWord.GetInstructionType());
-		const bool moreArgumentsRequired = codeWord.GetArguments().size() < instructionMeta.args.size();
+		const bool moreArgumentsRequired = codeWord.GetArgumentCount() < instructionMeta.args.size();
 
 		const uint32_t allowedTokens = moreArgumentsRequired
 			? ALLOWED_ARG_TOKENS
@@ -368,13 +368,24 @@ namespace V2MPAsm
 		);
 	}
 
-	Parser::State Parser::ProcessInput_AddArgumentToCodeWord(InputReader& reader, const Tokeniser::Token& /* token */)
+	Parser::State Parser::ProcessInput_AddArgumentToCodeWord(InputReader& reader, const Tokeniser::Token& token)
 	{
-		// TODO: Deal with the argument actually passed in.
+		if ( token.type == TokenType::NumericLiteral )
+		{
+			// TODO: Parse integer from string, taking base into account
+			throw ParserException(
+				reader,
+				PublicErrorID::UNIMPLEMENTED,
+				"Numerical instruction argument parsing is not yet implemented.",
+				State::TERMINATED
+			);
+		}
+
+		// TODO: Deal with label reference
 		throw ParserException(
 			reader,
 			PublicErrorID::UNIMPLEMENTED,
-			"Instruction argument parsing is not yet implemented.",
+			"Label ref instruction argument parsing is not yet implemented.",
 			State::TERMINATED
 		);
 	}

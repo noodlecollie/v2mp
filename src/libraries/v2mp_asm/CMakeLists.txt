@@ -29,6 +29,8 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/ProgramModel/CodeWord.cpp
 	src/ProgramModel/InstructionMeta.h
 	src/ProgramModel/InstructionMeta.cpp
+	src/ProgramModel/LabelReference.h
+	src/ProgramModel/LabelReference.cpp
 	src/ProgramModel/ProgramBuilder.h
 	src/ProgramModel/ProgramBuilder.cpp
 	src/ProgramModel/ProgramModel.h
