@@ -28,7 +28,10 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/ProgramModel/CodeWord.h
 	src/ProgramModel/InstructionMeta.h
 	src/ProgramModel/InstructionMeta.cpp
+	src/ProgramModel/ProgramBuilder.h
+	src/ProgramModel/ProgramBuilder.cpp
 	src/ProgramModel/ProgramModel.h
+	src/ProgramModel/ProgramModel.cpp
 	src/Interface_Assembler.h
 	src/Interface_Assembler.cpp
 	src/Interface_Exception.h

@@ -27,14 +27,14 @@ namespace V2MPAsm
 	std::string ToLowercase(const std::string& str)
 	{
 		std::string out(str);
-		std::transform(out.begin(), out.end(), out.begin(), ::tolower);
+		std::transform(out.begin(), out.end(), out.begin(), [](char ch){ return static_cast<char>(::tolower(ch));});
 		return out;
 	}
 
 	std::string ToUppercase(const std::string& str)
 	{
 		std::string out(str);
-		std::transform(out.begin(), out.end(), out.begin(), ::toupper);
+		std::transform(out.begin(), out.end(), out.begin(), [](char ch){ return static_cast<char>(::toupper(ch));});
 		return out;
 	}
 }

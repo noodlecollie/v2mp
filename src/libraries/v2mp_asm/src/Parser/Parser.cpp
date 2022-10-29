@@ -184,14 +184,37 @@ namespace V2MPAsm
 
 		if ( token.type == TokenType::EndOfLine )
 		{
+			// Ignore empty line and prepare for the next line.
 			return State::BEGIN_LINE;
 		}
 
-		// TODO: Handle the other cases.
+		if ( token.type == TokenType::AlnumString )
+		{
+			return ProcessInput_CreateInstructionCodeWord(reader, token);
+		}
+
+		// Otherwise, token must be a label definition.
+		return ProcessInput_CreateLabel(reader, token);
+	}
+
+	Parser::State Parser::ProcessInput_CreateInstructionCodeWord(InputReader& reader, const Tokeniser::Token& /* token */)
+	{
+		// TODO: Handle creation of new instruction.
 		throw ParserException(
 			reader,
 			PublicErrorID::UNIMPLEMENTED,
-			"Processing instruction or label tokens is not yet implemented.",
+			"Creation of code word for instruction is not yet implemented.",
+			State::TERMINATED
+		);
+	}
+
+	Parser::State Parser::ProcessInput_CreateLabel(InputReader& reader, const Tokeniser::Token& /* token */)
+	{
+		// TODO: Implement
+		throw ParserException(
+			reader,
+			PublicErrorID::UNIMPLEMENTED,
+			"Creation of label is not yet implemented.",
 			State::TERMINATED
 		);
 	}

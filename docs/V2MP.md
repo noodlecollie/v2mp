@@ -428,14 +428,15 @@ Pushes or pops register values from the stack.
 
 ```
  STK
-|1010|A.......BCDE|
+|1010|A.......BBBB|
 ```
 
 * Operand bit `[11] (A)` specifies whether the operation is a push or pop. If `A` is set then the operation is a push; if `A` is not set then the operation is a pop.
-* Operand bit `[3] (B)` specifies whether `PC` is included in the operation: it is included if `B` is set, and is not included if `B` is not set.
-* Operand bit `[2] (C)` specifies whether `LR` is included in the operation: it is included if `C` is set, and is not included if `C` is not set.
-* Operand bit `[1] (D)` specifies whether `R1` is included in the operation: it is included if `D` is set, and is not included if `D` is not set.
-* Operand bit `[0] (E)` specifies whether `R0` is included in the operation: it is included if `E` is set, and is not included if `E` is not set.
+* Operand bits `[3 0] (B)` serve as a bitmask to specify which registers will be included in the operation:
+  * Operand bit `[3]` specifies whether `PC` is included in the operation: it is included if this bit is set, and is not included if this bit is not set.
+  * Operand bit `[2]` specifies whether `LR` is included in the operation: it is included if this bit is set, and is not included if this bit is not set.
+  * Operand bit `[1]` specifies whether `R1` is included in the operation: it is included if this bit is set, and is not included if this bit is not set.
+  * Operand bit `[0]` specifies whether `R0` is included in the operation: it is included if this bit is set, and is not included if this bit is not set.
 
 Operand bits `[10 4]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised. Additionally, including no registers in the operation (ie. leaving operand bits `B` - `E` as `0`) will also raise a [`RES`](#faults) fault.
 

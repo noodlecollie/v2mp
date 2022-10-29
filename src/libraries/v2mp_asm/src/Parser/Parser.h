@@ -63,6 +63,9 @@ namespace V2MPAsm
 
 		State ProcessInput_BeginLine(InputReader& reader);
 
+		State ProcessInput_CreateInstructionCodeWord(InputReader& reader, const Tokeniser::Token& token);
+		State ProcessInput_CreateLabel(InputReader& reader, const Tokeniser::Token& token);
+
 		Tokeniser::Token GetNextToken(
 			InputReader& reader,
 			uint32_t allowedTokens = ~0,

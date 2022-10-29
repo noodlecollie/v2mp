@@ -25,12 +25,13 @@ namespace V2MPAsm
 
 	struct ArgMeta
 	{
-		size_t highBit;
-		size_t lowBit;
+		uint8_t highBit;
+		uint8_t lowBit;
 	};
 
 	struct InstructionMeta
 	{
+		std::string key;
 		InstructionType type;
 		std::vector<ArgMeta> args;
 	};
