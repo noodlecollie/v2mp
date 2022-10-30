@@ -115,10 +115,10 @@ namespace V2MPAsm
 
 		while ( m_Data->state != State::TERMINATED )
 		{
-			// It may be advantageous from an error reporting point of view to actually
-			// perform an iteration if the reader is at EOF but the state machine has
-			// not yet termianted. However, only allow this to be done once, just as
-			// a sanity check against infinite loops.
+			// We have an EOF parse state for tidying up once the end of the file has been reached.
+			// However, we should only allow this state to be processed once, just as a sanity check
+			// against infinite loops. readerWasEOF is checked later to make sure the parser
+			// terminates properly.
 			const bool readerWasEOF = reader.IsEOF();
 
 			try
@@ -241,7 +241,7 @@ namespace V2MPAsm
 
 		if ( token.type == TokenType::EndOfFile )
 		{
-			return State::TERMINATED;
+			return State::END_OF_FILE;
 		}
 
 		if ( token.type == TokenType::EndOfLine )
@@ -310,7 +310,7 @@ namespace V2MPAsm
 
 		if ( token.type == TokenType::EndOfFile )
 		{
-			return State::TERMINATED;
+			return State::END_OF_FILE;
 		}
 
 		if ( token.type == TokenType::EndOfLine )
@@ -329,7 +329,7 @@ namespace V2MPAsm
 
 			if ( token.type == TokenType::EndOfFile )
 			{
-				return State::TERMINATED;
+				return State::END_OF_FILE;
 			}
 
 			if ( token.type == TokenType::EndOfLine )
@@ -357,15 +357,35 @@ namespace V2MPAsm
 		return State::BUILD_CODE_WORD;
 	}
 
-	Parser::State Parser::ProcessInput_CreateLabel(InputReader& reader, const Tokeniser::Token& /* token */)
+	Parser::State Parser::ProcessInput_CreateLabel(InputReader& reader, const Tokeniser::Token& token)
 	{
-		// TODO: Implement
-		throw ParserException(
-			reader,
-			PublicErrorID::UNIMPLEMENTED,
-			"Creation of label is not yet implemented.",
-			State::TERMINATED
-		);
+		if ( m_Data->programBuilder.HasLabel(token.token) )
+		{
+			const std::optional<uint16_t> address = m_Data->programBuilder.GetLabelAddress(token.token);
+
+			if ( address.has_value() )
+			{
+				throw ParserException(
+					reader,
+					PublicErrorID::DUPLICATE_LABEL,
+					"Label with name \"" + token.token + "\" already exists.",
+					State::SKIP_LINE
+				);
+			}
+			else
+			{
+				throw ParserException(
+					reader,
+					PublicWarningID::REDUNDANT_LABEL,
+					"Label \"" + token.token + "\" specified more than once.",
+					State::SKIP_LINE
+				);
+			}
+		}
+
+		m_Data->programBuilder.SetNextLabelName(token.token);
+
+		return State::BEGIN_LINE;
 	}
 
 	Parser::State Parser::ProcessInput_AddArgumentToCodeWord(InputReader& reader, const Tokeniser::Token& token)

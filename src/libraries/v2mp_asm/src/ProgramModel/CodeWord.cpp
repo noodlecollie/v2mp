@@ -42,6 +42,16 @@ namespace V2MPAsm
 		return m_Arguments.size();
 	}
 
+	uint16_t CodeWord::GetAddress() const
+	{
+		return m_Address;
+	}
+
+	void CodeWord::SetAddress(uint16_t address)
+	{
+		m_Address = address;
+	}
+
 	void CodeWord::AddArgument(int32_t value)
 	{
 		m_Arguments.emplace_back(value);

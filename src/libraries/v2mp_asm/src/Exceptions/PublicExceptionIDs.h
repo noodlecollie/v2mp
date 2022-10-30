@@ -9,6 +9,7 @@ namespace V2MPAsm
 	LIST_ITEM(INTERNAL, "internal-warning", "Unexpected internal warning.") \
 	LIST_ITEM(ARG_OUT_OF_RANGE, "arg-out-of-range", "Instruction argument is out of range.") \
 	LIST_ITEM(UNTERMINATED_TOKEN, "unterminated-token", "Unterminated token.") \
+	LIST_ITEM(REDUNDANT_LABEL, "redundant-label", "Redundant label.") \
 
 #define PUBLICERRORTYPE_LIST \
 	/* General: */ \

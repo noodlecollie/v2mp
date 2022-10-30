@@ -16,18 +16,34 @@ namespace V2MPAsm
 
 	CodeWord& ProgramBuilder::PrepareCodeWord(InstructionType instructionType)
 	{
-		m_CurrentCodeWord = CodeWord(instructionType);
-		return m_CurrentCodeWord;
+		m_CurrentCodeWord = std::make_shared<CodeWord>(instructionType);
+		return *m_CurrentCodeWord;
 	}
 
 	CodeWord& ProgramBuilder::GetCurrentCodeWord()
 	{
-		return m_CurrentCodeWord;
+		return *m_CurrentCodeWord;
 	}
 
 	void ProgramBuilder::SubmitCurrentCodeWord()
 	{
-		m_ProgramModel->AddCodeWord(std::move(m_CurrentCodeWord));
+		m_ProgramModel->AddCodeWord(m_CurrentCodeWord);
+		m_CurrentCodeWord = std::make_shared<CodeWord>();
+	}
+
+	void ProgramBuilder::SetNextLabelName(const std::string& labelName)
+	{
+		m_ProgramModel->SetNextLabelName(labelName);
+	}
+
+	bool ProgramBuilder::HasLabel(const std::string& labelName)
+	{
+		return m_ProgramModel->HasLabel(labelName);
+	}
+
+	std::optional<uint16_t> ProgramBuilder::GetLabelAddress(const std::string& labelName) const
+	{
+		return m_ProgramModel->GetLabelAddress(labelName);
 	}
 
 	std::unique_ptr<ProgramModel> ProgramBuilder::TakeProgramModel()

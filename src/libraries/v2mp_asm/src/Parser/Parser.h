@@ -36,9 +36,10 @@ namespace V2MPAsm
 	private:
 #define PARSER_STATE_LIST \
 	LIST_ITEM(BEGIN_LINE = 0, "BeginLine") \
-	LIST_ITEM(TERMINATED, "Terminated") \
 	LIST_ITEM(SKIP_LINE, "SkipLine") \
-	LIST_ITEM(BUILD_CODE_WORD, "BuildCodeWord")
+	LIST_ITEM(BUILD_CODE_WORD, "BuildCodeWord") \
+	LIST_ITEM(END_OF_FILE, "EndOfFile") \
+	LIST_ITEM(TERMINATED, "Terminated")
 
 		enum class State
 		{
