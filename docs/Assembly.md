@@ -35,14 +35,14 @@ This instruction would be assembled to the following machine code word:
 ```
 // In binary:
 // opcode source_reg dest_reg literal_value
-   0000   00         01       00000000
+   0001   00         01       00000000
 ```
 
 If an instruction is specified with an incorrect number of arguments, an error is raised when the assembler parses the file. Aliases may be defined for convenience - see the [Preprocessor](#preprocessor) section later.
 
 ## Numerical Literals
 
-A token that begins with a digit `0-9` or a minus sign `-` is treated as a numeric literal. By default, numeric literals are treated as being decimal, but hexadecimal literals can be specified using the prefix `0x`, and binary literals using the prefix `0b`.
+A token that begins with a digit `0-9` or a plus or minus sign (`+` or `-`) is treated as a numeric literal. By default, numeric literals are treated as being decimal, but hexadecimal literals can be specified using the prefix `0x`, and binary literals using the prefix `0b`.
 
 ```
 20       // 20 in decimal
@@ -88,10 +88,10 @@ nop               // No adds will have taken place by the time execution resumes
 
 // Jump by bit shifting and assigning to PC:
 :label3
-asgn 3 3 <:label3  // Assign upper byte of label address to LR
-shft 3 3 8         // Shift the value in LR left by 8 bits
-add 3 3 >:label3   // Add lower byte of label address to LR
-asgn 3 4 0         // Assign the value to PC
+asgn 2 2 <:label3  // Assign upper byte of label address to LR
+shft 2 2 8         // Shift the value in LR left by 8 bits
+add 2 2 >:label3   // Add lower byte of label address to LR
+asgn 2 3 0         // Assign the value to PC
 
 ```
 
