@@ -1,5 +1,6 @@
 #include <exception>
 #include <memory>
+#include <string>
 #include "Parser/Parser.h"
 #include "Exceptions/AssemblerException.h"
 #include "Exceptions/PublicExceptionIDs.h"
@@ -13,6 +14,7 @@
 #include "Parser/Tokeniser.h"
 #include "ProgramModel/InstructionMeta.h"
 #include "Utils/StringUtils.h"
+#include "ProgramModel/CodeWordValidation.h"
 
 namespace V2MPAsm
 {
@@ -494,7 +496,7 @@ namespace V2MPAsm
 
 			// Arguments must be validated once code word is complete,
 			// as the validity of one argument may depend on the value of another.
-			m_Data->programBuilder.GetCurrentCodeWord().AddArgument(value);
+			m_Data->programBuilder.GetCurrentCodeWord().AddArgument(token.column, value);
 		}
 		else
 		{
@@ -512,11 +514,25 @@ namespace V2MPAsm
 
 	Parser::State Parser::ProcessInput_ValidateAndCommitCodeWord(InputReader& reader, Tokeniser::TokenType /* tokenType */)
 	{
+		const CodeWord& currentCodeWord = m_Data->programBuilder.GetCurrentCodeWord();
+		std::vector<ValidationFailure> validationFailures = ValidateCodeWord(currentCodeWord);
+
+		if ( !validationFailures.empty() )
+		{
+			// TODO: Implement
+			throw ParserException(
+				reader,
+				PublicErrorID::UNIMPLEMENTED,
+				"Need to implement returning code word validation errors in correct format.",
+				State::TERMINATED
+			);
+		}
+
 		// TODO: Implement
 		throw ParserException(
 			reader,
 			PublicErrorID::UNIMPLEMENTED,
-			"Validating and committing code word is not yet implemented.",
+			"Committing code word is not yet implemented.",
 			State::TERMINATED
 		);
 	}

@@ -1,8 +1,15 @@
 #include "ProgramModel/CodeWord.h"
+#include "Utils/ParsingUtils.h"
 
 namespace V2MPAsm
 {
-	CodeWord::CodeWord(InstructionType instructionType) :
+	CodeWord::CodeWord(
+		InstructionType instructionType,
+		size_t line,
+		size_t column
+	) :
+		m_Line(line),
+		m_Column(column),
 		m_InstructionType(instructionType)
 	{
 	}
@@ -52,13 +59,23 @@ namespace V2MPAsm
 		m_Address = address;
 	}
 
-	void CodeWord::AddArgument(int32_t value)
+	void CodeWord::AddArgument(size_t columnIndex,int32_t value)
 	{
-		m_Arguments.emplace_back(value);
+		m_Arguments.emplace_back(columnIndex, value);
 	}
 
-	void CodeWord::AddArgument(LabelReference::ReferenceType refType, const std::string& labelName)
+	void CodeWord::AddArgument(size_t columnIndex,LabelReference::ReferenceType refType, const std::string& labelName)
 	{
-		m_Arguments.emplace_back(refType, labelName);
+		m_Arguments.emplace_back(columnIndex, refType, labelName);
+	}
+
+	const CodeWordArg* CodeWord::GetArgument(size_t argIndex) const
+	{
+		return argIndex < m_Arguments.size() ? &m_Arguments[argIndex] : nullptr;
+	}
+
+	size_t CodeWord::GetArgumentColumn(size_t argIndex) const
+	{
+		return argIndex < m_Arguments.size() ? m_Arguments[argIndex].GetColumn() : COLUMN_NUMBER_BASE;
 	}
 }

@@ -32,8 +32,6 @@ namespace V2MPAsm
 	private:
 		std::unique_ptr<ProgramModel> m_ProgramModel;
 		std::shared_ptr<CodeWord> m_CurrentCodeWord;
-		size_t m_CodeWordLine = LINE_NUMBER_BASE;
-		size_t m_CodeWordColumn = COLUMN_NUMBER_BASE;
 		std::string m_NextLabel;
 	};
 }

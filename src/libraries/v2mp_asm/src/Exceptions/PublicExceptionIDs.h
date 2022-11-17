@@ -11,6 +11,7 @@ namespace V2MPAsm
 	LIST_ITEM(UNTERMINATED_TOKEN, "unterminated-token", "Unterminated token.") \
 	LIST_ITEM(REDUNDANT_LABEL, "redundant-label", "Redundant label.") \
 	LIST_ITEM(LABEL_DISCARDED, "label-discarded", "Label discarded.") \
+	LIST_ITEM(TOO_MANY_ARGUMENTS, "too-many-arguments", "Too many arguments for instruction.")
 
 #define PUBLICERRORTYPE_LIST \
 	/* General: */ \

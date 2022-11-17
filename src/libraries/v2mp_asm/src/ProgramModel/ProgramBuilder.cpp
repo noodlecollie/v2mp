@@ -19,21 +19,9 @@ namespace V2MPAsm
 
 	CodeWord& ProgramBuilder::PrepareCodeWord(size_t line, size_t column, InstructionType instructionType)
 	{
-		m_CurrentCodeWord = std::make_shared<CodeWord>(instructionType);
-		m_CodeWordLine = line;
-		m_CodeWordColumn = column;
+		m_CurrentCodeWord = std::make_shared<CodeWord>(instructionType, line, column);
 
 		return *m_CurrentCodeWord;
-	}
-
-	size_t ProgramBuilder::GetCurrentCodeWordLine() const
-	{
-		return m_CodeWordLine;
-	}
-
-	size_t ProgramBuilder::GetCurrentCodeWordColumn() const
-	{
-		return m_CodeWordColumn;
 	}
 
 	CodeWord& ProgramBuilder::GetCurrentCodeWord()
@@ -46,8 +34,6 @@ namespace V2MPAsm
 		m_ProgramModel->AddCodeWord(m_CurrentCodeWord);
 
 		m_CurrentCodeWord = std::make_shared<CodeWord>();
-		m_CodeWordLine = LINE_NUMBER_BASE;
-		m_CodeWordColumn = COLUMN_NUMBER_BASE;
 
 		if ( !m_NextLabel.empty() )
 		{
