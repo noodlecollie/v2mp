@@ -496,14 +496,18 @@ namespace V2MPAsm
 			// as the validity of one argument may depend on the value of another.
 			m_Data->programBuilder.GetCurrentCodeWord().AddArgument(value);
 		}
+		else
+		{
+			// TODO: Deal with label reference
+			throw ParserException(
+				reader,
+				PublicErrorID::UNIMPLEMENTED,
+				"Label ref instruction argument parsing is not yet implemented.",
+				State::TERMINATED
+			);
+		}
 
-		// TODO: Deal with label reference
-		throw ParserException(
-			reader,
-			PublicErrorID::UNIMPLEMENTED,
-			"Label ref instruction argument parsing is not yet implemented.",
-			State::TERMINATED
-		);
+		return State::BUILD_CODE_WORD;
 	}
 
 	Parser::State Parser::ProcessInput_ValidateAndCommitCodeWord(InputReader& reader, Tokeniser::TokenType /* tokenType */)
