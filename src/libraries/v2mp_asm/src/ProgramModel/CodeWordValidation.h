@@ -4,6 +4,7 @@
 #include <variant>
 #include <string>
 #include "Exceptions/PublicExceptionIDs.h"
+#include "Exceptions/AssemblerException.h"
 
 namespace V2MPAsm
 {
@@ -40,4 +41,10 @@ namespace V2MPAsm
 	};
 
 	std::vector<ValidationFailure> ValidateCodeWord(const CodeWord& codeWord);
+
+	AssemblerException ToAssemblerException(
+		const ValidationFailure& failure,
+		const std::string& filePath,
+		const CodeWord& codeWord
+	);
 }

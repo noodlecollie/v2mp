@@ -51,6 +51,9 @@ namespace V2MPAsm
 		CodeWord& operator =(CodeWord&& other);
 
 		InstructionType GetInstructionType() const;
+		size_t GetLine() const;
+		size_t GetColumn() const;
+
 		size_t GetArgumentCount() const;
 
 		uint16_t GetAddress() const;

@@ -1,4 +1,5 @@
 #include "ProgramModel/CodeWordValidation.h"
+#include "Exceptions/AssemblerException.h"
 #include "Exceptions/PublicExceptionIDs.h"
 #include "ProgramModel/CodeWord.h"
 #include "ProgramModel/InstructionMeta.h"
@@ -97,6 +98,34 @@ namespace V2MPAsm
 					)
 				};
 			}
+		}
+	}
+
+	AssemblerException ToAssemblerException(
+		const ValidationFailure& failure,
+		const std::string& filePath,
+		const CodeWord& codeWord
+	)
+	{
+		if ( failure.IsError() )
+		{
+			return AssemblerException(
+				failure.GetErrorID(),
+				filePath,
+				codeWord.GetLine(),
+				codeWord.GetArgumentColumn(failure.GetArgIndex()),
+				failure.GetMessage()
+			);
+		}
+		else
+		{
+			return AssemblerException(
+				failure.GetWarningID(),
+				filePath,
+				codeWord.GetLine(),
+				codeWord.GetArgumentColumn(failure.GetArgIndex()),
+				failure.GetMessage()
+			);
 		}
 	}
 }

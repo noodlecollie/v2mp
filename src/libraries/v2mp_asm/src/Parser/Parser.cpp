@@ -519,13 +519,19 @@ namespace V2MPAsm
 
 		if ( !validationFailures.empty() )
 		{
-			// TODO: Implement
-			throw ParserException(
-				reader,
-				PublicErrorID::UNIMPLEMENTED,
-				"Need to implement returning code word validation errors in correct format.",
-				State::TERMINATED
-			);
+			ParserException ex(Parser::State::BUILD_CODE_WORD);
+
+			for ( const ValidationFailure& failure : validationFailures )
+			{
+				if ( failure.IsError() )
+				{
+					ex.nextState = Parser::State::TERMINATED;
+
+					ex << ToAssemblerException(failure, reader.GetPath(), currentCodeWord);
+				}
+			}
+
+			throw ex;
 		}
 
 		// TODO: Implement

@@ -44,6 +44,16 @@ namespace V2MPAsm
 		return m_InstructionType;
 	}
 
+	size_t CodeWord::GetLine() const
+	{
+		return m_Line;
+	}
+
+	size_t CodeWord::GetColumn() const
+	{
+		return m_Column;
+	}
+
 	size_t CodeWord::GetArgumentCount() const
 	{
 		return m_Arguments.size();
