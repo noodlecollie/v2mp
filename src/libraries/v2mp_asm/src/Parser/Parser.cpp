@@ -27,9 +27,10 @@ namespace V2MPAsm
 		const std::string& message,
 		const std::optional<State>& inNextState
 	) :
-		AssemblerException(errorID, reader.GetPath(), reader.GetCurrentLine(), reader.GetCurrentColumn(), message),
+		std::exception(),
 		nextState(inNextState)
 	{
+		(*this) << AssemblerException(errorID, reader.GetPath(), reader.GetCurrentLine(), reader.GetCurrentColumn(), message);
 	}
 
 	Parser::ParserException::ParserException(
@@ -40,9 +41,10 @@ namespace V2MPAsm
 		const std::string& message,
 		const std::optional<State>& inNextState
 	) :
-		AssemblerException(errorID, reader.GetPath(), line, column, message),
+		std::exception(),
 		nextState(inNextState)
 	{
+		(*this) << AssemblerException(errorID, reader.GetPath(), line, column, message);
 	}
 
 	Parser::ParserException::ParserException(
@@ -51,9 +53,10 @@ namespace V2MPAsm
 		const std::string& message,
 		const std::optional<State>& inNextState
 	) :
-		AssemblerException(errorID, reader.GetPath(), reader.GetCurrentLine(), reader.GetCurrentColumn(), message),
+		std::exception(),
 		nextState(inNextState)
 	{
+		(*this) << AssemblerException(errorID, reader.GetPath(), reader.GetCurrentLine(), reader.GetCurrentColumn(), message);
 	}
 
 	Parser::ParserException::ParserException(
@@ -64,18 +67,38 @@ namespace V2MPAsm
 		const std::string& message,
 		const std::optional<State>& inNextState
 	) :
-		AssemblerException(errorID, reader.GetPath(), line, column, message),
+		std::exception(),
 		nextState(inNextState)
 	{
+		(*this) << AssemblerException(errorID, reader.GetPath(), line, column, message);
 	}
 
 	Parser::ParserException::ParserException(
 		const AssemblerException& ex,
 		const std::optional<State>& inNextState
 	) :
-		AssemblerException(ex),
+		std::exception(),
 		nextState(inNextState)
 	{
+		(*this) << ex;
+	}
+
+	Parser::ParserException::ParserException(const std::optional<State>& inNextState) :
+		std::exception(),
+		nextState(inNextState)
+	{
+	}
+
+	Parser::ParserException& Parser::ParserException::operator <<(const AssemblerException& exception)
+	{
+		exceptionList.emplace_back(exception);
+		return *this;
+	}
+
+	Parser::ParserException& Parser::ParserException::operator <<(AssemblerException&& exception)
+	{
+		exceptionList.emplace_back(std::move(exception));
+		return *this;
 	}
 
 	Parser::ParseResult Parser::ParseFile(const std::shared_ptr<InputFile>& inputFile) noexcept
@@ -155,11 +178,13 @@ namespace V2MPAsm
 			}
 			catch ( const AssemblerException& ex )
 			{
-				m_Data->exceptionList.emplace_back(CreateException(ex.GetPublicException()));
-
-				if ( ex.GetPublicException().GetType() == V2MPASM_EXCEPTION_ERROR )
+				m_Data->AppendException(ex);
+			}
+			catch ( const ParserException& ex )
+			{
+				for ( const AssemblerException& assemblerEx : ex.exceptionList )
 				{
-					++m_Data->recordedErrors;
+					m_Data->AppendException(assemblerEx);
 				}
 			}
 

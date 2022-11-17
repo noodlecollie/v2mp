@@ -1,5 +1,6 @@
 #pragma once
 
+#include <exception>
 #include <memory>
 #include <optional>
 #include <cstdint>
@@ -48,7 +49,7 @@ namespace V2MPAsm
 #undef LIST_ITEM
 		};
 
-		class ParserException : public AssemblerException
+		class ParserException : public std::exception
 		{
 		public:
 			ParserException(
@@ -88,7 +89,13 @@ namespace V2MPAsm
 				const std::optional<State>& inNextState = std::optional<State>()
 			);
 
+			ParserException(const std::optional<State>& inNextState = std::optional<State>());
+
+			ParserException& operator <<(const AssemblerException& exception);
+			ParserException& operator <<(AssemblerException&& exception);
+
 			std::optional<State> nextState;
+			std::vector<AssemblerException> exceptionList;
 		};
 
 		struct ParserData
@@ -98,6 +105,16 @@ namespace V2MPAsm
 			ExceptionList exceptionList;
 			size_t recordedErrors = 0;
 			ProgramBuilder programBuilder;
+
+			void AppendException(const AssemblerException& ex)
+			{
+				exceptionList.emplace_back(CreateException(ex.GetPublicException()));
+
+				if ( ex.GetPublicException().GetType() == V2MPASM_EXCEPTION_ERROR )
+				{
+					++recordedErrors;
+				}
+			}
 		};
 
 		static const char* GetStateName(State state);

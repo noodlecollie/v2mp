@@ -95,7 +95,7 @@ namespace V2MPAsm
 			}
 		}
 
-		if ( base < 0 && indexWhereValueBegins )
+		if ( base > 0 && indexWhereValueBegins )
 		{
 			*indexWhereValueBegins = internalIndexWhereValueBegins;
 		}
