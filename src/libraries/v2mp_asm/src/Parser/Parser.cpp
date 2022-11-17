@@ -1,3 +1,4 @@
+#include <exception>
 #include <memory>
 #include "Parser/Parser.h"
 #include "Exceptions/AssemblerException.h"
@@ -11,6 +12,7 @@
 #include "Utils/ArrayUtils.h"
 #include "Parser/Tokeniser.h"
 #include "ProgramModel/InstructionMeta.h"
+#include "Utils/StringUtils.h"
 
 namespace V2MPAsm
 {
@@ -32,11 +34,37 @@ namespace V2MPAsm
 
 	Parser::ParserException::ParserException(
 		InputReader& reader,
+		PublicErrorID errorID,
+		size_t line,
+		size_t column,
+		const std::string& message,
+		const std::optional<State>& inNextState
+	) :
+		AssemblerException(errorID, reader.GetPath(), line, column, message),
+		nextState(inNextState)
+	{
+	}
+
+	Parser::ParserException::ParserException(
+		InputReader& reader,
 		PublicWarningID errorID,
 		const std::string& message,
 		const std::optional<State>& inNextState
 	) :
 		AssemblerException(errorID, reader.GetPath(), reader.GetCurrentLine(), reader.GetCurrentColumn(), message),
+		nextState(inNextState)
+	{
+	}
+
+	Parser::ParserException::ParserException(
+		InputReader& reader,
+		PublicWarningID errorID,
+		size_t line,
+		size_t column,
+		const std::string& message,
+		const std::optional<State>& inNextState
+	) :
+		AssemblerException(errorID, reader.GetPath(), line, column, message),
 		nextState(inNextState)
 	{
 	}
@@ -206,14 +234,19 @@ namespace V2MPAsm
 				return ProcessInput_BeginLine(reader);
 			}
 
+			case State::SKIP_LINE:
+			{
+				return ProcessInput_SkipLine(reader);
+			}
+
 			case State::BUILD_CODE_WORD:
 			{
 				return ProcessInput_BuildCodeWord(reader);
 			}
 
-			case State::SKIP_LINE:
+			case State::END_OF_FILE:
 			{
-				return ProcessInput_SkipLine(reader);
+				return ProcessInput_EndOfFile(reader);
 			}
 
 			default:
@@ -257,6 +290,24 @@ namespace V2MPAsm
 
 		// Otherwise, token must be a label definition.
 		return ProcessInput_CreateLabel(reader, token);
+	}
+
+	Parser::State Parser::ProcessInput_SkipLine(InputReader& reader)
+	{
+		while ( true )
+		{
+			const Tokeniser::Token token = GetNextToken(reader, ~0, State::TERMINATED);
+
+			if ( token.type == TokenType::EndOfFile )
+			{
+				return State::END_OF_FILE;
+			}
+
+			if ( token.type == TokenType::EndOfLine )
+			{
+				return State::BEGIN_LINE;
+			}
+		}
 	}
 
 	Parser::State Parser::ProcessInput_BuildCodeWord(InputReader& reader)
@@ -308,35 +359,29 @@ namespace V2MPAsm
 			}
 		}
 
-		if ( token.type == TokenType::EndOfFile )
+		if ( token.type == TokenType::EndOfFile || token.type == TokenType::EndOfLine )
 		{
-			return State::END_OF_FILE;
-		}
-
-		if ( token.type == TokenType::EndOfLine )
-		{
-			return ProcessInput_ValidateAndCommitCodeWord(reader);
+			return ProcessInput_ValidateAndCommitCodeWord(reader, token.type);
 		}
 
 		return ProcessInput_AddArgumentToCodeWord(reader, token);
 	}
 
-	Parser::State Parser::ProcessInput_SkipLine(InputReader& reader)
+	Parser::State Parser::ProcessInput_EndOfFile(InputReader& reader)
 	{
-		while ( true )
+		const std::string nextLabel = m_Data->programBuilder.GetNextLabelName();
+
+		if ( !nextLabel.empty() )
 		{
-			const Tokeniser::Token token = GetNextToken(reader, ~0, State::TERMINATED);
-
-			if ( token.type == TokenType::EndOfFile )
-			{
-				return State::END_OF_FILE;
-			}
-
-			if ( token.type == TokenType::EndOfLine )
-			{
-				return State::BEGIN_LINE;
-			}
+			throw ParserException(
+				reader,
+				PublicWarningID::REDUNDANT_LABEL,
+				"Redundant label \"" + nextLabel + "\" present at end of file will be discarded.",
+				State::TERMINATED
+			);
 		}
+
+		return State::TERMINATED;
 	}
 
 	Parser::State Parser::ProcessInput_CreateInstructionCodeWord(InputReader& reader, const Tokeniser::Token& token)
@@ -353,7 +398,7 @@ namespace V2MPAsm
 			);
 		}
 
-		m_Data->programBuilder.PrepareCodeWord(instructionMeta->type);
+		m_Data->programBuilder.PrepareCodeWord(token.line, token.column, instructionMeta->type);
 		return State::BUILD_CODE_WORD;
 	}
 
@@ -383,22 +428,48 @@ namespace V2MPAsm
 			}
 		}
 
+		const std::string existingLabel = m_Data->programBuilder.GetNextLabelName();
 		m_Data->programBuilder.SetNextLabelName(token.token);
 
-		return State::BEGIN_LINE;
+		const Tokeniser::Token nextToken = GetNextToken(reader, TokenType::EndOfLine | TokenType::EndOfFile, State::SKIP_LINE);
+		const State nextState = nextToken.type == TokenType::EndOfFile ? State::END_OF_FILE : State::BEGIN_LINE;
+
+		if ( !existingLabel.empty() )
+		{
+			// We overwrote a label that wasn't submitted yet.
+			throw ParserException(
+				reader,
+				PublicWarningID::LABEL_DISCARDED,
+				"Label \"" + token.token + "\" will cause previous label \"" + existingLabel + "\" to be discarded.",
+				nextState
+			);
+		}
+
+		return nextState;
 	}
 
 	Parser::State Parser::ProcessInput_AddArgumentToCodeWord(InputReader& reader, const Tokeniser::Token& token)
 	{
 		if ( token.type == TokenType::NumericLiteral )
 		{
-			// TODO: Parse integer from string, taking base into account
-			throw ParserException(
-				reader,
-				PublicErrorID::UNIMPLEMENTED,
-				"Numerical instruction argument parsing is not yet implemented.",
-				State::TERMINATED
-			);
+			int32_t value = 0;
+
+			try
+			{
+				value = ParseInteger(token.token);
+			}
+			catch ( const std::exception& ex )
+			{
+				throw ParserException(
+					reader,
+					PublicErrorID::UNIMPLEMENTED,
+					"Invalid numeric literal: " + token.token
+				);
+			}
+
+			// Arguments must be validated once code word is complete,
+			// as the validity of one argument may depend on the value of another.
+			m_Data->programBuilder.GetCurrentCodeWord().AddArgument(value);
 		}
 
 		// TODO: Deal with label reference
@@ -410,13 +481,13 @@ namespace V2MPAsm
 		);
 	}
 
-	Parser::State Parser::ProcessInput_ValidateAndCommitCodeWord(InputReader& reader)
+	Parser::State Parser::ProcessInput_ValidateAndCommitCodeWord(InputReader& reader, Tokeniser::TokenType /* tokenType */)
 	{
 		// TODO: Implement
 		throw ParserException(
 			reader,
 			PublicErrorID::UNIMPLEMENTED,
-			"Committing code word is not yet implemented.",
+			"Validating and committing code word is not yet implemented.",
 			State::TERMINATED
 		);
 	}

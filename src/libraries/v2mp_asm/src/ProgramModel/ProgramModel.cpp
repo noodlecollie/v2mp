@@ -1,5 +1,7 @@
 #include "ProgramModel/ProgramModel.h"
+#include <memory>
 #include <optional>
+#include <stdexcept>
 
 namespace V2MPAsm
 {
@@ -10,41 +12,33 @@ namespace V2MPAsm
 			return;
 		}
 
-		if ( !m_NextLabel.empty() )
-		{
-			m_Labels.insert({m_NextLabel, codeWord});
-			m_NextLabel.clear();
-		}
-
 		codeWord->SetAddress(m_CodeWords.size() * 2);
-
 		m_CodeWords.emplace_back(codeWord);
 	}
 
-	std::string ProgramModel::GetNextLabelName() const
+	size_t ProgramModel::GetCodeWordCount() const
 	{
-		return m_NextLabel;
+		return m_CodeWords.size();
 	}
 
-	void ProgramModel::SetNextLabelName(const std::string& labelName)
+	std::shared_ptr<CodeWord> ProgramModel::GetCodeWord(size_t index) const
 	{
-		m_NextLabel = labelName;
+		return index < m_CodeWords.size() ? m_CodeWords[index] : std::shared_ptr<CodeWord>();
 	}
 
-	bool ProgramModel::HasLabel(const std::string& labelName) const
+	void ProgramModel::AddLabelForLastCodeWord(const std::string& labelName)
 	{
-		return m_NextLabel == labelName || m_Labels.find(labelName) != m_Labels.end();
-	}
-
-	std::optional<uint16_t> ProgramModel::GetLabelAddress(const std::string& labelName) const
-	{
-		auto it = m_Labels.find(labelName);
-
-		if ( it != m_Labels.end() )
+		if ( m_CodeWords.empty() )
 		{
-			return it->second->GetAddress();
+			throw std::logic_error("No code words in list");
 		}
 
-		return std::optional<uint16_t>();
+		m_Labels.insert({labelName, m_CodeWords.back()});
+	}
+
+	std::shared_ptr<CodeWord> ProgramModel::CodeWordForLabel(const std::string& labelName) const
+	{
+		const LabelMap::const_iterator it = m_Labels.find(labelName);
+		return it != m_Labels.end() ? it->second : std::shared_ptr<CodeWord>();
 	}
 }

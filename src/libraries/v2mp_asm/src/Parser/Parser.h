@@ -60,7 +60,25 @@ namespace V2MPAsm
 
 			ParserException(
 				InputReader& reader,
+				PublicErrorID errorID,
+				size_t line,
+				size_t column,
+				const std::string& message,
+				const std::optional<State>& inNextState = std::optional<State>()
+			);
+
+			ParserException(
+				InputReader& reader,
 				PublicWarningID errorID,
+				const std::string& message,
+				const std::optional<State>& inNextState = std::optional<State>()
+			);
+
+			ParserException(
+				InputReader& reader,
+				PublicWarningID errorID,
+				size_t line,
+				size_t column,
 				const std::string& message,
 				const std::optional<State>& inNextState = std::optional<State>()
 			);
@@ -90,13 +108,14 @@ namespace V2MPAsm
 		State ProcessInputAndChooseNextState(InputReader& reader);
 
 		State ProcessInput_BeginLine(InputReader& reader);
-		State ProcessInput_BuildCodeWord(InputReader& reader);
 		State ProcessInput_SkipLine(InputReader& reader);
+		State ProcessInput_BuildCodeWord(InputReader& reader);
+		State ProcessInput_EndOfFile(InputReader& reader);
 
 		State ProcessInput_CreateInstructionCodeWord(InputReader& reader, const Tokeniser::Token& token);
 		State ProcessInput_CreateLabel(InputReader& reader, const Tokeniser::Token& token);
 		State ProcessInput_AddArgumentToCodeWord(InputReader& reader, const Tokeniser::Token& token);
-		State ProcessInput_ValidateAndCommitCodeWord(InputReader& reader);
+		State ProcessInput_ValidateAndCommitCodeWord(InputReader& reader, Tokeniser::TokenType tokenType);
 
 		Tokeniser::Token GetNextToken(
 			InputReader& reader,

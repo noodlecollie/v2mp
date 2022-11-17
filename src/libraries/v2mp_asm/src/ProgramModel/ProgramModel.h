@@ -13,17 +13,16 @@ namespace V2MPAsm
 	{
 	public:
 		void AddCodeWord(const std::shared_ptr<CodeWord>& codeWord);
+		size_t GetCodeWordCount() const;
+		std::shared_ptr<CodeWord> GetCodeWord(size_t index) const;
 
-		std::string GetNextLabelName() const;
-		void SetNextLabelName(const std::string& labelName);
-		bool HasLabel(const std::string& labelName) const;
-		std::optional<uint16_t> GetLabelAddress(const std::string& labelName) const;
+		void AddLabelForLastCodeWord(const std::string& labelName);
+		std::shared_ptr<CodeWord> CodeWordForLabel(const std::string& labelName) const;
 
 	private:
 		using LabelMap = std::unordered_map<std::string, std::shared_ptr<CodeWord>>;
 
 		std::vector<std::shared_ptr<CodeWord>> m_CodeWords;
 		LabelMap m_Labels;
-		std::string m_NextLabel;
 	};
 }

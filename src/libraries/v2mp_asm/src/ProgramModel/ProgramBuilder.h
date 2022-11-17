@@ -4,6 +4,7 @@
 #include <optional>
 #include "ProgramModel/CodeWord.h"
 #include "ProgramModel/InstructionMeta.h"
+#include "Utils/ParsingUtils.h"
 
 namespace V2MPAsm
 {
@@ -15,10 +16,13 @@ namespace V2MPAsm
 		ProgramBuilder();
 		~ProgramBuilder();
 
-		CodeWord& PrepareCodeWord(InstructionType instructionType);
+		CodeWord& PrepareCodeWord(size_t line, size_t column, InstructionType instructionType);
 		CodeWord& GetCurrentCodeWord();
+		size_t GetCurrentCodeWordLine() const;
+		size_t GetCurrentCodeWordColumn() const;
 		void SubmitCurrentCodeWord();
 
+		std::string GetNextLabelName() const;
 		void SetNextLabelName(const std::string& labelName);
 		bool HasLabel(const std::string& labelName);
 		std::optional<uint16_t> GetLabelAddress(const std::string& labelName) const;
@@ -28,5 +32,8 @@ namespace V2MPAsm
 	private:
 		std::unique_ptr<ProgramModel> m_ProgramModel;
 		std::shared_ptr<CodeWord> m_CurrentCodeWord;
+		size_t m_CodeWordLine = LINE_NUMBER_BASE;
+		size_t m_CodeWordColumn = COLUMN_NUMBER_BASE;
+		std::string m_NextLabel;
 	};
 }
