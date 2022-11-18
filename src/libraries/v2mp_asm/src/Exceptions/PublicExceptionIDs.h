@@ -30,9 +30,11 @@ namespace V2MPAsm
 	LIST_ITEM(INVALID_LABEL_NAME, "invalid-label-definition", "Invalid label definition.") \
 	/* Parsing stage: */ \
 	LIST_ITEM(UNRECOGNISED_INSTRUCTION, "unrecognised-instruction", "Unrecognised instruction.") \
-	LIST_ITEM(INCORRECT_ARGS, "incorrect-args", "Incorrect arguments for instruction.") \
+	LIST_ITEM(TOO_FEW_ARGUMENTS, "too-few-arguments", "Too few arguments for instruction.") \
 	LIST_ITEM(DUPLICATE_LABEL, "duplicate-label", "Duplicate label encountered.") \
-	LIST_ITEM(ADDRESS_SPACE_EXCEEDED, "address-space-exceeded", "Address space was exceeded.")
+	LIST_ITEM(ADDRESS_SPACE_EXCEEDED, "address-space-exceeded", "Address space was exceeded.") \
+	LIST_ITEM(INVALID_REGISTER_ID, "invalid-register-id", "Invalid register ID.") \
+	LIST_ITEM(INVALID_ARGUMENT_TYPE, "invalid-argument-type", "Invalid argument type.")
 
 	enum class PublicWarningID
 	{

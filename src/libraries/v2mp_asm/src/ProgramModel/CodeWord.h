@@ -9,18 +9,18 @@
 
 namespace V2MPAsm
 {
-	class CodeWordArg : public std::variant<int32_t, LabelReference>
+	class CodeWordArg
 	{
 	public:
 		explicit CodeWordArg(size_t column, int32_t value) :
-			VariantType(value),
-			m_Column(column)
+			m_Column(column),
+			m_Value(value)
 		{
 		}
 
 		CodeWordArg(size_t column, LabelReference::ReferenceType refType, const std::string labelName) :
-			VariantType(LabelReference(refType, labelName)),
-			m_Column(column)
+			m_Column(column),
+			m_Value(LabelReference(refType, labelName))
 		{
 		}
 
@@ -29,10 +29,36 @@ namespace V2MPAsm
 			return m_Column;
 		}
 
+		bool IsNumber() const
+		{
+			return std::holds_alternative<int32_t>(m_Value);
+		}
+
+		bool IsLabelReference() const
+		{
+			return std::holds_alternative<LabelReference>(m_Value);
+		}
+
+		int32_t GetNumber() const
+		{
+			return IsNumber() ? std::get<int32_t>(m_Value) : 0;
+		}
+
+		LabelReference GetLabelReference() const
+		{
+			return IsLabelReference() ? std::get<LabelReference>(m_Value) : LabelReference();
+		}
+
+		void SetNumber(int32_t value)
+		{
+			m_Value = value;
+		}
+
 	private:
 		using VariantType = std::variant<int32_t, LabelReference>;
 
 		size_t m_Column = COLUMN_NUMBER_BASE;
+		VariantType m_Value = 0;
 	};
 
 	class CodeWord
@@ -62,6 +88,7 @@ namespace V2MPAsm
 		void AddArgument(size_t columnIndex, int32_t value);
 		void AddArgument(size_t columnIndex, LabelReference::ReferenceType refType, const std::string& labelName);
 
+		CodeWordArg* GetArgument(size_t argIndex);
 		const CodeWordArg* GetArgument(size_t argIndex) const;
 		size_t GetArgumentColumn(size_t argIndex) const;
 

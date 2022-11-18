@@ -514,7 +514,7 @@ namespace V2MPAsm
 
 	Parser::State Parser::ProcessInput_ValidateAndCommitCodeWord(InputReader& reader, Tokeniser::TokenType /* tokenType */)
 	{
-		const CodeWord& currentCodeWord = m_Data->programBuilder.GetCurrentCodeWord();
+		CodeWord& currentCodeWord = m_Data->programBuilder.GetCurrentCodeWord();
 		std::vector<ValidationFailure> validationFailures = ValidateCodeWord(currentCodeWord);
 
 		if ( !validationFailures.empty() )

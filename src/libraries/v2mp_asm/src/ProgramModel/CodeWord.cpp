@@ -79,6 +79,11 @@ namespace V2MPAsm
 		m_Arguments.emplace_back(columnIndex, refType, labelName);
 	}
 
+	CodeWordArg* CodeWord::GetArgument(size_t argIndex)
+	{
+		return argIndex < m_Arguments.size() ? &m_Arguments[argIndex] : nullptr;
+	}
+
 	const CodeWordArg* CodeWord::GetArgument(size_t argIndex) const
 	{
 		return argIndex < m_Arguments.size() ? &m_Arguments[argIndex] : nullptr;

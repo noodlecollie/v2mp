@@ -7,6 +7,8 @@
 
 namespace V2MPAsm
 {
+	static constexpr uint32_t REG_ID_MASK = 0x3;
+
 	enum class InstructionType : uint8_t
 	{
 		NOP = 0x0,

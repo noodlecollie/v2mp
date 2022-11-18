@@ -40,7 +40,7 @@ namespace V2MPAsm
 		std::string m_Message;
 	};
 
-	std::vector<ValidationFailure> ValidateCodeWord(const CodeWord& codeWord);
+	std::vector<ValidationFailure> ValidateCodeWord(CodeWord& codeWord);
 
 	AssemblerException ToAssemblerException(
 		const ValidationFailure& failure,
