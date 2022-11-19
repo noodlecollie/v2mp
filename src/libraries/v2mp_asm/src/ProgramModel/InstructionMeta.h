@@ -25,10 +25,18 @@ namespace V2MPAsm
 		SIG = 0xB
 	};
 
+	enum class ArgSignedness
+	{
+		ALWAYS_UNSIGNED,
+		ALWAYS_SIGNED,
+		DYNAMIC_SIGNEDNESS
+	};
+
 	struct ArgMeta
 	{
 		uint8_t highBit;
 		uint8_t lowBit;
+		ArgSignedness signedness;
 	};
 
 	struct InstructionMeta

@@ -58,6 +58,24 @@ namespace V2MPAsm
 		return m_Message;
 	}
 
+	static constexpr int32_t MaxUnsignedValue(size_t numBits)
+	{
+		// (2 ^ n) - 1;
+		return (1 << numBits) - 1;
+	}
+
+	static constexpr int32_t MinSignedValue(size_t numBits)
+	{
+		// -(2 ^ (n-1))
+		return numBits > 1 ? (static_cast<int32_t>(1 << (numBits - 1)) * -1) : -1;
+	}
+
+	static constexpr int32_t MaxSignedValue(size_t numBits)
+	{
+		// (2 ^ (n-1)) - 1
+		return numBits > 1 ? (1 << (numBits - 1)) : 0;
+	}
+
 	static ValidationFailure TooManyArgumentsFailure(size_t expected, size_t actual, size_t argIndex = 0)
 	{
 		return ValidationFailure(
@@ -157,6 +175,62 @@ namespace V2MPAsm
 			);
 
 			arg.SetNumber(0);
+		}
+
+		return true;
+	}
+
+	static bool ValidateArgumentRanges(const InstructionMeta& meta, CodeWord& codeWord, std::vector<ValidationFailure>& failures)
+	{
+		const size_t expectedArgCount = meta.args.size();
+		const size_t actualArgCount = codeWord.GetArgumentCount();
+
+		if ( actualArgCount < expectedArgCount )
+		{
+			failures.emplace_back(
+				TooFewArgumentsFailure(
+					expectedArgCount,
+					actualArgCount,
+					std::max<size_t>(actualArgCount, 0)
+				)
+			);
+
+			return false;
+		}
+
+		if ( actualArgCount > expectedArgCount )
+		{
+			// Only a warning, so don't return.
+			failures.emplace_back(
+				TooManyArgumentsFailure(
+					expectedArgCount,
+					actualArgCount,
+					expectedArgCount
+				)
+			);
+		}
+
+		for ( size_t argIndex = 0; argIndex < actualArgCount; ++argIndex )
+		{
+			const ArgMeta& argMeta = meta.args[argIndex];
+
+			if ( argMeta.signedness == ArgSignedness::DYNAMIC_SIGNEDNESS )
+			{
+				// Instruction-specific check, must happen later.
+				continue;
+			}
+
+			const size_t numberOfBits = static_cast<size_t>(argMeta.highBit - argMeta.lowBit) + 1;
+
+			const int32_t minValue = argMeta.signedness == ArgSignedness::ALWAYS_SIGNED
+				? MinSignedValue(numberOfBits)
+				: 0;
+
+			const int32_t maxValue = argMeta.signedness == ArgSignedness::ALWAYS_SIGNED
+				? MaxSignedValue(numberOfBits)
+				: MaxUnsignedValue(numberOfBits);
+
+			// TODO: Do we want to specify whether label references are allowed for an argument?
 		}
 
 		return true;
