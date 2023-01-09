@@ -12,6 +12,8 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
+cmake_policy(SET CMP0092 NEW)
+
 project(V2MP)
 
 set(CMAKE_C_STANDARD 99)

@@ -12,7 +12,7 @@ namespace V2MPAsm
 			return;
 		}
 
-		codeWord->SetAddress(m_CodeWords.size() * 2);
+		codeWord->SetAddress(static_cast<uint16_t>(m_CodeWords.size() * 2));
 		m_CodeWords.emplace_back(codeWord);
 	}
 

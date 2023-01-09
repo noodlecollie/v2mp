@@ -323,7 +323,7 @@ namespace V2MPAsm
 	{
 		while ( true )
 		{
-			const Tokeniser::Token token = GetNextToken(reader, ~0, State::TERMINATED);
+			const Tokeniser::Token token = GetNextToken(reader, static_cast<uint32_t>(~0), State::TERMINATED);
 
 			if ( token.type == TokenType::EndOfFile )
 			{
@@ -485,7 +485,7 @@ namespace V2MPAsm
 			{
 				value = ParseInteger(token.token);
 			}
-			catch ( const std::exception& ex )
+			catch ( const std::exception& /* ex */ )
 			{
 				throw ParserException(
 					reader,
