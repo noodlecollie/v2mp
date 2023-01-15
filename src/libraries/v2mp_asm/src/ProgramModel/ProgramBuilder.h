@@ -27,6 +27,7 @@ namespace V2MPAsm
 		bool HasLabel(const std::string& labelName);
 		std::optional<uint16_t> GetLabelAddress(const std::string& labelName) const;
 
+		const ProgramModel& GetProgramModel() const;
 		std::unique_ptr<ProgramModel> TakeProgramModel();
 
 	private:

@@ -41,4 +41,38 @@ namespace V2MPAsm
 		const LabelMap::const_iterator it = m_Labels.find(labelName);
 		return it != m_Labels.end() ? it->second : std::shared_ptr<CodeWord>();
 	}
+
+	uint16_t ProgramModel::GetValueOfLabelReference(const CodeWord& source, const CodeWord& target, LabelReference::ReferenceType refType) const
+	{
+		const uint16_t targetAddress = target.GetAddress();
+
+		switch ( refType )
+		{
+			case LabelReference::ReferenceType::UPPER_BYTE_OF_ADDRESS:
+			{
+				return (targetAddress & 0xFF00) >> 8;
+			}
+
+			case LabelReference::ReferenceType::LOWER_BYTE_OF_ADDRESS:
+			{
+				return targetAddress & 0x00FF;
+			}
+
+			case LabelReference::ReferenceType::NUM_WORDS_DIST_TO_LABEL:
+			{
+				const uint16_t sourceAddress = source.GetAddress();
+
+				const uint16_t differenceInBytes = sourceAddress > targetAddress
+					? sourceAddress - targetAddress
+					: targetAddress - sourceAddress;
+
+				return differenceInBytes / sizeof(uint16_t);
+			}
+
+			default:
+			{
+				throw std::invalid_argument("Unknown label reference type");
+			}
+		}
+	}
 }

@@ -9,6 +9,7 @@
 namespace V2MPAsm
 {
 	class CodeWord;
+	class ProgramModel;
 
 	class ValidationFailure
 	{
@@ -40,7 +41,7 @@ namespace V2MPAsm
 		std::string m_Message;
 	};
 
-	std::vector<ValidationFailure> ValidateCodeWord(CodeWord& codeWord);
+	std::vector<ValidationFailure> ValidateCodeWord(CodeWord& codeWord, bool validateLabelRefs = false);
 
 	AssemblerException ToAssemblerException(
 		const ValidationFailure& failure,

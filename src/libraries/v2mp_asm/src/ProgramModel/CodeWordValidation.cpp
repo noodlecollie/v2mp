@@ -3,6 +3,8 @@
 #include "Exceptions/PublicExceptionIDs.h"
 #include "ProgramModel/CodeWord.h"
 #include "ProgramModel/InstructionMeta.h"
+#include "ProgramModel/ProgramModel.h"
+#include "Utils/StringUtils.h"
 
 namespace V2MPAsm
 {
@@ -76,6 +78,11 @@ namespace V2MPAsm
 		return numBits > 1 ? (1 << (numBits - 1)) : 0;
 	}
 
+	static constexpr uint32_t BitMask(size_t numBits)
+	{
+		return static_cast<uint32_t>(~0) >> ((sizeof(uint32_t) * 8) - numBits);
+	}
+
 	static ValidationFailure TooManyArgumentsFailure(size_t expected, size_t actual, size_t argIndex = 0)
 	{
 		return ValidationFailure(
@@ -97,6 +104,40 @@ namespace V2MPAsm
 		);
 	}
 
+#if 0
+	static ValidationFailure ArgumentOutOfRangeFailure(
+		int32_t minValue,
+		int32_t maxValue,
+		int32_t origValue,
+		int32_t newValue,
+		size_t argIndex = 0)
+	{
+		return ValidationFailure(
+					PublicWarningID::ARG_OUT_OF_RANGE,
+					argIndex,
+					"Value " + DecAndHexString(origValue) + " was out of valid range " +
+					DecAndHexString(minValue) + " - " + DecAndHexString(maxValue) + ", truncating to " +
+					DecAndHexString(newValue) + "."
+		);
+	}
+
+	static ValidationFailure LabelRefValueOutOfRangeFailure(
+		const std::string& labelName,
+		int32_t minValue,
+		int32_t maxValue,
+		int32_t origValue,
+		size_t argIndex = 0)
+	{
+		return ValidationFailure(
+					PublicErrorID::LABEL_REF_OUT_OF_RANGE,
+					argIndex,
+					"Value " + DecAndHexString(origValue) + " for reference to label \"" + labelName +
+					"\" was out of valid range " +
+					DecAndHexString(minValue) + " - " + DecAndHexString(maxValue) + "."
+		);
+	}
+#endif
+
 	static std::vector<ValidationFailure> ValidateZeroArgCodeWord(const CodeWord& codeWord)
 	{
 		if ( codeWord.GetArgumentCount() > 0 )
@@ -115,7 +156,7 @@ namespace V2MPAsm
 			return false;
 		}
 
-		const int32_t value = arg.GetNumber();
+		const int32_t value = arg.GetValue();
 
 		if ( value < 0 || static_cast<uint32_t>(value) & ~(REG_ID_MASK) )
 		{
@@ -126,61 +167,12 @@ namespace V2MPAsm
 		return true;
 	}
 
-	static bool ValidateAndClampArgRange(size_t argIndex, CodeWordArg& arg, int32_t min, int32_t max, std::vector<ValidationFailure>& failures)
-	{
-		if ( !arg.IsNumber() )
-		{
-			failures.emplace_back(PublicErrorID::INVALID_ARGUMENT_TYPE, argIndex, "Expected a numeric literal.");
-			return false;
-		}
-
-		const int32_t value = arg.GetNumber();
-
-		if ( value < min || value > max )
-		{
-			failures.emplace_back(
-				PublicWarningID::ARG_OUT_OF_RANGE,
-				argIndex,
-				"Argument value " + std::to_string(value) + " is out of expected range [" + std::to_string(min) +
-				" " + std::to_string(max) + "], clamping."
-			);
-
-			arg.SetNumber(std::max<int32_t>(min, std::min<int32_t>(value, max)));
-		}
-
-		return true;
-	}
-
-	static bool Validate8BitUnsignedArg(size_t argIndex, CodeWordArg& arg, std::vector<ValidationFailure>& failures)
-	{
-		return ValidateAndClampArgRange(argIndex, arg, 0, 255, failures);
-	}
-
-	static bool ValidateArgumentIsZero(size_t argIndex, CodeWordArg& arg, std::vector<ValidationFailure>& failures)
-	{
-		if ( !arg.IsNumber() )
-		{
-			failures.emplace_back(PublicErrorID::INVALID_ARGUMENT_TYPE, argIndex, "Expected a numeric literal.");
-			return false;
-		}
-
-		const int32_t value = arg.GetNumber();
-
-		if ( value != 0 )
-		{
-			failures.emplace_back(
-				PublicWarningID::ARG_OUT_OF_RANGE,
-				argIndex,
-				"Forcing argument value to be zero."
-			);
-
-			arg.SetNumber(0);
-		}
-
-		return true;
-	}
-
-	static bool ValidateArgumentRanges(const InstructionMeta& meta, CodeWord& codeWord, std::vector<ValidationFailure>& failures)
+#if 0
+	static bool ValidateArgumentRanges(
+		const InstructionMeta& meta,
+		CodeWord& codeWord,
+		std::vector<ValidationFailure>& failures,
+		bool validateLabelRefs)
 	{
 		const size_t expectedArgCount = meta.args.size();
 		const size_t actualArgCount = codeWord.GetArgumentCount();
@@ -210,13 +202,24 @@ namespace V2MPAsm
 			);
 		}
 
-		for ( size_t argIndex = 0; argIndex < actualArgCount; ++argIndex )
+		bool encounteredError = false;
+
+		// TODO: This is probably better done on a per-argument basis, rather than a loop in one function.
+		for ( size_t argIndex = 0; argIndex < expectedArgCount; ++argIndex )
 		{
 			const ArgMeta& argMeta = meta.args[argIndex];
 
 			if ( argMeta.signedness == ArgSignedness::DYNAMIC_SIGNEDNESS )
 			{
 				// Instruction-specific check, must happen later.
+				continue;
+			}
+
+			CodeWordArg* actualArg = codeWord.GetArgument(argIndex);
+
+			if ( actualArg->IsLabelReference() && !validateLabelRefs )
+			{
+				// Skip this argument, but check others.
 				continue;
 			}
 
@@ -230,13 +233,53 @@ namespace V2MPAsm
 				? MaxSignedValue(numberOfBits)
 				: MaxUnsignedValue(numberOfBits);
 
-			// TODO: Do we want to specify whether label references are allowed for an argument?
+			const int32_t actualValue = actualArg->GetValue();
+
+			if ( actualValue < minValue || actualValue > maxValue )
+			{
+				if ( actualArg->IsLabelReference() )
+				{
+					failures.emplace_back(
+						LabelRefValueOutOfRangeFailure(
+							actualArg->GetLabelReference().GetLabelName(),
+							minValue,
+							maxValue,
+							actualValue,
+							argIndex
+						)
+					);
+
+					// Error out here, since label refs are supposed to be used for jumping to specific locations
+					// in code, and if that location is not correct then the developer is going to have a bad time.
+					encounteredError = true;
+				}
+				else
+				{
+					const uint32_t keptBits = static_cast<uint32_t>(actualValue) & BitMask(numberOfBits);
+					int32_t newValue = 0;
+
+					if ( actualValue > 0 )
+					{
+						// Pad with leading zeroes.
+						newValue = static_cast<int32_t>(keptBits);
+					}
+					else
+					{
+						// Pad with leading ones.
+						newValue = static_cast<int32_t>((~BitMask(numberOfBits)) | keptBits);
+					}
+
+					actualArg->SetValue(newValue);
+					failures.emplace_back(ArgumentOutOfRangeFailure(minValue, maxValue, actualValue, newValue));
+				}
+			}
 		}
 
-		return true;
+		return !encounteredError;
 	}
+#endif
 
-	static std::vector<ValidationFailure> ValidateAddOrSub(CodeWord& codeWord)
+	static std::vector<ValidationFailure> ValidateAddOrSub(CodeWord& codeWord, bool /* validateLabelRefs */)
 	{
 		constexpr size_t EXPECTED_ARG_COUNT = 3;
 		const size_t actualArgCount = codeWord.GetArgumentCount();
@@ -253,7 +296,7 @@ namespace V2MPAsm
 
 		const CodeWordArg* srcRegArg = codeWord.GetArgument(0);
 		const CodeWordArg* destRegArg = codeWord.GetArgument(1);
-		CodeWordArg* valueArg = codeWord.GetArgument(2);
+		// CodeWordArg* valueArg = codeWord.GetArgument(2);
 
 		std::vector<ValidationFailure> failures;
 
@@ -262,19 +305,19 @@ namespace V2MPAsm
 			return failures;
 		}
 
-		if ( srcRegArg->GetNumber() == destRegArg->GetNumber() )
+		if ( srcRegArg->GetValue() == destRegArg->GetValue() )
 		{
-			Validate8BitUnsignedArg(2, *valueArg, failures);
+			// TODO: Validate value arg
 		}
 		else
 		{
-			ValidateArgumentIsZero(2, *valueArg, failures);
+			// TODO: Ensure value arg is zero
 		}
 
 		return failures;
 	}
 
-	std::vector<ValidationFailure> ValidateCodeWord(CodeWord& codeWord)
+	std::vector<ValidationFailure> ValidateCodeWord(CodeWord& codeWord, bool validateLabelRefs)
 	{
 		switch ( codeWord.GetInstructionType() )
 		{
@@ -287,7 +330,7 @@ namespace V2MPAsm
 			case InstructionType::ADD:
 			case InstructionType::SUB:
 			{
-				return ValidateAddOrSub(codeWord);
+				return ValidateAddOrSub(codeWord, validateLabelRefs);
 			}
 
 			default:

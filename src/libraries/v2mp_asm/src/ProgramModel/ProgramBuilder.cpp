@@ -69,6 +69,16 @@ namespace V2MPAsm
 		return std::optional<uint16_t>();
 	}
 
+	const ProgramModel& ProgramBuilder::GetProgramModel() const
+	{
+		if ( !m_ProgramModel )
+		{
+			throw std::runtime_error("GetProgramModel() called when no program model existed");
+		}
+
+		return *m_ProgramModel.get();
+	}
+
 	std::unique_ptr<ProgramModel> ProgramBuilder::TakeProgramModel()
 	{
 		std::unique_ptr<ProgramModel> outModel = std::move(m_ProgramModel);

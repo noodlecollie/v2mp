@@ -2,65 +2,13 @@
 
 #include <cstdint>
 #include <vector>
-#include <variant>
 #include "ProgramModel/InstructionMeta.h"
 #include "ProgramModel/LabelReference.h"
 #include "Utils/ParsingUtils.h"
+#include "ProgramModel/CodeWordArg.h"
 
 namespace V2MPAsm
 {
-	class CodeWordArg
-	{
-	public:
-		explicit CodeWordArg(size_t column, int32_t value) :
-			m_Column(column),
-			m_Value(value)
-		{
-		}
-
-		CodeWordArg(size_t column, LabelReference::ReferenceType refType, const std::string labelName) :
-			m_Column(column),
-			m_Value(LabelReference(refType, labelName))
-		{
-		}
-
-		size_t GetColumn() const
-		{
-			return m_Column;
-		}
-
-		bool IsNumber() const
-		{
-			return std::holds_alternative<int32_t>(m_Value);
-		}
-
-		bool IsLabelReference() const
-		{
-			return std::holds_alternative<LabelReference>(m_Value);
-		}
-
-		int32_t GetNumber() const
-		{
-			return IsNumber() ? std::get<int32_t>(m_Value) : 0;
-		}
-
-		LabelReference GetLabelReference() const
-		{
-			return IsLabelReference() ? std::get<LabelReference>(m_Value) : LabelReference();
-		}
-
-		void SetNumber(int32_t value)
-		{
-			m_Value = value;
-		}
-
-	private:
-		using VariantType = std::variant<int32_t, LabelReference>;
-
-		size_t m_Column = COLUMN_NUMBER_BASE;
-		VariantType m_Value = 0;
-	};
-
 	class CodeWord
 	{
 	public:

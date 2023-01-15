@@ -27,6 +27,8 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/Parser/Tokeniser.cpp
 	src/ProgramModel/CodeWord.h
 	src/ProgramModel/CodeWord.cpp
+	src/ProgramModel/CodeWordArg.h
+	src/ProgramModel/CodeWordArg.cpp
 	src/ProgramModel/CodeWordValidation.h
 	src/ProgramModel/CodeWordValidation.cpp
 	src/ProgramModel/InstructionMeta.h

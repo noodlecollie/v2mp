@@ -113,6 +113,7 @@ namespace V2MPAsm
 		{
 			InitialiseLocalData(inputFile);
 			ParseFileInternal();
+			PerformPostProcessing();
 
 			result.exceptions = m_Data->exceptionList;
 
@@ -218,6 +219,18 @@ namespace V2MPAsm
 				m_Data->state = State::TERMINATED;
 			}
 		}
+	}
+
+	void Parser::PerformPostProcessing()
+	{
+		if ( m_Data->recordedErrors > 0 )
+		{
+			// Parsing failed, so don't bother with any of this.
+			return;
+		}
+
+		ResolveAllLabelReferences();
+		FullyValidateAllCodeWords();
 	}
 
 	void Parser::AdvanceState(InputReader& reader)
@@ -515,7 +528,7 @@ namespace V2MPAsm
 	Parser::State Parser::ProcessInput_ValidateAndCommitCodeWord(InputReader& reader, Tokeniser::TokenType /* tokenType */)
 	{
 		CodeWord& currentCodeWord = m_Data->programBuilder.GetCurrentCodeWord();
-		std::vector<ValidationFailure> validationFailures = ValidateCodeWord(currentCodeWord);
+		std::vector<ValidationFailure> validationFailures = ValidateCodeWord(currentCodeWord, false);
 
 		if ( !validationFailures.empty() )
 		{
@@ -540,6 +553,76 @@ namespace V2MPAsm
 			PublicErrorID::UNIMPLEMENTED,
 			"Committing code word is not yet implemented.",
 			State::TERMINATED
+		);
+	}
+
+	void Parser::ResolveAllLabelReferences()
+	{
+		ProgramBuilder& builder = m_Data->programBuilder;
+		const ProgramModel& model = builder.GetProgramModel();
+		const size_t numCodewords = model.GetCodeWordCount();
+
+		for ( size_t index = 0; index < numCodewords; ++index )
+		{
+			std::shared_ptr<CodeWord> codeWord = model.GetCodeWord(index);
+
+			if ( !codeWord )
+			{
+				// Should never happen, and we don't have reader information any more here,
+				// so just throw something basic.
+				throw std::runtime_error("ResolveAllLabelReferences encountered invalid codeword");
+			}
+
+			const size_t numArgs = codeWord->GetArgumentCount();
+
+			for ( size_t argIndex = 0; argIndex < numArgs; ++argIndex )
+			{
+				CodeWordArg* arg = codeWord->GetArgument(argIndex);
+
+				if ( arg->IsLabelReference() )
+				{
+					ResolveLabelReference(*codeWord, *arg);
+				}
+			}
+		}
+	}
+
+	void Parser::ResolveLabelReference(const CodeWord& codeWord, CodeWordArg& arg)
+	{
+		const LabelReference labelRef = arg.GetLabelReference();
+		const std::string labelName = labelRef.GetLabelName();
+		const ProgramModel& model = m_Data->programBuilder.GetProgramModel();
+		std::shared_ptr<CodeWord> targetCodeWord = model.CodeWordForLabel(labelName);
+
+		if ( !targetCodeWord )
+		{
+			// TODO: This does not keep track of max allowed errors!
+			m_Data->exceptionList.emplace_back(
+				CreateErrorException(
+					PublicErrorID::INVALID_LABEL_REFERENCE,
+					m_Data->inputfile->GetPath(),
+					codeWord.GetLine(),
+					arg.GetColumn(),
+					"Label with name \"" + labelName + "\" does not exist."
+				)
+			);
+
+			return;
+		}
+
+		const uint16_t value = model.GetValueOfLabelReference(codeWord, *targetCodeWord, labelRef.GetReferenceType());
+		arg.SetValue(static_cast<int32_t>(value));
+	}
+
+	void Parser::FullyValidateAllCodeWords()
+	{
+		// TODO
+		throw AssemblerException(
+			PublicErrorID::UNIMPLEMENTED,
+			m_Data->inputfile->GetPath(),
+			0,
+			0,
+			"FullyValidateAllCodeWords not yet implemented"
 		);
 	}
 

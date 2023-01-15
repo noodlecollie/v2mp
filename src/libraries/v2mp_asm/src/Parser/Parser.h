@@ -121,6 +121,7 @@ namespace V2MPAsm
 
 		void InitialiseLocalData(const std::shared_ptr<InputFile>& inputFile);
 		void ParseFileInternal();
+		void PerformPostProcessing();
 		void AdvanceState(InputReader& reader);
 		State ProcessInputAndChooseNextState(InputReader& reader);
 
@@ -133,6 +134,10 @@ namespace V2MPAsm
 		State ProcessInput_CreateLabel(InputReader& reader, const Tokeniser::Token& token);
 		State ProcessInput_AddArgumentToCodeWord(InputReader& reader, const Tokeniser::Token& token);
 		State ProcessInput_ValidateAndCommitCodeWord(InputReader& reader, Tokeniser::TokenType tokenType);
+
+		void ResolveAllLabelReferences();
+		void ResolveLabelReference(const CodeWord& codeWord, CodeWordArg& arg);
+		void FullyValidateAllCodeWords();
 
 		Tokeniser::Token GetNextToken(
 			InputReader& reader,
