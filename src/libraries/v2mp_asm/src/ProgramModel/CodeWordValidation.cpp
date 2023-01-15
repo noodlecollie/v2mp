@@ -1,3 +1,4 @@
+#include <cassert>
 #include "ProgramModel/CodeWordValidation.h"
 #include "Exceptions/AssemblerException.h"
 #include "Exceptions/PublicExceptionIDs.h"
@@ -104,7 +105,6 @@ namespace V2MPAsm
 		);
 	}
 
-#if 0
 	static ValidationFailure ArgumentOutOfRangeFailure(
 		int32_t minValue,
 		int32_t maxValue,
@@ -136,7 +136,27 @@ namespace V2MPAsm
 					DecAndHexString(minValue) + " - " + DecAndHexString(maxValue) + "."
 		);
 	}
-#endif
+
+	static ValidationFailure LabelRefUsedForReservedBitsFailure(
+		size_t argIndex = 0)
+	{
+		return ValidationFailure(
+			PublicErrorID::INVALID_ARGUMENT_TYPE,
+			argIndex,
+			"This argument is reserved in this context, and so must be set to zero. "
+			"A label reference may not be used here."
+		);
+	}
+
+	static ValidationFailure ReservedBitsSetFailure(
+		size_t argIndex = 0)
+	{
+		return ValidationFailure(
+			PublicWarningID::RESERVED_BITS_SET,
+			argIndex,
+			"This argument is reserved in this context. Its value will be set to zero."
+		);
+	}
 
 	static std::vector<ValidationFailure> ValidateZeroArgCodeWord(const CodeWord& codeWord)
 	{
@@ -279,39 +299,136 @@ namespace V2MPAsm
 	}
 #endif
 
-	static std::vector<ValidationFailure> ValidateAddOrSub(CodeWord& codeWord, bool /* validateLabelRefs */)
+	static bool ValidateReservedArgIsZero(size_t argIndex, CodeWordArg& arg, std::vector<ValidationFailure>& failures)
+	{
+		if ( arg.IsLabelReference() )
+		{
+			// Label references are semantically never meant to be used in place of reserved bits.
+			// The only reason a label reference would be zero is by chance, which does not excuse
+			// it from being used here. If a label reference is present, throw an error.
+
+			failures.emplace_back(LabelRefUsedForReservedBitsFailure(argIndex));
+			return false;
+		}
+
+		if ( arg.GetValue() != 0 )
+		{
+			failures.emplace_back(ReservedBitsSetFailure(argIndex));
+			arg.SetValue(0);
+			return false;
+		}
+
+		return true;
+	}
+
+	static bool ValidateNumberForArg(
+		size_t argIndex,
+		const ArgMeta& argMeta,
+		CodeWordArg& arg,
+		std::vector<ValidationFailure>& failures
+	)
+	{
+		const size_t numberOfBits = static_cast<size_t>(argMeta.highBit - argMeta.lowBit) + 1;
+
+		const int32_t minValue = argMeta.signedness == ArgSignedness::ALWAYS_SIGNED
+			? MinSignedValue(numberOfBits)
+			: 0;
+
+		const int32_t maxValue = argMeta.signedness == ArgSignedness::ALWAYS_SIGNED
+			? MaxSignedValue(numberOfBits)
+			: MaxUnsignedValue(numberOfBits);
+
+		const int32_t actualValue = arg.GetValue();
+
+		if ( actualValue >= minValue && actualValue <= maxValue )
+		{
+			return true;
+		}
+
+		if ( arg.IsLabelReference() )
+		{
+			// Error out here, since label refs are supposed to be used for jumping to specific locations
+			// in code, and if that location is not correct then the developer is going to have a bad time.
+
+			failures.emplace_back(
+				LabelRefValueOutOfRangeFailure(
+					arg.GetLabelReference().GetLabelName(),
+					minValue,
+					maxValue,
+					actualValue,
+					argIndex
+				)
+			);
+
+			return false;
+		}
+
+		const uint32_t keptBits = static_cast<uint32_t>(actualValue) & BitMask(numberOfBits);
+		int32_t newValue = 0;
+
+		if ( actualValue >= 0 )
+		{
+			// Pad with leading zeroes.
+			newValue = static_cast<int32_t>(keptBits);
+		}
+		else
+		{
+			// Pad with leading ones.
+			newValue = static_cast<int32_t>((~BitMask(numberOfBits)) | keptBits);
+		}
+
+		arg.SetValue(newValue);
+		failures.emplace_back(ArgumentOutOfRangeFailure(minValue, maxValue, actualValue, newValue));
+
+		return false;
+	}
+
+	static std::vector<ValidationFailure> ValidateAddOrSub(InstructionType instructionType, CodeWord& codeWord, bool validateLabelRefs)
 	{
 		constexpr size_t EXPECTED_ARG_COUNT = 3;
+		constexpr size_t ARG_SRC_REG = 0;
+		constexpr size_t ARG_DEST_REG = 1;
+		constexpr size_t ARG_VALUE = 2;
+
+		const size_t expectedArgCount = GetInstructionMeta(instructionType).args.size();
+
+		assert(expectedArgCount == EXPECTED_ARG_COUNT);
+
 		const size_t actualArgCount = codeWord.GetArgumentCount();
 
-		if ( actualArgCount < EXPECTED_ARG_COUNT )
+		if ( actualArgCount < expectedArgCount )
 		{
-			return { TooFewArgumentsFailure(EXPECTED_ARG_COUNT, actualArgCount, std::max<size_t>(actualArgCount, 0)) };
+			return { TooFewArgumentsFailure(expectedArgCount, actualArgCount, std::max<size_t>(actualArgCount, 0)) };
 		}
 
-		if ( actualArgCount > EXPECTED_ARG_COUNT )
+		if ( actualArgCount > expectedArgCount )
 		{
-			return { TooManyArgumentsFailure(EXPECTED_ARG_COUNT, actualArgCount, EXPECTED_ARG_COUNT) };
+			return { TooManyArgumentsFailure(expectedArgCount, actualArgCount, expectedArgCount) };
 		}
 
-		const CodeWordArg* srcRegArg = codeWord.GetArgument(0);
-		const CodeWordArg* destRegArg = codeWord.GetArgument(1);
-		// CodeWordArg* valueArg = codeWord.GetArgument(2);
+		const CodeWordArg* srcRegArg = codeWord.GetArgument(ARG_SRC_REG);
+		const CodeWordArg* destRegArg = codeWord.GetArgument(ARG_DEST_REG);
+		CodeWordArg* valueArg = codeWord.GetArgument(ARG_VALUE);
+
+		assert(srcRegArg && destRegArg && valueArg);
 
 		std::vector<ValidationFailure> failures;
 
-		if ( !ValidateRegIdentifier(0, *srcRegArg, failures) || !ValidateRegIdentifier(1, *destRegArg, failures) )
+		if ( !ValidateRegIdentifier(ARG_SRC_REG, *srcRegArg, failures) || !ValidateRegIdentifier(ARG_DEST_REG, *destRegArg, failures) )
 		{
 			return failures;
 		}
 
-		if ( srcRegArg->GetValue() == destRegArg->GetValue() )
+		if ( !valueArg->IsLabelReference() || validateLabelRefs )
 		{
-			// TODO: Validate value arg
-		}
-		else
-		{
-			// TODO: Ensure value arg is zero
+			if ( srcRegArg->GetValue() == destRegArg->GetValue() )
+			{
+				ValidateNumberForArg(ARG_VALUE, GetInstructionMeta(instructionType).args[ARG_VALUE], *valueArg, failures);
+			}
+			else
+			{
+				ValidateReservedArgIsZero(ARG_VALUE, *valueArg, failures);
+			}
 		}
 
 		return failures;
@@ -319,7 +436,9 @@ namespace V2MPAsm
 
 	std::vector<ValidationFailure> ValidateCodeWord(CodeWord& codeWord, bool validateLabelRefs)
 	{
-		switch ( codeWord.GetInstructionType() )
+		const InstructionType instructionType = codeWord.GetInstructionType();
+
+		switch ( instructionType )
 		{
 			case InstructionType::NOP:
 			case InstructionType::SIG:
@@ -330,7 +449,7 @@ namespace V2MPAsm
 			case InstructionType::ADD:
 			case InstructionType::SUB:
 			{
-				return ValidateAddOrSub(codeWord, validateLabelRefs);
+				return ValidateAddOrSub(instructionType, codeWord, validateLabelRefs);
 			}
 
 			default:
