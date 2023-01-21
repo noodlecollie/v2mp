@@ -5,7 +5,9 @@
 #include <unordered_map>
 #include <memory>
 #include <optional>
+#include <stdexcept>
 #include "ProgramModel/CodeWord.h"
+#include "Exceptions/PublicExceptionIDs.h"
 
 namespace V2MPAsm
 {

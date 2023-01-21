@@ -498,7 +498,7 @@ namespace V2MPAsm
 			{
 				value = ParseInteger(token.token);
 			}
-			catch ( const std::exception& /* ex */ )
+			catch ( const std::exception& )
 			{
 				throw ParserException(
 					reader,
@@ -539,9 +539,9 @@ namespace V2MPAsm
 				if ( failure.IsError() )
 				{
 					ex.nextState = Parser::State::TERMINATED;
-
-					ex << ToAssemblerException(failure, reader.GetPath(), currentCodeWord);
 				}
+
+				ex << ToAssemblerException(failure, reader.GetPath(), currentCodeWord);
 			}
 
 			throw ex;

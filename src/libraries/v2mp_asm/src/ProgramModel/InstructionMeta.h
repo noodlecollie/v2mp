@@ -25,18 +25,26 @@ namespace V2MPAsm
 		SIG = 0xB
 	};
 
-	enum class ArgSignedness
+	enum InstructionArgFlag : uint32_t
 	{
-		ALWAYS_UNSIGNED,
-		ALWAYS_SIGNED,
-		DYNAMIC_SIGNEDNESS
+		// Presence = always signed, absence = always unsigned
+		ARGFLAG_SIGNED = (1 << 0),
+
+		// If set, signedness depends on other arguments in the code word
+		ARGFLAG_DYNAMIC_SIGNEDNESS = (1 << 1),
+
+		// Argument is symbolic (eg. a register ID)
+		ARGFLAG_SYMBOLIC = (1 << 2),
+
+		// Explicit placeholder for "no flags"
+		ARGFLAG_UNSIGNED_NUMBER = 0
 	};
 
 	struct ArgMeta
 	{
 		uint8_t highBit;
 		uint8_t lowBit;
-		ArgSignedness signedness;
+		uint32_t flags;
 	};
 
 	struct InstructionMeta

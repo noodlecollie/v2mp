@@ -2,14 +2,22 @@
 #include <memory>
 #include <optional>
 #include <stdexcept>
+#include <limits>
 
 namespace V2MPAsm
 {
+	static constexpr size_t MAX_CODE_WORD_LIST_SIZE = static_cast<size_t>(std::numeric_limits<uint16_t>::max()) / 2;
+
 	void ProgramModel::AddCodeWord(const std::shared_ptr<CodeWord>& codeWord)
 	{
 		if ( !codeWord )
 		{
 			return;
+		}
+
+		if ( m_CodeWords.size() >= MAX_CODE_WORD_LIST_SIZE )
+		{
+			throw std::runtime_error("Program address space was exceeded.");
 		}
 
 		codeWord->SetAddress(static_cast<uint16_t>(m_CodeWords.size() * 2));
@@ -30,7 +38,7 @@ namespace V2MPAsm
 	{
 		if ( m_CodeWords.empty() )
 		{
-			throw std::logic_error("No code words in list");
+			throw std::logic_error("Cannot add label for non-existent code word.");
 		}
 
 		m_Labels.insert({labelName, m_CodeWords.back()});

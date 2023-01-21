@@ -187,118 +187,6 @@ namespace V2MPAsm
 		return true;
 	}
 
-#if 0
-	static bool ValidateArgumentRanges(
-		const InstructionMeta& meta,
-		CodeWord& codeWord,
-		std::vector<ValidationFailure>& failures,
-		bool validateLabelRefs)
-	{
-		const size_t expectedArgCount = meta.args.size();
-		const size_t actualArgCount = codeWord.GetArgumentCount();
-
-		if ( actualArgCount < expectedArgCount )
-		{
-			failures.emplace_back(
-				TooFewArgumentsFailure(
-					expectedArgCount,
-					actualArgCount,
-					std::max<size_t>(actualArgCount, 0)
-				)
-			);
-
-			return false;
-		}
-
-		if ( actualArgCount > expectedArgCount )
-		{
-			// Only a warning, so don't return.
-			failures.emplace_back(
-				TooManyArgumentsFailure(
-					expectedArgCount,
-					actualArgCount,
-					expectedArgCount
-				)
-			);
-		}
-
-		bool encounteredError = false;
-
-		// TODO: This is probably better done on a per-argument basis, rather than a loop in one function.
-		for ( size_t argIndex = 0; argIndex < expectedArgCount; ++argIndex )
-		{
-			const ArgMeta& argMeta = meta.args[argIndex];
-
-			if ( argMeta.signedness == ArgSignedness::DYNAMIC_SIGNEDNESS )
-			{
-				// Instruction-specific check, must happen later.
-				continue;
-			}
-
-			CodeWordArg* actualArg = codeWord.GetArgument(argIndex);
-
-			if ( actualArg->IsLabelReference() && !validateLabelRefs )
-			{
-				// Skip this argument, but check others.
-				continue;
-			}
-
-			const size_t numberOfBits = static_cast<size_t>(argMeta.highBit - argMeta.lowBit) + 1;
-
-			const int32_t minValue = argMeta.signedness == ArgSignedness::ALWAYS_SIGNED
-				? MinSignedValue(numberOfBits)
-				: 0;
-
-			const int32_t maxValue = argMeta.signedness == ArgSignedness::ALWAYS_SIGNED
-				? MaxSignedValue(numberOfBits)
-				: MaxUnsignedValue(numberOfBits);
-
-			const int32_t actualValue = actualArg->GetValue();
-
-			if ( actualValue < minValue || actualValue > maxValue )
-			{
-				if ( actualArg->IsLabelReference() )
-				{
-					failures.emplace_back(
-						LabelRefValueOutOfRangeFailure(
-							actualArg->GetLabelReference().GetLabelName(),
-							minValue,
-							maxValue,
-							actualValue,
-							argIndex
-						)
-					);
-
-					// Error out here, since label refs are supposed to be used for jumping to specific locations
-					// in code, and if that location is not correct then the developer is going to have a bad time.
-					encounteredError = true;
-				}
-				else
-				{
-					const uint32_t keptBits = static_cast<uint32_t>(actualValue) & BitMask(numberOfBits);
-					int32_t newValue = 0;
-
-					if ( actualValue > 0 )
-					{
-						// Pad with leading zeroes.
-						newValue = static_cast<int32_t>(keptBits);
-					}
-					else
-					{
-						// Pad with leading ones.
-						newValue = static_cast<int32_t>((~BitMask(numberOfBits)) | keptBits);
-					}
-
-					actualArg->SetValue(newValue);
-					failures.emplace_back(ArgumentOutOfRangeFailure(minValue, maxValue, actualValue, newValue));
-				}
-			}
-		}
-
-		return !encounteredError;
-	}
-#endif
-
 	static bool ValidateReservedArgIsZero(size_t argIndex, CodeWordArg& arg, std::vector<ValidationFailure>& failures)
 	{
 		if ( arg.IsLabelReference() )
@@ -330,11 +218,11 @@ namespace V2MPAsm
 	{
 		const size_t numberOfBits = static_cast<size_t>(argMeta.highBit - argMeta.lowBit) + 1;
 
-		const int32_t minValue = argMeta.signedness == ArgSignedness::ALWAYS_SIGNED
+		const int32_t minValue = (argMeta.flags & ARGFLAG_SIGNED)
 			? MinSignedValue(numberOfBits)
 			: 0;
 
-		const int32_t maxValue = argMeta.signedness == ArgSignedness::ALWAYS_SIGNED
+		const int32_t maxValue = (argMeta.flags & ARGFLAG_SIGNED)
 			? MaxSignedValue(numberOfBits)
 			: MaxUnsignedValue(numberOfBits);
 
