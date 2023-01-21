@@ -61,3 +61,6 @@ LibExport.h
 
 # Convenience folder for placing Natural Docs binaries
 .naturaldocs
+
+# Meld merge temporary files
+*.orig
