@@ -289,9 +289,11 @@ namespace V2MPAsm
 			return { TooFewArgumentsFailure(expectedArgCount, actualArgCount, std::max<size_t>(actualArgCount, 0)) };
 		}
 
+		std::vector<ValidationFailure> failures;
+
 		if ( actualArgCount > expectedArgCount )
 		{
-			return { TooManyArgumentsFailure(expectedArgCount, actualArgCount, expectedArgCount) };
+			failures.emplace_back(TooManyArgumentsFailure(expectedArgCount, actualArgCount, expectedArgCount));
 		}
 
 		const CodeWordArg* srcRegArg = codeWord.GetArgument(ARG_SRC_REG);
@@ -299,8 +301,6 @@ namespace V2MPAsm
 		CodeWordArg* valueArg = codeWord.GetArgument(ARG_VALUE);
 
 		assert(srcRegArg && destRegArg && valueArg);
-
-		std::vector<ValidationFailure> failures;
 
 		if ( !ValidateRegIdentifier(ARG_SRC_REG, *srcRegArg, failures) || !ValidateRegIdentifier(ARG_DEST_REG, *destRegArg, failures) )
 		{

@@ -133,6 +133,7 @@ namespace V2MPAsm
 		State ProcessInput_CreateInstructionCodeWord(InputReader& reader, const Tokeniser::Token& token);
 		State ProcessInput_CreateLabel(InputReader& reader, const Tokeniser::Token& token);
 		State ProcessInput_AddArgumentToCodeWord(InputReader& reader, const Tokeniser::Token& token);
+		State ProcessInput_ParseAndAddLabelRefToCodeWord(InputReader& reader, const Tokeniser::Token& token);
 		State ProcessInput_ValidateAndCommitCodeWord(InputReader& reader, Tokeniser::TokenType tokenType);
 
 		void ResolveAllLabelReferences();

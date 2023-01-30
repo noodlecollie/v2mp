@@ -7,12 +7,21 @@
 #include "Interface_Exception.h"
 #include "Parser/Parser.h"
 #include "Files/FilePool.h"
+#include "Files/OutputFile.h"
 
 namespace V2MPAsm
 {
 	bool Assembler::Run() noexcept
 	{
-		m_ExceptionList = RunAndCompileExceptionList();
+		std::unique_ptr<ProgramModel> model;
+		m_ExceptionList = ParseInputAndCompileExceptionList(model);
+
+		if ( !m_ExceptionList.empty() )
+		{
+			return false;
+		}
+
+		m_ExceptionList = TryWriteOutputFile(std::move(model));
 		return m_ExceptionList.empty();
 	}
 
@@ -31,11 +40,11 @@ namespace V2MPAsm
 		return m_ExceptionList;
 	}
 
-	ExceptionList Assembler::RunAndCompileExceptionList() noexcept
+	ExceptionList Assembler::ParseInputAndCompileExceptionList(std::unique_ptr<ProgramModel>& model) noexcept
 	{
 		try
 		{
-			return RunInternal();
+			return ParseInput(model);
 		}
 		catch (const AssemblerException& ex)
 		{
@@ -47,15 +56,48 @@ namespace V2MPAsm
 		}
 	}
 
-	ExceptionList Assembler::RunInternal()
+	ExceptionList Assembler::ParseInput(std::unique_ptr<ProgramModel>& model)
 	{
 		FilePool filePool;
 		Parser parser;
 
 		Parser::ParseResult result = parser.ParseFile(filePool.OpenInputFile(m_InputFile));
 
-		// TODO: Write program to disk
+		if ( result.exceptions.size() < 1 )
+		{
+			model = std::move(result.programModel);
+		}
 
 		return result.exceptions;
+	}
+
+	ExceptionList Assembler::TryWriteOutputFile(std::unique_ptr<ProgramModel> model)
+	{
+		try
+		{
+			WriteOutputFile(model, std::make_shared<OutputFile>(m_OutputFile));
+		}
+		catch (const AssemblerException& ex)
+		{
+			return ExceptionList({ CreateException(ex.GetPublicException()) });
+		}
+		catch (...)
+		{
+			return ExceptionList({ CreateInternalErrorException(m_OutputFile) });
+		}
+
+		return ExceptionList();
+	}
+
+	void Assembler::WriteOutputFile(const std::unique_ptr<ProgramModel>& model, const std::shared_ptr<OutputFile>& outFile)
+	{
+		const size_t codeWordCount = model->GetCodeWordCount();
+
+		for ( size_t index = 0; index < codeWordCount; ++index )
+		{
+			// TODO: Compute code word
+			outFile->GetStream().put(static_cast<char>(0xDE));
+			outFile->GetStream().put(static_cast<char>(0xAD));
+		}
 	}
 }

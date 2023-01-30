@@ -490,36 +490,96 @@ namespace V2MPAsm
 
 	Parser::State Parser::ProcessInput_AddArgumentToCodeWord(InputReader& reader, const Tokeniser::Token& token)
 	{
-		if ( token.type == TokenType::NumericLiteral )
+		switch ( token.type )
 		{
-			int32_t value = 0;
-
-			try
+			case TokenType::NumericLiteral:
 			{
-				value = ParseInteger(token.token);
+				int32_t value = 0;
+
+				try
+				{
+					value = ParseInteger(token.token);
+				}
+				catch ( const std::exception& )
+				{
+					throw ParserException(
+						reader,
+						PublicErrorID::UNIMPLEMENTED,
+						"Invalid numeric literal: " + token.token
+					);
+				}
+
+				m_Data->programBuilder.GetCurrentCodeWord().AddArgument(token.column, value);
+				return State::BUILD_CODE_WORD;
 			}
-			catch ( const std::exception& )
+
+			case TokenType::HighSelector:
+			case TokenType::LowSelector:
+			case TokenType::DistanceSelector:
+			{
+				return ProcessInput_ParseAndAddLabelRefToCodeWord(reader, token);
+			}
+
+			default:
 			{
 				throw ParserException(
 					reader,
-					PublicErrorID::UNIMPLEMENTED,
-					"Invalid numeric literal: " + token.token
+					PublicErrorID::INTERNAL,
+					"Unexpected token when attempting to add code word argument.",
+					State::TERMINATED
 				);
 			}
-
-			// Arguments must be validated once code word is complete,
-			// as the validity of one argument may depend on the value of another.
-			m_Data->programBuilder.GetCurrentCodeWord().AddArgument(token.column, value);
 		}
-		else
+	}
+
+	Parser::State Parser::ProcessInput_ParseAndAddLabelRefToCodeWord(InputReader& reader, const Tokeniser::Token& token)
+	{
+		const Tokeniser::Token labelString = GetNextToken(reader, TokenType::Label, State::SKIP_LINE);
+
+		switch ( token.type )
 		{
-			// TODO: Deal with label reference
-			throw ParserException(
-				reader,
-				PublicErrorID::UNIMPLEMENTED,
-				"Label ref instruction argument parsing is not yet implemented.",
-				State::TERMINATED
-			);
+			case TokenType::HighSelector:
+			{
+				m_Data->programBuilder.GetCurrentCodeWord().AddArgument(
+					token.column,
+					LabelReference::ReferenceType::UPPER_BYTE_OF_ADDRESS,
+					labelString.token
+				);
+
+				break;
+			}
+
+			case TokenType::LowSelector:
+			{
+				m_Data->programBuilder.GetCurrentCodeWord().AddArgument(
+					token.column,
+					LabelReference::ReferenceType::LOWER_BYTE_OF_ADDRESS,
+					labelString.token
+				);
+
+				break;
+			}
+
+			case TokenType::DistanceSelector:
+			{
+				m_Data->programBuilder.GetCurrentCodeWord().AddArgument(
+					token.column,
+					LabelReference::ReferenceType::NUM_WORDS_DIST_TO_LABEL,
+					labelString.token
+				);
+
+				break;
+			}
+
+			default:
+			{
+				throw ParserException(
+					reader,
+					PublicErrorID::INTERNAL,
+					"Unexpected token when attempting to parse label ref.",
+					State::TERMINATED
+				);
+			}
 		}
 
 		return State::BUILD_CODE_WORD;
@@ -528,6 +588,8 @@ namespace V2MPAsm
 	Parser::State Parser::ProcessInput_ValidateAndCommitCodeWord(InputReader& reader, Tokeniser::TokenType /* tokenType */)
 	{
 		CodeWord& currentCodeWord = m_Data->programBuilder.GetCurrentCodeWord();
+
+		// Don't validate label refs here, as the labels may not yet be resolved.
 		std::vector<ValidationFailure> validationFailures = ValidateCodeWord(currentCodeWord, false);
 
 		if ( !validationFailures.empty() )
@@ -547,13 +609,8 @@ namespace V2MPAsm
 			throw ex;
 		}
 
-		// TODO: Implement
-		throw ParserException(
-			reader,
-			PublicErrorID::UNIMPLEMENTED,
-			"Committing code word is not yet implemented.",
-			State::TERMINATED
-		);
+		m_Data->programBuilder.SubmitCurrentCodeWord();
+		return State::BEGIN_LINE;
 	}
 
 	void Parser::ResolveAllLabelReferences()
@@ -616,14 +673,14 @@ namespace V2MPAsm
 
 	void Parser::FullyValidateAllCodeWords()
 	{
-		// TODO
-		throw AssemblerException(
-			PublicErrorID::UNIMPLEMENTED,
-			m_Data->inputfile->GetPath(),
-			0,
-			0,
-			"FullyValidateAllCodeWords not yet implemented"
-		);
+		const ProgramModel& model = m_Data->programBuilder.GetProgramModel();
+		const size_t codeWordCount = model.GetCodeWordCount();
+
+		for ( size_t index = 0; index < codeWordCount; ++index )
+		{
+			std::shared_ptr<CodeWord> codeWord = model.GetCodeWord(index);
+			ValidateCodeWord(*codeWord, true);
+		}
 	}
 
 	Tokeniser::Token Parser::GetNextToken(InputReader& reader, uint32_t allowedTokens, const std::optional<State>& failState) const

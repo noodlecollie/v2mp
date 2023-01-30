@@ -69,12 +69,12 @@ namespace V2MPAsm
 		m_Address = address;
 	}
 
-	void CodeWord::AddArgument(size_t columnIndex,int32_t value)
+	void CodeWord::AddArgument(size_t columnIndex, int32_t value)
 	{
 		m_Arguments.emplace_back(columnIndex, value);
 	}
 
-	void CodeWord::AddArgument(size_t columnIndex,LabelReference::ReferenceType refType, const std::string& labelName)
+	void CodeWord::AddArgument(size_t columnIndex, LabelReference::ReferenceType refType, const std::string& labelName)
 	{
 		m_Arguments.emplace_back(columnIndex, refType, labelName);
 	}
