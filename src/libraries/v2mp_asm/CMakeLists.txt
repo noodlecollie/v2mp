@@ -31,6 +31,8 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/ProgramModel/CodeWord.cpp
 	src/ProgramModel/CodeWordArg.h
 	src/ProgramModel/CodeWordArg.cpp
+	src/ProgramModel/CodeWordOutput.h
+	src/ProgramModel/CodeWordOutput.cpp
 	src/ProgramModel/CodeWordValidation.h
 	src/ProgramModel/CodeWordValidation.cpp
 	src/ProgramModel/InstructionMeta.h

@@ -8,6 +8,7 @@
 #include "Parser/Parser.h"
 #include "Files/FilePool.h"
 #include "Files/OutputFile.h"
+#include "ProgramModel/CodeWordOutput.h"
 
 namespace V2MPAsm
 {
@@ -91,13 +92,26 @@ namespace V2MPAsm
 
 	void Assembler::WriteOutputFile(const std::unique_ptr<ProgramModel>& model, const std::shared_ptr<OutputFile>& outFile)
 	{
+		std::ostream& outStream = outFile->GetStream();
 		const size_t codeWordCount = model->GetCodeWordCount();
 
 		for ( size_t index = 0; index < codeWordCount; ++index )
 		{
-			// TODO: Compute code word
-			outFile->GetStream().put(static_cast<char>(0xDE));
-			outFile->GetStream().put(static_cast<char>(0xAD));
+			try
+			{
+
+				EmitCodeWord(*model->GetCodeWord(index), outStream);
+			}
+			catch ( const std::runtime_error& ex )
+			{
+				throw AssemblerException(
+					PublicErrorID::INTERNAL,
+					outFile->GetPath(),
+					LINE_NUMBER_BASE + index,
+					COLUMN_NUMBER_BASE,
+					ex.what()
+				);
+			}
 		}
 	}
 }
