@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_Create(const char* inputFile, const char* outputFile)
+API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromFiles(const char* inputFile, const char* outputFile)
 {
 	try
 	{
@@ -22,6 +22,12 @@ API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_Create(const char* input
 	{
 		return nullptr;
 	}
+}
+
+API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromMemory(const char* /* inputBuffer */, const char* /* inputFileName */)
+{
+	// TODO
+	return nullptr;
 }
 
 API_V2MPASM void V2MPAsm_Assembler_Destroy(struct V2MPAsm_Assembler* assembler)
@@ -41,7 +47,14 @@ API_V2MPASM bool V2MPAsm_Assembler_Run(struct V2MPAsm_Assembler* assembler)
 		return false;
 	}
 
-	return assembler->inner.Run();
+	try
+	{
+		return assembler->inner.Run();
+	}
+	catch (...)
+	{
+		return false;
+	}
 }
 
 API_V2MPASM size_t V2MPAsm_Assembler_GetExceptionCount(const struct V2MPAsm_Assembler* assembler)
@@ -69,6 +82,18 @@ API_V2MPASM const struct V2MPAsm_Exception* V2MPAsm_Assembler_GetException(const
 	}
 
 	return list[index].get();
+}
+
+API_V2MPASM bool V2MPAsm_Assembler_HasInMemoryOutputBuffer(const struct V2MPAsm_Assembler* /* assembler */)
+{
+	// TODO
+	return false;
+}
+
+API_V2MPASM void* V2MPAsm_Assembler_TakeInMemoryOutputBuffer(struct V2MPAsm_Assembler* /* assembler */, size_t* /* outBufferSize */)
+{
+	// TODO
+	return nullptr;
 }
 
 #ifdef __cplusplus

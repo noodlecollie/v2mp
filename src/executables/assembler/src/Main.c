@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	struct V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_Create(argv[1], argv[2]);
+	struct V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromFiles(argv[1], argv[2]);
 
 	if ( !V2MPAsm_Assembler_Run(assembler) )
 	{
