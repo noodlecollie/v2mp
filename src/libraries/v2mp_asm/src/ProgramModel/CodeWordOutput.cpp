@@ -29,7 +29,7 @@ namespace V2MPAsm
 		outValue |= argValue;
 	}
 
-	void EmitCodeWord(const CodeWord& codeWord, std::ostream& outStream)
+	uint16_t ProduceCodeWord(const CodeWord& codeWord)
 	{
 		uint16_t outValue = 0;
 		const size_t argCount = codeWord.GetArgumentCount();
@@ -53,6 +53,12 @@ namespace V2MPAsm
 			ProcessArg(*arg, instructionMeta.args[index], outValue);
 		}
 
+		return outValue;
+	}
+
+	void EmitCodeWordToStream(const CodeWord& codeWord, std::ostream& outStream)
+	{
+		const uint16_t outValue = ProduceCodeWord(codeWord);
 		outStream.write(reinterpret_cast<const char*>(&outValue), sizeof(outValue));
 	}
 }

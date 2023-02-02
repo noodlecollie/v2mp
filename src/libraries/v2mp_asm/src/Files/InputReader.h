@@ -20,6 +20,7 @@ namespace V2MPAsm
 		size_t GetCurrentColumn();
 		size_t GetDataSize() const;
 		bool IsEOF() const;
+		bool IsRawData() const;
 
 		// Advances line/column.
 		char ReadChar();
@@ -41,6 +42,8 @@ namespace V2MPAsm
 
 		std::string m_Path;
 		std::vector<char> m_Data;
+		bool m_IsRawData = false;
+
 		size_t m_Position = 0;
 		size_t m_Line = LINE_NUMBER_BASE;
 		size_t m_Column = COLUMN_NUMBER_BASE;

@@ -14,7 +14,7 @@ API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromFiles(const ch
 		std::unique_ptr<struct V2MPAsm_Assembler> assembler = std::make_unique<struct V2MPAsm_Assembler>();
 
 		assembler->inner.SetInputFileName(inputFile);
-		assembler->inner.SetOutputFileName(outputFile);
+		assembler->inner.SetOutputToFile(outputFile);
 
 		return assembler.release();
 	}
@@ -24,10 +24,21 @@ API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromFiles(const ch
 	}
 }
 
-API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromMemory(const char* /* inputBuffer */, const char* /* inputFileName */)
+API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromMemory(const char* inputBuffer, const char* inputFileName)
 {
-	// TODO
-	return nullptr;
+	try
+	{
+		std::unique_ptr<struct V2MPAsm_Assembler> assembler = std::make_unique<struct V2MPAsm_Assembler>();
+
+		assembler->inner.SetInputRawData(inputFileName ? inputFileName : "", inputBuffer);
+		assembler->inner.SetOutputToRawData();
+
+		return assembler.release();
+	}
+	catch (...)
+	{
+		return nullptr;
+	}
 }
 
 API_V2MPASM void V2MPAsm_Assembler_Destroy(struct V2MPAsm_Assembler* assembler)
@@ -84,16 +95,40 @@ API_V2MPASM const struct V2MPAsm_Exception* V2MPAsm_Assembler_GetException(const
 	return list[index].get();
 }
 
-API_V2MPASM bool V2MPAsm_Assembler_HasInMemoryOutputBuffer(const struct V2MPAsm_Assembler* /* assembler */)
+API_V2MPASM bool V2MPAsm_Assembler_HasInMemoryOutputBuffer(const struct V2MPAsm_Assembler* assembler)
 {
-	// TODO
-	return false;
+	return assembler ? assembler->inner.OutputIsRawData() : false;
 }
 
-API_V2MPASM void* V2MPAsm_Assembler_TakeInMemoryOutputBuffer(struct V2MPAsm_Assembler* /* assembler */, size_t* /* outBufferSize */)
+API_V2MPASM size_t V2MPAsm_Assembler_InMemoryOutputBufferSize(const struct V2MPAsm_Assembler* assembler)
 {
-	// TODO
-	return nullptr;
+	return (assembler && assembler->inner.OutputIsRawData()) ? assembler->inner.RawOutputSizeInWords() : 0;
+}
+
+API_V2MPASM size_t V2MPAsm_Assembler_TakeInMemoryOutputBuffer(struct V2MPAsm_Assembler* assembler, void* outBuffer, size_t outBufferSizeInBytes)
+{
+	if ( !assembler || !assembler->inner.OutputIsRawData() )
+	{
+		return 0;
+	}
+
+	const std::vector<uint16_t> rawOutputFromAssembler = assembler->inner.TakeRawOutput();
+	size_t bytesWritten = 0;
+
+	if ( outBuffer && outBufferSizeInBytes >= sizeof(uint16_t) )
+	{
+		const size_t outBufferSizeInWords = std::min<size_t>(rawOutputFromAssembler.size(), outBufferSizeInBytes / sizeof(uint16_t));
+		uint16_t* outPtr = static_cast<uint16_t*>(outBuffer);
+
+		for ( size_t index = 0; index < outBufferSizeInWords; ++index )
+		{
+			outPtr[index] = rawOutputFromAssembler[index];
+		}
+
+		bytesWritten = outBufferSizeInWords * sizeof(uint16_t);
+	}
+
+	return bytesWritten;
 }
 
 #ifdef __cplusplus

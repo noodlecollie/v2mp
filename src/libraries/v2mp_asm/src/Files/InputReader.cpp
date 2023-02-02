@@ -11,7 +11,8 @@ namespace V2MPAsm
 		return str.find(ch) != std::string::npos;
 	}
 
-	InputReader::InputReader(const std::shared_ptr<InputFile>& file)
+	InputReader::InputReader(const std::shared_ptr<InputFile>& file) :
+		m_IsRawData(false)
 	{
 		if ( !file )
 		{
@@ -33,7 +34,8 @@ namespace V2MPAsm
 
 	InputReader::InputReader(const std::string& path, std::vector<char>&& rawData) :
 		m_Path(path),
-		m_Data(std::move(rawData))
+		m_Data(std::move(rawData)),
+		m_IsRawData(true)
 	{
 	}
 
@@ -65,6 +67,11 @@ namespace V2MPAsm
 	bool InputReader::IsEOF() const
 	{
 		return m_Position >= m_Data.size();
+	}
+
+	bool InputReader::IsRawData() const
+	{
+		return m_IsRawData;
 	}
 
 	char InputReader::ReadChar()

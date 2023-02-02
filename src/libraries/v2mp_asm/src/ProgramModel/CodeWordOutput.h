@@ -6,5 +6,6 @@ namespace V2MPAsm
 {
 	class CodeWord;
 
-	void EmitCodeWord(const CodeWord& codeWord, std::ostream& outStream);
+	uint16_t ProduceCodeWord(const CodeWord& codeWord);
+	void EmitCodeWordToStream(const CodeWord& codeWord, std::ostream& outStream);
 }

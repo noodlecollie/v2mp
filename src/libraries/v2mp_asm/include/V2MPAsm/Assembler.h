@@ -21,10 +21,19 @@ API_V2MPASM size_t V2MPAsm_Assembler_GetExceptionCount(const struct V2MPAsm_Asse
 API_V2MPASM const struct V2MPAsm_Exception* V2MPAsm_Assembler_GetException(const struct V2MPAsm_Assembler* assembler, size_t index);
 
 API_V2MPASM bool V2MPAsm_Assembler_HasInMemoryOutputBuffer(const struct V2MPAsm_Assembler* assembler);
+API_V2MPASM size_t V2MPAsm_Assembler_InMemoryOutputBufferSize(const struct V2MPAsm_Assembler* assembler);
 
-// Required outBufferSize to be valid! If it is not, null will be returned.
-// If V2MPAsm_Assembler_HasInMemoryOutputBuffer() is false, null will be returned.
-API_V2MPASM void* V2MPAsm_Assembler_TakeInMemoryOutputBuffer(struct V2MPAsm_Assembler* assembler, size_t* outBufferSize);
+// Returns the number of bytes that were written. Does not write off the
+// end of the buffer if it was too small.
+// If V2MPAsm_Assembler_HasInMemoryOutputBuffer() is false, nothing is
+// written and 0 is returned.
+// Otherwise, the data in the internal buffer is copied out (if the
+// provided buffer and length are valid). The internal buffer is always
+// left empty after this call.
+// Any bytes in the output buffer that cannot contain an entire code word,
+// or which exceed the size of the internal buffer being copied out, are
+// not written to at all. Their values should be considered undefined.
+API_V2MPASM size_t V2MPAsm_Assembler_TakeInMemoryOutputBuffer(struct V2MPAsm_Assembler* assembler, void* outBuffer, size_t outBufferSizeInBytes);
 
 #ifdef __cplusplus
 } // extern "C"
