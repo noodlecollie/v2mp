@@ -11,23 +11,35 @@ namespace V2MPAsm
 		return str.find(ch) != std::string::npos;
 	}
 
-	InputReader::InputReader(const std::shared_ptr<InputFile>& file) :
-		m_File(file)
+	InputReader::InputReader(const std::shared_ptr<InputFile>& file)
 	{
 		if ( !file )
 		{
-			throw AssemblerException(PublicErrorID::INTERNAL);
+			throw AssemblerException(
+				PublicErrorID::INTERNAL,
+				std::string(),
+				LINE_NUMBER_BASE,
+				COLUMN_NUMBER_BASE,
+				"Invalid file provided to input reader."
+			);
 		}
 
-		m_Data.resize(m_File->CalculateFileSize());
+		m_Path = file->GetPath();
+		m_Data.resize(file->CalculateFileSize());
 
-		std::ifstream& stream = m_File->GetStream();
+		std::ifstream& stream = file->GetStream();
 		stream.read(m_Data.data(), m_Data.size());
+	}
+
+	InputReader::InputReader(const std::string& path, std::vector<char>&& rawData) :
+		m_Path(path),
+		m_Data(std::move(rawData))
+	{
 	}
 
 	std::string InputReader::GetPath() const
 	{
-		return m_File->GetPath();
+		return m_Path;
 	}
 
 	size_t InputReader::GetCurrentPosition() const
@@ -160,6 +172,11 @@ namespace V2MPAsm
 		offset += m_Position;
 
 		return offset < m_Data.size() ? m_Data[offset] : '\0';
+	}
+
+	void InputReader::ResetPosition()
+	{
+		m_Position = 0;
 	}
 
 	char InputReader::AdvanceLineAndColumn()

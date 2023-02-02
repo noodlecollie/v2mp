@@ -20,6 +20,7 @@ namespace V2MPAsm
 	LIST_ITEM(INTERNAL, "internal-error", "Unexpected internal error.") \
 	LIST_ITEM(UNIMPLEMENTED, "unimplemented", "Behaviour unimplemented.") \
 	LIST_ITEM(NON_EXISTENT_FILE, "non-existent-file", "File was not found on disk.") \
+	LIST_ITEM(EMPTY_INPUT, "empty-input", "Input data to parser was empty.") \
 	LIST_ITEM(ERROR_OPENING_FILE, "error-opening-file", "Could not open file.") \
 	LIST_ITEM(EXCEEDED_ERROR_COUNT, "exceeded-error-count", "Terminated parsing due to number of errors.") \
 	/* Tokenising stage: */ \

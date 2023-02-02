@@ -12,6 +12,7 @@ namespace V2MPAsm
 	{
 	public:
 		explicit InputReader(const std::shared_ptr<InputFile>& file);
+		InputReader(const std::string& path, std::vector<char>&& rawData);
 
 		std::string GetPath() const;
 		size_t GetCurrentPosition() const;
@@ -33,10 +34,12 @@ namespace V2MPAsm
 		const char* GetDataAtAbsolutePosition(size_t position) const;
 		char PeekChar(size_t offset = 0) const;
 
+		void ResetPosition();
+
 	private:
 		char AdvanceLineAndColumn();
 
-		std::shared_ptr<InputFile> m_File;
+		std::string m_Path;
 		std::vector<char> m_Data;
 		size_t m_Position = 0;
 		size_t m_Line = LINE_NUMBER_BASE;

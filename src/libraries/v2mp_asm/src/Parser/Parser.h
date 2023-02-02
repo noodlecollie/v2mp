@@ -5,6 +5,7 @@
 #include <optional>
 #include <cstdint>
 #include "Files/InputFile.h"
+#include "Files/InputReader.h"
 #include "Interface_Exception.h"
 #include "Exceptions/AssemblerException.h"
 #include "Parser/Tokeniser.h"
@@ -33,6 +34,7 @@ namespace V2MPAsm
 		};
 
 		ParseResult ParseFile(const std::shared_ptr<InputFile>& inputFile) noexcept;
+		ParseResult ParseData(const std::string& inputPath, std::vector<char>&& inputData) noexcept;
 
 	private:
 #define PARSER_STATE_LIST \
@@ -100,11 +102,21 @@ namespace V2MPAsm
 
 		struct ParserData
 		{
-			std::shared_ptr<InputFile> inputfile;
+			InputReader inputReader;
 			State state = State::BEGIN_LINE;
 			ExceptionList exceptionList;
 			size_t recordedErrors = 0;
 			ProgramBuilder programBuilder;
+
+			ParserData(const std::shared_ptr<InputFile>& inputFile) :
+				inputReader(inputFile)
+			{
+			}
+
+			ParserData(const std::string& inputPath, std::vector<char>&& inputData) :
+				inputReader(inputPath, std::move(inputData))
+			{
+			}
 
 			void AppendException(const AssemblerException& ex)
 			{
@@ -119,29 +131,28 @@ namespace V2MPAsm
 
 		static const char* GetStateName(State state);
 
-		void InitialiseLocalData(const std::shared_ptr<InputFile>& inputFile);
+		ParseResult RunParseSequence(std::unique_ptr<ParserData> data);
 		void ParseFileInternal();
 		void PerformPostProcessing();
-		void AdvanceState(InputReader& reader);
-		State ProcessInputAndChooseNextState(InputReader& reader);
+		void AdvanceState();
+		State ProcessInputAndChooseNextState();
 
-		State ProcessInput_BeginLine(InputReader& reader);
-		State ProcessInput_SkipLine(InputReader& reader);
-		State ProcessInput_BuildCodeWord(InputReader& reader);
-		State ProcessInput_EndOfFile(InputReader& reader);
+		State ProcessInput_BeginLine();
+		State ProcessInput_SkipLine();
+		State ProcessInput_BuildCodeWord();
+		State ProcessInput_EndOfFile();
 
-		State ProcessInput_CreateInstructionCodeWord(InputReader& reader, const Tokeniser::Token& token);
-		State ProcessInput_CreateLabel(InputReader& reader, const Tokeniser::Token& token);
-		State ProcessInput_AddArgumentToCodeWord(InputReader& reader, const Tokeniser::Token& token);
-		State ProcessInput_ParseAndAddLabelRefToCodeWord(InputReader& reader, const Tokeniser::Token& token);
-		State ProcessInput_ValidateAndCommitCodeWord(InputReader& reader, Tokeniser::TokenType tokenType);
+		State ProcessInput_CreateInstructionCodeWord(const Tokeniser::Token& token);
+		State ProcessInput_CreateLabel(const Tokeniser::Token& token);
+		State ProcessInput_AddArgumentToCodeWord(const Tokeniser::Token& token);
+		State ProcessInput_ParseAndAddLabelRefToCodeWord(const Tokeniser::Token& token);
+		State ProcessInput_ValidateAndCommitCodeWord(Tokeniser::TokenType tokenType);
 
 		void ResolveAllLabelReferences();
 		void ResolveLabelReference(const CodeWord& codeWord, CodeWordArg& arg);
 		void FullyValidateAllCodeWords();
 
 		Tokeniser::Token GetNextToken(
-			InputReader& reader,
 			uint32_t allowedTokens = ~0,
 			const std::optional<State>& failState = std::optional<State>()
 		) const;

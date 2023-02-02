@@ -105,13 +105,52 @@ namespace V2MPAsm
 
 	Parser::ParseResult Parser::ParseFile(const std::shared_ptr<InputFile>& inputFile) noexcept
 	{
+		if ( !inputFile )
+		{
+			ParseResult result;
+
+			result.exceptions.emplace_back(
+				CreateErrorException(
+					PublicErrorID::INTERNAL,
+					std::string(),
+					LINE_NUMBER_BASE,
+					COLUMN_NUMBER_BASE,
+					"Input file was not valid."
+				)
+			);
+
+			return result;
+		}
+
+		return RunParseSequence(std::make_unique<ParserData>(inputFile));
+	}
+
+	Parser::ParseResult Parser::ParseData(const std::string& inputPath, std::vector<char>&& inputData) noexcept
+	{
+		return RunParseSequence(std::make_unique<ParserData>(inputPath, std::move(inputData)));
+	}
+
+	Parser::ParseResult Parser::RunParseSequence(std::unique_ptr<ParserData> data)
+	{
 		ParseResult result;
 
 		// No exceptions should make it this far up if everything is being used correctly,
 		// but we wrap the calls just in case.
 		try
 		{
-			InitialiseLocalData(inputFile);
+			if ( !data )
+			{
+				throw AssemblerException(
+					PublicErrorID::INTERNAL,
+					std::string(),
+					LINE_NUMBER_BASE,
+					COLUMN_NUMBER_BASE,
+					"Invalid parser data was provided."
+				);
+			}
+
+			m_Data = std::move(data);
+
 			ParseFileInternal();
 			PerformPostProcessing();
 
@@ -141,43 +180,24 @@ namespace V2MPAsm
 			);
 		}
 
+		// Should always return via this path.
 		m_Data.reset();
 		return result;
 	}
 
-	void Parser::InitialiseLocalData(const std::shared_ptr<InputFile>& inputFile)
-	{
-		if ( !inputFile )
-		{
-			throw AssemblerException(
-				PublicErrorID::INTERNAL,
-				std::string(),
-				LINE_NUMBER_BASE,
-				COLUMN_NUMBER_BASE,
-				"Input file was not valid."
-			);
-		}
-
-		m_Data = std::make_unique<ParserData>();
-
-		m_Data->inputfile = inputFile;
-	}
-
 	void Parser::ParseFileInternal()
 	{
-		InputReader reader(m_Data->inputfile);
-
 		while ( m_Data->state != State::TERMINATED )
 		{
 			// We have an EOF parse state for tidying up once the end of the file has been reached.
 			// However, we should only allow this state to be processed once, just as a sanity check
 			// against infinite loops. readerWasEOF is checked later to make sure the parser
 			// terminates properly.
-			const bool readerWasEOF = reader.IsEOF();
+			const bool readerWasEOF = m_Data->inputReader.IsEOF();
 
 			try
 			{
-				AdvanceState(reader);
+				AdvanceState();
 			}
 			catch ( const AssemblerException& ex )
 			{
@@ -196,9 +216,9 @@ namespace V2MPAsm
 				m_Data->exceptionList.emplace_back(
 					CreateErrorException(
 						PublicErrorID::EXCEEDED_ERROR_COUNT,
-						reader.GetPath(),
-						reader.GetCurrentLine(),
-						reader.GetCurrentColumn(),
+						m_Data->inputReader.GetPath(),
+						m_Data->inputReader.GetCurrentLine(),
+						m_Data->inputReader.GetCurrentColumn(),
 						"Encountered " + std::to_string(m_Data->recordedErrors) + " errors, terminating parsing."
 					)
 				);
@@ -209,9 +229,9 @@ namespace V2MPAsm
 			{
 				m_Data->exceptionList.emplace_back(
 					CreateInternalWarningException(
-						reader.GetPath(),
-						reader.GetCurrentLine(),
-						reader.GetCurrentColumn(),
+						m_Data->inputReader.GetPath(),
+						m_Data->inputReader.GetCurrentLine(),
+						m_Data->inputReader.GetCurrentColumn(),
 						"Parser did not terminate correctly at end of file."
 					)
 				);
@@ -233,11 +253,11 @@ namespace V2MPAsm
 		FullyValidateAllCodeWords();
 	}
 
-	void Parser::AdvanceState(InputReader& reader)
+	void Parser::AdvanceState()
 	{
 		try
 		{
-			m_Data->state = ProcessInputAndChooseNextState(reader);
+			m_Data->state = ProcessInputAndChooseNextState();
 		}
 		catch ( const ParserException& ex )
 		{
@@ -257,42 +277,42 @@ namespace V2MPAsm
 
 			throw AssemblerException(
 				PublicErrorID::INTERNAL,
-				reader.GetPath(),
-				reader.GetCurrentLine(),
-				reader.GetCurrentColumn(),
+				m_Data->inputReader.GetPath(),
+				m_Data->inputReader.GetCurrentLine(),
+				m_Data->inputReader.GetCurrentColumn(),
 				"An unhandled exception occurred during parsing."
 			);
 		}
 	}
 
-	Parser::State Parser::ProcessInputAndChooseNextState(InputReader& reader)
+	Parser::State Parser::ProcessInputAndChooseNextState()
 	{
 		switch ( m_Data->state )
 		{
 			case State::BEGIN_LINE:
 			{
-				return ProcessInput_BeginLine(reader);
+				return ProcessInput_BeginLine();
 			}
 
 			case State::SKIP_LINE:
 			{
-				return ProcessInput_SkipLine(reader);
+				return ProcessInput_SkipLine();
 			}
 
 			case State::BUILD_CODE_WORD:
 			{
-				return ProcessInput_BuildCodeWord(reader);
+				return ProcessInput_BuildCodeWord();
 			}
 
 			case State::END_OF_FILE:
 			{
-				return ProcessInput_EndOfFile(reader);
+				return ProcessInput_EndOfFile();
 			}
 
 			default:
 			{
 				throw ParserException(
-					reader,
+					m_Data->inputReader,
 					PublicErrorID::INTERNAL,
 					"Encountered unhandled parser state \"" + std::string(GetStateName(m_Data->state)) + "\".",
 					State::TERMINATED
@@ -301,7 +321,7 @@ namespace V2MPAsm
 		}
 	}
 
-	Parser::State Parser::ProcessInput_BeginLine(InputReader& reader)
+	Parser::State Parser::ProcessInput_BeginLine()
 	{
 		constexpr uint32_t ALLOWED_TOKENS =
 			TokenType::EndOfFile |		// Reached end of file
@@ -310,7 +330,7 @@ namespace V2MPAsm
 			TokenType::Label			// Label definition
 			;
 
-		const Tokeniser::Token token = GetNextToken(reader, ALLOWED_TOKENS);
+		const Tokeniser::Token token = GetNextToken(ALLOWED_TOKENS);
 
 		if ( token.type == TokenType::EndOfFile )
 		{
@@ -325,18 +345,18 @@ namespace V2MPAsm
 
 		if ( token.type == TokenType::AlnumString )
 		{
-			return ProcessInput_CreateInstructionCodeWord(reader, token);
+			return ProcessInput_CreateInstructionCodeWord(token);
 		}
 
 		// Otherwise, token must be a label definition.
-		return ProcessInput_CreateLabel(reader, token);
+		return ProcessInput_CreateLabel(token);
 	}
 
-	Parser::State Parser::ProcessInput_SkipLine(InputReader& reader)
+	Parser::State Parser::ProcessInput_SkipLine()
 	{
 		while ( true )
 		{
-			const Tokeniser::Token token = GetNextToken(reader, static_cast<uint32_t>(~0), State::TERMINATED);
+			const Tokeniser::Token token = GetNextToken(static_cast<uint32_t>(~0), State::TERMINATED);
 
 			if ( token.type == TokenType::EndOfFile )
 			{
@@ -350,7 +370,7 @@ namespace V2MPAsm
 		}
 	}
 
-	Parser::State Parser::ProcessInput_BuildCodeWord(InputReader& reader)
+	Parser::State Parser::ProcessInput_BuildCodeWord()
 	{
 		constexpr uint32_t ALLOWED_ARG_TOKENS =
 			TokenType::NumericLiteral |		// Literal value
@@ -375,14 +395,14 @@ namespace V2MPAsm
 			: ALLOWED_INSTRUCTION_TERMINATOR_TOKENS;
 
 		// Get any possible token, and then customise any exception based on the state we're in.
-		const Tokeniser::Token token = GetNextToken(reader, ALL_ALLOWED_TOKENS, State::SKIP_LINE);
+		const Tokeniser::Token token = GetNextToken(ALL_ALLOWED_TOKENS, State::SKIP_LINE);
 
 		if ( !(token.type & allowedTokens) )
 		{
 			if ( moreArgumentsRequired )
 			{
 				throw ParserException(
-					reader,
+					m_Data->inputReader,
 					PublicErrorID::UNEXPECTED_TOKEN,
 					"Expected number or label reference, but got " + Tokeniser::TokenPrintableString(token),
 					State::SKIP_LINE
@@ -391,7 +411,7 @@ namespace V2MPAsm
 			else
 			{
 				throw ParserException(
-					reader,
+					m_Data->inputReader,
 					PublicErrorID::UNEXPECTED_TOKEN,
 					instructionMeta.key + " instruction expects " + std::to_string(instructionMeta.args.size()) + "arguments.",
 					State::SKIP_LINE
@@ -401,20 +421,20 @@ namespace V2MPAsm
 
 		if ( token.type == TokenType::EndOfFile || token.type == TokenType::EndOfLine )
 		{
-			return ProcessInput_ValidateAndCommitCodeWord(reader, token.type);
+			return ProcessInput_ValidateAndCommitCodeWord(token.type);
 		}
 
-		return ProcessInput_AddArgumentToCodeWord(reader, token);
+		return ProcessInput_AddArgumentToCodeWord(token);
 	}
 
-	Parser::State Parser::ProcessInput_EndOfFile(InputReader& reader)
+	Parser::State Parser::ProcessInput_EndOfFile()
 	{
 		const std::string nextLabel = m_Data->programBuilder.GetNextLabelName();
 
 		if ( !nextLabel.empty() )
 		{
 			throw ParserException(
-				reader,
+				m_Data->inputReader,
 				PublicWarningID::REDUNDANT_LABEL,
 				"Redundant label \"" + nextLabel + "\" present at end of file will be discarded.",
 				State::TERMINATED
@@ -424,14 +444,14 @@ namespace V2MPAsm
 		return State::TERMINATED;
 	}
 
-	Parser::State Parser::ProcessInput_CreateInstructionCodeWord(InputReader& reader, const Tokeniser::Token& token)
+	Parser::State Parser::ProcessInput_CreateInstructionCodeWord(const Tokeniser::Token& token)
 	{
 		const InstructionMeta* instructionMeta = GetInstructionMeta(token.token);
 
 		if ( !instructionMeta )
 		{
 			throw ParserException(
-				reader,
+				m_Data->inputReader,
 				PublicErrorID::UNRECOGNISED_INSTRUCTION,
 				"Unrecognised instruction: " + token.token,
 				State::SKIP_LINE
@@ -442,7 +462,7 @@ namespace V2MPAsm
 		return State::BUILD_CODE_WORD;
 	}
 
-	Parser::State Parser::ProcessInput_CreateLabel(InputReader& reader, const Tokeniser::Token& token)
+	Parser::State Parser::ProcessInput_CreateLabel(const Tokeniser::Token& token)
 	{
 		if ( m_Data->programBuilder.HasLabel(token.token) )
 		{
@@ -451,7 +471,7 @@ namespace V2MPAsm
 			if ( address.has_value() )
 			{
 				throw ParserException(
-					reader,
+					m_Data->inputReader,
 					PublicErrorID::DUPLICATE_LABEL,
 					"Label with name \"" + token.token + "\" already exists.",
 					State::SKIP_LINE
@@ -460,7 +480,7 @@ namespace V2MPAsm
 			else
 			{
 				throw ParserException(
-					reader,
+					m_Data->inputReader,
 					PublicWarningID::REDUNDANT_LABEL,
 					"Label \"" + token.token + "\" specified more than once.",
 					State::SKIP_LINE
@@ -471,14 +491,14 @@ namespace V2MPAsm
 		const std::string existingLabel = m_Data->programBuilder.GetNextLabelName();
 		m_Data->programBuilder.SetNextLabelName(token.token);
 
-		const Tokeniser::Token nextToken = GetNextToken(reader, TokenType::EndOfLine | TokenType::EndOfFile, State::SKIP_LINE);
+		const Tokeniser::Token nextToken = GetNextToken(TokenType::EndOfLine | TokenType::EndOfFile, State::SKIP_LINE);
 		const State nextState = nextToken.type == TokenType::EndOfFile ? State::END_OF_FILE : State::BEGIN_LINE;
 
 		if ( !existingLabel.empty() )
 		{
 			// We overwrote a label that wasn't submitted yet.
 			throw ParserException(
-				reader,
+				m_Data->inputReader,
 				PublicWarningID::LABEL_DISCARDED,
 				"Label \"" + token.token + "\" will cause previous label \"" + existingLabel + "\" to be discarded.",
 				nextState
@@ -488,7 +508,7 @@ namespace V2MPAsm
 		return nextState;
 	}
 
-	Parser::State Parser::ProcessInput_AddArgumentToCodeWord(InputReader& reader, const Tokeniser::Token& token)
+	Parser::State Parser::ProcessInput_AddArgumentToCodeWord(const Tokeniser::Token& token)
 	{
 		switch ( token.type )
 		{
@@ -503,7 +523,7 @@ namespace V2MPAsm
 				catch ( const std::exception& )
 				{
 					throw ParserException(
-						reader,
+						m_Data->inputReader,
 						PublicErrorID::UNIMPLEMENTED,
 						"Invalid numeric literal: " + token.token
 					);
@@ -517,13 +537,13 @@ namespace V2MPAsm
 			case TokenType::LowSelector:
 			case TokenType::DistanceSelector:
 			{
-				return ProcessInput_ParseAndAddLabelRefToCodeWord(reader, token);
+				return ProcessInput_ParseAndAddLabelRefToCodeWord(token);
 			}
 
 			default:
 			{
 				throw ParserException(
-					reader,
+					m_Data->inputReader,
 					PublicErrorID::INTERNAL,
 					"Unexpected token when attempting to add code word argument.",
 					State::TERMINATED
@@ -532,9 +552,9 @@ namespace V2MPAsm
 		}
 	}
 
-	Parser::State Parser::ProcessInput_ParseAndAddLabelRefToCodeWord(InputReader& reader, const Tokeniser::Token& token)
+	Parser::State Parser::ProcessInput_ParseAndAddLabelRefToCodeWord(const Tokeniser::Token& token)
 	{
-		const Tokeniser::Token labelString = GetNextToken(reader, TokenType::Label, State::SKIP_LINE);
+		const Tokeniser::Token labelString = GetNextToken(TokenType::Label, State::SKIP_LINE);
 
 		switch ( token.type )
 		{
@@ -574,7 +594,7 @@ namespace V2MPAsm
 			default:
 			{
 				throw ParserException(
-					reader,
+					m_Data->inputReader,
 					PublicErrorID::INTERNAL,
 					"Unexpected token when attempting to parse label ref.",
 					State::TERMINATED
@@ -585,7 +605,7 @@ namespace V2MPAsm
 		return State::BUILD_CODE_WORD;
 	}
 
-	Parser::State Parser::ProcessInput_ValidateAndCommitCodeWord(InputReader& reader, Tokeniser::TokenType /* tokenType */)
+	Parser::State Parser::ProcessInput_ValidateAndCommitCodeWord(Tokeniser::TokenType /* tokenType */)
 	{
 		CodeWord& currentCodeWord = m_Data->programBuilder.GetCurrentCodeWord();
 
@@ -603,7 +623,7 @@ namespace V2MPAsm
 					ex.nextState = Parser::State::TERMINATED;
 				}
 
-				ex << ToAssemblerException(failure, reader.GetPath(), currentCodeWord);
+				ex << ToAssemblerException(failure, m_Data->inputReader.GetPath(), currentCodeWord);
 			}
 
 			throw ex;
@@ -625,8 +645,7 @@ namespace V2MPAsm
 
 			if ( !codeWord )
 			{
-				// Should never happen, and we don't have reader information any more here,
-				// so just throw something basic.
+				// Should never happen, so just throw something basic.
 				throw std::runtime_error("ResolveAllLabelReferences encountered invalid codeword");
 			}
 
@@ -657,7 +676,7 @@ namespace V2MPAsm
 			m_Data->exceptionList.emplace_back(
 				CreateErrorException(
 					PublicErrorID::INVALID_LABEL_REFERENCE,
-					m_Data->inputfile->GetPath(),
+					m_Data->inputReader.GetPath(),
 					codeWord.GetLine(),
 					arg.GetColumn(),
 					"Label with name \"" + labelName + "\" does not exist."
@@ -683,16 +702,16 @@ namespace V2MPAsm
 		}
 	}
 
-	Tokeniser::Token Parser::GetNextToken(InputReader& reader, uint32_t allowedTokens, const std::optional<State>& failState) const
+	Tokeniser::Token Parser::GetNextToken(uint32_t allowedTokens, const std::optional<State>& failState) const
 	{
 		try
 		{
-			const Tokeniser::Token token = Tokeniser().EmitToken(reader);
+			const Tokeniser::Token token = Tokeniser().EmitToken(m_Data->inputReader);
 
 			if ( !(token.type & allowedTokens) )
 			{
 				throw ParserException(
-					reader,
+					m_Data->inputReader,
 					PublicErrorID::UNEXPECTED_TOKEN,
 					"Encountered unexpected " + Tokeniser::TokenPrintableString(token),
 					failState
