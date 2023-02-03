@@ -9,5 +9,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/catch2/Catch2/contrib
 
 # Only actually include the test projects if we are building tests.
 if(BUILD_TESTING)
-	add_subdirectory(tests)
+	add_subdirectory(tests_v2mp)
+	add_subdirectory(tests_v2mpasm)
 endif()
