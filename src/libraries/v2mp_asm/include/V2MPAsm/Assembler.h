@@ -13,7 +13,7 @@ struct V2MPAsm_Assembler;
 struct V2MPAsm_Exception;
 
 API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromFiles(const char* inputFile, const char* outputFile);
-API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromMemory(const char* inputBuffer, const char* inputFileName);
+API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromMemory(const char* inputFileName, const char* inputBuffer);
 API_V2MPASM void V2MPAsm_Assembler_Destroy(struct V2MPAsm_Assembler* assembler);
 
 API_V2MPASM bool V2MPAsm_Assembler_Run(struct V2MPAsm_Assembler* assembler);

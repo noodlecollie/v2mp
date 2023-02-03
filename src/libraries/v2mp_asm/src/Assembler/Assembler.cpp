@@ -115,11 +115,11 @@ namespace V2MPAsm
 			// TODO: This moves the input data, which we then cannot get back.
 			// We should make it shared with the parser.
 			InputRawData& rawData = std::get<InputRawData>(m_Input);
-			parser.ParseData(rawData.path, std::move(rawData.data));
+			result = parser.ParseData(rawData.path, std::move(rawData.data));
 		}
 		else
 		{
-			parser.ParseFile(filePool.OpenInputFile(GetInputPath()));
+			result = parser.ParseFile(filePool.OpenInputFile(GetInputPath()));
 		}
 
 		if ( result.exceptions.size() < 1 )
