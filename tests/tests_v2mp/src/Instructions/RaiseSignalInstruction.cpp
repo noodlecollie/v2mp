@@ -1,7 +1,7 @@
 #include "V2MPInternal/Defs.h"
 #include "catch2/catch.hpp"
 #include "Helpers/TestHarnessVM.h"
-#include "Helpers/Assembly.h"
+#include "TestUtil/Assembly.h"
 
 static constexpr V2MP_Word VAL_LR = 0xB00B;
 static constexpr V2MP_Word VAL_PC = 0x1234;

@@ -1,6 +1,6 @@
 #include "catch2/catch.hpp"
 #include "Helpers/TestHarnessVM.h"
-#include "Helpers/Assembly.h"
+#include "TestUtil/Assembly.h"
 
 struct STKResult
 {

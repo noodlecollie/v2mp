@@ -26,6 +26,7 @@ target_link_libraries(V2MP_Tests PRIVATE
 	Catch2::Catch2
 	${TARGETNAME_V2MP_INTERNAL}
 	${TARGETNAME_SHARED_COMPONENTS}
+	${TARGETNAME_TESTUTIL}
 )
 
 target_include_directories(V2MP_Tests PRIVATE src)

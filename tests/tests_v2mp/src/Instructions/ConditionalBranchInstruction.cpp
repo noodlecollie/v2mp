@@ -1,6 +1,6 @@
 #include "catch2/catch.hpp"
 #include "Helpers/TestHarnessVM.h"
-#include "Helpers/Assembly.h"
+#include "TestUtil/Assembly.h"
 
 static constexpr V2MP_Word BEGIN_ADDRESS = 0xD0D0;
 static constexpr V2MP_Word TARGET_ADDRESS = 0x1234;

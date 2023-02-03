@@ -102,7 +102,7 @@ API_V2MPASM bool V2MPAsm_Assembler_HasInMemoryOutputBuffer(const struct V2MPAsm_
 
 API_V2MPASM size_t V2MPAsm_Assembler_InMemoryOutputBufferSize(const struct V2MPAsm_Assembler* assembler)
 {
-	return (assembler && assembler->inner.OutputIsRawData()) ? assembler->inner.RawOutputSizeInWords() : 0;
+	return (assembler && assembler->inner.OutputIsRawData()) ? (assembler->inner.RawOutputSizeInWords() * sizeof(uint16_t)) : 0;
 }
 
 API_V2MPASM size_t V2MPAsm_Assembler_TakeInMemoryOutputBuffer(struct V2MPAsm_Assembler* assembler, void* outBuffer, size_t outBufferSizeInBytes)

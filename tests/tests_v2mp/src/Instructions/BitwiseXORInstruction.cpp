@@ -1,6 +1,6 @@
 #include "catch2/catch.hpp"
 #include "Helpers/TestHarnessVM.h"
-#include "Helpers/Assembly.h"
+#include "TestUtil/Assembly.h"
 
 static constexpr V2MP_Word ALTERNATE_BITS_A = 0x5A5A;
 static constexpr V2MP_Word ALTERNATE_BITS_B = 0xA5A5;

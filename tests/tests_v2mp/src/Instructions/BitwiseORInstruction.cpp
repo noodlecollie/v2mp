@@ -1,6 +1,6 @@
 #include "catch2/catch.hpp"
 #include "Helpers/TestHarnessVM.h"
-#include "Helpers/Assembly.h"
+#include "TestUtil/Assembly.h"
 
 static constexpr V2MP_Word TEST_VALUE = 0xFED5;
 static constexpr V2MP_Word ALL_ONES = 0xFFFF;
