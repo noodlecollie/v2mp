@@ -26,12 +26,12 @@ namespace V2MPAsm
 		argValue = TrimRightBits(argValue, argMeta.lowBit);
 		argValue = TrimLeftBits(argValue, MAX_LEFT_SHIFT - std::min<size_t>(MAX_LEFT_SHIFT, argMeta.highBit));
 
-		outValue |= argValue;
+		outValue |= (argValue & 0x0FFF);
 	}
 
 	uint16_t ProduceCodeWord(const CodeWord& codeWord)
 	{
-		uint16_t outValue = 0;
+		uint16_t outValue = static_cast<uint16_t>(codeWord.GetInstructionType()) << 12;
 		const size_t argCount = codeWord.GetArgumentCount();
 
 		for ( size_t index = 0; index < argCount; ++index )
