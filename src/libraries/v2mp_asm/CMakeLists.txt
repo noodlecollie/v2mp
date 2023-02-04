@@ -43,6 +43,10 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/ProgramModel/ProgramBuilder.cpp
 	src/ProgramModel/ProgramModel.h
 	src/ProgramModel/ProgramModel.cpp
+	src/ProgramModel/ValidationFailure.h
+	src/ProgramModel/ValidationFailure.cpp
+	src/ProgramModel/ValidationUtils.h
+	src/ProgramModel/ValidationUtils.cpp
 	src/Interface_Assembler.h
 	src/Interface_Assembler.cpp
 	src/Interface_Exception.h

@@ -6,61 +6,10 @@
 #include "ProgramModel/InstructionMeta.h"
 #include "ProgramModel/ProgramModel.h"
 #include "Utils/StringUtils.h"
+#include "ProgramModel/ValidationUtils.h"
 
 namespace V2MPAsm
 {
-	ValidationFailure::ValidationFailure(
-		PublicWarningID warning,
-		size_t argIndex,
-		const std::string& message
-	) :
-		m_ID(warning),
-		m_ArgIndex(argIndex),
-		m_Message(message)
-	{
-	}
-
-	ValidationFailure::ValidationFailure(
-		PublicErrorID error,
-		size_t argIndex,
-		const std::string& message
-	) :
-		m_ID(error),
-		m_ArgIndex(argIndex),
-		m_Message(message)
-	{
-	}
-
-	bool ValidationFailure::IsWarning() const
-	{
-		return std::holds_alternative<PublicWarningID>(m_ID);
-	}
-
-	bool ValidationFailure::IsError() const
-	{
-		return std::holds_alternative<PublicErrorID>(m_ID);
-	}
-
-	PublicWarningID ValidationFailure::GetWarningID() const
-	{
-		return IsWarning() ? std::get<PublicWarningID>(m_ID) : PublicWarningID::INTERNAL;
-	}
-
-	PublicErrorID ValidationFailure::GetErrorID() const
-	{
-		return IsError() ? std::get<PublicErrorID>(m_ID) : PublicErrorID::INTERNAL;
-	}
-
-	size_t ValidationFailure::GetArgIndex() const
-	{
-		return m_ArgIndex;
-	}
-
-	const std::string& ValidationFailure::GetMessage() const
-	{
-		return m_Message;
-	}
-
 	static constexpr int32_t MaxUnsignedValue(size_t numBits)
 	{
 		// (2 ^ n) - 1;
@@ -84,85 +33,11 @@ namespace V2MPAsm
 		return static_cast<uint32_t>(~0) >> ((sizeof(uint32_t) * 8) - numBits);
 	}
 
-	static ValidationFailure TooManyArgumentsFailure(size_t expected, size_t actual, size_t argIndex = 0)
-	{
-		return ValidationFailure(
-					PublicWarningID::TOO_MANY_ARGUMENTS,
-					argIndex,
-					"Expected " + std::to_string(expected) +
-					" arguments to instruction but got " + std::to_string(actual) +
-					" arguments. Additional arguments ignored."
-		);
-	}
-
-	static ValidationFailure TooFewArgumentsFailure(size_t expected, size_t actual, size_t argIndex = 0)
-	{
-		return ValidationFailure(
-					PublicErrorID::TOO_FEW_ARGUMENTS,
-					argIndex,
-					"Expected " + std::to_string(expected) +
-					" arguments to instruction but got " + std::to_string(actual) + " arguments."
-		);
-	}
-
-	static ValidationFailure ArgumentOutOfRangeFailure(
-		int32_t minValue,
-		int32_t maxValue,
-		int32_t origValue,
-		int32_t newValue,
-		size_t argIndex = 0)
-	{
-		return ValidationFailure(
-					PublicWarningID::ARG_OUT_OF_RANGE,
-					argIndex,
-					"Value " + DecAndHexString(origValue) + " was out of valid range " +
-					DecAndHexString(minValue) + " - " + DecAndHexString(maxValue) + ", truncating to " +
-					DecAndHexString(newValue) + "."
-		);
-	}
-
-	static ValidationFailure LabelRefValueOutOfRangeFailure(
-		const std::string& labelName,
-		int32_t minValue,
-		int32_t maxValue,
-		int32_t origValue,
-		size_t argIndex = 0)
-	{
-		return ValidationFailure(
-					PublicErrorID::LABEL_REF_OUT_OF_RANGE,
-					argIndex,
-					"Value " + DecAndHexString(origValue) + " for reference to label \"" + labelName +
-					"\" was out of valid range " +
-					DecAndHexString(minValue) + " - " + DecAndHexString(maxValue) + "."
-		);
-	}
-
-	static ValidationFailure LabelRefUsedForReservedBitsFailure(
-		size_t argIndex = 0)
-	{
-		return ValidationFailure(
-			PublicErrorID::INVALID_ARGUMENT_TYPE,
-			argIndex,
-			"This argument is reserved in this context, and so must be set to zero. "
-			"A label reference may not be used here."
-		);
-	}
-
-	static ValidationFailure ReservedBitsSetFailure(
-		size_t argIndex = 0)
-	{
-		return ValidationFailure(
-			PublicWarningID::RESERVED_BITS_SET,
-			argIndex,
-			"This argument is reserved in this context. Its value will be set to zero."
-		);
-	}
-
 	static std::vector<ValidationFailure> ValidateZeroArgCodeWord(const CodeWord& codeWord)
 	{
 		if ( codeWord.GetArgumentCount() > 0 )
 		{
-			return { TooManyArgumentsFailure(0, codeWord.GetArgumentCount()) };
+			return { CreateTooManyArgumentsFailure(0, codeWord.GetArgumentCount()) };
 		}
 
 		return {};
@@ -195,13 +70,13 @@ namespace V2MPAsm
 			// The only reason a label reference would be zero is by chance, which does not excuse
 			// it from being used here. If a label reference is present, throw an error.
 
-			failures.emplace_back(LabelRefUsedForReservedBitsFailure(argIndex));
+			failures.emplace_back(CreateLabelRefUsedForReservedBitsFailure(argIndex));
 			return false;
 		}
 
 		if ( arg.GetValue() != 0 )
 		{
-			failures.emplace_back(ReservedBitsSetFailure(argIndex));
+			failures.emplace_back(CreateReservedBitsSetFailure(argIndex));
 			arg.SetValue(0);
 			return false;
 		}
@@ -239,7 +114,7 @@ namespace V2MPAsm
 			// in code, and if that location is not correct then the developer is going to have a bad time.
 
 			failures.emplace_back(
-				LabelRefValueOutOfRangeFailure(
+				CreateLabelRefValueOutOfRangeFailure(
 					arg.GetLabelReference().GetLabelName(),
 					minValue,
 					maxValue,
@@ -266,7 +141,7 @@ namespace V2MPAsm
 		}
 
 		arg.SetValue(newValue);
-		failures.emplace_back(ArgumentOutOfRangeFailure(minValue, maxValue, actualValue, newValue));
+		failures.emplace_back(CreateArgumentOutOfRangeFailure(minValue, maxValue, actualValue, newValue));
 
 		return false;
 	}
@@ -286,14 +161,14 @@ namespace V2MPAsm
 
 		if ( actualArgCount < expectedArgCount )
 		{
-			return { TooFewArgumentsFailure(expectedArgCount, actualArgCount, std::max<size_t>(actualArgCount, 0)) };
+			return { CreateTooFewArgumentsFailure(expectedArgCount, actualArgCount, std::max<size_t>(actualArgCount, 0)) };
 		}
 
 		std::vector<ValidationFailure> failures;
 
 		if ( actualArgCount > expectedArgCount )
 		{
-			failures.emplace_back(TooManyArgumentsFailure(expectedArgCount, actualArgCount, expectedArgCount));
+			failures.emplace_back(CreateTooManyArgumentsFailure(expectedArgCount, actualArgCount, expectedArgCount));
 		}
 
 		const CodeWordArg* srcRegArg = codeWord.GetArgument(ARG_SRC_REG);
@@ -350,38 +225,6 @@ namespace V2MPAsm
 					)
 				};
 			}
-		}
-	}
-
-	AssemblerException ToAssemblerException(
-		const ValidationFailure& failure,
-		const std::string& filePath,
-		const CodeWord& codeWord
-	)
-	{
-		const size_t column = failure.GetArgIndex() < codeWord.GetArgumentCount()
-			? codeWord.GetArgumentColumn(failure.GetArgIndex())
-			: codeWord.GetColumn();
-
-		if ( failure.IsError() )
-		{
-			return AssemblerException(
-				failure.GetErrorID(),
-				filePath,
-				codeWord.GetLine(),
-				column,
-				failure.GetMessage()
-			);
-		}
-		else
-		{
-			return AssemblerException(
-				failure.GetWarningID(),
-				filePath,
-				codeWord.GetLine(),
-				column,
-				failure.GetMessage()
-			);
 		}
 	}
 }

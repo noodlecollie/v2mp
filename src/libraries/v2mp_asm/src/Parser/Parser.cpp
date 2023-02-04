@@ -15,6 +15,7 @@
 #include "ProgramModel/InstructionMeta.h"
 #include "Utils/StringUtils.h"
 #include "ProgramModel/CodeWordValidation.h"
+#include "ProgramModel/ValidationUtils.h"
 
 namespace V2MPAsm
 {
