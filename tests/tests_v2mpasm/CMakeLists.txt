@@ -13,6 +13,14 @@ target_link_libraries(V2MPAsm_Tests PRIVATE
 
 target_include_directories(V2MPAsm_Tests PRIVATE src)
 
+if(WIN32)
+	add_custom_command(TARGET V2MPAsm_Tests POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		$<TARGET_FILE:${TARGETNAME_V2MP_ASM}>
+		$<TARGET_FILE_DIR:V2MPAsm_Tests>
+	)
+endif()
+
 include(CTest)
 include(Catch)
 catch_discover_tests(V2MPAsm_Tests)

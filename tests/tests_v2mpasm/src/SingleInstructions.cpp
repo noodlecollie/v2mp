@@ -2,7 +2,7 @@
 #include "V2MPAsm/Assembler.h"
 #include "TestUtil/Assembly.h"
 
-static constexpr V2MP_Word INVALID_WORD = ~0;
+static constexpr V2MP_Word INVALID_WORD = static_cast<V2MP_Word>(~0);
 
 SCENARIO("Assembling a single NOP instruction produces a valid program binary")
 {
