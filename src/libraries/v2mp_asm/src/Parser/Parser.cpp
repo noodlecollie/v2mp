@@ -608,7 +608,7 @@ namespace V2MPAsm
 
 	Parser::State Parser::ProcessInput_ValidateAndCommitCodeWord(Tokeniser::TokenType /* tokenType */)
 	{
-		CodeWord& currentCodeWord = m_Data->programBuilder.GetCurrentCodeWord();
+		std::shared_ptr<CodeWord> currentCodeWord = m_Data->programBuilder.GetCurrentCodeWordPtr();
 
 		// Don't validate label refs here, as the labels may not yet be resolved.
 		std::vector<ValidationFailure> validationFailures = ValidateCodeWord(currentCodeWord, false);
@@ -624,7 +624,7 @@ namespace V2MPAsm
 					ex.nextState = Parser::State::TERMINATED;
 				}
 
-				ex << ToAssemblerException(failure, m_Data->inputReader.GetPath(), currentCodeWord);
+				ex << ToAssemblerException(failure, m_Data->inputReader.GetPath(), *currentCodeWord);
 			}
 
 			throw ex;
@@ -699,7 +699,7 @@ namespace V2MPAsm
 		for ( size_t index = 0; index < codeWordCount; ++index )
 		{
 			std::shared_ptr<CodeWord> codeWord = model.GetCodeWord(index);
-			ValidateCodeWord(*codeWord, true);
+			ValidateCodeWord(codeWord, true);
 		}
 	}
 
