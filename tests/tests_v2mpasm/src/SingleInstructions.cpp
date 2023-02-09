@@ -234,7 +234,7 @@ SCENARIO("Assembling a single CBX instruction produces a valid program binary")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"CBX Test",
-			"cbx 0 0\n"
+			"cbx 0 0 0\n"
 		);
 
 		REQUIRE(assembler);

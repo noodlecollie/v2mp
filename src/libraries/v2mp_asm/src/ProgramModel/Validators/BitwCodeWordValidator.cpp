@@ -35,11 +35,8 @@ namespace V2MPAsm
 
 		const CodeWordArg* srcRegArg = codeWord.GetArgument(ARG_SRC_REG);
 		const CodeWordArg* destRegArg = codeWord.GetArgument(ARG_DEST_REG);
-		const CodeWordArg* opTypeArg = codeWord.GetArgument(ARG_OP_TYPE);
-		const CodeWordArg* shiftMagArg = codeWord.GetArgument(ARG_SHIFT_MAGNITUDE);
-		const CodeWordArg* invertArgMask = codeWord.GetArgument(ARG_INVERT_MASK);
 
-		assert(srcRegArg && destRegArg && opTypeArg && shiftMagArg && invertArgMask);
+		assert(srcRegArg && destRegArg);
 
 		if ( !ValidateRegIdentifier(ARG_SRC_REG) ||
 		     !ValidateRegIdentifier(ARG_DEST_REG) ||

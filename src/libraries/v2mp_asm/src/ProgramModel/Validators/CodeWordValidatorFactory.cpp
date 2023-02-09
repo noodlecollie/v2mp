@@ -6,6 +6,7 @@
 #include "ProgramModel/Validators/MulDivCodeWordValidator.h"
 #include "ProgramModel/Validators/AsgnCodeWordValidator.h"
 #include "ProgramModel/Validators/BitwCodeWordValidator.h"
+#include "ProgramModel/Validators/CbxCodeWordValidator.h"
 
 namespace V2MPAsm
 {
@@ -45,6 +46,11 @@ namespace V2MPAsm
 			case InstructionType::BITW:
 			{
 				return std::make_unique<BitwCodeWordValidator>(codeWord);
+			}
+
+			case InstructionType::CBX:
+			{
+				return std::make_unique<CbxCodeWordValidator>(codeWord);
 			}
 
 			default:
