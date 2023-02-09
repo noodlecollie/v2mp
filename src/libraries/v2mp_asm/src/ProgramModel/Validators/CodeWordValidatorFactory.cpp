@@ -5,6 +5,7 @@
 #include "ProgramModel/Validators/SimpleRegAndValueCodeWordValidator.h"
 #include "ProgramModel/Validators/MulDivCodeWordValidator.h"
 #include "ProgramModel/Validators/AsgnCodeWordValidator.h"
+#include "ProgramModel/Validators/BitwCodeWordValidator.h"
 
 namespace V2MPAsm
 {
@@ -39,6 +40,11 @@ namespace V2MPAsm
 			case InstructionType::ASGN:
 			{
 				return std::make_unique<AsgnCodeWordValidator>(codeWord);
+			}
+
+			case InstructionType::BITW:
+			{
+				return std::make_unique<BitwCodeWordValidator>(codeWord);
 			}
 
 			default:

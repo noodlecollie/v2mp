@@ -48,6 +48,7 @@ namespace V2MPAsm
 
 		bool ValidateRegIdentifier(size_t argIndex, uint32_t regIDMask = REG_ID_MASK);
 		bool ValidateReservedArgIsZero(size_t argIndex);
+		bool ValidateArgIsNumber(size_t argIndex);
 		bool ValidateNumberForArg(size_t argIndex, SignednessOverride signednessOverride = SignednessOverride::NO_OVERRIDE);
 		bool ValidateArgCount();
 

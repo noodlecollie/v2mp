@@ -144,6 +144,35 @@ namespace V2MPAsm
 		return true;
 	}
 
+	bool BaseCodeWordValidator::ValidateArgIsNumber(size_t argIndex)
+	{
+		CodeWordArg* arg = GetCodeWord().GetArgument(argIndex);
+
+		if ( !arg )
+		{
+			AddFailure(ValidationFailure(
+				PublicErrorID::INTERNAL,
+				argIndex,
+				"Expected argument at index " + std::to_string(argIndex) + "."
+			));
+
+			return false;
+		}
+
+		if ( !arg->IsNumber() )
+		{
+			AddFailure(ValidationFailure(
+				PublicErrorID::INVALID_REGISTER_ID,
+				argIndex,
+				"Expected numerical value, not a label reference."
+			));
+
+			return false;
+		}
+
+		return true;
+	}
+
 	bool BaseCodeWordValidator::ValidateNumberForArg(size_t argIndex, SignednessOverride signednessOverride)
 	{
 		CodeWordArg* arg = GetCodeWord().GetArgument(argIndex);
