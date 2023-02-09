@@ -2,10 +2,9 @@
 #include "ProgramModel/CodeWord.h"
 #include "ProgramModel/Validators/CodeWordValidatorFactory.h"
 #include "ProgramModel/Validators/ZeroArgCodeWordValidator.h"
-#include "ProgramModel/Validators/AddSubCodeWordValidator.h"
+#include "ProgramModel/Validators/SimpleRegAndValueCodeWordValidator.h"
 #include "ProgramModel/Validators/MulDivCodeWordValidator.h"
 #include "ProgramModel/Validators/AsgnCodeWordValidator.h"
-#include "ProgramModel/Validators/ShftCodeWordValidator.h"
 
 namespace V2MPAsm
 {
@@ -26,8 +25,9 @@ namespace V2MPAsm
 
 			case InstructionType::ADD:
 			case InstructionType::SUB:
+			case InstructionType::SHFT:
 			{
-				return std::make_unique<AddSubCodeWordValidator>(codeWord);
+				return std::make_unique<SimpleRegAndValueCodeWordValidator>(codeWord);
 			}
 
 			case InstructionType::MUL:
@@ -39,11 +39,6 @@ namespace V2MPAsm
 			case InstructionType::ASGN:
 			{
 				return std::make_unique<AsgnCodeWordValidator>(codeWord);
-			}
-
-			case InstructionType::SHFT:
-			{
-				return std::make_unique<ShftCodeWordValidator>(codeWord);
 			}
 
 			default:

@@ -1,20 +1,20 @@
 #include <cassert>
-#include "ProgramModel/Validators/ShftCodeWordValidator.h"
+#include "ProgramModel/Validators/SimpleRegAndValueCodeWordValidator.h"
 #include "ProgramModel/ValidationUtils.h"
 #include "ProgramModel/CodeWord.h"
 
 namespace V2MPAsm
 {
-	ShftCodeWordValidator::ShftCodeWordValidator(const std::shared_ptr<CodeWord>& codeWord) :
+	SimpleRegAndValueCodeWordValidator::SimpleRegAndValueCodeWordValidator(const std::shared_ptr<CodeWord>& codeWord) :
 		BaseCodeWordValidator(codeWord)
 	{
 	}
 
-	ShftCodeWordValidator::~ShftCodeWordValidator()
+	SimpleRegAndValueCodeWordValidator::~SimpleRegAndValueCodeWordValidator()
 	{
 	}
 
-	void ShftCodeWordValidator::RunValidation()
+	void SimpleRegAndValueCodeWordValidator::RunValidation()
 	{
 		constexpr size_t EXPECTED_ARG_COUNT = 3;
 		constexpr size_t ARG_SRC_REG = 0;
