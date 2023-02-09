@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "ProgramModel/CodeWord.h"
 #include "Utils/ParsingUtils.h"
 
@@ -87,6 +88,26 @@ namespace V2MPAsm
 	const CodeWordArg* CodeWord::GetArgument(size_t argIndex) const
 	{
 		return argIndex < m_Arguments.size() ? &m_Arguments[argIndex] : nullptr;
+	}
+
+	CodeWordArg& CodeWord::GetArgumentRef(size_t argIndex)
+	{
+		if ( argIndex >= m_Arguments.size() )
+		{
+			throw std::invalid_argument("Code word argument index was out of range");
+		}
+
+		return m_Arguments[argIndex];
+	}
+
+	const CodeWordArg& CodeWord::GetArgumentRef(size_t argIndex) const
+	{
+		if ( argIndex >= m_Arguments.size() )
+		{
+			throw std::invalid_argument("Code word argument index was out of range");
+		}
+
+		return m_Arguments[argIndex];
 	}
 
 	size_t CodeWord::GetArgumentColumn(size_t argIndex) const

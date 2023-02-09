@@ -1,4 +1,3 @@
-#include <cassert>
 #include "ProgramModel/Validators/SimpleRegAndValueCodeWordValidator.h"
 #include "ProgramModel/ValidationUtils.h"
 #include "ProgramModel/CodeWord.h"
@@ -21,34 +20,24 @@ namespace V2MPAsm
 		constexpr size_t ARG_DEST_REG = 1;
 		constexpr size_t ARG_VALUE = 2;
 
-		CodeWord& codeWord = GetCodeWord();
-
-		const size_t expectedArgCount = GetInstructionMeta(codeWord.GetInstructionType()).args.size();
-		assert(expectedArgCount == EXPECTED_ARG_COUNT);
-
-		if ( !ValidateArgCount() )
-		{
-			return;
-		}
-
-		const CodeWordArg* srcRegArg = codeWord.GetArgument(ARG_SRC_REG);
-		const CodeWordArg* destRegArg = codeWord.GetArgument(ARG_DEST_REG);
-		CodeWordArg* valueArg = codeWord.GetArgument(ARG_VALUE);
-
-		assert(srcRegArg && destRegArg && valueArg);
-
 		if ( !ValidateRegIdentifier(ARG_SRC_REG) ||
 		     !ValidateRegIdentifier(ARG_DEST_REG) )
 		{
 			return;
 		}
 
-		if ( valueArg->IsLabelReference() && !GetValidateLabelRefs() )
+		CodeWord& codeWord = GetCodeWord();
+
+		const CodeWordArg& srcRegArg = codeWord.GetArgumentRef(ARG_SRC_REG);
+		const CodeWordArg& destRegArg = codeWord.GetArgumentRef(ARG_DEST_REG);
+		CodeWordArg& valueArg = codeWord.GetArgumentRef(ARG_VALUE);
+
+		if ( valueArg.IsLabelReference() && !GetValidateLabelRefs() )
 		{
 			return;
 		}
 
-		if ( srcRegArg->GetValue() != destRegArg->GetValue() )
+		if ( srcRegArg.GetValue() != destRegArg.GetValue() )
 		{
 			ValidateReservedArgIsZero(ARG_VALUE);
 			return;

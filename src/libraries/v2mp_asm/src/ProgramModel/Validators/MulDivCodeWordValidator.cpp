@@ -1,4 +1,3 @@
-#include <cassert>
 #include "ProgramModel/Validators/MulDivCodeWordValidator.h"
 #include "ProgramModel/ValidationUtils.h"
 #include "ProgramModel/CodeWord.h"
@@ -22,23 +21,6 @@ namespace V2MPAsm
 		constexpr size_t ARG_SIGNEDNESS = 2;
 		constexpr size_t ARG_VALUE = 3;
 
-		CodeWord& codeWord = GetCodeWord();
-
-		const size_t expectedArgCount = GetInstructionMeta(codeWord.GetInstructionType()).args.size();
-		assert(expectedArgCount == EXPECTED_ARG_COUNT);
-
-		if ( !ValidateArgCount() )
-		{
-			return;
-		}
-
-		const CodeWordArg* destRegArg = codeWord.GetArgument(ARG_DEST_REG);
-		const CodeWordArg* srcModeArg = codeWord.GetArgument(ARG_SRC_MODE);
-		const CodeWordArg* signednessArg = codeWord.GetArgument(ARG_SIGNEDNESS);
-		CodeWordArg* valueArg = codeWord.GetArgument(ARG_VALUE);
-
-		assert(destRegArg && srcModeArg && signednessArg && valueArg);
-
 		if ( !ValidateRegIdentifier(ARG_DEST_REG, 0x1) ||
 		     !ValidateNumberForArg(ARG_SRC_MODE) ||
 		     !ValidateNumberForArg(ARG_SIGNEDNESS) )
@@ -46,12 +28,16 @@ namespace V2MPAsm
 			return;
 		}
 
-		if ( srcModeArg->GetValue() != 0 )
+		CodeWord& codeWord = GetCodeWord();
+		const CodeWordArg& srcModeArg = codeWord.GetArgumentRef(ARG_SRC_MODE);
+		const CodeWordArg& signednessArg = codeWord.GetArgumentRef(ARG_SIGNEDNESS);
+
+		if ( srcModeArg.GetValue() != 0 )
 		{
 			// Literal value in operand
 			ValidateNumberForArg(
 				ARG_VALUE,
-				signednessArg->GetValue() != 0
+				signednessArg.GetValue() != 0
 					? SignednessOverride::FORCE_SIGNED
 					: SignednessOverride::FORCE_UNSIGNED
 			);

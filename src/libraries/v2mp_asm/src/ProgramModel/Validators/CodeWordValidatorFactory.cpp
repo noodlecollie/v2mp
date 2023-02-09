@@ -7,6 +7,7 @@
 #include "ProgramModel/Validators/AsgnCodeWordValidator.h"
 #include "ProgramModel/Validators/BitwCodeWordValidator.h"
 #include "ProgramModel/Validators/CbxCodeWordValidator.h"
+#include "ProgramModel/Validators/LdstCodeWordValidator.h"
 
 namespace V2MPAsm
 {
@@ -51,6 +52,11 @@ namespace V2MPAsm
 			case InstructionType::CBX:
 			{
 				return std::make_unique<CbxCodeWordValidator>(codeWord);
+			}
+
+			case InstructionType::LDST:
+			{
+				return std::make_unique<LdstCodeWordValidator>(codeWord);
 			}
 
 			default:

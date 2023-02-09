@@ -1,4 +1,3 @@
-#include <cassert>
 #include "ProgramModel/Validators/BitwCodeWordValidator.h"
 #include "ProgramModel/ValidationUtils.h"
 #include "ProgramModel/CodeWord.h"
@@ -25,19 +24,6 @@ namespace V2MPAsm
 
 		CodeWord& codeWord = GetCodeWord();
 
-		const size_t expectedArgCount = GetInstructionMeta(codeWord.GetInstructionType()).args.size();
-		assert(expectedArgCount == EXPECTED_ARG_COUNT);
-
-		if ( !ValidateArgCount() )
-		{
-			return;
-		}
-
-		const CodeWordArg* srcRegArg = codeWord.GetArgument(ARG_SRC_REG);
-		const CodeWordArg* destRegArg = codeWord.GetArgument(ARG_DEST_REG);
-
-		assert(srcRegArg && destRegArg);
-
 		if ( !ValidateRegIdentifier(ARG_SRC_REG) ||
 		     !ValidateRegIdentifier(ARG_DEST_REG) ||
 		     !ValidateArgIsNumber(ARG_OP_TYPE) ||
@@ -52,7 +38,10 @@ namespace V2MPAsm
 			return;
 		}
 
-		if ( srcRegArg->GetValue() != destRegArg->GetValue() )
+		const CodeWordArg& srcRegArg = codeWord.GetArgumentRef(ARG_SRC_REG);
+		const CodeWordArg& destRegArg = codeWord.GetArgumentRef(ARG_DEST_REG);
+
+		if ( srcRegArg.GetValue() != destRegArg.GetValue() )
 		{
 			// Ensure the literal mask construction bits are zero.
 

@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <cassert>
 #include "ProgramModel/Validators/BaseCodeWordValidator.h"
 #include "ProgramModel/CodeWord.h"
 #include "ProgramModel/ValidationUtils.h"
@@ -42,7 +43,10 @@ namespace V2MPAsm
 	{
 		m_ValidationFailures.clear();
 
-		RunValidation();
+		if ( ValidateCommonArgConstraints() )
+		{
+			RunValidation();
+		}
 
 		ValidationResult result = m_ValidationFailures.empty()
 			? ValidationResult::VALID
@@ -65,6 +69,52 @@ namespace V2MPAsm
 		return m_ValidationFailures;
 	}
 
+	bool BaseCodeWordValidator::ValidateCommonArgConstraints()
+	{
+		CodeWord& codeWord = GetCodeWord();
+		const InstructionMeta& instructionMeta = GetInstructionMeta(codeWord.GetInstructionType());
+		const size_t expectedArgCount = instructionMeta.args.size();
+		const size_t actualArgCount = codeWord.GetArgumentCount();
+
+		if ( actualArgCount < expectedArgCount )
+		{
+			AddFailure(CreateTooFewArgumentsFailure(
+				expectedArgCount,
+				actualArgCount,
+				std::max<size_t>(actualArgCount, 0)
+			));
+
+			return false;
+		}
+
+		if ( actualArgCount > expectedArgCount )
+		{
+			AddFailure(CreateTooManyArgumentsFailure(expectedArgCount, actualArgCount, expectedArgCount));
+		}
+
+		bool invalidArgEncountered = false;
+
+		for ( size_t index = 0; index < actualArgCount; ++index )
+		{
+			const ArgMeta& argMeta = instructionMeta.args[index];
+			const CodeWordArg* arg = codeWord.GetArgument(index);
+			assert(arg);
+
+			if ( (argMeta.flags & ARGFLAG_SYMBOLIC) && arg->IsLabelReference() )
+			{
+				AddFailure(ValidationFailure(
+					PublicErrorID::INVALID_REGISTER_ID,
+					index,
+					"Expected numerical register identifier."
+				));
+
+				invalidArgEncountered = true;
+			}
+		}
+
+		return invalidArgEncountered;
+	}
+
 	bool BaseCodeWordValidator::ValidateRegIdentifier(size_t argIndex, uint32_t regIDMask)
 	{
 		CodeWordArg* arg = GetCodeWord().GetArgument(argIndex);
@@ -75,17 +125,6 @@ namespace V2MPAsm
 				PublicErrorID::INTERNAL,
 				argIndex,
 				"Expected argument at index " + std::to_string(argIndex) + "."
-			));
-
-			return false;
-		}
-
-		if ( !arg->IsNumber() )
-		{
-			AddFailure(ValidationFailure(
-				PublicErrorID::INVALID_REGISTER_ID,
-				argIndex,
-				"Expected numerical register identifier."
 			));
 
 			return false;
@@ -289,32 +328,6 @@ namespace V2MPAsm
 		AddFailure(CreateArgumentOutOfRangeFailure(minValue, maxValue, actualValue, newValue));
 
 		return false;
-	}
-
-	bool BaseCodeWordValidator::ValidateArgCount()
-	{
-		CodeWord& codeWord = GetCodeWord();
-
-		const size_t expectedArgCount = GetInstructionMeta(codeWord.GetInstructionType()).args.size();
-		const size_t actualArgCount = codeWord.GetArgumentCount();
-
-		if ( actualArgCount < expectedArgCount )
-		{
-			AddFailure(CreateTooFewArgumentsFailure(
-				expectedArgCount,
-				actualArgCount,
-				std::max<size_t>(actualArgCount, 0)
-			));
-
-			return false;
-		}
-
-		if ( actualArgCount > expectedArgCount )
-		{
-			AddFailure(CreateTooManyArgumentsFailure(expectedArgCount, actualArgCount, expectedArgCount));
-		}
-
-		return true;
 	}
 
 	void BaseCodeWordValidator::AddFailure(const ValidationFailure& failure)

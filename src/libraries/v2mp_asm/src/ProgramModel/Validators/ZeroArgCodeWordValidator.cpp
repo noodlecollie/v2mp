@@ -15,11 +15,6 @@ namespace V2MPAsm
 
 	void ZeroArgCodeWordValidator::RunValidation()
 	{
-		const size_t argCount = GetCodeWord().GetArgumentCount();
-
-		if ( argCount > 0 )
-		{
-			AddFailure(CreateTooManyArgumentsFailure(0, argCount));
-		}
+		// Nothing to do, since everything is done by the base class.
 	}
 }

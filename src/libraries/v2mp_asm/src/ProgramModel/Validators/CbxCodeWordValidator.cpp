@@ -1,4 +1,3 @@
-#include <cassert>
 #include "ProgramModel/Validators/CbxCodeWordValidator.h"
 #include "ProgramModel/ValidationUtils.h"
 #include "ProgramModel/CodeWord.h"
@@ -23,17 +22,6 @@ namespace V2MPAsm
 
 		CodeWord& codeWord = GetCodeWord();
 
-		const size_t expectedArgCount = GetInstructionMeta(codeWord.GetInstructionType()).args.size();
-		assert(expectedArgCount == EXPECTED_ARG_COUNT);
-
-		if ( !ValidateArgCount() )
-		{
-			return;
-		}
-
-		const CodeWordArg* pcModModeArg = codeWord.GetArgument(ARG_PC_MOD_MODE);
-		assert(pcModModeArg);
-
 		if ( !ValidateArgIsNumber(ARG_PC_MOD_MODE) ||
 		     !ValidateArgIsNumber(ARG_CONDITION) ||
 		     !ValidateNumberForArg(ARG_PC_MOD_MODE) ||
@@ -43,7 +31,9 @@ namespace V2MPAsm
 			return;
 		}
 
-		if ( pcModModeArg->GetValue() != 0 )
+		const CodeWordArg& pcModModeArg = codeWord.GetArgumentRef(ARG_PC_MOD_MODE);
+
+		if ( pcModModeArg.GetValue() != 0 )
 		{
 			ValidateReservedArgIsZero(ARG_OFFSET);
 			return;
