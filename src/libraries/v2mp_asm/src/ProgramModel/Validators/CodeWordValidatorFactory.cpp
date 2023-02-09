@@ -3,6 +3,7 @@
 #include "ProgramModel/Validators/CodeWordValidatorFactory.h"
 #include "ProgramModel/Validators/ZeroArgCodeWordValidator.h"
 #include "ProgramModel/Validators/AddSubCodeWordValidator.h"
+#include "ProgramModel/Validators/MulDivCodeWordValidator.h"
 
 namespace V2MPAsm
 {
@@ -25,6 +26,12 @@ namespace V2MPAsm
 			case InstructionType::SUB:
 			{
 				return std::make_unique<AddSubCodeWordValidator>(codeWord);
+			}
+
+			case InstructionType::MUL:
+			case InstructionType::DIV:
+			{
+				return std::make_unique<MulDivCodeWordValidator>(codeWord);
 			}
 
 			default:

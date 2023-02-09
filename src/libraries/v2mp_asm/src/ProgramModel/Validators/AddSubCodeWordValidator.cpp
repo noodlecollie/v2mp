@@ -24,27 +24,11 @@ namespace V2MPAsm
 		CodeWord& codeWord = GetCodeWord();
 
 		const size_t expectedArgCount = GetInstructionMeta(codeWord.GetInstructionType()).args.size();
-
 		assert(expectedArgCount == EXPECTED_ARG_COUNT);
 
-		const size_t actualArgCount = codeWord.GetArgumentCount();
-
-		if ( actualArgCount < expectedArgCount )
+		if ( !ValidateArgCount() )
 		{
-			AddFailure(CreateTooFewArgumentsFailure(
-				expectedArgCount,
-				actualArgCount,
-				std::max<size_t>(actualArgCount, 0)
-			));
-
 			return;
-		}
-
-		std::vector<ValidationFailure> failures;
-
-		if ( actualArgCount > expectedArgCount )
-		{
-			AddFailure(CreateTooManyArgumentsFailure(expectedArgCount, actualArgCount, expectedArgCount));
 		}
 
 		const CodeWordArg* srcRegArg = codeWord.GetArgument(ARG_SRC_REG);

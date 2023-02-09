@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include "ProgramModel/ValidationFailure.h"
+#include "ProgramModel/InstructionMeta.h"
 
 namespace V2MPAsm
 {
@@ -11,6 +12,13 @@ namespace V2MPAsm
 	class BaseCodeWordValidator
 	{
 	public:
+		enum class ValidationResult
+		{
+			VALID,
+			VALID_WITH_WARNINGS,
+			INVALID
+		};
+
 		virtual ~BaseCodeWordValidator();
 
 		CodeWord& GetCodeWord();
@@ -22,18 +30,26 @@ namespace V2MPAsm
 		// Returns true if valid, or false if invalid.
 		// If invalid, list of validation failures should
 		// be checked.
-		bool Validate();
+		ValidationResult Validate();
 
 		const std::vector<ValidationFailure>& GetValidationFailures() const;
 
 	protected:
+		enum class SignednessOverride
+		{
+			NO_OVERRIDE,
+			FORCE_SIGNED,
+			FORCE_UNSIGNED
+		};
+
 		BaseCodeWordValidator(const std::shared_ptr<CodeWord>& codeWord);
 		void AddFailure(const ValidationFailure& failure);
 		void AddFailure(ValidationFailure&& failure);
 
-		bool ValidateRegIdentifier(size_t argIndex);
+		bool ValidateRegIdentifier(size_t argIndex, uint32_t regIDMask = REG_ID_MASK);
 		bool ValidateReservedArgIsZero(size_t argIndex);
-		bool ValidateNumberForArg(size_t argIndex);
+		bool ValidateNumberForArg(size_t argIndex, SignednessOverride signednessOverride = SignednessOverride::NO_OVERRIDE);
+		bool ValidateArgCount();
 
 		virtual void RunValidation() = 0;
 

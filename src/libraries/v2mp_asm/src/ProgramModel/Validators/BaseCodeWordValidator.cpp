@@ -38,12 +38,26 @@ namespace V2MPAsm
 		m_ValidateLabelRefs = validate;
 	}
 
-	bool BaseCodeWordValidator::Validate()
+	BaseCodeWordValidator::ValidationResult BaseCodeWordValidator::Validate()
 	{
 		m_ValidationFailures.clear();
 
 		RunValidation();
-		return m_ValidationFailures.empty();
+
+		ValidationResult result = m_ValidationFailures.empty()
+			? ValidationResult::VALID
+			: ValidationResult::VALID_WITH_WARNINGS;
+
+		for ( const ValidationFailure& failure : m_ValidationFailures )
+		{
+			if ( failure.IsError() )
+			{
+				result = ValidationResult::INVALID;
+				break;
+			}
+		}
+
+		return result;
 	}
 
 	const std::vector<ValidationFailure>& BaseCodeWordValidator::GetValidationFailures() const
@@ -51,7 +65,7 @@ namespace V2MPAsm
 		return m_ValidationFailures;
 	}
 
-	bool BaseCodeWordValidator::ValidateRegIdentifier(size_t argIndex)
+	bool BaseCodeWordValidator::ValidateRegIdentifier(size_t argIndex, uint32_t regIDMask)
 	{
 		CodeWordArg* arg = GetCodeWord().GetArgument(argIndex);
 
@@ -79,7 +93,7 @@ namespace V2MPAsm
 
 		const int32_t value = arg->GetValue();
 
-		if ( value < 0 || static_cast<uint32_t>(value) & ~(REG_ID_MASK) )
+		if ( value < 0 || static_cast<uint32_t>(value) & ~(regIDMask) )
 		{
 			AddFailure(ValidationFailure(
 				PublicErrorID::INVALID_REGISTER_ID,
@@ -130,7 +144,7 @@ namespace V2MPAsm
 		return true;
 	}
 
-	bool BaseCodeWordValidator::ValidateNumberForArg(size_t argIndex)
+	bool BaseCodeWordValidator::ValidateNumberForArg(size_t argIndex, SignednessOverride signednessOverride)
 	{
 		CodeWordArg* arg = GetCodeWord().GetArgument(argIndex);
 
@@ -159,13 +173,37 @@ namespace V2MPAsm
 		}
 
 		const ArgMeta& argMeta = argMetaList[argIndex];
+
+		if ( (argMeta.flags & ARGFLAG_DYNAMIC_SIGNEDNESS) && signednessOverride == SignednessOverride::NO_OVERRIDE )
+		{
+			// This should never happen if this function is being used correctly.
+			AddFailure(ValidationFailure(
+				PublicErrorID::INTERNAL,
+				argIndex,
+				"Argument index " + std::to_string(argIndex) + ": failed to resolve signedness."
+			));
+
+			return false;
+		}
+
 		const size_t numberOfBits = static_cast<size_t>(argMeta.highBit - argMeta.lowBit) + 1;
 
-		const int32_t minValue = (argMeta.flags & ARGFLAG_SIGNED)
+		bool argIsSigned = (argMeta.flags & ARGFLAG_SIGNED);
+
+		if ( signednessOverride == SignednessOverride::FORCE_SIGNED )
+		{
+			argIsSigned = true;
+		}
+		else if ( signednessOverride == SignednessOverride::FORCE_UNSIGNED )
+		{
+			argIsSigned = false;
+		}
+
+		const int32_t minValue = argIsSigned
 			? MinSignedValue(numberOfBits)
 			: 0;
 
-		const int32_t maxValue = (argMeta.flags & ARGFLAG_SIGNED)
+		const int32_t maxValue = argIsSigned
 			? MaxSignedValue(numberOfBits)
 			: MaxUnsignedValue(numberOfBits);
 
@@ -222,6 +260,32 @@ namespace V2MPAsm
 		AddFailure(CreateArgumentOutOfRangeFailure(minValue, maxValue, actualValue, newValue));
 
 		return false;
+	}
+
+	bool BaseCodeWordValidator::ValidateArgCount()
+	{
+		CodeWord& codeWord = GetCodeWord();
+
+		const size_t expectedArgCount = GetInstructionMeta(codeWord.GetInstructionType()).args.size();
+		const size_t actualArgCount = codeWord.GetArgumentCount();
+
+		if ( actualArgCount < expectedArgCount )
+		{
+			AddFailure(CreateTooFewArgumentsFailure(
+				expectedArgCount,
+				actualArgCount,
+				std::max<size_t>(actualArgCount, 0)
+			));
+
+			return false;
+		}
+
+		if ( actualArgCount > expectedArgCount )
+		{
+			AddFailure(CreateTooManyArgumentsFailure(expectedArgCount, actualArgCount, expectedArgCount));
+		}
+
+		return true;
 	}
 
 	void BaseCodeWordValidator::AddFailure(const ValidationFailure& failure)
