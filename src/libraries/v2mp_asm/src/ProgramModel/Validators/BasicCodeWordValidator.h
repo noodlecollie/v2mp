@@ -9,7 +9,7 @@ namespace V2MPAsm
 {
 	class CodeWord;
 
-	class BaseCodeWordValidator
+	class BasicCodeWordValidator
 	{
 	public:
 		enum class ValidationResult
@@ -19,7 +19,9 @@ namespace V2MPAsm
 			INVALID
 		};
 
-		virtual ~BaseCodeWordValidator();
+		BasicCodeWordValidator(const std::shared_ptr<CodeWord>& codeWord);
+
+		virtual ~BasicCodeWordValidator();
 
 		CodeWord& GetCodeWord();
 		const CodeWord& GetCodeWord() const;
@@ -42,7 +44,6 @@ namespace V2MPAsm
 			FORCE_UNSIGNED
 		};
 
-		BaseCodeWordValidator(const std::shared_ptr<CodeWord>& codeWord);
 		void AddFailure(const ValidationFailure& failure);
 		void AddFailure(ValidationFailure&& failure);
 
@@ -50,10 +51,9 @@ namespace V2MPAsm
 
 		bool ValidateRegIdentifier(size_t argIndex, uint32_t regIDMask = REG_ID_MASK);
 		bool ValidateReservedArgIsZero(size_t argIndex);
-		bool ValidateArgIsNumber(size_t argIndex);
 		bool ValidateNumberForArg(size_t argIndex, SignednessOverride signednessOverride = SignednessOverride::NO_OVERRIDE);
 
-		virtual void RunValidation() = 0;
+		virtual void ValidateSpecific();
 
 	private:
 		std::shared_ptr<CodeWord> m_CodeWord;

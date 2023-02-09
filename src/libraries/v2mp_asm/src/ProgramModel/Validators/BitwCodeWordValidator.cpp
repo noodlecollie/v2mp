@@ -5,7 +5,7 @@
 namespace V2MPAsm
 {
 	BitwCodeWordValidator::BitwCodeWordValidator(const std::shared_ptr<CodeWord>& codeWord) :
-		BaseCodeWordValidator(codeWord)
+		BasicCodeWordValidator(codeWord)
 	{
 	}
 
@@ -13,7 +13,7 @@ namespace V2MPAsm
 	{
 	}
 
-	void BitwCodeWordValidator::RunValidation()
+	void BitwCodeWordValidator::ValidateSpecific()
 	{
 		constexpr size_t EXPECTED_ARG_COUNT = 5;
 		constexpr size_t ARG_SRC_REG = 0;
@@ -26,14 +26,7 @@ namespace V2MPAsm
 
 		if ( !ValidateRegIdentifier(ARG_SRC_REG) ||
 		     !ValidateRegIdentifier(ARG_DEST_REG) ||
-		     !ValidateArgIsNumber(ARG_OP_TYPE) ||
-		     !ValidateArgIsNumber(ARG_SHIFT_MAGNITUDE) ||
-		     !ValidateArgIsNumber(ARG_INVERT_MASK) )
-		{
-			return;
-		}
-
-		if ( !ValidateNumberForArg(ARG_OP_TYPE) )
+		     !ValidateNumberForArg(ARG_OP_TYPE) )
 		{
 			return;
 		}

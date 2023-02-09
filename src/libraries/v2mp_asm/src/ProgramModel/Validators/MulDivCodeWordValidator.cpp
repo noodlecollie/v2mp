@@ -5,7 +5,7 @@
 namespace V2MPAsm
 {
 	MulDivCodeWordValidator::MulDivCodeWordValidator(const std::shared_ptr<CodeWord>& codeWord) :
-		BaseCodeWordValidator(codeWord)
+		BasicCodeWordValidator(codeWord)
 	{
 	}
 
@@ -13,7 +13,7 @@ namespace V2MPAsm
 	{
 	}
 
-	void MulDivCodeWordValidator::RunValidation()
+	void MulDivCodeWordValidator::ValidateSpecific()
 	{
 		constexpr size_t EXPECTED_ARG_COUNT = 4;
 		constexpr size_t ARG_DEST_REG = 0;

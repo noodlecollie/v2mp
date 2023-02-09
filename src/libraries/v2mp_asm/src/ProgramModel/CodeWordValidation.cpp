@@ -4,7 +4,7 @@
 #include "ProgramModel/CodeWord.h"
 #include "ProgramModel/ValidationUtils.h"
 #include "ProgramModel/Validators/CodeWordValidatorFactory.h"
-#include "ProgramModel/Validators/BaseCodeWordValidator.h"
+#include "ProgramModel/Validators/BasicCodeWordValidator.h"
 
 namespace V2MPAsm
 {
@@ -21,7 +21,7 @@ namespace V2MPAsm
 			};
 		}
 
-		std::unique_ptr<BaseCodeWordValidator> validator;
+		std::unique_ptr<BasicCodeWordValidator> validator;
 
 		try
 		{

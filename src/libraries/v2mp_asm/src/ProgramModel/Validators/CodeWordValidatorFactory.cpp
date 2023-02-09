@@ -1,7 +1,7 @@
 #include <stdexcept>
 #include "ProgramModel/CodeWord.h"
 #include "ProgramModel/Validators/CodeWordValidatorFactory.h"
-#include "ProgramModel/Validators/ZeroArgCodeWordValidator.h"
+#include "ProgramModel/Validators/BasicCodeWordValidator.h"
 #include "ProgramModel/Validators/SimpleRegAndValueCodeWordValidator.h"
 #include "ProgramModel/Validators/MulDivCodeWordValidator.h"
 #include "ProgramModel/Validators/AsgnCodeWordValidator.h"
@@ -11,7 +11,7 @@
 
 namespace V2MPAsm
 {
-	std::unique_ptr<BaseCodeWordValidator> CreateValidator(const std::shared_ptr<CodeWord>& codeWord)
+	std::unique_ptr<BasicCodeWordValidator> CreateValidator(const std::shared_ptr<CodeWord>& codeWord)
 	{
 		if ( !codeWord )
 		{
@@ -22,8 +22,9 @@ namespace V2MPAsm
 		{
 			case InstructionType::NOP:
 			case InstructionType::SIG:
+			case InstructionType::STK:
 			{
-				return std::make_unique<ZeroArgCodeWordValidator>(codeWord);
+				return std::make_unique<BasicCodeWordValidator>(codeWord);
 			}
 
 			case InstructionType::ADD:

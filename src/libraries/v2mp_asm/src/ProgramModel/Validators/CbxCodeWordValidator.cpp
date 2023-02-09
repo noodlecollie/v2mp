@@ -5,7 +5,7 @@
 namespace V2MPAsm
 {
 	CbxCodeWordValidator::CbxCodeWordValidator(const std::shared_ptr<CodeWord>& codeWord) :
-		BaseCodeWordValidator(codeWord)
+		BasicCodeWordValidator(codeWord)
 	{
 	}
 
@@ -13,7 +13,7 @@ namespace V2MPAsm
 	{
 	}
 
-	void CbxCodeWordValidator::RunValidation()
+	void CbxCodeWordValidator::ValidateSpecific()
 	{
 		constexpr size_t EXPECTED_ARG_COUNT = 3;
 		constexpr size_t ARG_PC_MOD_MODE = 0;
@@ -22,11 +22,8 @@ namespace V2MPAsm
 
 		CodeWord& codeWord = GetCodeWord();
 
-		if ( !ValidateArgIsNumber(ARG_PC_MOD_MODE) ||
-		     !ValidateArgIsNumber(ARG_CONDITION) ||
-		     !ValidateNumberForArg(ARG_PC_MOD_MODE) ||
-		     !ValidateNumberForArg(ARG_CONDITION) ||
-		     !ValidateArgIsNumber(ARG_OFFSET) )
+		if ( !ValidateNumberForArg(ARG_PC_MOD_MODE) ||
+		     !ValidateNumberForArg(ARG_CONDITION) )
 		{
 			return;
 		}

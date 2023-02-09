@@ -29,8 +29,8 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/Parser/Tokeniser.cpp
 	src/ProgramModel/Validators/AsgnCodeWordValidator.h
 	src/ProgramModel/Validators/AsgnCodeWordValidator.cpp
-	src/ProgramModel/Validators/BaseCodeWordValidator.h
-	src/ProgramModel/Validators/BaseCodeWordValidator.cpp
+	src/ProgramModel/Validators/BasicCodeWordValidator.h
+	src/ProgramModel/Validators/BasicCodeWordValidator.cpp
 	src/ProgramModel/Validators/BitwCodeWordValidator.h
 	src/ProgramModel/Validators/BitwCodeWordValidator.cpp
 	src/ProgramModel/Validators/CbxCodeWordValidator.h
@@ -43,8 +43,6 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/ProgramModel/Validators/MulDivCodeWordValidator.cpp
 	src/ProgramModel/Validators/SimpleRegAndValueCodeWordValidator.h
 	src/ProgramModel/Validators/SimpleRegAndValueCodeWordValidator.cpp
-	src/ProgramModel/Validators/ZeroArgCodeWordValidator.h
-	src/ProgramModel/Validators/ZeroArgCodeWordValidator.cpp
 	src/ProgramModel/CodeWord.h
 	src/ProgramModel/CodeWord.cpp
 	src/ProgramModel/CodeWordArg.h

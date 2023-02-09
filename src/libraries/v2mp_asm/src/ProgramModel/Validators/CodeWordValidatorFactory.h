@@ -6,7 +6,7 @@
 namespace V2MPAsm
 {
 	class CodeWord;
-	class BaseCodeWordValidator;
+	class BasicCodeWordValidator;
 
-	std::unique_ptr<BaseCodeWordValidator> CreateValidator(const std::shared_ptr<CodeWord>& codeWord);
+	std::unique_ptr<BasicCodeWordValidator> CreateValidator(const std::shared_ptr<CodeWord>& codeWord);
 }

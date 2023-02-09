@@ -1,19 +1,19 @@
 #pragma once
 
 #include <memory>
-#include "ProgramModel/Validators/BaseCodeWordValidator.h"
+#include "ProgramModel/Validators/BasicCodeWordValidator.h"
 
 namespace V2MPAsm
 {
 	class CodeWord;
 
-	class LdstCodeWordValidator : public BaseCodeWordValidator
+	class LdstCodeWordValidator : public BasicCodeWordValidator
 	{
 	public:
 		LdstCodeWordValidator(const std::shared_ptr<CodeWord>& codeWord);
 		virtual ~LdstCodeWordValidator();
 
 	protected:
-		void RunValidation() override;
+		void ValidateSpecific() override;
 	};
 }

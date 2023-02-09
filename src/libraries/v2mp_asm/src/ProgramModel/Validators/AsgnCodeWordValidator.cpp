@@ -5,7 +5,7 @@
 namespace V2MPAsm
 {
 	AsgnCodeWordValidator::AsgnCodeWordValidator(const std::shared_ptr<CodeWord>& codeWord) :
-		BaseCodeWordValidator(codeWord)
+		BasicCodeWordValidator(codeWord)
 	{
 	}
 
@@ -13,7 +13,7 @@ namespace V2MPAsm
 	{
 	}
 
-	void AsgnCodeWordValidator::RunValidation()
+	void AsgnCodeWordValidator::ValidateSpecific()
 	{
 		constexpr size_t EXPECTED_ARG_COUNT = 3;
 		constexpr size_t ARG_SRC_REG = 0;

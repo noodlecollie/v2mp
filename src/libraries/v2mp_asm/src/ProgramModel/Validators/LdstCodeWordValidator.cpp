@@ -5,7 +5,7 @@
 namespace V2MPAsm
 {
 	LdstCodeWordValidator::LdstCodeWordValidator(const std::shared_ptr<CodeWord>& codeWord) :
-		BaseCodeWordValidator(codeWord)
+		BasicCodeWordValidator(codeWord)
 	{
 	}
 
@@ -13,14 +13,13 @@ namespace V2MPAsm
 	{
 	}
 
-	void LdstCodeWordValidator::RunValidation()
+	void LdstCodeWordValidator::ValidateSpecific()
 	{
 		constexpr size_t EXPECTED_ARG_COUNT = 2;
 		constexpr size_t ARG_MODE = 0;
 		constexpr size_t ARG_REG = 1;
 
-		if ( !ValidateArgIsNumber(ARG_MODE) ||
-		     !ValidateNumberForArg(ARG_MODE) ||
+		if ( !ValidateNumberForArg(ARG_MODE) ||
 		     !ValidateRegIdentifier(ARG_REG) )
 		{
 			return;

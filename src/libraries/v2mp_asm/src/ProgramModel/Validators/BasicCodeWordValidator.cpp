@@ -1,12 +1,11 @@
 #include <stdexcept>
-#include <cassert>
-#include "ProgramModel/Validators/BaseCodeWordValidator.h"
+#include "ProgramModel/Validators/BasicCodeWordValidator.h"
 #include "ProgramModel/CodeWord.h"
 #include "ProgramModel/ValidationUtils.h"
 
 namespace V2MPAsm
 {
-	BaseCodeWordValidator::BaseCodeWordValidator(const std::shared_ptr<CodeWord>& codeWord) :
+	BasicCodeWordValidator::BasicCodeWordValidator(const std::shared_ptr<CodeWord>& codeWord) :
 		m_CodeWord(codeWord)
 	{
 		if ( !m_CodeWord )
@@ -15,37 +14,37 @@ namespace V2MPAsm
 		}
 	}
 
-	BaseCodeWordValidator::~BaseCodeWordValidator()
+	BasicCodeWordValidator::~BasicCodeWordValidator()
 	{
 	}
 
-	CodeWord& BaseCodeWordValidator::GetCodeWord()
-	{
-		return *m_CodeWord;
-	}
-
-	const CodeWord& BaseCodeWordValidator::GetCodeWord() const
+	CodeWord& BasicCodeWordValidator::GetCodeWord()
 	{
 		return *m_CodeWord;
 	}
 
-	bool BaseCodeWordValidator::GetValidateLabelRefs() const
+	const CodeWord& BasicCodeWordValidator::GetCodeWord() const
+	{
+		return *m_CodeWord;
+	}
+
+	bool BasicCodeWordValidator::GetValidateLabelRefs() const
 	{
 		return m_ValidateLabelRefs;
 	}
 
-	void BaseCodeWordValidator::SetValidateLabelRefs(bool validate)
+	void BasicCodeWordValidator::SetValidateLabelRefs(bool validate)
 	{
 		m_ValidateLabelRefs = validate;
 	}
 
-	BaseCodeWordValidator::ValidationResult BaseCodeWordValidator::Validate()
+	BasicCodeWordValidator::ValidationResult BasicCodeWordValidator::Validate()
 	{
 		m_ValidationFailures.clear();
 
 		if ( ValidateCommonArgConstraints() )
 		{
-			RunValidation();
+			ValidateSpecific();
 		}
 
 		ValidationResult result = m_ValidationFailures.empty()
@@ -64,12 +63,12 @@ namespace V2MPAsm
 		return result;
 	}
 
-	const std::vector<ValidationFailure>& BaseCodeWordValidator::GetValidationFailures() const
+	const std::vector<ValidationFailure>& BasicCodeWordValidator::GetValidationFailures() const
 	{
 		return m_ValidationFailures;
 	}
 
-	bool BaseCodeWordValidator::ValidateCommonArgConstraints()
+	bool BasicCodeWordValidator::ValidateCommonArgConstraints()
 	{
 		CodeWord& codeWord = GetCodeWord();
 		const InstructionMeta& instructionMeta = GetInstructionMeta(codeWord.GetInstructionType());
@@ -89,6 +88,7 @@ namespace V2MPAsm
 
 		if ( actualArgCount > expectedArgCount )
 		{
+			// This is only a warning.
 			AddFailure(CreateTooManyArgumentsFailure(expectedArgCount, actualArgCount, expectedArgCount));
 		}
 
@@ -97,10 +97,9 @@ namespace V2MPAsm
 		for ( size_t index = 0; index < actualArgCount; ++index )
 		{
 			const ArgMeta& argMeta = instructionMeta.args[index];
-			const CodeWordArg* arg = codeWord.GetArgument(index);
-			assert(arg);
+			const CodeWordArg& arg = codeWord.GetArgumentRef(index);
 
-			if ( (argMeta.flags & ARGFLAG_SYMBOLIC) && arg->IsLabelReference() )
+			if ( (argMeta.flags & ARGFLAG_SYMBOLIC) && arg.IsLabelReference() )
 			{
 				AddFailure(ValidationFailure(
 					PublicErrorID::INVALID_REGISTER_ID,
@@ -115,7 +114,7 @@ namespace V2MPAsm
 		return invalidArgEncountered;
 	}
 
-	bool BaseCodeWordValidator::ValidateRegIdentifier(size_t argIndex, uint32_t regIDMask)
+	bool BasicCodeWordValidator::ValidateRegIdentifier(size_t argIndex, uint32_t regIDMask)
 	{
 		CodeWordArg* arg = GetCodeWord().GetArgument(argIndex);
 
@@ -146,7 +145,7 @@ namespace V2MPAsm
 		return true;
 	}
 
-	bool BaseCodeWordValidator::ValidateReservedArgIsZero(size_t argIndex)
+	bool BasicCodeWordValidator::ValidateReservedArgIsZero(size_t argIndex)
 	{
 		CodeWordArg* arg = GetCodeWord().GetArgument(argIndex);
 
@@ -183,36 +182,7 @@ namespace V2MPAsm
 		return true;
 	}
 
-	bool BaseCodeWordValidator::ValidateArgIsNumber(size_t argIndex)
-	{
-		CodeWordArg* arg = GetCodeWord().GetArgument(argIndex);
-
-		if ( !arg )
-		{
-			AddFailure(ValidationFailure(
-				PublicErrorID::INTERNAL,
-				argIndex,
-				"Expected argument at index " + std::to_string(argIndex) + "."
-			));
-
-			return false;
-		}
-
-		if ( !arg->IsNumber() )
-		{
-			AddFailure(ValidationFailure(
-				PublicErrorID::INVALID_REGISTER_ID,
-				argIndex,
-				"Expected numerical value, not a label reference."
-			));
-
-			return false;
-		}
-
-		return true;
-	}
-
-	bool BaseCodeWordValidator::ValidateNumberForArg(size_t argIndex, SignednessOverride signednessOverride)
+	bool BasicCodeWordValidator::ValidateNumberForArg(size_t argIndex, SignednessOverride signednessOverride)
 	{
 		CodeWordArg* arg = GetCodeWord().GetArgument(argIndex);
 
@@ -330,12 +300,17 @@ namespace V2MPAsm
 		return false;
 	}
 
-	void BaseCodeWordValidator::AddFailure(const ValidationFailure& failure)
+	void BasicCodeWordValidator::ValidateSpecific()
+	{
+		// Nothing to do in the base class.
+	}
+
+	void BasicCodeWordValidator::AddFailure(const ValidationFailure& failure)
 	{
 		m_ValidationFailures.emplace_back(failure);
 	}
 
-	void BaseCodeWordValidator::AddFailure(ValidationFailure&& failure)
+	void BasicCodeWordValidator::AddFailure(ValidationFailure&& failure)
 	{
 		m_ValidationFailures.emplace_back(std::move(failure));
 	}
