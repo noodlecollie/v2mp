@@ -6,3 +6,4 @@ static constexpr const char* const EXCEPTION_ID_UNEXPECTED_TOKEN = "unexpected-t
 static constexpr const char* const EXCEPTION_ID_ARG_OUT_OF_RANGE = "arg-out-of-range";
 static constexpr const char* const EXCEPTION_ID_INVALID_REGISTER_ID = "invalid-register-id";
 static constexpr const char* const EXCEPTION_ID_INVALID_ARG_TYPE = "invalid-argument-type";
+static constexpr const char* const EXCEPTION_ID_RESERVED_BITS_SET = "reserved-bits-set";

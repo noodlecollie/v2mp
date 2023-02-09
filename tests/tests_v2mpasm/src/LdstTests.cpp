@@ -8,7 +8,7 @@
 
 SCENARIO("LDST: Too many arguments")
 {
-	GIVEN("A program containing a LDST with too many arguments")
+	GIVEN("A program containing an LDST with too many arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"LDST: Too many arguments",
@@ -40,7 +40,7 @@ SCENARIO("LDST: Too many arguments")
 
 SCENARIO("LDST: Too few arguments")
 {
-	GIVEN("A program containing a LDST with too few arguments")
+	GIVEN("A program containing an LDST with too few arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"LDST: Too few arguments",
@@ -72,7 +72,7 @@ SCENARIO("LDST: Too few arguments")
 
 SCENARIO("LDST: Non-numeric arguments")
 {
-	GIVEN("A program containing a LDST with non-numeric arguments")
+	GIVEN("A program containing an LDST with non-numeric arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"LDST: Non-numeric arguments",
@@ -104,7 +104,7 @@ SCENARIO("LDST: Non-numeric arguments")
 
 SCENARIO("LDST: Arguments out of range")
 {
-	GIVEN("A program containing a LDST with the first argument out of range")
+	GIVEN("A program containing an LDST with the first argument out of range")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"LDST: Argument out of range",
@@ -133,7 +133,7 @@ SCENARIO("LDST: Arguments out of range")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing a LDST with the second argument out of range")
+	AND_GIVEN("A program containing an LDST with the second argument out of range")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"LDST: Argument out of range",
@@ -162,7 +162,7 @@ SCENARIO("LDST: Arguments out of range")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing a LDST with both arguments out of range")
+	AND_GIVEN("A program containing an LDST with both arguments out of range")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"LDST: Argument out of range",
@@ -198,7 +198,7 @@ SCENARIO("LDST: Arguments out of range")
 
 SCENARIO("LDST: Label refs as arguments")
 {
-	GIVEN("A program containing a LDST with label refs as arguments")
+	GIVEN("A program containing an LDST with label refs as arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"LDST: Label ref args",
