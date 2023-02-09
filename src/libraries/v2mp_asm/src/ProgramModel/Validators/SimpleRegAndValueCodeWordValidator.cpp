@@ -15,7 +15,6 @@ namespace V2MPAsm
 
 	void SimpleRegAndValueCodeWordValidator::ValidateSpecific()
 	{
-		constexpr size_t EXPECTED_ARG_COUNT = 3;
 		constexpr size_t ARG_SRC_REG = 0;
 		constexpr size_t ARG_DEST_REG = 1;
 		constexpr size_t ARG_VALUE = 2;

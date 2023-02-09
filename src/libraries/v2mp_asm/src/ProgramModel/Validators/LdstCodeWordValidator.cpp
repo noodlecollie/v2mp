@@ -15,7 +15,6 @@ namespace V2MPAsm
 
 	void LdstCodeWordValidator::ValidateSpecific()
 	{
-		constexpr size_t EXPECTED_ARG_COUNT = 2;
 		constexpr size_t ARG_MODE = 0;
 		constexpr size_t ARG_REG = 1;
 

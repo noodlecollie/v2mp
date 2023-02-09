@@ -15,7 +15,6 @@ namespace V2MPAsm
 
 	void MulDivCodeWordValidator::ValidateSpecific()
 	{
-		constexpr size_t EXPECTED_ARG_COUNT = 4;
 		constexpr size_t ARG_DEST_REG = 0;
 		constexpr size_t ARG_SRC_MODE = 1;
 		constexpr size_t ARG_SIGNEDNESS = 2;

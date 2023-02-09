@@ -15,7 +15,6 @@ namespace V2MPAsm
 
 	void CbxCodeWordValidator::ValidateSpecific()
 	{
-		constexpr size_t EXPECTED_ARG_COUNT = 3;
 		constexpr size_t ARG_PC_MOD_MODE = 0;
 		constexpr size_t ARG_CONDITION = 1;
 		constexpr size_t ARG_OFFSET = 2;

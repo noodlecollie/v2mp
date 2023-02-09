@@ -15,7 +15,6 @@ namespace V2MPAsm
 
 	void BitwCodeWordValidator::ValidateSpecific()
 	{
-		constexpr size_t EXPECTED_ARG_COUNT = 5;
 		constexpr size_t ARG_SRC_REG = 0;
 		constexpr size_t ARG_DEST_REG = 1;
 		constexpr size_t ARG_OP_TYPE = 2;
