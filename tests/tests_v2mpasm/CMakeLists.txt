@@ -1,6 +1,7 @@
 add_executable(V2MPAsm_Tests
-	src/Dummy.cpp
+	src/LanguageFeatures.cpp
 	src/Main.cpp
+	src/NopTests.cpp
 	src/SingleInstructions.cpp
 )
 

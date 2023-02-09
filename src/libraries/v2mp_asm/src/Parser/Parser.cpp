@@ -373,52 +373,16 @@ namespace V2MPAsm
 
 	Parser::State Parser::ProcessInput_BuildCodeWord()
 	{
-		constexpr uint32_t ALLOWED_ARG_TOKENS =
+		constexpr uint32_t ALLOWED_TOKENS =
 			TokenType::NumericLiteral |		// Literal value
 			TokenType::HighSelector |		// High section of a label
 			TokenType::LowSelector |		// Low section of a label
-			TokenType::DistanceSelector		// Distance to a label
+			TokenType::DistanceSelector |	// Distance to a label
+			TokenType::EndOfFile |			// Ends instruction
+			TokenType::EndOfLine			// Ends instruction
 			;
 
-		constexpr uint32_t ALLOWED_INSTRUCTION_TERMINATOR_TOKENS =
-			TokenType::EndOfFile |
-			TokenType::EndOfLine
-			;
-
-		constexpr uint32_t ALL_ALLOWED_TOKENS = ALLOWED_ARG_TOKENS | ALLOWED_INSTRUCTION_TERMINATOR_TOKENS;
-
-		CodeWord& codeWord = m_Data->programBuilder.GetCurrentCodeWord();
-		const InstructionMeta& instructionMeta = GetInstructionMeta(codeWord.GetInstructionType());
-		const bool moreArgumentsRequired = codeWord.GetArgumentCount() < instructionMeta.args.size();
-
-		const uint32_t allowedTokens = moreArgumentsRequired
-			? ALLOWED_ARG_TOKENS
-			: ALLOWED_INSTRUCTION_TERMINATOR_TOKENS;
-
-		// Get any possible token, and then customise any exception based on the state we're in.
-		const Tokeniser::Token token = GetNextToken(ALL_ALLOWED_TOKENS, State::SKIP_LINE);
-
-		if ( !(token.type & allowedTokens) )
-		{
-			if ( moreArgumentsRequired )
-			{
-				throw ParserException(
-					m_Data->inputReader,
-					PublicErrorID::UNEXPECTED_TOKEN,
-					"Expected number or label reference, but got " + Tokeniser::TokenPrintableString(token),
-					State::SKIP_LINE
-				);
-			}
-			else
-			{
-				throw ParserException(
-					m_Data->inputReader,
-					PublicErrorID::UNEXPECTED_TOKEN,
-					instructionMeta.key + " instruction expects " + std::to_string(instructionMeta.args.size()) + "arguments.",
-					State::SKIP_LINE
-				);
-			}
-		}
+		const Tokeniser::Token token = GetNextToken(ALLOWED_TOKENS, State::SKIP_LINE);
 
 		if ( token.type == TokenType::EndOfFile || token.type == TokenType::EndOfLine )
 		{
@@ -606,7 +570,7 @@ namespace V2MPAsm
 		return State::BUILD_CODE_WORD;
 	}
 
-	Parser::State Parser::ProcessInput_ValidateAndCommitCodeWord(Tokeniser::TokenType /* tokenType */)
+	Parser::State Parser::ProcessInput_ValidateAndCommitCodeWord(Tokeniser::TokenType tokenType)
 	{
 		std::shared_ptr<CodeWord> currentCodeWord = m_Data->programBuilder.GetCurrentCodeWordPtr();
 
@@ -615,7 +579,11 @@ namespace V2MPAsm
 
 		if ( !validationFailures.empty() )
 		{
-			ParserException ex(Parser::State::BUILD_CODE_WORD);
+			ParserException ex(
+				tokenType == Tokeniser::TokenType::EndOfFile
+					? Parser::State::TERMINATED
+					: Parser::State::BEGIN_LINE
+			);
 
 			for ( const ValidationFailure& failure : validationFailures )
 			{

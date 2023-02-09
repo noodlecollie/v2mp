@@ -82,6 +82,11 @@ API_V2MPASM V2MPAsm_Exception_Type V2MPAsm_Exception_GetType(const struct V2MPAs
 	return exception ? exception->inner.GetType() : V2MPASM_EXCEPTION_WARNING;
 }
 
+API_V2MPASM const char* V2MPAsm_Exception_GetID(const struct V2MPAsm_Exception* exception)
+{
+	return exception ? exception->inner.GetIDString() : nullptr;
+}
+
 API_V2MPASM size_t V2MPAsm_Exception_ToString(const struct V2MPAsm_Exception* exception, char* buffer, size_t length)
 {
 	if ( !exception )

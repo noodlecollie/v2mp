@@ -94,7 +94,7 @@ namespace V2MPAsm
 
 		bool invalidArgEncountered = false;
 
-		for ( size_t index = 0; index < actualArgCount; ++index )
+		for ( size_t index = 0; index < expectedArgCount; ++index )
 		{
 			const ArgMeta& argMeta = instructionMeta.args[index];
 			const CodeWordArg& arg = codeWord.GetArgumentRef(index);

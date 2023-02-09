@@ -17,6 +17,7 @@ typedef enum V2MPAsm_Exception_Type
 struct V2MPAsm_Exception;
 
 API_V2MPASM V2MPAsm_Exception_Type V2MPAsm_Exception_GetType(const struct V2MPAsm_Exception* exception);
+API_V2MPASM const char* V2MPAsm_Exception_GetID(const struct V2MPAsm_Exception* exception);
 API_V2MPASM size_t V2MPAsm_Exception_ToString(const struct V2MPAsm_Exception* exception, char* buffer, size_t length);
 
 #ifdef __cplusplus
