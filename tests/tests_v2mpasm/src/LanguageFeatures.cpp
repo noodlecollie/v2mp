@@ -1,12 +1,12 @@
 #include "catch2/catch.hpp"
 #include "V2MPAsm/Assembler.h"
 
-SCENARIO("Dummy")
+SCENARIO("Assembly language feature sanity check")
 {
 	GIVEN("An assembler instance and a valid program")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"DummyTest",
+			"Language Features",
 
 			"// This is a line comment\n"
 			"/* This is a multiline comment */\n"

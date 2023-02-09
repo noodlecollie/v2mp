@@ -29,6 +29,11 @@ namespace V2MPAsm
 		return *m_CurrentCodeWord;
 	}
 
+	std::shared_ptr<CodeWord> ProgramBuilder::GetCurrentCodeWordPtr()
+	{
+		return m_CurrentCodeWord;
+	}
+
 	void ProgramBuilder::SubmitCurrentCodeWord()
 	{
 		m_ProgramModel->AddCodeWord(m_CurrentCodeWord);

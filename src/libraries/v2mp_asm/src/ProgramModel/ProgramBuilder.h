@@ -18,6 +18,7 @@ namespace V2MPAsm
 
 		CodeWord& PrepareCodeWord(size_t line, size_t column, InstructionType instructionType);
 		CodeWord& GetCurrentCodeWord();
+		std::shared_ptr<CodeWord> GetCurrentCodeWordPtr();
 		size_t GetCurrentCodeWordLine() const;
 		size_t GetCurrentCodeWordColumn() const;
 		void SubmitCurrentCodeWord();

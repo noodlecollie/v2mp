@@ -264,6 +264,8 @@ Multiplies a register by a value.
 * Operand bit `[10] (B)` specifies the source of the multiplicand. If `B` is `0` then either `R0` or `R1` (the opposite to that which has been selected by operand `A`) is used as the multiplicand; if `B` is `1` then operand bits `[7 0] (D)` are treated as an 8-bit multiplicand whose sign depends on operand `C`.
 * Operand bit `[9] (C)` specifies whether the operation is treated as signed or unsigned. If `C` is `0` then the destination and multiplicand are treated as unsigned; if `C` is `1` then the destination and multiplicand are treated as signed.
 
+If `B` is `0` then operand bits `[7 0] (D)` must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
+
 Operand bit `[8]` is reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
 After the instruction is executed, the destination register as specified by operand `A` will hold the lower 16 bits of the result, and `LR` will hold the higher 16 bits of the result. If the result fitted entirely into the destination register, `LR` will be set appropriately depending on whether the operation was signed or unsigned, so that `LR` concatenated with the destination register would form a 32-bit word of the correct sign.
@@ -282,6 +284,8 @@ Divides a register by a value.
 * Operand bit `[11] (A)` specifies whether `R0` or `R1` is used as the destination register for the operation. If `A` is `0` then `R0` is used; if `A` is `1` then `R1` is used.
 * Operand bit `[10] (B)` specifies the source of the divisor. If `B` is `0` then either `R0` or `R1` (the opposite to that which has been selected by operand `A`) is used as the divisor; if `B` is `1` then operand bits `[7 0] (D)` are treated as an 8-bit divisor whose sign depends on operand `C`.
 * Operand bit `[9] (C)` specifies whether the operation is treated as signed or unsigned. If `C` is `0` then the destination and divisor are treated as unsigned; if `C` is `1` then the destination and divisor are treated as signed.
+
+If `B` is `0` then operand bits `[7 0] (D)` must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
 Operand bit `[8]` is reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 

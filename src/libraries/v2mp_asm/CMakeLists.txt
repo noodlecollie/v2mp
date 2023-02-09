@@ -27,6 +27,22 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/Parser/Parser.cpp
 	src/Parser/Tokeniser.h
 	src/Parser/Tokeniser.cpp
+	src/ProgramModel/Validators/AsgnCodeWordValidator.h
+	src/ProgramModel/Validators/AsgnCodeWordValidator.cpp
+	src/ProgramModel/Validators/BasicCodeWordValidator.h
+	src/ProgramModel/Validators/BasicCodeWordValidator.cpp
+	src/ProgramModel/Validators/BitwCodeWordValidator.h
+	src/ProgramModel/Validators/BitwCodeWordValidator.cpp
+	src/ProgramModel/Validators/CbxCodeWordValidator.h
+	src/ProgramModel/Validators/CbxCodeWordValidator.cpp
+	src/ProgramModel/Validators/CodeWordValidatorFactory.h
+	src/ProgramModel/Validators/CodeWordValidatorFactory.cpp
+	src/ProgramModel/Validators/LdstCodeWordValidator.h
+	src/ProgramModel/Validators/LdstCodeWordValidator.cpp
+	src/ProgramModel/Validators/MulDivCodeWordValidator.h
+	src/ProgramModel/Validators/MulDivCodeWordValidator.cpp
+	src/ProgramModel/Validators/SimpleRegAndValueCodeWordValidator.h
+	src/ProgramModel/Validators/SimpleRegAndValueCodeWordValidator.cpp
 	src/ProgramModel/CodeWord.h
 	src/ProgramModel/CodeWord.cpp
 	src/ProgramModel/CodeWordArg.h
@@ -43,6 +59,10 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/ProgramModel/ProgramBuilder.cpp
 	src/ProgramModel/ProgramModel.h
 	src/ProgramModel/ProgramModel.cpp
+	src/ProgramModel/ValidationFailure.h
+	src/ProgramModel/ValidationFailure.cpp
+	src/ProgramModel/ValidationUtils.h
+	src/ProgramModel/ValidationUtils.cpp
 	src/Interface_Assembler.h
 	src/Interface_Assembler.cpp
 	src/Interface_Exception.h

@@ -27,6 +27,7 @@ namespace V2MPAsm
 		);
 
 		V2MPAsm_Exception_Type GetType() const;
+		const char* GetIDString() const;
 
 		// Format:
 		// file_path:line:column warning/error: desc [-Werror=exception-id]

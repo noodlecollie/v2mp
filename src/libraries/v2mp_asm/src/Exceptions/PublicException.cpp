@@ -45,6 +45,11 @@ namespace V2MPAsm
 		return m_Type;
 	}
 
+	const char* PublicException::GetIDString() const
+	{
+		return m_ExceptionStringID.c_str();
+	}
+
 	// file_path:line:column warning/error: desc [-Werror=exception-id]
 	std::string PublicException::ToString() const
 	{

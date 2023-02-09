@@ -36,6 +36,7 @@ namespace V2MPAsm
 	LIST_ITEM(DUPLICATE_LABEL, "duplicate-label", "Duplicate label encountered.") \
 	LIST_ITEM(ADDRESS_SPACE_EXCEEDED, "address-space-exceeded", "Address space was exceeded.") \
 	LIST_ITEM(INVALID_REGISTER_ID, "invalid-register-id", "Invalid register ID.") \
+	LIST_ITEM(REGISTER_NOT_ALLOWED, "register-not-allowed", "Use of this register is not allowed.") \
 	LIST_ITEM(INVALID_ARGUMENT_TYPE, "invalid-argument-type", "Invalid argument type.") \
 	LIST_ITEM(LABEL_REF_OUT_OF_RANGE, "label-ref-out-of-range", "Value of label reference is out of range.")
 

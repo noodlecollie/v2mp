@@ -38,6 +38,9 @@ namespace V2MPAsm
 
 		CodeWordArg* GetArgument(size_t argIndex);
 		const CodeWordArg* GetArgument(size_t argIndex) const;
+		CodeWordArg& GetArgumentRef(size_t argIndex);
+		const CodeWordArg& GetArgumentRef(size_t argIndex) const;
+
 		size_t GetArgumentColumn(size_t argIndex) const;
 
 	private:
