@@ -1,5 +1,6 @@
 add_executable(V2MPAsm_Tests
 	src/LanguageFeatures.cpp
+	src/LdstTests.cpp
 	src/Main.cpp
 	src/NopTests.cpp
 	src/ProgramVerification.h

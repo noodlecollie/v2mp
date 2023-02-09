@@ -572,34 +572,35 @@ namespace V2MPAsm
 
 	Parser::State Parser::ProcessInput_ValidateAndCommitCodeWord(Tokeniser::TokenType tokenType)
 	{
+		const Parser::State nextState = tokenType == Tokeniser::TokenType::EndOfFile
+			? Parser::State::TERMINATED
+			: Parser::State::BEGIN_LINE;
+
 		std::shared_ptr<CodeWord> currentCodeWord = m_Data->programBuilder.GetCurrentCodeWordPtr();
 
 		// Don't validate label refs here, as the labels may not yet be resolved.
 		std::vector<ValidationFailure> validationFailures = ValidateCodeWord(currentCodeWord, false);
 
+		// Submit the current code word, regardless of whether it's valid or not.
+		// This means that one invalid code word won't terminate parsing, and should
+		// therefore allow us to continue to generate potential errors from subsequent
+		// lines. If any errors are produced, the parser will stop once the first
+		// parsing phase is finished, and will not go on to produce output.
+		m_Data->programBuilder.SubmitCurrentCodeWord();
+
 		if ( !validationFailures.empty() )
 		{
-			ParserException ex(
-				tokenType == Tokeniser::TokenType::EndOfFile
-					? Parser::State::TERMINATED
-					: Parser::State::BEGIN_LINE
-			);
+			ParserException ex(nextState);
 
 			for ( const ValidationFailure& failure : validationFailures )
 			{
-				if ( failure.IsError() )
-				{
-					ex.nextState = Parser::State::TERMINATED;
-				}
-
 				ex << ToAssemblerException(failure, m_Data->inputReader.GetPath(), *currentCodeWord);
 			}
 
 			throw ex;
 		}
 
-		m_Data->programBuilder.SubmitCurrentCodeWord();
-		return State::BEGIN_LINE;
+		return nextState;
 	}
 
 	void Parser::ResolveAllLabelReferences()

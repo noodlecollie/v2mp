@@ -1,4 +1,8 @@
 #pragma once
 
 static constexpr const char* const EXCEPTION_ID_TOO_MANY_ARGUMENTS = "too-many-arguments";
+static constexpr const char* const EXCEPTION_ID_TOO_FEW_ARGUMENTS = "too-few-arguments";
 static constexpr const char* const EXCEPTION_ID_UNEXPECTED_TOKEN = "unexpected-token";
+static constexpr const char* const EXCEPTION_ID_ARG_OUT_OF_RANGE = "arg-out-of-range";
+static constexpr const char* const EXCEPTION_ID_INVALID_REGISTER_ID = "invalid-register-id";
+static constexpr const char* const EXCEPTION_ID_INVALID_ARG_TYPE = "invalid-argument-type";

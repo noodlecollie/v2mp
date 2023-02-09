@@ -18,12 +18,7 @@ namespace V2MPAsm
 		constexpr size_t ARG_MODE = 0;
 		constexpr size_t ARG_REG = 1;
 
-		if ( !ValidateNumberForArg(ARG_MODE) ||
-		     !ValidateRegIdentifier(ARG_REG) )
-		{
-			return;
-		}
-
-		// Everything is OK
+		ValidateNumberForArg(ARG_MODE);
+		ValidateRegIdentifier(ARG_REG);
 	}
 }

@@ -45,14 +45,20 @@ namespace V2MPAsm
 	int32_t GetNumericalBase(const std::string& numberStr, std::optional<size_t>* indexWhereValueBegins)
 	{
 		int32_t base = 0;
+		int32_t sign = 1;
 		size_t firstDigitIndex = 0;
 		size_t internalIndexWhereValueBegins = 0;
 
 		if ( !numberStr.empty() )
 		{
-			if ( numberStr[0] == '+' || numberStr[0] == '-' )
+			if ( numberStr[0] == '+' )
 			{
 				firstDigitIndex = 1;
+			}
+			else if ( numberStr[0] == '-' )
+			{
+				firstDigitIndex = 1;
+				sign = -1;
 			}
 
 			if ( numberStr.size() > firstDigitIndex )
@@ -100,15 +106,22 @@ namespace V2MPAsm
 			*indexWhereValueBegins = internalIndexWhereValueBegins;
 		}
 
-		return base;
+		return sign * base;
 	}
 
 	int32_t ParseInteger(const std::string& numberStr)
 	{
 		std::optional<size_t> valueBegins;
-		const int32_t base = GetNumericalBase(numberStr, &valueBegins);
+		int32_t base = GetNumericalBase(numberStr, &valueBegins);
+		int32_t sign = 1;
 
-		if ( base < 1 )
+		if ( base < 0 )
+		{
+			sign = -1;
+			base *= -1;
+		}
+
+		if ( base == 0 )
 		{
 			throw std::invalid_argument("Could not determine numerical base of number");
 		}
@@ -118,6 +131,6 @@ namespace V2MPAsm
 			throw std::invalid_argument("Could not determine beginning of number value");
 		}
 
-		return static_cast<int32_t>(std::stol(numberStr.substr(valueBegins.value()), nullptr, base));
+		return static_cast<int32_t>(std::stol(numberStr.substr(valueBegins.value()), nullptr, base)) * sign;
 	}
 }

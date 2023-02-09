@@ -2,6 +2,7 @@
 #include "ProgramModel/Validators/BasicCodeWordValidator.h"
 #include "ProgramModel/CodeWord.h"
 #include "ProgramModel/ValidationUtils.h"
+#include "Utils/BitUtils.h"
 
 namespace V2MPAsm
 {
@@ -102,16 +103,16 @@ namespace V2MPAsm
 			if ( (argMeta.flags & ARGFLAG_SYMBOLIC) && arg.IsLabelReference() )
 			{
 				AddFailure(ValidationFailure(
-					PublicErrorID::INVALID_REGISTER_ID,
+					PublicErrorID::INVALID_ARGUMENT_TYPE,
 					index,
-					"Expected numerical register identifier."
+					"This value cannot be set from a label reference."
 				));
 
 				invalidArgEncountered = true;
 			}
 		}
 
-		return invalidArgEncountered;
+		return !invalidArgEncountered;
 	}
 
 	bool BasicCodeWordValidator::ValidateRegIdentifier(size_t argIndex, uint32_t regIDMask)

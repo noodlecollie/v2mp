@@ -1,5 +1,15 @@
+#include <string>
+#include <sstream>
+#include <iomanip>
 #include "ProgramVerification.h"
 #include "catch2/catch.hpp"
+
+static std::string WordAsHex(V2MP_Word in)
+{
+	std::stringstream stream;
+	stream << "0x" << std::setw(4) << std::setfill('0') << std::hex << static_cast<uint32_t>(in);
+	return stream.str();
+}
 
 void CheckProgramMatches(V2MPAsm_Assembler* assembler, const std::vector<V2MP_Word>& expected)
 {
@@ -20,7 +30,8 @@ void CheckProgramMatches(V2MPAsm_Assembler* assembler, const std::vector<V2MP_Wo
 	{
 		DYNAMIC_SECTION( "Verifying code word at address: " << (index * sizeof(V2MP_Word)) )
 		{
-			CHECK(expected[index] == actual[index]);
+			// Convert the values to hex strings, to make it easier to interpret when a test fails.
+			CHECK(WordAsHex(expected[index]) == WordAsHex(actual[index]));
 		}
 	}
 }
