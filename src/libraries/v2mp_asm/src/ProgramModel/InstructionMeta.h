@@ -7,7 +7,14 @@
 
 namespace V2MPAsm
 {
+	// TODO: Would it be better to link the V2MP and V2MPAsm defs headers?
+	// Otherwise we have this duplicated across both libraries...
+
 	static constexpr uint32_t REG_ID_MASK = 0x3;
+	static constexpr uint8_t REG_ID_R0 = 0;
+	static constexpr uint8_t REG_ID_R1 = 1;
+	static constexpr uint8_t REG_ID_LR = 2;
+	static constexpr uint8_t REG_ID_PC = 3;
 
 	enum class InstructionType : uint8_t
 	{

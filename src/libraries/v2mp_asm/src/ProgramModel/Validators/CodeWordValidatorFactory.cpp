@@ -4,6 +4,7 @@
 #include "ProgramModel/Validators/ZeroArgCodeWordValidator.h"
 #include "ProgramModel/Validators/AddSubCodeWordValidator.h"
 #include "ProgramModel/Validators/MulDivCodeWordValidator.h"
+#include "ProgramModel/Validators/AsgnCodeWordValidator.h"
 
 namespace V2MPAsm
 {
@@ -34,9 +35,14 @@ namespace V2MPAsm
 				return std::make_unique<MulDivCodeWordValidator>(codeWord);
 			}
 
+			case InstructionType::ASGN:
+			{
+				return std::make_unique<AsgnCodeWordValidator>(codeWord);
+			}
+
 			default:
 			{
-				throw std::runtime_error("Unsupported codeword type when producing validator");
+				throw std::invalid_argument("Unsupported codeword type when producing validator");
 			}
 		}
 	}

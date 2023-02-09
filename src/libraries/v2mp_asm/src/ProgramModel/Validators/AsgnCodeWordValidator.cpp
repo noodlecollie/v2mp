@@ -1,20 +1,20 @@
 #include <cassert>
-#include "ProgramModel/Validators/AddSubCodeWordValidator.h"
+#include "ProgramModel/Validators/AsgnCodeWordValidator.h"
 #include "ProgramModel/ValidationUtils.h"
 #include "ProgramModel/CodeWord.h"
 
 namespace V2MPAsm
 {
-	AddSubCodeWordValidator::AddSubCodeWordValidator(const std::shared_ptr<CodeWord>& codeWord) :
+	AsgnCodeWordValidator::AsgnCodeWordValidator(const std::shared_ptr<CodeWord>& codeWord) :
 		BaseCodeWordValidator(codeWord)
 	{
 	}
 
-	AddSubCodeWordValidator::~AddSubCodeWordValidator()
+	AsgnCodeWordValidator::~AsgnCodeWordValidator()
 	{
 	}
 
-	void AddSubCodeWordValidator::RunValidation()
+	void AsgnCodeWordValidator::RunValidation()
 	{
 		constexpr size_t EXPECTED_ARG_COUNT = 3;
 		constexpr size_t ARG_SRC_REG = 0;
@@ -50,7 +50,19 @@ namespace V2MPAsm
 
 		if ( srcRegArg->GetValue() != destRegArg->GetValue() )
 		{
+			// Literal value must always be zero.
 			ValidateReservedArgIsZero(ARG_VALUE);
+			return;
+		}
+
+		if ( srcRegArg->GetValue() == REG_ID_PC )
+		{
+			AddFailure(ValidationFailure(
+				PublicErrorID::REGISTER_NOT_ALLOWED,
+				ARG_SRC_REG,
+				"Assigning to PC from literal value is not allowed - the value range is too small to be useful."
+			));
+
 			return;
 		}
 
