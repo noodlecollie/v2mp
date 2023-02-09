@@ -1,6 +1,7 @@
 #include "catch2/catch.hpp"
 #include "V2MPAsm/Assembler.h"
 #include "TestUtil/Assembly.h"
+#include "ProgramVerification.h"
 
 static constexpr V2MP_Word INVALID_WORD = static_cast<V2MP_Word>(~0);
 
@@ -21,14 +22,7 @@ SCENARIO("Assembling a single NOP instruction produces a valid program binary")
 
 			THEN("The correct program binary is produced")
 			{
-				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 0);
-				CHECK(V2MPAsm_Assembler_InMemoryOutputBufferSize(assembler) == sizeof(V2MP_Word));
-
-				V2MP_Word output = INVALID_WORD;
-				const size_t outputSize = V2MPAsm_Assembler_TakeInMemoryOutputBuffer(assembler, &output, sizeof(output));
-
-				CHECK(outputSize == sizeof(output));
-				CHECK(output == Asm::NOP());
+				CheckProgramMatches(assembler, { Asm::NOP() });
 			}
 		}
 
@@ -53,14 +47,7 @@ SCENARIO("Assembling a single LDST instruction produces a valid program binary")
 
 			THEN("The correct program binary is produced")
 			{
-				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 0);
-				CHECK(V2MPAsm_Assembler_InMemoryOutputBufferSize(assembler) == sizeof(V2MP_Word));
-
-				V2MP_Word output = INVALID_WORD;
-				const size_t outputSize = V2MPAsm_Assembler_TakeInMemoryOutputBuffer(assembler, &output, sizeof(output));
-
-				CHECK(outputSize == sizeof(output));
-				CHECK(output == Asm::LOAD(0));
+				CheckProgramMatches(assembler, { Asm::LOAD(0) });
 			}
 		}
 
@@ -85,14 +72,7 @@ SCENARIO("Assembling a single ASGN instruction produces a valid program binary")
 
 			THEN("The correct program binary is produced")
 			{
-				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 0);
-				CHECK(V2MPAsm_Assembler_InMemoryOutputBufferSize(assembler) == sizeof(V2MP_Word));
-
-				V2MP_Word output = INVALID_WORD;
-				const size_t outputSize = V2MPAsm_Assembler_TakeInMemoryOutputBuffer(assembler, &output, sizeof(output));
-
-				CHECK(outputSize == sizeof(output));
-				CHECK(output == Asm::ASGNL(0, 0));
+				CheckProgramMatches(assembler, { Asm::ASGNL(0, 0) });
 			}
 		}
 
@@ -117,14 +97,7 @@ SCENARIO("Assembling a single ADD instruction produces a valid program binary")
 
 			THEN("The correct program binary is produced")
 			{
-				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 0);
-				CHECK(V2MPAsm_Assembler_InMemoryOutputBufferSize(assembler) == sizeof(V2MP_Word));
-
-				V2MP_Word output = INVALID_WORD;
-				const size_t outputSize = V2MPAsm_Assembler_TakeInMemoryOutputBuffer(assembler, &output, sizeof(output));
-
-				CHECK(outputSize == sizeof(output));
-				CHECK(output == Asm::ADDL(0, 0));
+				CheckProgramMatches(assembler, { Asm::ADDL(0, 0) });
 			}
 		}
 
@@ -149,14 +122,7 @@ SCENARIO("Assembling a single SUB instruction produces a valid program binary")
 
 			THEN("The correct program binary is produced")
 			{
-				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 0);
-				CHECK(V2MPAsm_Assembler_InMemoryOutputBufferSize(assembler) == sizeof(V2MP_Word));
-
-				V2MP_Word output = INVALID_WORD;
-				const size_t outputSize = V2MPAsm_Assembler_TakeInMemoryOutputBuffer(assembler, &output, sizeof(output));
-
-				CHECK(outputSize == sizeof(output));
-				CHECK(output == Asm::SUBL(0, 0));
+				CheckProgramMatches(assembler, { Asm::SUBL(0, 0) });
 			}
 		}
 
@@ -181,14 +147,7 @@ SCENARIO("Assembling a single SHFT instruction produces a valid program binary")
 
 			THEN("The correct program binary is produced")
 			{
-				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 0);
-				CHECK(V2MPAsm_Assembler_InMemoryOutputBufferSize(assembler) == sizeof(V2MP_Word));
-
-				V2MP_Word output = INVALID_WORD;
-				const size_t outputSize = V2MPAsm_Assembler_TakeInMemoryOutputBuffer(assembler, &output, sizeof(output));
-
-				CHECK(outputSize == sizeof(output));
-				CHECK(output == Asm::SHFTL(0, 0));
+				CheckProgramMatches(assembler, { Asm::SHFTL(0, 0) });
 			}
 		}
 
@@ -213,14 +172,7 @@ SCENARIO("Assembling a single BITW instruction produces a valid program binary")
 
 			THEN("The correct program binary is produced")
 			{
-				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 0);
-				CHECK(V2MPAsm_Assembler_InMemoryOutputBufferSize(assembler) == sizeof(V2MP_Word));
-
-				V2MP_Word output = INVALID_WORD;
-				const size_t outputSize = V2MPAsm_Assembler_TakeInMemoryOutputBuffer(assembler, &output, sizeof(output));
-
-				CHECK(outputSize == sizeof(output));
-				CHECK(output == Asm::BITWL(0, Asm::BitwiseOp::AND, 0, false));
+				CheckProgramMatches(assembler, { Asm::BITWL(0, Asm::BitwiseOp::AND, 0, false) });
 			}
 		}
 
@@ -245,14 +197,7 @@ SCENARIO("Assembling a single CBX instruction produces a valid program binary")
 
 			THEN("The correct program binary is produced")
 			{
-				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 0);
-				CHECK(V2MPAsm_Assembler_InMemoryOutputBufferSize(assembler) == sizeof(V2MP_Word));
-
-				V2MP_Word output = INVALID_WORD;
-				const size_t outputSize = V2MPAsm_Assembler_TakeInMemoryOutputBuffer(assembler, &output, sizeof(output));
-
-				CHECK(outputSize == sizeof(output));
-				CHECK(output == Asm::BXZL(0));
+				CheckProgramMatches(assembler, { Asm::BXZL(0) });
 			}
 		}
 
@@ -277,14 +222,7 @@ SCENARIO("Assembling a single STK instruction produces a valid program binary")
 
 			THEN("The correct program binary is produced")
 			{
-				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 0);
-				CHECK(V2MPAsm_Assembler_InMemoryOutputBufferSize(assembler) == sizeof(V2MP_Word));
-
-				V2MP_Word output = INVALID_WORD;
-				const size_t outputSize = V2MPAsm_Assembler_TakeInMemoryOutputBuffer(assembler, &output, sizeof(output));
-
-				CHECK(outputSize == sizeof(output));
-				CHECK(output == Asm::POP(0));
+				CheckProgramMatches(assembler, { Asm::POP(0) });
 			}
 		}
 
@@ -309,14 +247,7 @@ SCENARIO("Assembling a single MUL instruction produces a valid program binary")
 
 			THEN("The correct program binary is produced")
 			{
-				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 0);
-				CHECK(V2MPAsm_Assembler_InMemoryOutputBufferSize(assembler) == sizeof(V2MP_Word));
-
-				V2MP_Word output = INVALID_WORD;
-				const size_t outputSize = V2MPAsm_Assembler_TakeInMemoryOutputBuffer(assembler, &output, sizeof(output));
-
-				CHECK(outputSize == sizeof(output));
-				CHECK(output == Asm::MULR(0));
+				CheckProgramMatches(assembler, { Asm::MULR(0) });
 			}
 		}
 
@@ -341,14 +272,7 @@ SCENARIO("Assembling a single DIV instruction produces a valid program binary")
 
 			THEN("The correct program binary is produced")
 			{
-				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 0);
-				CHECK(V2MPAsm_Assembler_InMemoryOutputBufferSize(assembler) == sizeof(V2MP_Word));
-
-				V2MP_Word output = INVALID_WORD;
-				const size_t outputSize = V2MPAsm_Assembler_TakeInMemoryOutputBuffer(assembler, &output, sizeof(output));
-
-				CHECK(outputSize == sizeof(output));
-				CHECK(output == Asm::DIVR(0));
+				CheckProgramMatches(assembler, { Asm::DIVR(0) });
 			}
 		}
 
@@ -373,14 +297,7 @@ SCENARIO("Assembling a single SIG instruction produces a valid program binary")
 
 			THEN("The correct program binary is produced")
 			{
-				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 0);
-				CHECK(V2MPAsm_Assembler_InMemoryOutputBufferSize(assembler) == sizeof(V2MP_Word));
-
-				V2MP_Word output = INVALID_WORD;
-				const size_t outputSize = V2MPAsm_Assembler_TakeInMemoryOutputBuffer(assembler, &output, sizeof(output));
-
-				CHECK(outputSize == sizeof(output));
-				CHECK(output == Asm::SIG());
+				CheckProgramMatches(assembler, { Asm::SIG() });
 			}
 		}
 

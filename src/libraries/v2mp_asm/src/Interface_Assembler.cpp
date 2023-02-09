@@ -100,7 +100,7 @@ API_V2MPASM bool V2MPAsm_Assembler_HasInMemoryOutputBuffer(const struct V2MPAsm_
 	return assembler ? assembler->inner.OutputIsRawData() : false;
 }
 
-API_V2MPASM size_t V2MPAsm_Assembler_InMemoryOutputBufferSize(const struct V2MPAsm_Assembler* assembler)
+API_V2MPASM size_t V2MPAsm_Assembler_InMemoryOutputBufferSizeInBytes(const struct V2MPAsm_Assembler* assembler)
 {
 	return (assembler && assembler->inner.OutputIsRawData()) ? (assembler->inner.RawOutputSizeInWords() * sizeof(uint16_t)) : 0;
 }

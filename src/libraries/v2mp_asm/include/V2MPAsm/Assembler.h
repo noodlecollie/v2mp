@@ -21,7 +21,7 @@ API_V2MPASM size_t V2MPAsm_Assembler_GetExceptionCount(const struct V2MPAsm_Asse
 API_V2MPASM const struct V2MPAsm_Exception* V2MPAsm_Assembler_GetException(const struct V2MPAsm_Assembler* assembler, size_t index);
 
 API_V2MPASM bool V2MPAsm_Assembler_HasInMemoryOutputBuffer(const struct V2MPAsm_Assembler* assembler);
-API_V2MPASM size_t V2MPAsm_Assembler_InMemoryOutputBufferSize(const struct V2MPAsm_Assembler* assembler);
+API_V2MPASM size_t V2MPAsm_Assembler_InMemoryOutputBufferSizeInBytes(const struct V2MPAsm_Assembler* assembler);
 
 // Returns the number of bytes that were written. Does not write off the
 // end of the buffer if it was too small.
