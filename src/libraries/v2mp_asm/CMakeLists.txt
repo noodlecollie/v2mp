@@ -37,6 +37,8 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/ProgramModel/Validators/CodeWordValidatorFactory.cpp
 	src/ProgramModel/Validators/MulDivCodeWordValidator.h
 	src/ProgramModel/Validators/MulDivCodeWordValidator.cpp
+	src/ProgramModel/Validators/ShftCodeWordValidator.h
+	src/ProgramModel/Validators/ShftCodeWordValidator.cpp
 	src/ProgramModel/Validators/ZeroArgCodeWordValidator.h
 	src/ProgramModel/Validators/ZeroArgCodeWordValidator.cpp
 	src/ProgramModel/CodeWord.h
