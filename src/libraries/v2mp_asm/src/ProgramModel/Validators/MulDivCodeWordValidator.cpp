@@ -30,10 +30,23 @@ namespace V2MPAsm
 		CodeWord& codeWord = GetCodeWord();
 		const CodeWordArg& srcModeArg = codeWord.GetArgumentRef(ARG_SRC_MODE);
 		const CodeWordArg& signednessArg = codeWord.GetArgumentRef(ARG_SIGNEDNESS);
+		const CodeWordArg& valueArg = codeWord.GetArgumentRef(ARG_VALUE);
 
 		if ( srcModeArg.GetValue() != 0 )
 		{
 			// Literal value in operand
+
+			if ( codeWord.GetInstructionType() == InstructionType::DIV &&
+			     (!valueArg.IsLabelReference() || GetValidateLabelRefs()) &&
+			     valueArg.GetValue() == 0 )
+			{
+				AddFailure(ValidationFailure(
+					PublicWarningID::DIVISION_BY_ZERO,
+					ARG_VALUE,
+					"Instruction will divide by literal value of zero."
+				));
+			}
+
 			ValidateNumberForArg(
 				ARG_VALUE,
 				signednessArg.GetValue() != 0

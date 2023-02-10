@@ -8,7 +8,7 @@
 
 SCENARIO("SUB: Too many arguments")
 {
-	GIVEN("A program containing an SUB with too many arguments")
+	GIVEN("A program containing a SUB with too many arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"SUB: Too many arguments",
@@ -40,7 +40,7 @@ SCENARIO("SUB: Too many arguments")
 
 SCENARIO("SUB: Too few arguments")
 {
-	GIVEN("A program containing an SUB with too few arguments")
+	GIVEN("A program containing a SUB with too few arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"SUB: Too few arguments",
@@ -72,7 +72,7 @@ SCENARIO("SUB: Too few arguments")
 
 SCENARIO("SUB: Non-numeric arguments")
 {
-	GIVEN("A program containing an SUB with non-numeric arguments")
+	GIVEN("A program containing a SUB with non-numeric arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"SUB: Non-numeric arguments",
@@ -104,7 +104,7 @@ SCENARIO("SUB: Non-numeric arguments")
 
 SCENARIO("SUB: Register arguments out of range")
 {
-	GIVEN("A program containing an SUB with the first argument out of range")
+	GIVEN("A program containing a SUB with the first argument out of range")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"SUB: Argument out of range",
@@ -133,7 +133,7 @@ SCENARIO("SUB: Register arguments out of range")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing an SUB with the second argument out of range")
+	AND_GIVEN("A program containing a SUB with the second argument out of range")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"SUB: Argument out of range",
@@ -165,7 +165,7 @@ SCENARIO("SUB: Register arguments out of range")
 
 SCENARIO("SUB: Literal value out of range")
 {
-	GIVEN("A program containing an SUB with a literal value that is too small")
+	GIVEN("A program containing a SUB with a literal value that is too small")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"SUB: Literal value out of range",
@@ -194,7 +194,7 @@ SCENARIO("SUB: Literal value out of range")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing an SUB with a literal value that is too large")
+	AND_GIVEN("A program containing a SUB with a literal value that is too large")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"SUB: Literal value out of range",
@@ -226,7 +226,7 @@ SCENARIO("SUB: Literal value out of range")
 
 SCENARIO("SUB: Literal value not zero")
 {
-	GIVEN("A program containing an SUB where the literal value should be zero but is not")
+	GIVEN("A program containing a SUB where the literal value should be zero but is not")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"SUB: Literal value out of range",
@@ -258,7 +258,7 @@ SCENARIO("SUB: Literal value not zero")
 
 SCENARIO("SUB: Label refs as arguments")
 {
-	GIVEN("A program containing an SUB with label refs used as register IDs")
+	GIVEN("A program containing a SUB with label refs used as register IDs")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"SUB: Label refs as register IDs",
@@ -291,7 +291,7 @@ SCENARIO("SUB: Label refs as arguments")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing an SUB with a label ref as a literal value")
+	AND_GIVEN("A program containing a SUB with a label ref as a literal value")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"SUB: Label ref as literal value",
@@ -385,7 +385,7 @@ SCENARIO("SUB: Valid permutations")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing an SUB with a literal value")
+	AND_GIVEN("A program containing a SUB with a literal value")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"SUB: Literal value",

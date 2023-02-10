@@ -6,14 +6,14 @@
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 
-SCENARIO("MUL: Too many arguments")
+SCENARIO("DIV: Too many arguments")
 {
-	GIVEN("A program containing a MUL with too many arguments")
+	GIVEN("A program containing a DIV with too many arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Too many arguments",
+			"DIV: Too many arguments",
 
-			"mul 1 1 1 1 1\n"
+			"div 1 1 1 1 1\n"
 		);
 
 		REQUIRE(assembler);
@@ -38,14 +38,14 @@ SCENARIO("MUL: Too many arguments")
 	}
 }
 
-SCENARIO("MUL: Too few arguments")
+SCENARIO("DIV: Too few arguments")
 {
-	GIVEN("A program containing a MUL with too few arguments")
+	GIVEN("A program containing a DIV with too few arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Too few arguments",
+			"DIV: Too few arguments",
 
-			"mul 1 1 1\n"
+			"div 0 0\n"
 		);
 
 		REQUIRE(assembler);
@@ -70,14 +70,14 @@ SCENARIO("MUL: Too few arguments")
 	}
 }
 
-SCENARIO("MUL: Non-numeric arguments")
+SCENARIO("DIV: Non-numeric arguments")
 {
-	GIVEN("A program containing a MUL with non-numeric arguments")
+	GIVEN("A program containing a DIC with non-numeric arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Non-numeric arguments",
+			"DIV: Non-numeric arguments",
 
-			"mul zero 0 1 butts\n"
+			"div zero 0 1 butts\n"
 		);
 
 		REQUIRE(assembler);
@@ -102,14 +102,14 @@ SCENARIO("MUL: Non-numeric arguments")
 	}
 }
 
-SCENARIO("MUL: Arguments out of range")
+SCENARIO("DIV: Arguments out of range")
 {
-	GIVEN("A program containing a MUL with the first argument out of range")
+	GIVEN("A program containing a DIV with the first argument out of range")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Argument out of range",
+			"DIV: Argument out of range",
 
-			"mul 5 0 0 0\n"
+			"div 5 0 0 0\n"
 		);
 
 		REQUIRE(assembler);
@@ -133,12 +133,12 @@ SCENARIO("MUL: Arguments out of range")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing a MUL with the second argument out of range")
+	AND_GIVEN("A program containing a DIV with the second argument out of range")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Argument out of range",
+			"DIV: Argument out of range",
 
-			"mul 0 -1 0 0\n"
+			"div 0 -1 0 0\n"
 		);
 
 		REQUIRE(assembler);
@@ -162,12 +162,12 @@ SCENARIO("MUL: Arguments out of range")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing a MUL with the third argument out of range")
+	AND_GIVEN("A program containing a DIV with the third argument out of range")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Argument out of range",
+			"DIV: Argument out of range",
 
-			"mul 0 0 65535 0\n"
+			"div 0 0 65535 0\n"
 		);
 
 		REQUIRE(assembler);
@@ -192,14 +192,14 @@ SCENARIO("MUL: Arguments out of range")
 	}
 }
 
-SCENARIO("MUL: Literal value out of range")
+SCENARIO("DIV: Literal value out of range")
 {
-	GIVEN("A program containing an unsigned MUL with a literal value that is too small")
+	GIVEN("A program containing an unsigned DIV with a literal value that is too small")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Literal value out of range",
+			"DIV: Literal value out of range",
 
-			"mul 0 1 0 -1\n"
+			"div 0 1 0 -1\n"
 		);
 
 		REQUIRE(assembler);
@@ -223,12 +223,12 @@ SCENARIO("MUL: Literal value out of range")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing an unsigned MUL with a literal value that is too large")
+	AND_GIVEN("A program containing an unsigned DIV with a literal value that is too large")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Literal value out of range",
+			"DIV: Literal value out of range",
 
-			"mul 0 1 0 1234\n"
+			"div 0 1 0 1234\n"
 		);
 
 		REQUIRE(assembler);
@@ -252,12 +252,12 @@ SCENARIO("MUL: Literal value out of range")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing a signed MUL with a literal value that is too small")
+	AND_GIVEN("A program containing a signed DIV with a literal value that is too small")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Literal value out of range",
+			"DIV: Literal value out of range",
 
-			"mul 0 1 1 -129\n"
+			"div 0 1 1 -129\n"
 		);
 
 		REQUIRE(assembler);
@@ -281,12 +281,12 @@ SCENARIO("MUL: Literal value out of range")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing a signed MUL with a literal value that is too large")
+	AND_GIVEN("A program containing a signed DIV with a literal value that is too large")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Literal value out of range",
+			"DIV: Literal value out of range",
 
-			"mul 0 1 1 128\n"
+			"div 0 1 1 128\n"
 		);
 
 		REQUIRE(assembler);
@@ -311,14 +311,75 @@ SCENARIO("MUL: Literal value out of range")
 	}
 }
 
-SCENARIO("MUL: Literal value not zero")
+SCENARIO("DIV: Divide by zero")
 {
-	GIVEN("A program containing a MUL where the literal value should be zero but is not")
+	GIVEN("A program containing an unsigned DIV with a literal value of zero")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Literal value not zero",
+			"DIV: Divide by zero",
 
-			"mul 0 0 0 123\n"
+			"div 0 1 0 0\n"
+		);
+
+		REQUIRE(assembler);
+
+		WHEN("The assembler is run")
+		{
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_WITH_WARNINGS);
+
+			THEN("A warning should be raised that a division by zero is present")
+			{
+				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 1);
+
+				const V2MPAsm_Exception* exception = V2MPAsm_Assembler_GetException(assembler, 0);
+				REQUIRE(exception);
+
+				CHECK(V2MPAsm_Exception_GetType(exception) == V2MPASM_EXCEPTION_WARNING);
+				CHECK(std::string(V2MPAsm_Exception_GetID(exception)) == std::string(EXCEPTION_ID_DIVISION_BY_ZERO));
+			}
+		}
+
+		V2MPAsm_Assembler_Destroy(assembler);
+	}
+
+	AND_GIVEN("A program containing a signed DIV with a literal value of zero")
+	{
+		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
+			"DIV: Divide by zero",
+
+			"div 0 1 1 0\n"
+		);
+
+		REQUIRE(assembler);
+
+		WHEN("The assembler is run")
+		{
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_WITH_WARNINGS);
+
+			THEN("A warning should be raised that a division by zero is present")
+			{
+				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 1);
+
+				const V2MPAsm_Exception* exception = V2MPAsm_Assembler_GetException(assembler, 0);
+				REQUIRE(exception);
+
+				CHECK(V2MPAsm_Exception_GetType(exception) == V2MPASM_EXCEPTION_WARNING);
+				CHECK(std::string(V2MPAsm_Exception_GetID(exception)) == std::string(EXCEPTION_ID_DIVISION_BY_ZERO));
+			}
+		}
+
+		V2MPAsm_Assembler_Destroy(assembler);
+	}
+}
+
+SCENARIO("DIV: Literal value not zero")
+{
+	GIVEN("A program containing a DIV where the literal value should be zero but is not")
+	{
+		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
+			"DIV: Literal value not zero",
+
+			"div 0 0 0 123\n"
 		);
 
 		REQUIRE(assembler);
@@ -343,15 +404,15 @@ SCENARIO("MUL: Literal value not zero")
 	}
 }
 
-SCENARIO("MUL: Label refs as arguments")
+SCENARIO("DIV: Label refs as arguments")
 {
-	GIVEN("A program containing a MUL with a label ref as the first argument")
+	GIVEN("A program containing a DIV with a label ref as the first argument")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Label refs for arguments",
+			"DIV: Label refs for arguments",
 
 			":label\n"
-			"mul <:label 0 0 0\n"
+			"div <:label 0 0 0\n"
 		);
 
 		REQUIRE(assembler);
@@ -375,13 +436,13 @@ SCENARIO("MUL: Label refs as arguments")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing a MUL with a label ref as the second argument")
+	AND_GIVEN("A program containing a DIV with a label ref as the second argument")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Label refs for arguments",
+			"DIV: Label refs for arguments",
 
 			":label\n"
-			"mul 0 >:label 0 0\n"
+			"div 0 >:label 0 0\n"
 		);
 
 		REQUIRE(assembler);
@@ -405,13 +466,13 @@ SCENARIO("MUL: Label refs as arguments")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing a MUL with a label ref as the third argument")
+	AND_GIVEN("A program containing a DIV with a label ref as the third argument")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Label refs for arguments",
+			"DIV: Label refs for arguments",
 
 			":label\n"
-			"mul 0 0 ~:label 0\n"
+			"div 0 0 ~:label 0\n"
 		);
 
 		REQUIRE(assembler);
@@ -435,14 +496,14 @@ SCENARIO("MUL: Label refs as arguments")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing a MUL with a label ref as the literal argument")
+	AND_GIVEN("A program containing a DIV with a label ref as the literal argument")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Label refs for arguments",
+			"DIV: Label refs for arguments",
 
 			":label\n"
-			"mul 0 1 0 0\n"
-			"mul 0 1 0 ~:label\n"
+			"div 0 1 0 5\n"
+			"div 0 1 0 ~:label\n"
 		);
 
 		REQUIRE(assembler);
@@ -456,8 +517,8 @@ SCENARIO("MUL: Label refs as arguments")
 				CheckProgramMatches(
 					assembler,
 					{
-						Asm::MULL(Asm::REG_R0, 0),
-						Asm::MULL(Asm::REG_R0, 1),
+						Asm::DIVL(Asm::REG_R0, 5),
+						Asm::DIVL(Asm::REG_R0, 1),
 					}
 				);
 			}
@@ -467,9 +528,9 @@ SCENARIO("MUL: Label refs as arguments")
 	}
 }
 
-SCENARIO("MUL: Valid permutations")
+SCENARIO("DIV: Valid permutations")
 {
-	GIVEN("A program containing all valid MUL permutations")
+	GIVEN("A program containing all valid DIV permutations")
 	{
 		std::stringstream stream;
 
@@ -483,7 +544,7 @@ SCENARIO("MUL: Valid permutations")
 				for ( int arg2 = 0; arg2 < 2; ++arg2 )
 				{
 					// Re-using arg1 as the literal value
-					stream << "mul " << arg0 << " " << arg1 << " " << arg2 << " " << arg1 << "\n";
+					stream << "div " << arg0 << " " << arg1 << " " << arg2 << " " << arg1 << "\n";
 				}
 			}
 		}
@@ -491,7 +552,7 @@ SCENARIO("MUL: Valid permutations")
 		const std::string program = stream.str();
 
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"MUL: Valid permutations",
+			"DIV: Valid permutations",
 
 			program.c_str()
 		);
@@ -507,17 +568,17 @@ SCENARIO("MUL: Valid permutations")
 				CheckProgramMatches(
 					assembler,
 					{
-						Asm::MULR(Asm::REG_R0),
-						Asm::IMULR(Asm::REG_R0),
+						Asm::DIVR(Asm::REG_R0),
+						Asm::IDIVR(Asm::REG_R0),
 
-						Asm::MULL(Asm::REG_R0, 1),
-						Asm::IMULL(Asm::REG_R0, 1),
+						Asm::DIVL(Asm::REG_R0, 1),
+						Asm::IDIVL(Asm::REG_R0, 1),
 
-						Asm::MULR(Asm::REG_R1),
-						Asm::IMULR(Asm::REG_R1),
+						Asm::DIVR(Asm::REG_R1),
+						Asm::IDIVR(Asm::REG_R1),
 
-						Asm::MULL(Asm::REG_R1, 1),
-						Asm::IMULL(Asm::REG_R1, 1),
+						Asm::DIVL(Asm::REG_R1, 1),
+						Asm::IDIVL(Asm::REG_R1, 1),
 					}
 				);
 			}
