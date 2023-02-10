@@ -6,14 +6,14 @@
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 
-SCENARIO("ADD: Too many arguments")
+SCENARIO("SUB: Too many arguments")
 {
-	GIVEN("A program containing an ADD with too many arguments")
+	GIVEN("A program containing an SUB with too many arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"ADD: Too many arguments",
+			"SUB: Too many arguments",
 
-			"add 0 1 0 3\n"
+			"sub 0 1 0 3\n"
 		);
 
 		REQUIRE(assembler);
@@ -38,14 +38,14 @@ SCENARIO("ADD: Too many arguments")
 	}
 }
 
-SCENARIO("ADD: Too few arguments")
+SCENARIO("SUB: Too few arguments")
 {
-	GIVEN("A program containing an ADD with too few arguments")
+	GIVEN("A program containing an SUB with too few arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"ADD: Too few arguments",
+			"SUB: Too few arguments",
 
-			"add 0 0\n"
+			"sub 0 0\n"
 		);
 
 		REQUIRE(assembler);
@@ -70,14 +70,14 @@ SCENARIO("ADD: Too few arguments")
 	}
 }
 
-SCENARIO("ADD: Non-numeric arguments")
+SCENARIO("SUB: Non-numeric arguments")
 {
-	GIVEN("A program containing an ADD with non-numeric arguments")
+	GIVEN("A program containing an SUB with non-numeric arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"ADD: Non-numeric arguments",
+			"SUB: Non-numeric arguments",
 
-			"add zero one two\n"
+			"sub zero one two\n"
 		);
 
 		REQUIRE(assembler);
@@ -102,14 +102,14 @@ SCENARIO("ADD: Non-numeric arguments")
 	}
 }
 
-SCENARIO("ADD: Register arguments out of range")
+SCENARIO("SUB: Register arguments out of range")
 {
-	GIVEN("A program containing an ADD with the first argument out of range")
+	GIVEN("A program containing an SUB with the first argument out of range")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"ADD: Argument out of range",
+			"SUB: Argument out of range",
 
-			"add -1 1 0\n"
+			"sub -1 1 0\n"
 		);
 
 		REQUIRE(assembler);
@@ -133,12 +133,12 @@ SCENARIO("ADD: Register arguments out of range")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing an ADD with the second argument out of range")
+	AND_GIVEN("A program containing an SUB with the second argument out of range")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"ADD: Argument out of range",
+			"SUB: Argument out of range",
 
-			"add 0 12345 0\n"
+			"sub 0 12345 0\n"
 		);
 
 		REQUIRE(assembler);
@@ -163,14 +163,14 @@ SCENARIO("ADD: Register arguments out of range")
 	}
 }
 
-SCENARIO("ADD: Literal value out of range")
+SCENARIO("SUB: Literal value out of range")
 {
-	GIVEN("A program containing an ADD with a literal value that is too small")
+	GIVEN("A program containing an SUB with a literal value that is too small")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"ADD: Literal value out of range",
+			"SUB: Literal value out of range",
 
-			"add 0 0 -10\n"
+			"sub 0 0 -10\n"
 		);
 
 		REQUIRE(assembler);
@@ -194,12 +194,12 @@ SCENARIO("ADD: Literal value out of range")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing an ADD with a literal value that is too large")
+	AND_GIVEN("A program containing an SUB with a literal value that is too large")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"ADD: Literal value out of range",
+			"SUB: Literal value out of range",
 
-			"add 0 0 256\n"
+			"sub 0 0 256\n"
 		);
 
 		REQUIRE(assembler);
@@ -224,14 +224,14 @@ SCENARIO("ADD: Literal value out of range")
 	}
 }
 
-SCENARIO("ADD: Literal value not zero")
+SCENARIO("SUB: Literal value not zero")
 {
-	GIVEN("A program containing an ADD where the literal value should be zero but is not")
+	GIVEN("A program containing an SUB where the literal value should be zero but is not")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"ADD: Literal value out of range",
+			"SUB: Literal value out of range",
 
-			"add 0 1 5\n"
+			"sub 0 1 5\n"
 		);
 
 		REQUIRE(assembler);
@@ -256,15 +256,15 @@ SCENARIO("ADD: Literal value not zero")
 	}
 }
 
-SCENARIO("ADD: Label refs as arguments")
+SCENARIO("SUB: Label refs as arguments")
 {
-	GIVEN("A program containing an ADD with label refs used as register IDs")
+	GIVEN("A program containing an SUB with label refs used as register IDs")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"ADD: Label refs as register IDs",
+			"SUB: Label refs as register IDs",
 
 			":label\n"
-			"add <:label >:label 0\n"
+			"sub <:label >:label 0\n"
 		);
 
 		REQUIRE(assembler);
@@ -291,14 +291,14 @@ SCENARIO("ADD: Label refs as arguments")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing an ADD with a label ref as a literal value")
+	AND_GIVEN("A program containing an SUB with a label ref as a literal value")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"ADD: Label ref as literal value",
+			"SUB: Label ref as literal value",
 
 			":label\n"
-			"add 0 0 0\n"
-			"add 0 0 ~:label\n"
+			"sub 0 0 0\n"
+			"sub 0 0 ~:label\n"
 		);
 
 		REQUIRE(assembler);
@@ -312,8 +312,8 @@ SCENARIO("ADD: Label refs as arguments")
 				CheckProgramMatches(
 					assembler,
 					{
-						Asm::ADDL(Asm::REG_R0, 0),
-						Asm::ADDL(Asm::REG_R0, 1),
+						Asm::SUBL(Asm::REG_R0, 0),
+						Asm::SUBL(Asm::REG_R0, 1),
 					}
 				);
 			}
@@ -323,9 +323,9 @@ SCENARIO("ADD: Label refs as arguments")
 	}
 }
 
-SCENARIO("ADD: Valid permutations")
+SCENARIO("SUB: Valid permutations")
 {
-	GIVEN("A program containing all valid ADD permutations")
+	GIVEN("A program containing all valid SUB permutations")
 	{
 		std::stringstream stream;
 
@@ -335,14 +335,14 @@ SCENARIO("ADD: Valid permutations")
 			// R0, R1, LR, PC
 			for ( int arg1 = 0; arg1 < 4; ++arg1 )
 			{
-				stream << "add " << arg0 << " " << arg1 << " 0\n";
+				stream << "sub " << arg0 << " " << arg1 << " 0\n";
 			}
 		}
 
 		const std::string program = stream.str();
 
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"ADD: Valid permutations",
+			"SUB: Valid permutations",
 
 			program.c_str()
 		);
@@ -358,25 +358,25 @@ SCENARIO("ADD: Valid permutations")
 				CheckProgramMatches(
 					assembler,
 					{
-						Asm::ADDR(Asm::REG_R0, Asm::REG_R0),
-						Asm::ADDR(Asm::REG_R0, Asm::REG_R1),
-						Asm::ADDR(Asm::REG_R0, Asm::REG_LR),
-						Asm::ADDR(Asm::REG_R0, Asm::REG_PC),
+						Asm::SUBR(Asm::REG_R0, Asm::REG_R0),
+						Asm::SUBR(Asm::REG_R0, Asm::REG_R1),
+						Asm::SUBR(Asm::REG_R0, Asm::REG_LR),
+						Asm::SUBR(Asm::REG_R0, Asm::REG_PC),
 
-						Asm::ADDR(Asm::REG_R1, Asm::REG_R0),
-						Asm::ADDR(Asm::REG_R1, Asm::REG_R1),
-						Asm::ADDR(Asm::REG_R1, Asm::REG_LR),
-						Asm::ADDR(Asm::REG_R1, Asm::REG_PC),
+						Asm::SUBR(Asm::REG_R1, Asm::REG_R0),
+						Asm::SUBR(Asm::REG_R1, Asm::REG_R1),
+						Asm::SUBR(Asm::REG_R1, Asm::REG_LR),
+						Asm::SUBR(Asm::REG_R1, Asm::REG_PC),
 
-						Asm::ADDR(Asm::REG_LR, Asm::REG_R0),
-						Asm::ADDR(Asm::REG_LR, Asm::REG_R1),
-						Asm::ADDR(Asm::REG_LR, Asm::REG_LR),
-						Asm::ADDR(Asm::REG_LR, Asm::REG_PC),
+						Asm::SUBR(Asm::REG_LR, Asm::REG_R0),
+						Asm::SUBR(Asm::REG_LR, Asm::REG_R1),
+						Asm::SUBR(Asm::REG_LR, Asm::REG_LR),
+						Asm::SUBR(Asm::REG_LR, Asm::REG_PC),
 
-						Asm::ADDR(Asm::REG_PC, Asm::REG_R0),
-						Asm::ADDR(Asm::REG_PC, Asm::REG_R1),
-						Asm::ADDR(Asm::REG_PC, Asm::REG_LR),
-						Asm::ADDR(Asm::REG_PC, Asm::REG_PC),
+						Asm::SUBR(Asm::REG_PC, Asm::REG_R0),
+						Asm::SUBR(Asm::REG_PC, Asm::REG_R1),
+						Asm::SUBR(Asm::REG_PC, Asm::REG_LR),
+						Asm::SUBR(Asm::REG_PC, Asm::REG_PC),
 					}
 				);
 			}
@@ -385,12 +385,12 @@ SCENARIO("ADD: Valid permutations")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing an ADD with a literal value")
+	AND_GIVEN("A program containing an SUB with a literal value")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"ADD: Literal value",
+			"SUB: Literal value",
 
-			"add 0 0 123\n"
+			"sub 0 0 123\n"
 		);
 
 		REQUIRE(assembler);
@@ -404,7 +404,7 @@ SCENARIO("ADD: Valid permutations")
 				CheckProgramMatches(
 					assembler,
 					{
-						Asm::ADDL(Asm::REG_R0, 123)
+						Asm::SUBL(Asm::REG_R0, 123)
 					}
 				);
 			}

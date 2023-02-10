@@ -7,6 +7,7 @@ add_executable(V2MPAsm_Tests
 	src/ProgramVerification.h
 	src/ProgramVerification.cpp
 	src/SingleInstructions.cpp
+	src/SubTests.cpp
 )
 
 target_link_libraries(V2MPAsm_Tests PRIVATE
