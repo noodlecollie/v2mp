@@ -28,7 +28,7 @@ SCENARIO("Assembly language feature sanity check")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("There are no errors")
 			{

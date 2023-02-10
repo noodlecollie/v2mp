@@ -20,7 +20,7 @@ SCENARIO("ADD: Too many arguments")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_WITH_WARNINGS);
 
 			THEN("A warning should be raised that there were too many arguments")
 			{
@@ -52,7 +52,7 @@ SCENARIO("ADD: Too few arguments")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_FAILED);
 
 			THEN("An error should be raised that there were too few arguments")
 			{
@@ -84,7 +84,7 @@ SCENARIO("ADD: Non-numeric arguments")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_FAILED);
 
 			THEN("An error should be raised that an unexpected token was encountered")
 			{
@@ -116,7 +116,7 @@ SCENARIO("ADD: Register arguments out of range")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_FAILED);
 
 			THEN("An error should be raised that the register ID is invalid")
 			{
@@ -145,7 +145,7 @@ SCENARIO("ADD: Register arguments out of range")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_FAILED);
 
 			THEN("An error should be raised that the register ID is invalid")
 			{
@@ -177,9 +177,9 @@ SCENARIO("ADD: Literal value out of range")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_WITH_WARNINGS);
 
-			THEN("An error should be raised that the argument was out of range")
+			THEN("A warning should be raised that the argument was out of range")
 			{
 				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 1);
 
@@ -206,9 +206,9 @@ SCENARIO("ADD: Literal value out of range")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_WITH_WARNINGS);
 
-			THEN("An error should be raised that the argument was out of range")
+			THEN("A warning should be raised that the argument was out of range")
 			{
 				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 1);
 
@@ -229,7 +229,7 @@ SCENARIO("ADD: Literal value not zero")
 	GIVEN("A program containing an ADD where the literal value should be zero but is not")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"ADD: Literal value out of range",
+			"ADD: Literal value not zero",
 
 			"add 0 1 5\n"
 		);
@@ -238,9 +238,9 @@ SCENARIO("ADD: Literal value not zero")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_WITH_WARNINGS);
 
-			THEN("An error should be raised that the argument was out of range")
+			THEN("A warning should be raised that reserved bits were set")
 			{
 				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 1);
 
@@ -271,15 +271,15 @@ SCENARIO("ADD: Label refs as arguments")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_FAILED);
 
 			THEN("An error should be raised for every label ref usage")
 			{
 				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 2);
 
-				for ( size_t index = 0; index < 4; ++index )
+				for ( size_t index = 0; index < 2; ++index )
 				{
-					const V2MPAsm_Exception* exception = V2MPAsm_Assembler_GetException(assembler, 0);
+					const V2MPAsm_Exception* exception = V2MPAsm_Assembler_GetException(assembler, index);
 					REQUIRE(exception);
 
 					CHECK(V2MPAsm_Exception_GetType(exception) == V2MPASM_EXCEPTION_ERROR);
@@ -305,7 +305,7 @@ SCENARIO("ADD: Label refs as arguments")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("A valid program should be produced")
 			{
@@ -351,7 +351,7 @@ SCENARIO("ADD: Valid permutations")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("A valid program should be produced")
 			{
@@ -397,7 +397,7 @@ SCENARIO("ADD: Valid permutations")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("A valid program should be produced")
 			{

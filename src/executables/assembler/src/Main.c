@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 
 	struct V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromFiles(argv[1], argv[2]);
 
-	if ( !V2MPAsm_Assembler_Run(assembler) )
+	if ( V2MPAsm_Assembler_Run(assembler) != V2MPASM_COMPLETED_OK )
 	{
 		const size_t numExceptions = V2MPAsm_Assembler_GetExceptionCount(assembler);
 

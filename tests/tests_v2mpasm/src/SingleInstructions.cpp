@@ -18,7 +18,7 @@ SCENARIO("Assembling a single NOP instruction produces a valid program binary")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("The correct program binary is produced")
 			{
@@ -43,7 +43,7 @@ SCENARIO("Assembling a single LDST instruction produces a valid program binary")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("The correct program binary is produced")
 			{
@@ -68,7 +68,7 @@ SCENARIO("Assembling a single ASGN instruction produces a valid program binary")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("The correct program binary is produced")
 			{
@@ -93,7 +93,7 @@ SCENARIO("Assembling a single ADD instruction produces a valid program binary")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("The correct program binary is produced")
 			{
@@ -118,7 +118,7 @@ SCENARIO("Assembling a single SUB instruction produces a valid program binary")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("The correct program binary is produced")
 			{
@@ -143,7 +143,7 @@ SCENARIO("Assembling a single SHFT instruction produces a valid program binary")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("The correct program binary is produced")
 			{
@@ -168,7 +168,7 @@ SCENARIO("Assembling a single BITW instruction produces a valid program binary")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("The correct program binary is produced")
 			{
@@ -193,7 +193,7 @@ SCENARIO("Assembling a single CBX instruction produces a valid program binary")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("The correct program binary is produced")
 			{
@@ -218,7 +218,7 @@ SCENARIO("Assembling a single STK instruction produces a valid program binary")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("The correct program binary is produced")
 			{
@@ -243,7 +243,7 @@ SCENARIO("Assembling a single MUL instruction produces a valid program binary")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("The correct program binary is produced")
 			{
@@ -268,7 +268,7 @@ SCENARIO("Assembling a single DIV instruction produces a valid program binary")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("The correct program binary is produced")
 			{
@@ -293,7 +293,7 @@ SCENARIO("Assembling a single SIG instruction produces a valid program binary")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("The correct program binary is produced")
 			{

@@ -14,13 +14,20 @@ namespace V2MPAsm
 	class Assembler
 	{
 	public:
+		enum class Result
+		{
+			COMPLETED = 0,
+			COMPLETED_WITH_WARNINGS,
+			FAILED
+		};
+
 		void SetInputFileName(const std::string& inFile) noexcept;
 		void SetInputRawData(const std::string& path, const char* data) noexcept;
 
 		void SetOutputToFile(const std::string& outFile) noexcept;
 		void SetOutputToRawData() noexcept;
 
-		bool Run() noexcept;
+		Result Run() noexcept;
 
 		const ExceptionList& GetExceptions() const noexcept;
 

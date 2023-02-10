@@ -12,11 +12,18 @@ extern "C" {
 struct V2MPAsm_Assembler;
 struct V2MPAsm_Exception;
 
+typedef enum V2MPAsm_AssemblerResult
+{
+	V2MPASM_COMPLETED_OK = 0,
+	V2MPASM_COMPLETED_WITH_WARNINGS,
+	V2MPASM_FAILED
+} V2MPAsm_AssemblerResult;
+
 API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromFiles(const char* inputFile, const char* outputFile);
 API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromMemory(const char* inputFileName, const char* inputBuffer);
 API_V2MPASM void V2MPAsm_Assembler_Destroy(struct V2MPAsm_Assembler* assembler);
 
-API_V2MPASM bool V2MPAsm_Assembler_Run(struct V2MPAsm_Assembler* assembler);
+API_V2MPASM V2MPAsm_AssemblerResult V2MPAsm_Assembler_Run(struct V2MPAsm_Assembler* assembler);
 API_V2MPASM size_t V2MPAsm_Assembler_GetExceptionCount(const struct V2MPAsm_Assembler* assembler);
 API_V2MPASM const struct V2MPAsm_Exception* V2MPAsm_Assembler_GetException(const struct V2MPAsm_Assembler* assembler, size_t index);
 

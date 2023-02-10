@@ -18,7 +18,7 @@ SCENARIO("NOP: Too many arguments")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_WITH_WARNINGS);
 
 			THEN("A warning should be raised that there were too many arguments")
 			{
@@ -50,7 +50,7 @@ SCENARIO("NOP: Two in a row")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_FAILED);
 
 			THEN("An error should be raised that an unexpected token was encountered")
 			{
@@ -82,7 +82,7 @@ SCENARIO("NOP: Comment before")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("A valid program should be produced")
 			{
@@ -117,7 +117,7 @@ SCENARIO("NOP: Ten of them")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("A valid program should be produced")
 			{

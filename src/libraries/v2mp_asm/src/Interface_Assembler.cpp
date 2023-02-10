@@ -3,6 +3,27 @@
 #include "V2MPAsm/Assembler.h"
 #include "Interface_Assembler.h"
 
+static V2MPAsm_AssemblerResult ToExternalResult(V2MPAsm::Assembler::Result inResult)
+{
+	switch ( inResult )
+	{
+		case V2MPAsm::Assembler::Result::COMPLETED:
+		{
+			return V2MPASM_COMPLETED_OK;
+		}
+
+		case V2MPAsm::Assembler::Result::COMPLETED_WITH_WARNINGS:
+		{
+			return V2MPASM_COMPLETED_WITH_WARNINGS;
+		}
+
+		default:
+		{
+			return V2MPASM_FAILED;
+		}
+	}
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -51,20 +72,20 @@ API_V2MPASM void V2MPAsm_Assembler_Destroy(struct V2MPAsm_Assembler* assembler)
 	delete assembler;
 }
 
-API_V2MPASM bool V2MPAsm_Assembler_Run(struct V2MPAsm_Assembler* assembler)
+API_V2MPASM V2MPAsm_AssemblerResult V2MPAsm_Assembler_Run(struct V2MPAsm_Assembler* assembler)
 {
 	if ( !assembler )
 	{
-		return false;
+		return V2MPASM_FAILED;
 	}
 
 	try
 	{
-		return assembler->inner.Run();
+		return ToExternalResult(assembler->inner.Run());
 	}
 	catch (...)
 	{
-		return false;
+		return V2MPASM_FAILED;
 	}
 }
 

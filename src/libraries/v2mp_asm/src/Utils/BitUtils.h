@@ -20,7 +20,7 @@ namespace V2MPAsm
 	static constexpr int32_t MaxSignedValue(size_t numBits)
 	{
 		// (2 ^ (n-1)) - 1
-		return numBits > 1 ? (1 << (numBits - 1)) : 0;
+		return numBits > 1 ? ((1 << (numBits - 1)) - 1) : 0;
 	}
 
 	static constexpr uint32_t BitMask(size_t numBits)

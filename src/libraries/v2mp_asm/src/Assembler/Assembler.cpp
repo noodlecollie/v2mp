@@ -13,6 +13,24 @@
 
 namespace V2MPAsm
 {
+	static Assembler::Result ResultFromExceptionList(const ExceptionList& list)
+	{
+		if ( list.empty() )
+		{
+			return Assembler::Result::COMPLETED;
+		}
+
+		for ( const std::shared_ptr<V2MPAsm_Exception>& ex : list )
+		{
+			if ( ex->inner.GetType() == V2MPASM_EXCEPTION_ERROR )
+			{
+				return Assembler::Result::FAILED;
+			}
+		}
+
+		return Assembler::Result::COMPLETED_WITH_WARNINGS;
+	}
+
 	void Assembler::SetInputFileName(const std::string& inFile) noexcept
 	{
 		m_Input = inFile;
@@ -33,14 +51,14 @@ namespace V2MPAsm
 		m_Output = std::vector<uint16_t>();
 	}
 
-	bool Assembler::Run() noexcept
+	Assembler::Result Assembler::Run() noexcept
 	{
 		std::unique_ptr<ProgramModel> model;
 		m_ExceptionList = ParseInputAndCompileExceptionList(model);
 
 		if ( !m_ExceptionList.empty() )
 		{
-			return false;
+			return ResultFromExceptionList(m_ExceptionList);
 		}
 
 		if ( OutputIsRawData() )
@@ -52,7 +70,7 @@ namespace V2MPAsm
 			m_ExceptionList = TryWriteOutputFile(std::move(model));
 		}
 
-		return m_ExceptionList.empty();
+		return ResultFromExceptionList(m_ExceptionList);
 	}
 
 	const std::vector<std::shared_ptr<V2MPAsm_Exception>>& Assembler::GetExceptions() const noexcept

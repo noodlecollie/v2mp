@@ -20,7 +20,7 @@ SCENARIO("LDST: Too many arguments")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_WITH_WARNINGS);
 
 			THEN("A warning should be raised that there were too many arguments")
 			{
@@ -52,7 +52,7 @@ SCENARIO("LDST: Too few arguments")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_FAILED);
 
 			THEN("An error should be raised that there were too few arguments")
 			{
@@ -84,7 +84,7 @@ SCENARIO("LDST: Non-numeric arguments")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_FAILED);
 
 			THEN("An error should be raised that an unexpected token was encountered")
 			{
@@ -116,9 +116,9 @@ SCENARIO("LDST: Arguments out of range")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_WITH_WARNINGS);
 
-			THEN("An error should be raised that the argument was out of range")
+			THEN("A warning should be raised that the argument was out of range")
 			{
 				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 1);
 
@@ -145,7 +145,7 @@ SCENARIO("LDST: Arguments out of range")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_FAILED);
 
 			THEN("An error should be raised that the register ID is invalid")
 			{
@@ -174,7 +174,7 @@ SCENARIO("LDST: Arguments out of range")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_FAILED);
 
 			THEN("Appropriate errors should be reported")
 			{
@@ -212,7 +212,7 @@ SCENARIO("LDST: Label refs as arguments")
 
 		WHEN("The assembler is run")
 		{
-			CHECK_FALSE(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_FAILED);
 
 			THEN("An error should be raised for every label ref usage")
 			{
@@ -220,7 +220,7 @@ SCENARIO("LDST: Label refs as arguments")
 
 				for ( size_t index = 0; index < 4; ++index )
 				{
-					const V2MPAsm_Exception* exception = V2MPAsm_Assembler_GetException(assembler, 0);
+					const V2MPAsm_Exception* exception = V2MPAsm_Assembler_GetException(assembler, index);
 					REQUIRE(exception);
 
 					CHECK(V2MPAsm_Exception_GetType(exception) == V2MPASM_EXCEPTION_ERROR);
@@ -261,7 +261,7 @@ SCENARIO("LDST: Valid permutations")
 
 		WHEN("The assembler is run")
 		{
-			CHECK(V2MPAsm_Assembler_Run(assembler));
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
 			THEN("A valid program should be produced")
 			{
