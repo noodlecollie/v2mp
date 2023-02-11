@@ -396,19 +396,19 @@ SCENARIO("ASGN: Valid permutations")
 				CheckProgramMatches(
 					assembler,
 					{
-						Asm::ASGNR(Asm::REG_R0, Asm::REG_R0),
+						Asm::ASGNL(Asm::REG_R0, 0),
 						Asm::ASGNR(Asm::REG_R0, Asm::REG_R1),
 						Asm::ASGNR(Asm::REG_R0, Asm::REG_LR),
 						Asm::ASGNR(Asm::REG_R0, Asm::REG_PC),
 
 						Asm::ASGNR(Asm::REG_R1, Asm::REG_R0),
-						Asm::ASGNR(Asm::REG_R1, Asm::REG_R1),
+						Asm::ASGNL(Asm::REG_R1, 0),
 						Asm::ASGNR(Asm::REG_R1, Asm::REG_LR),
 						Asm::ASGNR(Asm::REG_R1, Asm::REG_PC),
 
 						Asm::ASGNR(Asm::REG_LR, Asm::REG_R0),
 						Asm::ASGNR(Asm::REG_LR, Asm::REG_R1),
-						Asm::ASGNR(Asm::REG_LR, Asm::REG_LR),
+						Asm::ASGNL(Asm::REG_LR, 0),
 						Asm::ASGNR(Asm::REG_LR, Asm::REG_PC),
 
 						Asm::ASGNR(Asm::REG_PC, Asm::REG_R0),

@@ -6,14 +6,14 @@
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 
-SCENARIO("SUB: Too many arguments")
+SCENARIO("SHFT: Too many arguments")
 {
-	GIVEN("A program containing a SUB with too many arguments")
+	GIVEN("A program containing a SHFT with too many arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"SUB: Too many arguments",
+			"SHFT: Too many arguments",
 
-			"sub 0 1 0 3\n"
+			"shft 0 1 0 3\n"
 		);
 
 		REQUIRE(assembler);
@@ -38,14 +38,14 @@ SCENARIO("SUB: Too many arguments")
 	}
 }
 
-SCENARIO("SUB: Too few arguments")
+SCENARIO("SHFT: Too few arguments")
 {
-	GIVEN("A program containing a SUB with too few arguments")
+	GIVEN("A program containing a SHFT with too few arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"SUB: Too few arguments",
+			"SHFT: Too few arguments",
 
-			"sub 0 0\n"
+			"shft 0 0\n"
 		);
 
 		REQUIRE(assembler);
@@ -70,14 +70,14 @@ SCENARIO("SUB: Too few arguments")
 	}
 }
 
-SCENARIO("SUB: Non-numeric arguments")
+SCENARIO("SHFT: Non-numeric arguments")
 {
-	GIVEN("A program containing a SUB with non-numeric arguments")
+	GIVEN("A program containing a SHFT with non-numeric arguments")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"SUB: Non-numeric arguments",
+			"SHFT: Non-numeric arguments",
 
-			"sub zero one two\n"
+			"shft zero one two\n"
 		);
 
 		REQUIRE(assembler);
@@ -102,14 +102,14 @@ SCENARIO("SUB: Non-numeric arguments")
 	}
 }
 
-SCENARIO("SUB: Register arguments out of range")
+SCENARIO("SHFT: Register arguments out of range")
 {
-	GIVEN("A program containing a SUB with the first argument out of range")
+	GIVEN("A program containing a SHFT with the first argument out of range")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"SUB: Argument out of range",
+			"SHFT: Argument out of range",
 
-			"sub -1 1 0\n"
+			"shft -1 1 0\n"
 		);
 
 		REQUIRE(assembler);
@@ -133,12 +133,12 @@ SCENARIO("SUB: Register arguments out of range")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing a SUB with the second argument out of range")
+	AND_GIVEN("A program containing a SHFT with the second argument out of range")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"SUB: Argument out of range",
+			"SHFT: Argument out of range",
 
-			"sub 0 12345 0\n"
+			"shft 0 12345 0\n"
 		);
 
 		REQUIRE(assembler);
@@ -163,14 +163,14 @@ SCENARIO("SUB: Register arguments out of range")
 	}
 }
 
-SCENARIO("SUB: Literal value out of range")
+SCENARIO("SHFT: Literal value out of range")
 {
-	GIVEN("A program containing a SUB with a literal value that is too small")
+	GIVEN("A program containing a SHFT with a literal value that is too small")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"SUB: Literal value out of range",
+			"SHFT: Literal value out of range",
 
-			"sub 0 0 -10\n"
+			"shft 0 0 -17\n"
 		);
 
 		REQUIRE(assembler);
@@ -194,12 +194,12 @@ SCENARIO("SUB: Literal value out of range")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing a SUB with a literal value that is too large")
+	AND_GIVEN("A program containing a SHFT with a literal value that is too large")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"SUB: Literal value out of range",
+			"SHFT: Literal value out of range",
 
-			"sub 0 0 256\n"
+			"shft 0 0 16\n"
 		);
 
 		REQUIRE(assembler);
@@ -224,14 +224,14 @@ SCENARIO("SUB: Literal value out of range")
 	}
 }
 
-SCENARIO("SUB: Literal value not zero")
+SCENARIO("SHFT: Literal value not zero")
 {
-	GIVEN("A program containing a SUB where the literal value should be zero but is not")
+	GIVEN("A program containing a SHFT where the literal value should be zero but is not")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"SUB: Literal value out of range",
+			"SHFT: Literal value not zero",
 
-			"sub 0 1 5\n"
+			"shft 0 1 5\n"
 		);
 
 		REQUIRE(assembler);
@@ -240,7 +240,7 @@ SCENARIO("SUB: Literal value not zero")
 		{
 			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_WITH_WARNINGS);
 
-			THEN("A warning should be raised that the argument was out of range")
+			THEN("A warning should be raised that reserved bits were set")
 			{
 				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 1);
 
@@ -256,15 +256,15 @@ SCENARIO("SUB: Literal value not zero")
 	}
 }
 
-SCENARIO("SUB: Label refs as arguments")
+SCENARIO("SHFT: Label refs as arguments")
 {
-	GIVEN("A program containing a SUB with label refs used as register IDs")
+	GIVEN("A program containing a SHFT with label refs used as register IDs")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"SUB: Label refs as register IDs",
+			"SHFT: Label refs as register IDs",
 
 			":label\n"
-			"sub <:label >:label 0\n"
+			"shft <:label >:label 0\n"
 		);
 
 		REQUIRE(assembler);
@@ -291,14 +291,14 @@ SCENARIO("SUB: Label refs as arguments")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing a SUB with a label ref as a literal value")
+	AND_GIVEN("A program containing a SHFT with a label ref as a literal value")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"SUB: Label ref as literal value",
+			"SHFT: Label ref as literal value",
 
 			":label\n"
-			"sub 0 0 0\n"
-			"sub 0 0 ~:label\n"
+			"shft 0 0 0\n"
+			"shft 0 0 ~:label\n"
 		);
 
 		REQUIRE(assembler);
@@ -312,8 +312,8 @@ SCENARIO("SUB: Label refs as arguments")
 				CheckProgramMatches(
 					assembler,
 					{
-						Asm::SUBL(Asm::REG_R0, 0),
-						Asm::SUBL(Asm::REG_R0, 1),
+						Asm::SHFTL(Asm::REG_R0, 0),
+						Asm::SHFTL(Asm::REG_R0, 1),
 					}
 				);
 			}
@@ -323,9 +323,9 @@ SCENARIO("SUB: Label refs as arguments")
 	}
 }
 
-SCENARIO("SUB: Valid permutations")
+SCENARIO("SHFT: Valid permutations")
 {
-	GIVEN("A program containing all valid SUB permutations")
+	GIVEN("A program containing all valid SHFT permutations")
 	{
 		std::stringstream stream;
 
@@ -335,14 +335,14 @@ SCENARIO("SUB: Valid permutations")
 			// R0, R1, LR, PC
 			for ( int arg1 = 0; arg1 < 4; ++arg1 )
 			{
-				stream << "sub " << arg0 << " " << arg1 << " 0\n";
+				stream << "shft " << arg0 << " " << arg1 << " 0\n";
 			}
 		}
 
 		const std::string program = stream.str();
 
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"SUB: Valid permutations",
+			"SHFT: Valid permutations",
 
 			program.c_str()
 		);
@@ -358,25 +358,25 @@ SCENARIO("SUB: Valid permutations")
 				CheckProgramMatches(
 					assembler,
 					{
-						Asm::SUBL(Asm::REG_R0, 0),
-						Asm::SUBR(Asm::REG_R0, Asm::REG_R1),
-						Asm::SUBR(Asm::REG_R0, Asm::REG_LR),
-						Asm::SUBR(Asm::REG_R0, Asm::REG_PC),
+						Asm::SHFTL(Asm::REG_R0, 0),
+						Asm::SHFTR(Asm::REG_R0, Asm::REG_R1),
+						Asm::SHFTR(Asm::REG_R0, Asm::REG_LR),
+						Asm::SHFTR(Asm::REG_R0, Asm::REG_PC),
 
-						Asm::SUBR(Asm::REG_R1, Asm::REG_R0),
-						Asm::SUBL(Asm::REG_R1, 0),
-						Asm::SUBR(Asm::REG_R1, Asm::REG_LR),
-						Asm::SUBR(Asm::REG_R1, Asm::REG_PC),
+						Asm::SHFTR(Asm::REG_R1, Asm::REG_R0),
+						Asm::SHFTL(Asm::REG_R1, 0),
+						Asm::SHFTR(Asm::REG_R1, Asm::REG_LR),
+						Asm::SHFTR(Asm::REG_R1, Asm::REG_PC),
 
-						Asm::SUBR(Asm::REG_LR, Asm::REG_R0),
-						Asm::SUBR(Asm::REG_LR, Asm::REG_R1),
-						Asm::SUBL(Asm::REG_LR, 0),
-						Asm::SUBR(Asm::REG_LR, Asm::REG_PC),
+						Asm::SHFTR(Asm::REG_LR, Asm::REG_R0),
+						Asm::SHFTR(Asm::REG_LR, Asm::REG_R1),
+						Asm::SHFTL(Asm::REG_LR, 0),
+						Asm::SHFTR(Asm::REG_LR, Asm::REG_PC),
 
-						Asm::SUBR(Asm::REG_PC, Asm::REG_R0),
-						Asm::SUBR(Asm::REG_PC, Asm::REG_R1),
-						Asm::SUBR(Asm::REG_PC, Asm::REG_LR),
-						Asm::SUBL(Asm::REG_PC, 0),
+						Asm::SHFTR(Asm::REG_PC, Asm::REG_R0),
+						Asm::SHFTR(Asm::REG_PC, Asm::REG_R1),
+						Asm::SHFTR(Asm::REG_PC, Asm::REG_LR),
+						Asm::SHFTL(Asm::REG_PC, 0),
 					}
 				);
 			}
@@ -385,12 +385,12 @@ SCENARIO("SUB: Valid permutations")
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
 
-	AND_GIVEN("A program containing a SUB with a literal value")
+	AND_GIVEN("A program containing a SHFT with a literal value")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
-			"SUB: Literal value",
+			"SHFT: Literal value",
 
-			"sub 0 0 123\n"
+			"shft 0 0 5\n"
 		);
 
 		REQUIRE(assembler);
@@ -404,7 +404,7 @@ SCENARIO("SUB: Valid permutations")
 				CheckProgramMatches(
 					assembler,
 					{
-						Asm::SUBL(Asm::REG_R0, 123)
+						Asm::SHFTL(Asm::REG_R0, 5)
 					}
 				);
 			}

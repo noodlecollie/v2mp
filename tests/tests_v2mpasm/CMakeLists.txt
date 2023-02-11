@@ -9,6 +9,7 @@ add_executable(V2MPAsm_Tests
 	src/NopTests.cpp
 	src/ProgramVerification.h
 	src/ProgramVerification.cpp
+	src/ShftTests.cpp
 	src/SingleInstructions.cpp
 	src/SubTests.cpp
 )

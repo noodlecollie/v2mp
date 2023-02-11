@@ -358,25 +358,25 @@ SCENARIO("ADD: Valid permutations")
 				CheckProgramMatches(
 					assembler,
 					{
-						Asm::ADDR(Asm::REG_R0, Asm::REG_R0),
+						Asm::ADDL(Asm::REG_R0, 0),
 						Asm::ADDR(Asm::REG_R0, Asm::REG_R1),
 						Asm::ADDR(Asm::REG_R0, Asm::REG_LR),
 						Asm::ADDR(Asm::REG_R0, Asm::REG_PC),
 
 						Asm::ADDR(Asm::REG_R1, Asm::REG_R0),
-						Asm::ADDR(Asm::REG_R1, Asm::REG_R1),
+						Asm::ADDL(Asm::REG_R1, 0),
 						Asm::ADDR(Asm::REG_R1, Asm::REG_LR),
 						Asm::ADDR(Asm::REG_R1, Asm::REG_PC),
 
 						Asm::ADDR(Asm::REG_LR, Asm::REG_R0),
 						Asm::ADDR(Asm::REG_LR, Asm::REG_R1),
-						Asm::ADDR(Asm::REG_LR, Asm::REG_LR),
+						Asm::ADDL(Asm::REG_LR, 0),
 						Asm::ADDR(Asm::REG_LR, Asm::REG_PC),
 
 						Asm::ADDR(Asm::REG_PC, Asm::REG_R0),
 						Asm::ADDR(Asm::REG_PC, Asm::REG_R1),
 						Asm::ADDR(Asm::REG_PC, Asm::REG_LR),
-						Asm::ADDR(Asm::REG_PC, Asm::REG_PC),
+						Asm::ADDL(Asm::REG_PC, 0),
 					}
 				);
 			}
