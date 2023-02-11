@@ -64,7 +64,8 @@ The name of a label, formed by the string after the `:`, may only contain alphan
 
 Labels may be used as arguments to instructions. Since a label is a code memory address, and an there is not enough space to provide a full 16-bit address as an operand to an instruction, the following syntax is supported when referring to labels:
 
-* Prefixing a label name with `~` evaluates to an **unsigned** byte representing the distance **in words** between the address of the next instruction and the label.
+* Prefixing a label name with `~` evaluates to a **signed** byte representing the distance **in words** between the address of the next instruction and the label.
+* Prefixing a label name with `~+` evaluates to an **unsigned** byte representing the distance **in words** between the address of the next instruction and the label.
 * Prefixing a label name with `<` evaluates to the upper byte of the label's unsigned address.
 * Prefixing a label name with `>` evaluates to the lower byte of the label's unsigned address.
 
@@ -73,10 +74,10 @@ This allows for the following methods of jumping to a new address. Note that in 
 ```
 // Loop by subtracting from PC:
 :label1
-add 0 0 1         // Add 1 to R0
-add 1 1 2         // Add 2 to R1
-sub 3 3 ~:label1  // Subtract 3 words from PC, to begin executing from :label1 again
-nop               // This is the next instruction that PC would otherwise be pointing to
+add 0 0 1          // Add 1 to R0
+add 1 1 2          // Add 2 to R1
+sub 3 3 ~+:label1  // Subtract 3 words from PC, to begin executing from :label1 again
+nop                // This is the next instruction that PC would otherwise be pointing to
 
 // Jump by adding to PC:
 add 3 3 ~:label2  // Add 3 words to PC, to continue execution from :label2

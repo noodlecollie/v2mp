@@ -402,7 +402,7 @@ Decided whether or not to modify the value of the program counter `PC`, dependin
 
 Operand bits `[9 8]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
-After this instruction, `SR[Z]` will be set to `1` if the condition was not met. If the condition was met, and `PC` was set, `SR[Z]` will be set to `0`. All other bits in `SR` will be set to `0`.
+After this instruction, `SR[Z]` is set to `1` if the condition was not met. If the condition was met, and `PC` was set, `SR[Z]` is set to `0`. All other bits in `SR` are set to `0`.
 
 ### `9h`: Load/Store (`LDST`)
 
