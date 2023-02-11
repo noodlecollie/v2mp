@@ -8,3 +8,4 @@ static constexpr const char* const EXCEPTION_ID_INVALID_REGISTER_ID = "invalid-r
 static constexpr const char* const EXCEPTION_ID_INVALID_ARG_TYPE = "invalid-argument-type";
 static constexpr const char* const EXCEPTION_ID_RESERVED_BITS_SET = "reserved-bits-set";
 static constexpr const char* const EXCEPTION_ID_DIVISION_BY_ZERO = "division-by-zero";
+static constexpr const char* const EXCEPTION_ID_REGISTER_NOT_ALLOWED = "register-not-allowed";
