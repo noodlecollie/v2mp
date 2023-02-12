@@ -6,7 +6,7 @@
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 
-SCENARIO("BITW: Too many arguments")
+SCENARIO("BITW: Too many arguments", "[bitw]")
 {
 	GIVEN("A program containing a BITW with too many arguments")
 	{
@@ -38,7 +38,7 @@ SCENARIO("BITW: Too many arguments")
 	}
 }
 
-SCENARIO("BITW: Too few arguments")
+SCENARIO("BITW: Too few arguments", "[bitw]")
 {
 	GIVEN("A program containing a BITW with too few arguments")
 	{
@@ -70,7 +70,7 @@ SCENARIO("BITW: Too few arguments")
 	}
 }
 
-SCENARIO("BITW: Non-numeric arguments")
+SCENARIO("BITW: Non-numeric arguments", "[bitw]")
 {
 	GIVEN("A program containing a BITW with non-numeric arguments")
 	{
@@ -102,7 +102,7 @@ SCENARIO("BITW: Non-numeric arguments")
 	}
 }
 
-SCENARIO("BITW: Register arguments out of range")
+SCENARIO("BITW: Register arguments out of range", "[bitw]")
 {
 	GIVEN("A program containing a BITW with the first argument out of range")
 	{
@@ -163,7 +163,7 @@ SCENARIO("BITW: Register arguments out of range")
 	}
 }
 
-SCENARIO("BITW: Non-register arguments out of range")
+SCENARIO("BITW: Non-register arguments out of range", "[bitw]")
 {
 	GIVEN("A program containing a BITW with the mode argument out of range")
 	{
@@ -253,7 +253,7 @@ SCENARIO("BITW: Non-register arguments out of range")
 	}
 }
 
-SCENARIO("BITW: Shift value not zero")
+SCENARIO("BITW: Shift value not zero", "[bitw]")
 {
 	GIVEN("A program containing a BITW where the shift value should be zero but is not")
 	{
@@ -285,7 +285,7 @@ SCENARIO("BITW: Shift value not zero")
 	}
 }
 
-SCENARIO("BITW: Inversion value not zero")
+SCENARIO("BITW: Inversion value not zero", "[bitw]")
 {
 	GIVEN("A program containing a BITW where the inversion value should be zero but is not")
 	{
@@ -317,7 +317,7 @@ SCENARIO("BITW: Inversion value not zero")
 	}
 }
 
-SCENARIO("BITW: Label refs as arguments")
+SCENARIO("BITW: Label refs as arguments", "[bitw]")
 {
 	GIVEN("A program containing a BITW with label refs used as register IDs")
 	{
@@ -415,7 +415,7 @@ SCENARIO("BITW: Label refs as arguments")
 	}
 }
 
-SCENARIO("BITW: Valid permutations")
+SCENARIO("BITW: Valid permutations", "[bitw]")
 {
 	GIVEN("A program containing all valid BITW permutations which don't involve literal values")
 	{

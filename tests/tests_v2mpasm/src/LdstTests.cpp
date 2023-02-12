@@ -6,7 +6,7 @@
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 
-SCENARIO("LDST: Too many arguments")
+SCENARIO("LDST: Too many arguments", "[ldst]")
 {
 	GIVEN("A program containing an LDST with too many arguments")
 	{
@@ -38,7 +38,7 @@ SCENARIO("LDST: Too many arguments")
 	}
 }
 
-SCENARIO("LDST: Too few arguments")
+SCENARIO("LDST: Too few arguments", "[ldst]")
 {
 	GIVEN("A program containing an LDST with too few arguments")
 	{
@@ -70,7 +70,7 @@ SCENARIO("LDST: Too few arguments")
 	}
 }
 
-SCENARIO("LDST: Non-numeric arguments")
+SCENARIO("LDST: Non-numeric arguments", "[ldst]")
 {
 	GIVEN("A program containing an LDST with non-numeric arguments")
 	{
@@ -102,7 +102,7 @@ SCENARIO("LDST: Non-numeric arguments")
 	}
 }
 
-SCENARIO("LDST: Arguments out of range")
+SCENARIO("LDST: Arguments out of range", "[ldst]")
 {
 	GIVEN("A program containing an LDST with the first argument out of range")
 	{
@@ -196,7 +196,7 @@ SCENARIO("LDST: Arguments out of range")
 	}
 }
 
-SCENARIO("LDST: Label refs as arguments")
+SCENARIO("LDST: Label refs as arguments", "[ldst]")
 {
 	GIVEN("A program containing an LDST with label refs as arguments")
 	{
@@ -233,7 +233,7 @@ SCENARIO("LDST: Label refs as arguments")
 	}
 }
 
-SCENARIO("LDST: Valid permutations")
+SCENARIO("LDST: Valid permutations", "[ldst]")
 {
 	GIVEN("A program containing all valid LDST permutations")
 	{

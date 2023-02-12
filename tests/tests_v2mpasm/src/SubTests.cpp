@@ -6,7 +6,7 @@
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 
-SCENARIO("SUB: Too many arguments")
+SCENARIO("SUB: Too many arguments", "[sub]")
 {
 	GIVEN("A program containing a SUB with too many arguments")
 	{
@@ -38,7 +38,7 @@ SCENARIO("SUB: Too many arguments")
 	}
 }
 
-SCENARIO("SUB: Too few arguments")
+SCENARIO("SUB: Too few arguments", "[sub]")
 {
 	GIVEN("A program containing a SUB with too few arguments")
 	{
@@ -70,7 +70,7 @@ SCENARIO("SUB: Too few arguments")
 	}
 }
 
-SCENARIO("SUB: Non-numeric arguments")
+SCENARIO("SUB: Non-numeric arguments", "[sub]")
 {
 	GIVEN("A program containing a SUB with non-numeric arguments")
 	{
@@ -102,7 +102,7 @@ SCENARIO("SUB: Non-numeric arguments")
 	}
 }
 
-SCENARIO("SUB: Register arguments out of range")
+SCENARIO("SUB: Register arguments out of range", "[sub]")
 {
 	GIVEN("A program containing a SUB with the first argument out of range")
 	{
@@ -163,7 +163,7 @@ SCENARIO("SUB: Register arguments out of range")
 	}
 }
 
-SCENARIO("SUB: Literal value out of range")
+SCENARIO("SUB: Literal value out of range", "[sub]")
 {
 	GIVEN("A program containing a SUB with a literal value that is too small")
 	{
@@ -224,7 +224,7 @@ SCENARIO("SUB: Literal value out of range")
 	}
 }
 
-SCENARIO("SUB: Literal value not zero")
+SCENARIO("SUB: Literal value not zero", "[sub]")
 {
 	GIVEN("A program containing a SUB where the literal value should be zero but is not")
 	{
@@ -256,7 +256,7 @@ SCENARIO("SUB: Literal value not zero")
 	}
 }
 
-SCENARIO("SUB: Label refs as arguments")
+SCENARIO("SUB: Label refs as arguments", "[sub]")
 {
 	GIVEN("A program containing a SUB with label refs used as register IDs")
 	{
@@ -323,7 +323,7 @@ SCENARIO("SUB: Label refs as arguments")
 	}
 }
 
-SCENARIO("SUB: Valid permutations")
+SCENARIO("SUB: Valid permutations", "[sub]")
 {
 	GIVEN("A program containing all valid SUB permutations")
 	{

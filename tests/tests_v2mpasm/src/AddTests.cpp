@@ -6,7 +6,7 @@
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 
-SCENARIO("ADD: Too many arguments")
+SCENARIO("ADD: Too many arguments", "[add]")
 {
 	GIVEN("A program containing an ADD with too many arguments")
 	{
@@ -38,7 +38,7 @@ SCENARIO("ADD: Too many arguments")
 	}
 }
 
-SCENARIO("ADD: Too few arguments")
+SCENARIO("ADD: Too few arguments", "[add]")
 {
 	GIVEN("A program containing an ADD with too few arguments")
 	{
@@ -70,7 +70,7 @@ SCENARIO("ADD: Too few arguments")
 	}
 }
 
-SCENARIO("ADD: Non-numeric arguments")
+SCENARIO("ADD: Non-numeric arguments", "[add]")
 {
 	GIVEN("A program containing an ADD with non-numeric arguments")
 	{
@@ -102,7 +102,7 @@ SCENARIO("ADD: Non-numeric arguments")
 	}
 }
 
-SCENARIO("ADD: Register arguments out of range")
+SCENARIO("ADD: Register arguments out of range", "[add]")
 {
 	GIVEN("A program containing an ADD with the first argument out of range")
 	{
@@ -163,7 +163,7 @@ SCENARIO("ADD: Register arguments out of range")
 	}
 }
 
-SCENARIO("ADD: Literal value out of range")
+SCENARIO("ADD: Literal value out of range", "[add]")
 {
 	GIVEN("A program containing an ADD with a literal value that is too small")
 	{
@@ -224,7 +224,7 @@ SCENARIO("ADD: Literal value out of range")
 	}
 }
 
-SCENARIO("ADD: Literal value not zero")
+SCENARIO("ADD: Literal value not zero", "[add]")
 {
 	GIVEN("A program containing an ADD where the literal value should be zero but is not")
 	{
@@ -256,7 +256,7 @@ SCENARIO("ADD: Literal value not zero")
 	}
 }
 
-SCENARIO("ADD: Label refs as arguments")
+SCENARIO("ADD: Label refs as arguments", "[add]")
 {
 	GIVEN("A program containing an ADD with label refs used as register IDs")
 	{
@@ -323,7 +323,7 @@ SCENARIO("ADD: Label refs as arguments")
 	}
 }
 
-SCENARIO("ADD: Valid permutations")
+SCENARIO("ADD: Valid permutations", "[add]")
 {
 	GIVEN("A program containing all valid ADD permutations")
 	{

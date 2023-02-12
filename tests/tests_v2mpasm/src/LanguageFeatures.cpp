@@ -1,7 +1,7 @@
 #include "catch2/catch.hpp"
 #include "V2MPAsm/Assembler.h"
 
-SCENARIO("Assembly language feature sanity check")
+SCENARIO("Assembly language feature sanity check", "[lang]")
 {
 	GIVEN("An assembler instance and a valid program")
 	{

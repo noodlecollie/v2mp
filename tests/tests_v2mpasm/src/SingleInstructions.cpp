@@ -5,7 +5,7 @@
 
 static constexpr V2MP_Word INVALID_WORD = static_cast<V2MP_Word>(~0);
 
-SCENARIO("Assembling a single NOP instruction produces a valid program binary")
+SCENARIO("Assembling a single NOP instruction produces a valid program binary", "[nop]")
 {
 	GIVEN("An assembler instance and a valid program")
 	{
@@ -30,7 +30,7 @@ SCENARIO("Assembling a single NOP instruction produces a valid program binary")
 	}
 }
 
-SCENARIO("Assembling a single LDST instruction produces a valid program binary")
+SCENARIO("Assembling a single LDST instruction produces a valid program binary", "[ldst]")
 {
 	GIVEN("An assembler instance and a valid program")
 	{
@@ -55,7 +55,7 @@ SCENARIO("Assembling a single LDST instruction produces a valid program binary")
 	}
 }
 
-SCENARIO("Assembling a single ASGN instruction produces a valid program binary")
+SCENARIO("Assembling a single ASGN instruction produces a valid program binary", "[asgn]")
 {
 	GIVEN("An assembler instance and a valid program")
 	{
@@ -80,7 +80,7 @@ SCENARIO("Assembling a single ASGN instruction produces a valid program binary")
 	}
 }
 
-SCENARIO("Assembling a single ADD instruction produces a valid program binary")
+SCENARIO("Assembling a single ADD instruction produces a valid program binary", "[add]")
 {
 	GIVEN("An assembler instance and a valid program")
 	{
@@ -105,7 +105,7 @@ SCENARIO("Assembling a single ADD instruction produces a valid program binary")
 	}
 }
 
-SCENARIO("Assembling a single SUB instruction produces a valid program binary")
+SCENARIO("Assembling a single SUB instruction produces a valid program binary", "[sub]")
 {
 	GIVEN("An assembler instance and a valid program")
 	{
@@ -130,7 +130,7 @@ SCENARIO("Assembling a single SUB instruction produces a valid program binary")
 	}
 }
 
-SCENARIO("Assembling a single SHFT instruction produces a valid program binary")
+SCENARIO("Assembling a single SHFT instruction produces a valid program binary", "[shft]")
 {
 	GIVEN("An assembler instance and a valid program")
 	{
@@ -155,7 +155,7 @@ SCENARIO("Assembling a single SHFT instruction produces a valid program binary")
 	}
 }
 
-SCENARIO("Assembling a single BITW instruction produces a valid program binary")
+SCENARIO("Assembling a single BITW instruction produces a valid program binary", "[bitw]")
 {
 	GIVEN("An assembler instance and a valid program")
 	{
@@ -180,7 +180,7 @@ SCENARIO("Assembling a single BITW instruction produces a valid program binary")
 	}
 }
 
-SCENARIO("Assembling a single CBX instruction produces a valid program binary")
+SCENARIO("Assembling a single CBX instruction produces a valid program binary", "[cbx]")
 {
 	GIVEN("An assembler instance and a valid program")
 	{
@@ -205,7 +205,7 @@ SCENARIO("Assembling a single CBX instruction produces a valid program binary")
 	}
 }
 
-SCENARIO("Assembling a single STK instruction produces a valid program binary")
+SCENARIO("Assembling a single STK instruction produces a valid program binary", "[stk]")
 {
 	GIVEN("An assembler instance and a valid program")
 	{
@@ -230,7 +230,7 @@ SCENARIO("Assembling a single STK instruction produces a valid program binary")
 	}
 }
 
-SCENARIO("Assembling a single MUL instruction produces a valid program binary")
+SCENARIO("Assembling a single MUL instruction produces a valid program binary", "[mul]")
 {
 	GIVEN("An assembler instance and a valid program")
 	{
@@ -255,7 +255,7 @@ SCENARIO("Assembling a single MUL instruction produces a valid program binary")
 	}
 }
 
-SCENARIO("Assembling a single DIV instruction produces a valid program binary")
+SCENARIO("Assembling a single DIV instruction produces a valid program binary", "[div]")
 {
 	GIVEN("An assembler instance and a valid program")
 	{
@@ -280,7 +280,7 @@ SCENARIO("Assembling a single DIV instruction produces a valid program binary")
 	}
 }
 
-SCENARIO("Assembling a single SIG instruction produces a valid program binary")
+SCENARIO("Assembling a single SIG instruction produces a valid program binary", "[sig]")
 {
 	GIVEN("An assembler instance and a valid program")
 	{

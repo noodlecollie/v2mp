@@ -6,7 +6,7 @@
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 
-SCENARIO("DIV: Too many arguments")
+SCENARIO("DIV: Too many arguments", "[div]")
 {
 	GIVEN("A program containing a DIV with too many arguments")
 	{
@@ -38,7 +38,7 @@ SCENARIO("DIV: Too many arguments")
 	}
 }
 
-SCENARIO("DIV: Too few arguments")
+SCENARIO("DIV: Too few arguments", "[div]")
 {
 	GIVEN("A program containing a DIV with too few arguments")
 	{
@@ -70,7 +70,7 @@ SCENARIO("DIV: Too few arguments")
 	}
 }
 
-SCENARIO("DIV: Non-numeric arguments")
+SCENARIO("DIV: Non-numeric arguments", "[div]")
 {
 	GIVEN("A program containing a DIC with non-numeric arguments")
 	{
@@ -102,7 +102,7 @@ SCENARIO("DIV: Non-numeric arguments")
 	}
 }
 
-SCENARIO("DIV: Arguments out of range")
+SCENARIO("DIV: Arguments out of range", "[div]")
 {
 	GIVEN("A program containing a DIV with the first argument out of range")
 	{
@@ -192,7 +192,7 @@ SCENARIO("DIV: Arguments out of range")
 	}
 }
 
-SCENARIO("DIV: Literal value out of range")
+SCENARIO("DIV: Literal value out of range", "[div]")
 {
 	GIVEN("A program containing an unsigned DIV with a literal value that is too small")
 	{
@@ -311,7 +311,7 @@ SCENARIO("DIV: Literal value out of range")
 	}
 }
 
-SCENARIO("DIV: Divide by zero")
+SCENARIO("DIV: Divide by zero", "[div]")
 {
 	GIVEN("A program containing an unsigned DIV with a literal value of zero")
 	{
@@ -372,7 +372,7 @@ SCENARIO("DIV: Divide by zero")
 	}
 }
 
-SCENARIO("DIV: Literal value not zero")
+SCENARIO("DIV: Literal value not zero", "[div]")
 {
 	GIVEN("A program containing a DIV where the literal value should be zero but is not")
 	{
@@ -404,7 +404,7 @@ SCENARIO("DIV: Literal value not zero")
 	}
 }
 
-SCENARIO("DIV: Label refs as arguments")
+SCENARIO("DIV: Label refs as arguments", "[div]")
 {
 	GIVEN("A program containing a DIV with a label ref as the first argument")
 	{
@@ -528,7 +528,7 @@ SCENARIO("DIV: Label refs as arguments")
 	}
 }
 
-SCENARIO("DIV: Valid permutations")
+SCENARIO("DIV: Valid permutations", "[div]")
 {
 	GIVEN("A program containing all valid DIV permutations")
 	{

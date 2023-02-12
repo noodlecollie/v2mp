@@ -6,7 +6,7 @@
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 
-SCENARIO("ASGN: Too many arguments")
+SCENARIO("ASGN: Too many arguments", "[asgn]")
 {
 	GIVEN("A program containing an ASGN with too many arguments")
 	{
@@ -38,7 +38,7 @@ SCENARIO("ASGN: Too many arguments")
 	}
 }
 
-SCENARIO("ASGN: Too few arguments")
+SCENARIO("ASGN: Too few arguments", "[asgn]")
 {
 	GIVEN("A program containing an ASGN with too few arguments")
 	{
@@ -70,7 +70,7 @@ SCENARIO("ASGN: Too few arguments")
 	}
 }
 
-SCENARIO("ASGN: Non-numeric arguments")
+SCENARIO("ASGN: Non-numeric arguments", "[asgn]")
 {
 	GIVEN("A program containing an ASGN with non-numeric arguments")
 	{
@@ -102,7 +102,7 @@ SCENARIO("ASGN: Non-numeric arguments")
 	}
 }
 
-SCENARIO("ASGN: Register arguments out of range")
+SCENARIO("ASGN: Register arguments out of range", "[asgn]")
 {
 	GIVEN("A program containing an ASGN with the first argument out of range")
 	{
@@ -163,7 +163,7 @@ SCENARIO("ASGN: Register arguments out of range")
 	}
 }
 
-SCENARIO("ASGN: Literal value out of range")
+SCENARIO("ASGN: Literal value out of range", "[asgn]")
 {
 	GIVEN("A program containing an ASGN with a literal value that is too small")
 	{
@@ -224,7 +224,7 @@ SCENARIO("ASGN: Literal value out of range")
 	}
 }
 
-SCENARIO("ASGN: Literal value not zero")
+SCENARIO("ASGN: Literal value not zero", "[asgn]")
 {
 	GIVEN("A program containing an ASGN where the literal value should be zero but is not")
 	{
@@ -256,7 +256,7 @@ SCENARIO("ASGN: Literal value not zero")
 	}
 }
 
-SCENARIO("ASGN: Assigning literal to program counter")
+SCENARIO("ASGN: Assigning literal to program counter", "[asgn]")
 {
 	GIVEN("A program containing an ASGN which assigns a literal to the program counter")
 	{
@@ -288,7 +288,7 @@ SCENARIO("ASGN: Assigning literal to program counter")
 	}
 }
 
-SCENARIO("ASGN: Label refs as arguments")
+SCENARIO("ASGN: Label refs as arguments", "[asgn]")
 {
 	GIVEN("A program containing an ASGN with label refs used as register IDs")
 	{
@@ -355,7 +355,7 @@ SCENARIO("ASGN: Label refs as arguments")
 	}
 }
 
-SCENARIO("ASGN: Valid permutations")
+SCENARIO("ASGN: Valid permutations", "[asgn]")
 {
 	GIVEN("A program containing all valid ASGN permutations")
 	{

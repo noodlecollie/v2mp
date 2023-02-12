@@ -4,7 +4,7 @@
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 
-SCENARIO("NOP: Too many arguments")
+SCENARIO("NOP: Too many arguments", "[nop]")
 {
 	GIVEN("A program containing a NOP with too many arguments")
 	{
@@ -36,7 +36,7 @@ SCENARIO("NOP: Too many arguments")
 	}
 }
 
-SCENARIO("NOP: Two in a row")
+SCENARIO("NOP: Two in a row", "[nop]")
 {
 	GIVEN("A program containing two NOPs on a single line")
 	{
@@ -68,7 +68,7 @@ SCENARIO("NOP: Two in a row")
 	}
 }
 
-SCENARIO("NOP: Comment before")
+SCENARIO("NOP: Comment before", "[nop]")
 {
 	GIVEN("A program containing a comment segment before a NOP")
 	{
@@ -94,7 +94,7 @@ SCENARIO("NOP: Comment before")
 	}
 }
 
-SCENARIO("NOP: Ten of them")
+SCENARIO("NOP: Ten of them", "[nop]")
 {
 	GIVEN("A program containing ten NOPs on individual lines")
 	{

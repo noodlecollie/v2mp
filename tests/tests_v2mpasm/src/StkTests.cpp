@@ -33,7 +33,7 @@ static uint8_t RegisterFlags(bool r0, bool r1, bool lr, bool pc)
 	return out;
 }
 
-SCENARIO("STK: Too many arguments")
+SCENARIO("STK: Too many arguments", "[stk]")
 {
 	GIVEN("A program containing a STK with too many arguments")
 	{
@@ -65,7 +65,7 @@ SCENARIO("STK: Too many arguments")
 	}
 }
 
-SCENARIO("STK: Too few arguments")
+SCENARIO("STK: Too few arguments", "[stk]")
 {
 	GIVEN("A program containing a STK with too few arguments")
 	{
@@ -97,7 +97,7 @@ SCENARIO("STK: Too few arguments")
 	}
 }
 
-SCENARIO("STK: Non-numeric arguments")
+SCENARIO("STK: Non-numeric arguments", "[stk]")
 {
 	GIVEN("A program containing a STK with non-numeric arguments")
 	{
@@ -129,7 +129,7 @@ SCENARIO("STK: Non-numeric arguments")
 	}
 }
 
-SCENARIO("STK: Arguments out of range")
+SCENARIO("STK: Arguments out of range", "[stk]")
 {
 	GIVEN("A program containing a STK with the first argument out of range")
 	{
@@ -190,7 +190,7 @@ SCENARIO("STK: Arguments out of range")
 	}
 }
 
-SCENARIO("STK: Argument truncation results in invalid register flags")
+SCENARIO("STK: Argument truncation results in invalid register flags", "[stk]")
 {
 	GIVEN("A program containing a STK where register flag value is truncated to zero")
 	{
@@ -228,7 +228,7 @@ SCENARIO("STK: Argument truncation results in invalid register flags")
 	}
 }
 
-SCENARIO("STK: Valid permutations")
+SCENARIO("STK: Valid permutations", "[stk]")
 {
 	GIVEN("A program containing all valid STK permutations")
 	{

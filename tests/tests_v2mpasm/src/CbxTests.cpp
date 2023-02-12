@@ -6,7 +6,7 @@
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 
-SCENARIO("CBX: Too many arguments")
+SCENARIO("CBX: Too many arguments", "[cbx]")
 {
 	GIVEN("A program containing a CBX with too many arguments")
 	{
@@ -38,7 +38,7 @@ SCENARIO("CBX: Too many arguments")
 	}
 }
 
-SCENARIO("CBX: Too few arguments")
+SCENARIO("CBX: Too few arguments", "[cbx]")
 {
 	GIVEN("A program containing a CBX with too few arguments")
 	{
@@ -70,7 +70,7 @@ SCENARIO("CBX: Too few arguments")
 	}
 }
 
-SCENARIO("CBX: Non-numeric arguments")
+SCENARIO("CBX: Non-numeric arguments", "[cbx]")
 {
 	GIVEN("A program containing a CBX with non-numeric arguments")
 	{
@@ -102,7 +102,7 @@ SCENARIO("CBX: Non-numeric arguments")
 	}
 }
 
-SCENARIO("CBX: Arguments out of range")
+SCENARIO("CBX: Arguments out of range", "[cbx]")
 {
 	GIVEN("A program containing a CBX with the first argument out of range")
 	{
@@ -163,7 +163,7 @@ SCENARIO("CBX: Arguments out of range")
 	}
 }
 
-SCENARIO("CBX: Literal argument out of range")
+SCENARIO("CBX: Literal argument out of range", "[cbx]")
 {
 	GIVEN("A program containing a CBX where the literal argument is too small")
 	{
@@ -224,7 +224,7 @@ SCENARIO("CBX: Literal argument out of range")
 	}
 }
 
-SCENARIO("CBX: PC delta value not zero")
+SCENARIO("CBX: PC delta value not zero", "[cbx]")
 {
 	GIVEN("A program containing a CBX where the PC delta value should be zero but is not")
 	{
@@ -256,7 +256,7 @@ SCENARIO("CBX: PC delta value not zero")
 	}
 }
 
-SCENARIO("CBX: Label refs as arguments")
+SCENARIO("CBX: Label refs as arguments", "[cbx]")
 {
 	GIVEN("A program containing a CBX with a label ref as the first argument")
 	{
@@ -350,7 +350,7 @@ SCENARIO("CBX: Label refs as arguments")
 	}
 }
 
-SCENARIO("CBX: Valid permutations")
+SCENARIO("CBX: Valid permutations", "[cbx]")
 {
 	GIVEN("A program containing all valid CBX permutations which don't involve literal values")
 	{

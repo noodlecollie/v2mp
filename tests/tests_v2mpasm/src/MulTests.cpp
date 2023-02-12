@@ -6,7 +6,7 @@
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 
-SCENARIO("MUL: Too many arguments")
+SCENARIO("MUL: Too many arguments", "[mul]")
 {
 	GIVEN("A program containing a MUL with too many arguments")
 	{
@@ -38,7 +38,7 @@ SCENARIO("MUL: Too many arguments")
 	}
 }
 
-SCENARIO("MUL: Too few arguments")
+SCENARIO("MUL: Too few arguments", "[mul]")
 {
 	GIVEN("A program containing a MUL with too few arguments")
 	{
@@ -70,7 +70,7 @@ SCENARIO("MUL: Too few arguments")
 	}
 }
 
-SCENARIO("MUL: Non-numeric arguments")
+SCENARIO("MUL: Non-numeric arguments", "[mul]")
 {
 	GIVEN("A program containing a MUL with non-numeric arguments")
 	{
@@ -102,7 +102,7 @@ SCENARIO("MUL: Non-numeric arguments")
 	}
 }
 
-SCENARIO("MUL: Arguments out of range")
+SCENARIO("MUL: Arguments out of range", "[mul]")
 {
 	GIVEN("A program containing a MUL with the first argument out of range")
 	{
@@ -192,7 +192,7 @@ SCENARIO("MUL: Arguments out of range")
 	}
 }
 
-SCENARIO("MUL: Literal value out of range")
+SCENARIO("MUL: Literal value out of range", "[mul]")
 {
 	GIVEN("A program containing an unsigned MUL with a literal value that is too small")
 	{
@@ -311,7 +311,7 @@ SCENARIO("MUL: Literal value out of range")
 	}
 }
 
-SCENARIO("MUL: Literal value not zero")
+SCENARIO("MUL: Literal value not zero", "[mul]")
 {
 	GIVEN("A program containing a MUL where the literal value should be zero but is not")
 	{
@@ -343,7 +343,7 @@ SCENARIO("MUL: Literal value not zero")
 	}
 }
 
-SCENARIO("MUL: Label refs as arguments")
+SCENARIO("MUL: Label refs as arguments", "[mul]")
 {
 	GIVEN("A program containing a MUL with a label ref as the first argument")
 	{
@@ -467,7 +467,7 @@ SCENARIO("MUL: Label refs as arguments")
 	}
 }
 
-SCENARIO("MUL: Valid permutations")
+SCENARIO("MUL: Valid permutations", "[mul]")
 {
 	GIVEN("A program containing all valid MUL permutations")
 	{

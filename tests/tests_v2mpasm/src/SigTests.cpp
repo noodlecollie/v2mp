@@ -4,7 +4,7 @@
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 
-SCENARIO("SIG: Too many arguments")
+SCENARIO("SIG: Too many arguments", "[sig]")
 {
 	GIVEN("A program containing a SIG with too many arguments")
 	{
@@ -36,7 +36,7 @@ SCENARIO("SIG: Too many arguments")
 	}
 }
 
-SCENARIO("SIG: Ten of them")
+SCENARIO("SIG: Ten of them", "[sig]")
 {
 	GIVEN("A program containing ten SIGs on individual lines")
 	{

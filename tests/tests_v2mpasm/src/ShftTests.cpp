@@ -6,7 +6,7 @@
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 
-SCENARIO("SHFT: Too many arguments")
+SCENARIO("SHFT: Too many arguments", "[shft]")
 {
 	GIVEN("A program containing a SHFT with too many arguments")
 	{
@@ -38,7 +38,7 @@ SCENARIO("SHFT: Too many arguments")
 	}
 }
 
-SCENARIO("SHFT: Too few arguments")
+SCENARIO("SHFT: Too few arguments", "[shft]")
 {
 	GIVEN("A program containing a SHFT with too few arguments")
 	{
@@ -70,7 +70,7 @@ SCENARIO("SHFT: Too few arguments")
 	}
 }
 
-SCENARIO("SHFT: Non-numeric arguments")
+SCENARIO("SHFT: Non-numeric arguments", "[shft]")
 {
 	GIVEN("A program containing a SHFT with non-numeric arguments")
 	{
@@ -102,7 +102,7 @@ SCENARIO("SHFT: Non-numeric arguments")
 	}
 }
 
-SCENARIO("SHFT: Register arguments out of range")
+SCENARIO("SHFT: Register arguments out of range", "[shft]")
 {
 	GIVEN("A program containing a SHFT with the first argument out of range")
 	{
@@ -163,7 +163,7 @@ SCENARIO("SHFT: Register arguments out of range")
 	}
 }
 
-SCENARIO("SHFT: Literal value out of range")
+SCENARIO("SHFT: Literal value out of range", "[shft]")
 {
 	GIVEN("A program containing a SHFT with a literal value that is too small")
 	{
@@ -224,7 +224,7 @@ SCENARIO("SHFT: Literal value out of range")
 	}
 }
 
-SCENARIO("SHFT: Literal value not zero")
+SCENARIO("SHFT: Literal value not zero", "[shft]")
 {
 	GIVEN("A program containing a SHFT where the literal value should be zero but is not")
 	{
@@ -256,7 +256,7 @@ SCENARIO("SHFT: Literal value not zero")
 	}
 }
 
-SCENARIO("SHFT: Label refs as arguments")
+SCENARIO("SHFT: Label refs as arguments", "[shft]")
 {
 	GIVEN("A program containing a SHFT with label refs used as register IDs")
 	{
@@ -323,7 +323,7 @@ SCENARIO("SHFT: Label refs as arguments")
 	}
 }
 
-SCENARIO("SHFT: Valid permutations")
+SCENARIO("SHFT: Valid permutations", "[shft]")
 {
 	GIVEN("A program containing all valid SHFT permutations")
 	{
