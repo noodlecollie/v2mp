@@ -345,7 +345,7 @@ SCENARIO("ASGN: Label refs as arguments", "[asgn]")
 					assembler,
 					{
 						Asm::ASGNL(Asm::REG_R0, 0),
-						Asm::ASGNL(Asm::REG_R0, -2),
+						Asm::IASGNL(Asm::REG_R0, -2),
 					}
 				);
 			}

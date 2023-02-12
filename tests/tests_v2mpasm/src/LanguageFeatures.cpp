@@ -1,5 +1,8 @@
 #include "catch2/catch.hpp"
 #include "V2MPAsm/Assembler.h"
+#include "V2MPAsm/Exception.h"
+#include "ProgramVerification.h"
+#include "ExceptionIDs.h"
 
 SCENARIO("Assembly language feature sanity check", "[lang]")
 {
@@ -19,7 +22,7 @@ SCENARIO("Assembly language feature sanity check", "[lang]")
 			"add 0 0 0\n"
 			"\n"
 			":label\n"
-			"add 0 0 ~:label\n"
+			"add 0 0 ~+:label\n"
 			"add 0 0 <:label\n"
 			"add 0 0 >:label\n"
 		);
@@ -30,9 +33,48 @@ SCENARIO("Assembly language feature sanity check", "[lang]")
 		{
 			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
 
-			THEN("There are no errors")
+			THEN("A valid program is produced")
 			{
-				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 0);
+				CheckProgramMatches(
+					assembler,
+					{
+						Asm::ADDL(Asm::REG_R0, 0),
+						Asm::ADDL(Asm::REG_R0, 1),
+						Asm::ADDL(Asm::REG_R0, 0),
+						Asm::ADDL(Asm::REG_R0, 2),
+					}
+				);
+			}
+		}
+
+		V2MPAsm_Assembler_Destroy(assembler);
+	}
+}
+
+SCENARIO("No newline at end of file")
+{
+	GIVEN("An assembler instance and a program with no trailing newline")
+	{
+		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
+			"No trailing newline",
+
+			"nop"
+		);
+
+		REQUIRE(assembler);
+
+		WHEN("The assembler is run")
+		{
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
+
+			THEN("A valid program is produced")
+			{
+				CheckProgramMatches(
+					assembler,
+					{
+						Asm::NOP()
+					}
+				);
 			}
 		}
 

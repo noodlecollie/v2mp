@@ -307,7 +307,7 @@ SCENARIO("ASGN: Assigning a literal value to a register results in the correct v
 
 			AND_WHEN("A negative literal is assigned")
 			{
-				REQUIRE(vm.Execute(Asm::ASGNL(REGDEST, NEGATIVE_LITERAL)));
+				REQUIRE(vm.Execute(Asm::IASGNL(REGDEST, NEGATIVE_LITERAL)));
 
 				THEN("R0 holds this value, and all other registers are unchanged")
 				{
@@ -340,7 +340,7 @@ SCENARIO("ASGN: Assigning a literal value to a register results in the correct v
 
 			AND_WHEN("A negative literal is assigned")
 			{
-				REQUIRE(vm.Execute(Asm::ASGNL(REGDEST, NEGATIVE_LITERAL)));
+				REQUIRE(vm.Execute(Asm::IASGNL(REGDEST, NEGATIVE_LITERAL)));
 
 				THEN("R1 holds this value, and all other registers are unchanged")
 				{
@@ -373,7 +373,7 @@ SCENARIO("ASGN: Assigning a literal value to a register results in the correct v
 
 			AND_WHEN("A negative literal is assigned")
 			{
-				REQUIRE(vm.Execute(Asm::ASGNL(REGDEST, NEGATIVE_LITERAL)));
+				REQUIRE(vm.Execute(Asm::IASGNL(REGDEST, NEGATIVE_LITERAL)));
 
 				THEN("LR holds this value, and all other registers are unchanged")
 				{
