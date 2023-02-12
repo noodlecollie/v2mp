@@ -6,6 +6,33 @@
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 
+static uint8_t RegisterFlags(bool r0, bool r1, bool lr, bool pc)
+{
+	uint8_t out = 0;
+
+	if ( r0 )
+	{
+		out |= 1 << Asm::REG_R0;
+	}
+
+	if ( r1 )
+	{
+		out |= 1 << Asm::REG_R1;
+	}
+
+	if ( lr )
+	{
+		out |= 1 << Asm::REG_LR;
+	}
+
+	if ( pc )
+	{
+		out |= 1 << Asm::REG_PC;
+	}
+
+	return out;
+}
+
 SCENARIO("STK: Too many arguments")
 {
 	GIVEN("A program containing a STK with too many arguments")
@@ -198,5 +225,87 @@ SCENARIO("STK: Argument truncation results in invalid register flags")
 		}
 
 		V2MPAsm_Assembler_Destroy(assembler);
+	}
+}
+
+SCENARIO("STK: Valid permutations")
+{
+	GIVEN("A program containing all valid STK permutations")
+	{
+		std::stringstream stream;
+
+		for ( int arg0 = 1; arg0 < 16; ++arg0 )
+		{
+			stream << "stk 0 " << arg0 << "\n";
+			stream << "stk 1 " << arg0 << "\n";
+		}
+
+		const std::string program = stream.str();
+
+		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
+			"STK: Valid permutations",
+
+			program.c_str()
+		);
+
+		REQUIRE(assembler);
+
+		WHEN("The assembler is run")
+		{
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
+
+			THEN("A valid program should be produced")
+			{
+				CheckProgramMatches(
+					assembler,
+					{
+						Asm::POP(RegisterFlags(true, false, false, false)),
+						Asm::PUSH(RegisterFlags(true, false, false, false)),
+
+						Asm::POP(RegisterFlags(false, true, false, false)),
+						Asm::PUSH(RegisterFlags(false, true, false, false)),
+
+						Asm::POP(RegisterFlags(true, true, false, false)),
+						Asm::PUSH(RegisterFlags(true, true, false, false)),
+
+						Asm::POP(RegisterFlags(false, false, true, false)),
+						Asm::PUSH(RegisterFlags(false, false, true, false)),
+
+						Asm::POP(RegisterFlags(true, false, true, false)),
+						Asm::PUSH(RegisterFlags(true, false, true, false)),
+
+						Asm::POP(RegisterFlags(false, true, true, false)),
+						Asm::PUSH(RegisterFlags(false, true, true, false)),
+
+						Asm::POP(RegisterFlags(true, true, true, false)),
+						Asm::PUSH(RegisterFlags(true, true, true, false)),
+
+						Asm::POP(RegisterFlags(false, false, false, true)),
+						Asm::PUSH(RegisterFlags(false, false, false, true)),
+
+						Asm::POP(RegisterFlags(true, false, false, true)),
+						Asm::PUSH(RegisterFlags(true, false, false, true)),
+
+						Asm::POP(RegisterFlags(false, true, false, true)),
+						Asm::PUSH(RegisterFlags(false, true, false, true)),
+
+						Asm::POP(RegisterFlags(true, true, false, true)),
+						Asm::PUSH(RegisterFlags(true, true, false, true)),
+
+						Asm::POP(RegisterFlags(false, false, true, true)),
+						Asm::PUSH(RegisterFlags(false, false, true, true)),
+
+						Asm::POP(RegisterFlags(true, false, true, true)),
+						Asm::PUSH(RegisterFlags(true, false, true, true)),
+
+						Asm::POP(RegisterFlags(false, true, true, true)),
+						Asm::PUSH(RegisterFlags(false, true, true, true)),
+
+						Asm::POP(RegisterFlags(true, true, true, true)),
+						Asm::PUSH(RegisterFlags(true, true, true, true)),
+					}
+				);
+			}
+		}
 	}
 }
