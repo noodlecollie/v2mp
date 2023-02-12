@@ -298,7 +298,7 @@ SCENARIO("ADD: Label refs as arguments")
 
 			":label\n"
 			"add 0 0 0\n"
-			"add 0 0 ~:label\n"
+			"add 0 0 ~+:label\n"
 		);
 
 		REQUIRE(assembler);
@@ -313,7 +313,7 @@ SCENARIO("ADD: Label refs as arguments")
 					assembler,
 					{
 						Asm::ADDL(Asm::REG_R0, 0),
-						Asm::ADDL(Asm::REG_R0, -2),
+						Asm::ADDL(Asm::REG_R0, 2),
 					}
 				);
 			}
