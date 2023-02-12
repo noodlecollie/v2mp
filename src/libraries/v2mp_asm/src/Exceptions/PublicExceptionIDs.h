@@ -13,7 +13,8 @@ namespace V2MPAsm
 	LIST_ITEM(LABEL_DISCARDED, "label-discarded", "Label discarded.") \
 	LIST_ITEM(TOO_MANY_ARGUMENTS, "too-many-arguments", "Too many arguments for instruction.") \
 	LIST_ITEM(RESERVED_BITS_SET, "reserved-bits-set", "Reserved bits set to a value other than zero.") \
-	LIST_ITEM(DIVISION_BY_ZERO, "division-by-zero", "Attempt to divide by zero.")
+	LIST_ITEM(DIVISION_BY_ZERO, "division-by-zero", "Attempt to divide by zero.") \
+	LIST_ITEM(INALID_ARG_VALUE, "invalid-arg-value", "Argument value is not valid for this instruction.")
 
 #define PUBLICERRORTYPE_LIST \
 	/* General: */ \

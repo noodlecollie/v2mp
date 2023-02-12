@@ -211,7 +211,7 @@ SCENARIO("Assembling a single STK instruction produces a valid program binary")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"STK Test",
-			"stk 0 0\n"
+			"stk 0 1\n"
 		);
 
 		REQUIRE(assembler);
@@ -222,7 +222,7 @@ SCENARIO("Assembling a single STK instruction produces a valid program binary")
 
 			THEN("The correct program binary is produced")
 			{
-				CheckProgramMatches(assembler, { Asm::POP(0) });
+				CheckProgramMatches(assembler, { Asm::POP(1 << Asm::REG_R0) });
 			}
 		}
 

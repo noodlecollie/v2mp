@@ -8,6 +8,7 @@
 #include "ProgramModel/Validators/BitwCodeWordValidator.h"
 #include "ProgramModel/Validators/CbxCodeWordValidator.h"
 #include "ProgramModel/Validators/LdstCodeWordValidator.h"
+#include "ProgramModel/Validators/StkCodeWordValidator.h"
 
 namespace V2MPAsm
 {
@@ -22,7 +23,6 @@ namespace V2MPAsm
 		{
 			case InstructionType::NOP:
 			case InstructionType::SIG:
-			case InstructionType::STK:
 			{
 				return std::make_unique<BasicCodeWordValidator>(codeWord);
 			}
@@ -58,6 +58,11 @@ namespace V2MPAsm
 			case InstructionType::LDST:
 			{
 				return std::make_unique<LdstCodeWordValidator>(codeWord);
+			}
+
+			case InstructionType::STK:
+			{
+				return std::make_unique<StkCodeWordValidator>(codeWord);
 			}
 
 			default:
