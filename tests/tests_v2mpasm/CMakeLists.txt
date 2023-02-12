@@ -12,6 +12,7 @@ add_executable(V2MPAsm_Tests
 	src/ProgramVerification.h
 	src/ProgramVerification.cpp
 	src/ShftTests.cpp
+	src/SigTests.cpp
 	src/SingleInstructions.cpp
 	src/StkTests.cpp
 	src/SubTests.cpp

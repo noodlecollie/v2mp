@@ -70,7 +70,7 @@ SCENARIO("NOP: Two in a row")
 
 SCENARIO("NOP: Comment before")
 {
-	GIVEN("A program containing a comment segment before a nop")
+	GIVEN("A program containing a comment segment before a NOP")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"NOP: Commented",
@@ -96,7 +96,7 @@ SCENARIO("NOP: Comment before")
 
 SCENARIO("NOP: Ten of them")
 {
-	GIVEN("A program containing ten nops on individual lines")
+	GIVEN("A program containing ten NOPs on individual lines")
 	{
 		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
 			"NOP: Ten of them",
