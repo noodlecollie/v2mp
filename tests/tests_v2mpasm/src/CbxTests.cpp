@@ -348,7 +348,50 @@ SCENARIO("CBX: Label refs as arguments")
 
 		V2MPAsm_Assembler_Destroy(assembler);
 	}
+}
 
-	// TODO: More tests needed in this file
-	CHECK(false);
+SCENARIO("CBX: Valid permutations")
+{
+	GIVEN("A program containing all valid CBX permutations which don't involve literal values")
+	{
+		std::stringstream stream;
+
+		// Literal, LR
+		for ( int arg0 = 0; arg0 < 2; ++arg0 )
+		{
+			// SR[Z], SR[C]
+			for ( int arg1 = 0; arg1 < 2; ++arg1 )
+			{
+				stream << "cbx " << arg0 << " " << arg1 << " 0\n";
+			}
+		}
+
+		const std::string program = stream.str();
+
+		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
+			"CBX: Valid permutations",
+
+			program.c_str()
+		);
+
+		REQUIRE(assembler);
+
+		WHEN("The assembler is run")
+		{
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_OK);
+
+			THEN("A valid program should be produced")
+			{
+				CheckProgramMatches(
+					assembler,
+					{
+						Asm::BXZL(0),
+						Asm::BXCL(0),
+						Asm::BXZR(),
+						Asm::BXCR(),
+					}
+				);
+			}
+		}
+	}
 }
