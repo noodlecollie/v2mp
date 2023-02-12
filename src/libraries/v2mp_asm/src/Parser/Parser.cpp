@@ -374,12 +374,13 @@ namespace V2MPAsm
 	Parser::State Parser::ProcessInput_BuildCodeWord()
 	{
 		constexpr uint32_t ALLOWED_TOKENS =
-			TokenType::NumericLiteral |		// Literal value
-			TokenType::HighSelector |		// High section of a label
-			TokenType::LowSelector |		// Low section of a label
-			TokenType::DistanceSelector |	// Distance to a label
-			TokenType::EndOfFile |			// Ends instruction
-			TokenType::EndOfLine			// Ends instruction
+			TokenType::NumericLiteral |				// Literal value
+			TokenType::HighSelector |				// High section of a label
+			TokenType::LowSelector |				// Low section of a label
+			TokenType::SignedDistanceSelector |		// Distance to a label
+			TokenType::UnsignedDistanceSelector |	// Distance to a label
+			TokenType::EndOfFile |					// Ends instruction
+			TokenType::EndOfLine					// Ends instruction
 			;
 
 		const Tokeniser::Token token = GetNextToken(ALLOWED_TOKENS, State::SKIP_LINE);
@@ -500,7 +501,8 @@ namespace V2MPAsm
 
 			case TokenType::HighSelector:
 			case TokenType::LowSelector:
-			case TokenType::DistanceSelector:
+			case TokenType::SignedDistanceSelector:
+			case TokenType::UnsignedDistanceSelector:
 			{
 				return ProcessInput_ParseAndAddLabelRefToCodeWord(token);
 			}
@@ -545,11 +547,22 @@ namespace V2MPAsm
 				break;
 			}
 
-			case TokenType::DistanceSelector:
+			case TokenType::SignedDistanceSelector:
 			{
 				m_Data->programBuilder.GetCurrentCodeWord().AddArgument(
 					token.column,
-					LabelReference::ReferenceType::NUM_WORDS_DIST_TO_LABEL,
+					LabelReference::ReferenceType::SIGNED_NUM_WORDS_DIST_TO_LABEL,
+					labelString.token
+				);
+
+				break;
+			}
+
+			case TokenType::UnsignedDistanceSelector:
+			{
+				m_Data->programBuilder.GetCurrentCodeWord().AddArgument(
+					token.column,
+					LabelReference::ReferenceType::UNSIGNED_NUM_WORDS_DIST_TO_LABEL,
 					labelString.token
 				);
 
@@ -656,8 +669,7 @@ namespace V2MPAsm
 			return;
 		}
 
-		const uint16_t value = model.GetValueOfLabelReference(codeWord, *targetCodeWord, labelRef.GetReferenceType());
-		arg.SetValue(static_cast<int32_t>(value));
+		arg.SetValue(model.GetValueOfLabelReference(codeWord, *targetCodeWord, labelRef.GetReferenceType()));
 	}
 
 	void Parser::FullyValidateAllCodeWords()

@@ -457,7 +457,7 @@ SCENARIO("MUL: Label refs as arguments")
 					assembler,
 					{
 						Asm::MULL(Asm::REG_R0, 0),
-						Asm::MULL(Asm::REG_R0, 1),
+						Asm::MULL(Asm::REG_R0, -2),
 					}
 				);
 			}

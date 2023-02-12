@@ -281,13 +281,23 @@ namespace V2MPAsm
 			if ( beginChar == '~' )
 			{
 				// Distance to a label.
+				TokenType outType = TokenType::SignedDistanceSelector;
+
+				size_t delta = 1;
 				reader.ReadChar();
 
+				if ( reader.PeekChar() == '+' )
+				{
+					outType = TokenType::UnsignedDistanceSelector;
+					++delta;
+					reader.ReadChar();
+				}
+
 				return Token(
-					TokenType::DistanceSelector,
+					outType,
 					beginLine,
 					beginCol,
-					ExtractString(reader, beginPos, beginPos + 1)
+					ExtractString(reader, beginPos, beginPos + delta)
 				);
 			}
 

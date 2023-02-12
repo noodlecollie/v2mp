@@ -21,7 +21,7 @@ namespace V2MPAsm
 		void AddLabelForLastCodeWord(const std::string& labelName);
 		std::shared_ptr<CodeWord> CodeWordForLabel(const std::string& labelName) const;
 
-		uint16_t GetValueOfLabelReference(const CodeWord& source, const CodeWord& target, LabelReference::ReferenceType refType) const;
+		int32_t GetValueOfLabelReference(const CodeWord& source, const CodeWord& target, LabelReference::ReferenceType refType) const;
 
 	private:
 		using LabelMap = std::unordered_map<std::string, std::shared_ptr<CodeWord>>;

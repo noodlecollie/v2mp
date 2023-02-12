@@ -298,7 +298,7 @@ SCENARIO("SUB: Label refs as arguments")
 
 			":label\n"
 			"sub 0 0 0\n"
-			"sub 0 0 ~:label\n"
+			"sub 0 0 ~+:label\n"
 		);
 
 		REQUIRE(assembler);
@@ -313,7 +313,7 @@ SCENARIO("SUB: Label refs as arguments")
 					assembler,
 					{
 						Asm::SUBL(Asm::REG_R0, 0),
-						Asm::SUBL(Asm::REG_R0, 1),
+						Asm::SUBL(Asm::REG_R0, 2),
 					}
 				);
 			}

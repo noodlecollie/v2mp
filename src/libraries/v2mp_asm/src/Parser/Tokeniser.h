@@ -20,8 +20,9 @@ namespace V2MPAsm
 	LIST_ITEM(Label, 1 << 4, "Label", "label", true) \
 	LIST_ITEM(HighSelector, 1 << 5, "HighSelector", "high byte selector", true) \
 	LIST_ITEM(LowSelector, 1 << 6, "LowSelector", "low byte selector", true) \
-	LIST_ITEM(DistanceSelector, 1 << 7, "DistanceSelector", "label distance selector", true) \
-	LIST_ITEM(PreprocessorCommand, 1 << 8, "PreprocessorCommand", "preprocessor command", false)
+	LIST_ITEM(SignedDistanceSelector, 1 << 7, "SignedDistanceSelector", "label distance selector", true) \
+	LIST_ITEM(UnsignedDistanceSelector, 1 << 8, "UnsignedDistanceSelector", "label distance selector", true) \
+	LIST_ITEM(PreprocessorCommand, 1 << 9, "PreprocessorCommand", "preprocessor command", false)
 
 		enum TokenType
 		{

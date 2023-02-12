@@ -503,7 +503,7 @@ SCENARIO("DIV: Label refs as arguments")
 
 			":label\n"
 			"div 0 1 0 5\n"
-			"div 0 1 0 ~:label\n"
+			"div 0 1 0 ~+:label\n"
 		);
 
 		REQUIRE(assembler);
@@ -518,7 +518,7 @@ SCENARIO("DIV: Label refs as arguments")
 					assembler,
 					{
 						Asm::DIVL(Asm::REG_R0, 5),
-						Asm::DIVL(Asm::REG_R0, 1),
+						Asm::DIVL(Asm::REG_R0, 2),
 					}
 				);
 			}

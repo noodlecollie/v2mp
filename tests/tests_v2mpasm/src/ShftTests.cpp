@@ -298,7 +298,7 @@ SCENARIO("SHFT: Label refs as arguments")
 
 			":label\n"
 			"shft 0 0 0\n"
-			"shft 0 0 ~:label\n"
+			"shft 0 0 ~+:label\n"
 		);
 
 		REQUIRE(assembler);
@@ -313,7 +313,7 @@ SCENARIO("SHFT: Label refs as arguments")
 					assembler,
 					{
 						Asm::SHFTL(Asm::REG_R0, 0),
-						Asm::SHFTL(Asm::REG_R0, 1),
+						Asm::SHFTL(Asm::REG_R0, 2),
 					}
 				);
 			}

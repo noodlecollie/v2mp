@@ -50,7 +50,7 @@ namespace V2MPAsm
 		return it != m_Labels.end() ? it->second : std::shared_ptr<CodeWord>();
 	}
 
-	uint16_t ProgramModel::GetValueOfLabelReference(const CodeWord& source, const CodeWord& target, LabelReference::ReferenceType refType) const
+	int32_t ProgramModel::GetValueOfLabelReference(const CodeWord& source, const CodeWord& target, LabelReference::ReferenceType refType) const
 	{
 		const uint16_t targetAddress = target.GetAddress();
 
@@ -58,21 +58,32 @@ namespace V2MPAsm
 		{
 			case LabelReference::ReferenceType::UPPER_BYTE_OF_ADDRESS:
 			{
-				return (targetAddress & 0xFF00) >> 8;
+				return static_cast<int32_t>((targetAddress & 0xFF00) >> 8);
 			}
 
 			case LabelReference::ReferenceType::LOWER_BYTE_OF_ADDRESS:
 			{
-				return targetAddress & 0x00FF;
+				return static_cast<int32_t>(targetAddress & 0x00FF);
 			}
 
-			case LabelReference::ReferenceType::NUM_WORDS_DIST_TO_LABEL:
+			case LabelReference::ReferenceType::SIGNED_NUM_WORDS_DIST_TO_LABEL:
 			{
-				const uint16_t sourceAddress = source.GetAddress();
+				// + sizeof(uint16_t) because the distance is measured from the address after the current word.
+				const int32_t sourceAddress = static_cast<int32_t>(source.GetAddress()) + sizeof(uint16_t);
+				const int32_t differenceInBytes = static_cast<int32_t>(targetAddress) - sourceAddress;
 
-				const uint16_t differenceInBytes = sourceAddress > targetAddress
-					? sourceAddress - targetAddress
-					: targetAddress - sourceAddress;
+				return differenceInBytes / sizeof(uint16_t);
+			}
+
+			case LabelReference::ReferenceType::UNSIGNED_NUM_WORDS_DIST_TO_LABEL:
+			{
+				// + sizeof(uint16_t) because the distance is measured from the address after the current word.
+				const int32_t sourceAddress = static_cast<int32_t>(source.GetAddress()) + sizeof(uint16_t);
+				const int32_t targetAddressInt = static_cast<int32_t>(targetAddress);
+
+				const int32_t differenceInBytes = sourceAddress > targetAddressInt
+					? sourceAddress - targetAddressInt
+					: targetAddressInt - sourceAddress;
 
 				return differenceInBytes / sizeof(uint16_t);
 			}

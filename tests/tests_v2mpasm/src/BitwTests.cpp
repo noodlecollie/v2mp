@@ -390,7 +390,7 @@ SCENARIO("BITW: Label refs as arguments")
 
 			":label\n"
 			"bitw 0 0 0 0 0\n"
-			"bitw 0 0 0 0 ~:label\n"
+			"bitw 0 0 0 0 ~+:label\n"
 		);
 
 		REQUIRE(assembler);
@@ -405,7 +405,7 @@ SCENARIO("BITW: Label refs as arguments")
 					assembler,
 					{
 						Asm::BITWL(Asm::REG_R0, Asm::BitwiseOp::AND, 0, false),
-						Asm::BITWL(Asm::REG_R0, Asm::BitwiseOp::AND, 1, false),
+						Asm::BITWL(Asm::REG_R0, Asm::BitwiseOp::AND, 2, false),
 					}
 				);
 			}
