@@ -1,6 +1,7 @@
 #include <memory>
 #include <optional>
 #include <stdexcept>
+#include <algorithm>
 #include "ProgramModel/CodeWord.h"
 #include "ProgramModel/ProgramBuilder.h"
 #include "ProgramModel/ProgramModel.h"
