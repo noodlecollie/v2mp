@@ -37,29 +37,34 @@ namespace V2MPAsm
 	void ProgramBuilder::SubmitCurrentCodeWord()
 	{
 		m_ProgramModel->AddCodeWord(m_CurrentCodeWord);
-
 		m_CurrentCodeWord = std::make_shared<CodeWord>();
 
-		if ( !m_NextLabel.empty() )
-		{
-			m_ProgramModel->AddLabelForLastCodeWord(m_NextLabel);
-			m_NextLabel.clear();
-		}
+		SubmitQueuedLabels();
 	}
 
-	std::string ProgramBuilder::GetNextLabelName() const
+	const std::vector<std::string>& ProgramBuilder::EnqueuedLabels() const
 	{
-		return m_NextLabel;
+		return m_QueuedLabels;
 	}
 
-	void ProgramBuilder::SetNextLabelName(const std::string& labelName)
+	bool ProgramBuilder::HasEnqueuedLabels() const
 	{
-		m_NextLabel = labelName;
+		return !m_QueuedLabels.empty();
+	}
+
+	void ProgramBuilder::EnqueueNextLabel(const std::string& labelName)
+	{
+		m_QueuedLabels.emplace_back(labelName);
+	}
+
+	void ProgramBuilder::EnqueueNextLabel(std::string&& labelName)
+	{
+		m_QueuedLabels.emplace_back(std::move(labelName));
 	}
 
 	bool ProgramBuilder::HasLabel(const std::string& labelName)
 	{
-		return m_ProgramModel->CodeWordForLabel(labelName) || labelName == m_NextLabel;
+		return m_ProgramModel->CodeWordForLabel(labelName) || LabelIsEnqueued(labelName);
 	}
 
 	std::optional<uint16_t> ProgramBuilder::GetLabelAddress(const std::string& labelName) const
@@ -89,5 +94,28 @@ namespace V2MPAsm
 		std::unique_ptr<ProgramModel> outModel = std::move(m_ProgramModel);
 		m_ProgramModel = std::make_unique<ProgramModel>();
 		return outModel;
+	}
+
+	bool ProgramBuilder::LabelIsEnqueued(const std::string& labelName) const
+	{
+		return std::find(m_QueuedLabels.begin(), m_QueuedLabels.end(), labelName) != m_QueuedLabels.end();
+	}
+
+	void ProgramBuilder::SubmitQueuedLabels()
+	{
+		try
+		{
+			for ( const std::string& labelName : m_QueuedLabels )
+			{
+				m_ProgramModel->AddLabelForLastCodeWord(labelName);
+			}
+
+			m_QueuedLabels.clear();
+		}
+		catch ( const std::logic_error& ex )
+		{
+			m_QueuedLabels.clear();
+			throw ex;
+		}
 	}
 }

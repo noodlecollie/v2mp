@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <optional>
+#include <vector>
 #include "ProgramModel/CodeWord.h"
 #include "ProgramModel/InstructionMeta.h"
 #include "Utils/ParsingUtils.h"
@@ -23,8 +24,11 @@ namespace V2MPAsm
 		size_t GetCurrentCodeWordColumn() const;
 		void SubmitCurrentCodeWord();
 
-		std::string GetNextLabelName() const;
-		void SetNextLabelName(const std::string& labelName);
+		const std::vector<std::string>& EnqueuedLabels() const;
+		bool HasEnqueuedLabels() const;
+
+		void EnqueueNextLabel(const std::string& labelName);
+		void EnqueueNextLabel(std::string&& labelName);
 		bool HasLabel(const std::string& labelName);
 		std::optional<uint16_t> GetLabelAddress(const std::string& labelName) const;
 
@@ -32,8 +36,15 @@ namespace V2MPAsm
 		std::unique_ptr<ProgramModel> TakeProgramModel();
 
 	private:
+		bool LabelIsEnqueued(const std::string& labelName) const;
+		void SubmitQueuedLabels();
+
 		std::unique_ptr<ProgramModel> m_ProgramModel;
 		std::shared_ptr<CodeWord> m_CurrentCodeWord;
-		std::string m_NextLabel;
+
+		// Having multiple labels before the same codeword is fine,
+		// provided they're all different. We support this by keeping
+		// a list of labels.
+		std::vector<std::string> m_QueuedLabels;
 	};
 }

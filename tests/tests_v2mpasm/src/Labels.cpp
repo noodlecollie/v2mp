@@ -38,6 +38,45 @@ SCENARIO("Label with no subsequent instruction", "[labels]")
 	}
 }
 
+SCENARIO("Multiple labels with no subsequent instruction", "[labels]")
+{
+	GIVEN("An assembler instance and a program with multiple labels at the end")
+	{
+		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
+			"Labels at end",
+
+			"nop\n"
+			":discarded_label1\n"
+			":discarded_label2\n"
+			":discarded_label3\n"
+			":discarded_label4\n"
+		);
+
+		REQUIRE(assembler);
+
+		WHEN("The assembler is run")
+		{
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_COMPLETED_WITH_WARNINGS);
+
+			THEN("One warning per label should be raised")
+			{
+				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 4);
+
+				for ( size_t index = 0; index < 4; ++index )
+				{
+					const V2MPAsm_Exception* exception = V2MPAsm_Assembler_GetException(assembler, index);
+					REQUIRE(exception);
+
+					CHECK(V2MPAsm_Exception_GetType(exception) == V2MPASM_EXCEPTION_WARNING);
+					CHECK(std::string(V2MPAsm_Exception_GetID(exception)) == std::string(EXCEPTION_ID_LABEL_DISCARDED));
+				}
+			}
+		}
+
+		V2MPAsm_Assembler_Destroy(assembler);
+	}
+}
+
 SCENARIO("Consecutive duplicate labels", "[labels]")
 {
 	GIVEN("An assembler instance and a program with two sequential labels of the same name")

@@ -395,16 +395,22 @@ namespace V2MPAsm
 
 	Parser::State Parser::ProcessInput_EndOfFile()
 	{
-		const std::string nextLabel = m_Data->programBuilder.GetNextLabelName();
-
-		if ( !nextLabel.empty() )
+		if ( m_Data->programBuilder.HasEnqueuedLabels() )
 		{
-			throw ParserException(
-				m_Data->inputReader,
-				PublicWarningID::LABEL_DISCARDED,
-				"Redundant label \"" + nextLabel + "\" present at end of file will be discarded.",
-				State::TERMINATED
-			);
+			ParserException ex(State::TERMINATED);
+
+			for ( const std::string& labelName : m_Data->programBuilder.EnqueuedLabels() )
+			{
+				ex << AssemblerException(
+					PublicWarningID::LABEL_DISCARDED,
+					m_Data->inputReader.GetPath(),
+					m_Data->inputReader.GetCurrentLine(),
+					m_Data->inputReader.GetCurrentColumn(),
+					"Redundant label \"" + labelName + "\" present at end of file will be discarded."
+				);
+			}
+
+			throw ex;
 		}
 
 		return State::TERMINATED;
@@ -454,22 +460,10 @@ namespace V2MPAsm
 			}
 		}
 
-		const std::string existingLabel = m_Data->programBuilder.GetNextLabelName();
-		m_Data->programBuilder.SetNextLabelName(token.token);
+		m_Data->programBuilder.EnqueueNextLabel(token.token);
 
 		const Tokeniser::Token nextToken = GetNextToken(TokenType::EndOfLine | TokenType::EndOfFile, State::SKIP_LINE);
 		const State nextState = nextToken.type == TokenType::EndOfFile ? State::END_OF_FILE : State::BEGIN_LINE;
-
-		if ( !existingLabel.empty() )
-		{
-			// We overwrote a label that wasn't submitted yet.
-			throw ParserException(
-				m_Data->inputReader,
-				PublicWarningID::LABEL_DISCARDED,
-				"Label \"" + token.token + "\" will cause previous label \"" + existingLabel + "\" to be discarded.",
-				nextState
-			);
-		}
 
 		return nextState;
 	}
