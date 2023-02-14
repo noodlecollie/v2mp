@@ -401,7 +401,7 @@ namespace V2MPAsm
 		{
 			throw ParserException(
 				m_Data->inputReader,
-				PublicWarningID::REDUNDANT_LABEL,
+				PublicWarningID::LABEL_DISCARDED,
 				"Redundant label \"" + nextLabel + "\" present at end of file will be discarded.",
 				State::TERMINATED
 			);

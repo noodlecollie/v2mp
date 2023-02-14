@@ -38,7 +38,7 @@ SCENARIO("Label with no subsequent instruction", "[labels]")
 	}
 }
 
-SCENARIO("Duplicate label", "[labels]")
+SCENARIO("Consecutive duplicate labels", "[labels]")
 {
 	GIVEN("An assembler instance and a program with two sequential labels of the same name")
 	{
@@ -65,6 +65,41 @@ SCENARIO("Duplicate label", "[labels]")
 
 				CHECK(V2MPAsm_Exception_GetType(exception) == V2MPASM_EXCEPTION_WARNING);
 				CHECK(std::string(V2MPAsm_Exception_GetID(exception)) == std::string(EXCEPTION_ID_REDUNDANT_LABEL));
+			}
+		}
+
+		V2MPAsm_Assembler_Destroy(assembler);
+	}
+}
+
+SCENARIO("Duplicate labels", "[labels]")
+{
+	GIVEN("An assembler instance and a program with two non-sequential labels of the same name")
+	{
+		V2MPAsm_Assembler* assembler = V2MPAsm_Assembler_CreateFromMemory(
+			"Duplicate label",
+
+			":twice\n"
+			"nop\n"
+			":twice\n"
+			"nop\n"
+		);
+
+		REQUIRE(assembler);
+
+		WHEN("The assembler is run")
+		{
+			CHECK(V2MPAsm_Assembler_Run(assembler) == V2MPASM_FAILED);
+
+			THEN("An error should be raised that the second label's name already exists")
+			{
+				CHECK(V2MPAsm_Assembler_GetExceptionCount(assembler) == 1);
+
+				const V2MPAsm_Exception* exception = V2MPAsm_Assembler_GetException(assembler, 0);
+				REQUIRE(exception);
+
+				CHECK(V2MPAsm_Exception_GetType(exception) == V2MPASM_EXCEPTION_ERROR);
+				CHECK(std::string(V2MPAsm_Exception_GetID(exception)) == std::string(EXCEPTION_ID_DUPLICATE_LABEL));
 			}
 		}
 

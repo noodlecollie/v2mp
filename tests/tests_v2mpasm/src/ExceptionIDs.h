@@ -12,3 +12,4 @@ static constexpr const char* const EXCEPTION_ID_REGISTER_NOT_ALLOWED = "register
 static constexpr const char* const EXCEPTION_ID_INVALID_ARG_VALUE = "invalid-arg-value";
 static constexpr const char* const EXCEPTION_ID_LABEL_DISCARDED = "label-discarded";
 static constexpr const char* const EXCEPTION_ID_REDUNDANT_LABEL = "redundant-label";
+static constexpr const char* const EXCEPTION_ID_DUPLICATE_LABEL = "duplicate-label";
