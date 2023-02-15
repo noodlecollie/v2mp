@@ -28,7 +28,7 @@ static V2MPAsm_AssemblerResult ToExternalResult(V2MPAsm::Assembler::Result inRes
 extern "C" {
 #endif
 
-API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromFiles(const char* inputFile, const char* outputFile)
+API_LIBV2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromFiles(const char* inputFile, const char* outputFile)
 {
 	try
 	{
@@ -45,7 +45,7 @@ API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromFiles(const ch
 	}
 }
 
-API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromMemory(const char* inputFileName, const char* inputBuffer)
+API_LIBV2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromMemory(const char* inputFileName, const char* inputBuffer)
 {
 	try
 	{
@@ -62,7 +62,7 @@ API_V2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromMemory(const c
 	}
 }
 
-API_V2MPASM void V2MPAsm_Assembler_Destroy(struct V2MPAsm_Assembler* assembler)
+API_LIBV2MPASM void V2MPAsm_Assembler_Destroy(struct V2MPAsm_Assembler* assembler)
 {
 	if ( !assembler )
 	{
@@ -72,7 +72,7 @@ API_V2MPASM void V2MPAsm_Assembler_Destroy(struct V2MPAsm_Assembler* assembler)
 	delete assembler;
 }
 
-API_V2MPASM V2MPAsm_AssemblerResult V2MPAsm_Assembler_Run(struct V2MPAsm_Assembler* assembler)
+API_LIBV2MPASM V2MPAsm_AssemblerResult V2MPAsm_Assembler_Run(struct V2MPAsm_Assembler* assembler)
 {
 	if ( !assembler )
 	{
@@ -89,7 +89,7 @@ API_V2MPASM V2MPAsm_AssemblerResult V2MPAsm_Assembler_Run(struct V2MPAsm_Assembl
 	}
 }
 
-API_V2MPASM size_t V2MPAsm_Assembler_GetExceptionCount(const struct V2MPAsm_Assembler* assembler)
+API_LIBV2MPASM size_t V2MPAsm_Assembler_GetExceptionCount(const struct V2MPAsm_Assembler* assembler)
 {
 	if ( !assembler )
 	{
@@ -99,7 +99,7 @@ API_V2MPASM size_t V2MPAsm_Assembler_GetExceptionCount(const struct V2MPAsm_Asse
 	return assembler->inner.GetExceptions().size();
 }
 
-API_V2MPASM const struct V2MPAsm_Exception* V2MPAsm_Assembler_GetException(const struct V2MPAsm_Assembler* assembler, size_t index)
+API_LIBV2MPASM const struct V2MPAsm_Exception* V2MPAsm_Assembler_GetException(const struct V2MPAsm_Assembler* assembler, size_t index)
 {
 	if ( !assembler )
 	{
@@ -116,17 +116,17 @@ API_V2MPASM const struct V2MPAsm_Exception* V2MPAsm_Assembler_GetException(const
 	return list[index].get();
 }
 
-API_V2MPASM bool V2MPAsm_Assembler_HasInMemoryOutputBuffer(const struct V2MPAsm_Assembler* assembler)
+API_LIBV2MPASM bool V2MPAsm_Assembler_HasInMemoryOutputBuffer(const struct V2MPAsm_Assembler* assembler)
 {
 	return assembler ? assembler->inner.OutputIsRawData() : false;
 }
 
-API_V2MPASM size_t V2MPAsm_Assembler_InMemoryOutputBufferSizeInBytes(const struct V2MPAsm_Assembler* assembler)
+API_LIBV2MPASM size_t V2MPAsm_Assembler_InMemoryOutputBufferSizeInBytes(const struct V2MPAsm_Assembler* assembler)
 {
 	return (assembler && assembler->inner.OutputIsRawData()) ? (assembler->inner.RawOutputSizeInWords() * sizeof(uint16_t)) : 0;
 }
 
-API_V2MPASM size_t V2MPAsm_Assembler_TakeInMemoryOutputBuffer(struct V2MPAsm_Assembler* assembler, void* outBuffer, size_t outBufferSizeInBytes)
+API_LIBV2MPASM size_t V2MPAsm_Assembler_TakeInMemoryOutputBuffer(struct V2MPAsm_Assembler* assembler, void* outBuffer, size_t outBufferSizeInBytes)
 {
 	if ( !assembler || !assembler->inner.OutputIsRawData() )
 	{

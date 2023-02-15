@@ -32,7 +32,7 @@ if(HOST_IS_BIG_ENDIAN)
 	message(FATAL "Compilation is not currently supported for big-endian systems.")
 endif()
 
-set(TARGETNAME_V2MP V2MP)
+set(TARGETNAME_LIBV2MP LibV2MP)
 set(TARGETNAME_LIBV2MPINTERNAL LibV2MPInternal)
 set(TARGETNAME_LIBV2MPASM LibV2MPAsm)
 set(TARGETNAME_ASSEMBLER Assembler)

@@ -9,18 +9,18 @@
 #if defined(V2MPASM_PRODUCER)
 // This build is producing a library for another application to use.
 // Mark symbols as being exported.
-#define API_V2MPASM __declspec(dllexport)
+#define API_LIBV2MPASM __declspec(dllexport)
 #else // defined(V2MPASM_PRODUCER)
 // This library is being used by some application.
 // Mark symbols as being imported.
-#define API_V2MPASM __declspec(dllimport)
+#define API_LIBV2MPASM __declspec(dllimport)
 #endif // defined(V2MPASM_PRODUCER)
 
 #else // defined(V2MP_IS_SHARED_BUILD) && (defined(WIN32) || defined(WIN64))
 
 // We're not using shared libraries, or we're not building under Windows.
 // No need to use __declspec, so define this to nothing.
-#define API_V2MPASM
+#define API_LIBV2MPASM
 
 #endif // defined(V2MP_IS_SHARED_BUILD) && (defined(WIN32) || defined(WIN64))
 #endif // V2MPASM_LIBEXPORT_H
