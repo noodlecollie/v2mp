@@ -1,6 +1,6 @@
 #include <memory>
 #include "Assembler/Assembler.h"
-#include "V2MPAsm/Assembler.h"
+#include "LibV2MPAsm/Assembler.h"
 #include "Interface_Assembler.h"
 
 static V2MPAsm_AssemblerResult ToExternalResult(V2MPAsm::Assembler::Result inResult)

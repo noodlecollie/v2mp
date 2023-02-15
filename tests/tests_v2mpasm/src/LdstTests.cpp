@@ -1,8 +1,8 @@
 #include <string>
 #include <sstream>
 #include "catch2/catch.hpp"
-#include "V2MPAsm/Assembler.h"
-#include "V2MPAsm/Exception.h"
+#include "LibV2MPAsm/Assembler.h"
+#include "LibV2MPAsm/Exception.h"
 #include "ExceptionIDs.h"
 #include "ProgramVerification.h"
 

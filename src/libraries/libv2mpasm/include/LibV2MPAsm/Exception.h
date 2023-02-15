@@ -2,7 +2,7 @@
 #define V2MPASM_PARSEEXCEPTION_H
 
 #include <stddef.h>
-#include "V2MPAsm/LibExport.h"
+#include "LibV2MPAsm/LibExport.h"
 
 #ifdef __cplusplus
 extern "C" {

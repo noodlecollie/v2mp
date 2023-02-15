@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "V2MPAsm/Exception.h"
+#include "LibV2MPAsm/Exception.h"
 #include "Exceptions/PublicExceptionIDs.h"
 #include "Utils/ParsingUtils.h"
 

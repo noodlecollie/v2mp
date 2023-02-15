@@ -1,11 +1,11 @@
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/configure/LibExport.h.in"
-	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_V2MP_ASM}/LibExport.h"
+	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_LIBV2MPASM}/LibExport.h"
 )
 
-add_library(${TARGETNAME_V2MP_ASM}
-	include/${TARGETNAME_V2MP_ASM}/Assembler.h
-	include/${TARGETNAME_V2MP_ASM}/Exception.h
+add_library(${TARGETNAME_LIBV2MPASM}
+	include/${TARGETNAME_LIBV2MPASM}/Assembler.h
+	include/${TARGETNAME_LIBV2MPASM}/Exception.h
 
 	src/Assembler/Assembler.h
 	src/Assembler/Assembler.cpp
@@ -71,13 +71,13 @@ add_library(${TARGETNAME_V2MP_ASM}
 	src/Interface_Exception.cpp
 )
 
-target_include_directories(${TARGETNAME_V2MP_ASM} PUBLIC include)
-target_include_directories(${TARGETNAME_V2MP_ASM} PRIVATE src)
+target_include_directories(${TARGETNAME_LIBV2MPASM} PUBLIC include)
+target_include_directories(${TARGETNAME_LIBV2MPASM} PRIVATE src)
 
-target_link_libraries(${TARGETNAME_V2MP_ASM} PRIVATE
+target_link_libraries(${TARGETNAME_LIBV2MPASM} PRIVATE
 	${TARGETNAME_LIBBASEUTIL}
 	${TARGETNAME_LIBSHAREDCOMPONENTS}
 	cwalk
 )
 
-target_compile_definitions(${TARGETNAME_V2MP_ASM} PRIVATE "V2MPASM_PRODUCER")
+target_compile_definitions(${TARGETNAME_LIBV2MPASM} PRIVATE "V2MPASM_PRODUCER")

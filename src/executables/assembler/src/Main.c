@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include "V2MPAsm/Assembler.h"
-#include "V2MPAsm/Exception.h"
+#include "LibV2MPAsm/Assembler.h"
+#include "LibV2MPAsm/Exception.h"
 
 int main(int argc, char** argv)
 {
