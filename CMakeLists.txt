@@ -40,7 +40,6 @@ set(TARGETNAME_LIBBASEUTIL LibBaseUtil)
 set(TARGETNAME_LIBSHAREDCOMPONENTS LibSharedComponents)
 set(TARGETNAME_UTHASH uthash)
 
-option(BUILD_SHARED_LIBS "If set, builds shared libraries; otherwise, builds static libraries." YES)
 option(BUILD_TESTING "If set, builds tests and links with Catch2" NO)
 
 if(BUILD_TESTING)
