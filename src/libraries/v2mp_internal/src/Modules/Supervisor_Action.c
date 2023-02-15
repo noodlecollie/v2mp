@@ -1,8 +1,8 @@
 #include <string.h>
 #include "Modules/Supervisor_Action.h"
 #include "Modules/Supervisor_Internal.h"
-#include "SharedComponents/DoubleLinkedList.h"
-#include "SharedComponents/CircularBuffer.h"
+#include "LibSharedComponents/DoubleLinkedList.h"
+#include "LibSharedComponents/CircularBuffer.h"
 #include "V2MPInternal/Modules/MemoryStore.h"
 #include "V2MPInternal/Modules/CPU.h"
 #include "LibBaseUtil/Util.h"

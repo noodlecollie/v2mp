@@ -5,7 +5,7 @@
 #include "V2MPInternal/Modules/Supervisor.h"
 #include "V2MPInternal/Modules/Mainboard.h"
 #include "Modules/Supervisor_Action.h"
-#include "SharedComponents/DoubleLinkedList.h"
+#include "LibSharedComponents/DoubleLinkedList.h"
 
 typedef struct MemorySegment
 {

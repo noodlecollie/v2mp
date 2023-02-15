@@ -1,7 +1,7 @@
 #include <vector>
 #include <cstring>
 #include "Helpers/TestHarnessVM.h"
-#include "SharedComponents/CircularBuffer.h"
+#include "LibSharedComponents/CircularBuffer.h"
 #include "V2MPInternal/Modules/Supervisor.h"
 
 const V2MP_Word TestHarnessVM_StartsInvalid::INVALID_WORD = 0xDEAD;

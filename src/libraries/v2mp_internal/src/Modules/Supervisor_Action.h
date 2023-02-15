@@ -3,7 +3,7 @@
 
 #include "V2MPInternal/Defs.h"
 #include "V2MPInternal/Modules/Supervisor.h"
-#include "SharedComponents/DoubleLinkedList.h"
+#include "LibSharedComponents/DoubleLinkedList.h"
 
 #define V2MP_SUPERVISOR_ACTION_LIST \
 	LIST_ITEM(SVAT_LOAD_WORD = 0, V2MP_Supervisor_HandleLoadWord) \

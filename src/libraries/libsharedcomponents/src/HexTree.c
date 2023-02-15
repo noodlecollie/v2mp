@@ -1,6 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
-#include "SharedComponents/HexTree.h"
+#include "LibSharedComponents/HexTree.h"
 #include "LibBaseUtil/Util.h"
 #include "LibBaseUtil/Heap.h"
 

@@ -37,7 +37,7 @@ set(TARGETNAME_V2MP_INTERNAL V2MPInternal)
 set(TARGETNAME_V2MP_ASM V2MPAsm)
 set(TARGETNAME_ASSEMBLER Assembler)
 set(TARGETNAME_BASEUTIL LibBaseUtil)
-set(TARGETNAME_SHARED_COMPONENTS SharedComponents)
+set(TARGETNAME_SHARED_COMPONENTS LibSharedComponents)
 set(TARGETNAME_UTHASH uthash)
 
 option(BUILD_SHARED_LIBS "If set, builds shared libraries; otherwise, builds static libraries." YES)

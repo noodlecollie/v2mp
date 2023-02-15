@@ -1,5 +1,5 @@
 #include <string.h>
-#include "SharedComponents/CircularBuffer.h"
+#include "LibSharedComponents/CircularBuffer.h"
 #include "LibBaseUtil/Util.h"
 #include "LibBaseUtil/Heap.h"
 

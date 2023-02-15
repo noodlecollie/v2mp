@@ -1,5 +1,5 @@
 add_subdirectory(libbaseutil)
-add_subdirectory(shared_components)
+add_subdirectory(libsharedcomponents)
 add_subdirectory(v2mp_internal)
 add_subdirectory(v2mp)
 add_subdirectory(v2mp_asm)
