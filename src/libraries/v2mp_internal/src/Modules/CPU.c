@@ -1,6 +1,6 @@
 #include "V2MPInternal/Modules/CPU.h"
-#include "BaseUtil/Heap.h"
-#include "BaseUtil/Util.h"
+#include "LibBaseUtil/Heap.h"
+#include "LibBaseUtil/Util.h"
 #include "Modules/CPU_Internal.h"
 #include "Modules/CPU_Instructions.h"
 

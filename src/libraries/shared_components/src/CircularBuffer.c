@@ -1,7 +1,7 @@
 #include <string.h>
 #include "SharedComponents/CircularBuffer.h"
-#include "BaseUtil/Util.h"
-#include "BaseUtil/Heap.h"
+#include "LibBaseUtil/Util.h"
+#include "LibBaseUtil/Heap.h"
 
 typedef struct BufferRange
 {

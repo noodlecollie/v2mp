@@ -1,5 +1,5 @@
 #include "V2MPInternal/Modules/MemoryStore.h"
-#include "BaseUtil/Heap.h"
+#include "LibBaseUtil/Heap.h"
 #include "V2MPInternal/Defs.h"
 
 struct V2MP_MemoryStore

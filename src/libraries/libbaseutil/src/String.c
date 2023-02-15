@@ -1,8 +1,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include "BaseUtil/String.h"
-#include "BaseUtil/Heap.h"
+#include "LibBaseUtil/String.h"
+#include "LibBaseUtil/Heap.h"
 
 char* BaseUtil_String_Duplicate(const char* origString)
 {

@@ -2,7 +2,7 @@
 #include "V2MPInternal/Modules/Supervisor.h"
 #include "V2MPInternal/Modules/CPU.h"
 #include "V2MPInternal/Modules/MemoryStore.h"
-#include "BaseUtil/Heap.h"
+#include "LibBaseUtil/Heap.h"
 #include "Modules/Supervisor_Internal.h"
 #include "Modules/Supervisor_CPUInterface.h"
 
