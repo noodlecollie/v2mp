@@ -2,7 +2,7 @@
 #define V2MP_MODULES_CPU_H
 
 #include <stdbool.h>
-#include "V2MPInternal/Defs.h"
+#include "LibV2MPInternal/Defs.h"
 
 #ifdef __cplusplus
 extern "C" {

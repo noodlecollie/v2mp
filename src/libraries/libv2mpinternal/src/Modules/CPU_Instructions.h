@@ -2,8 +2,8 @@
 #define V2MP_MODULES_CPU_INSTRUCTIONS_H
 
 #include <stdbool.h>
-#include "V2MPInternal/Defs.h"
-#include "V2MPInternal/Modules/CPU.h"
+#include "LibV2MPInternal/Defs.h"
+#include "LibV2MPInternal/Modules/CPU.h"
 
 #define V2MP_OPCODE(instr) ((instr) >> 12)
 

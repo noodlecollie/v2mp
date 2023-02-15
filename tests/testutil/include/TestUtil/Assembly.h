@@ -1,6 +1,6 @@
 #pragma once
 
-#include "V2MPInternal/Defs.h"
+#include "LibV2MPInternal/Defs.h"
 
 namespace Asm
 {

@@ -1,9 +1,9 @@
 #include <string.h>
 #include "Modules/Supervisor_Internal.h"
-#include "V2MPInternal/Defs.h"
-#include "V2MPInternal/Modules/CPU.h"
-#include "V2MPInternal/Modules/MemoryStore.h"
-#include "V2MPInternal/Modules/Mainboard.h"
+#include "LibV2MPInternal/Defs.h"
+#include "LibV2MPInternal/Modules/CPU.h"
+#include "LibV2MPInternal/Modules/MemoryStore.h"
+#include "LibV2MPInternal/Modules/Mainboard.h"
 
 V2MP_Byte* V2MP_Supervisor_GetDataRangeFromSegment(
 	const V2MP_Supervisor* supervisor,

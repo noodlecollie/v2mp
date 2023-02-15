@@ -2,7 +2,7 @@
 #include <cstring>
 #include "Helpers/TestHarnessVM.h"
 #include "LibSharedComponents/CircularBuffer.h"
-#include "V2MPInternal/Modules/Supervisor.h"
+#include "LibV2MPInternal/Modules/Supervisor.h"
 
 const V2MP_Word TestHarnessVM_StartsInvalid::INVALID_WORD = 0xDEAD;
 

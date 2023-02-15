@@ -1,9 +1,9 @@
 #ifndef V2MP_MODULES_SUPERVISOR_INTERNAL_H
 #define V2MP_MODULES_SUPERVISOR_INTERNAL_H
 
-#include "V2MPInternal/Defs.h"
-#include "V2MPInternal/Modules/Supervisor.h"
-#include "V2MPInternal/Modules/Mainboard.h"
+#include "LibV2MPInternal/Defs.h"
+#include "LibV2MPInternal/Modules/Supervisor.h"
+#include "LibV2MPInternal/Modules/Mainboard.h"
 #include "Modules/Supervisor_Action.h"
 #include "LibSharedComponents/DoubleLinkedList.h"
 

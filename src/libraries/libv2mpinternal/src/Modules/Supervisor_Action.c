@@ -3,8 +3,8 @@
 #include "Modules/Supervisor_Internal.h"
 #include "LibSharedComponents/DoubleLinkedList.h"
 #include "LibSharedComponents/CircularBuffer.h"
-#include "V2MPInternal/Modules/MemoryStore.h"
-#include "V2MPInternal/Modules/CPU.h"
+#include "LibV2MPInternal/Modules/MemoryStore.h"
+#include "LibV2MPInternal/Modules/CPU.h"
 #include "LibBaseUtil/Util.h"
 #include "Modules/Supervisor_Action_Stack.h"
 

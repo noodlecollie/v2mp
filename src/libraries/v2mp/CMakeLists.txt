@@ -25,7 +25,7 @@ endif()
 target_include_directories(${TARGETNAME_V2MP} PUBLIC include)
 target_include_directories(${TARGETNAME_V2MP} PRIVATE src)
 
-target_link_libraries(${TARGETNAME_V2MP} PRIVATE ${TARGETNAME_V2MP_INTERNAL})
+target_link_libraries(${TARGETNAME_V2MP} PRIVATE ${TARGETNAME_LIBV2MPINTERNAL})
 
 target_compile_definitions(${TARGETNAME_V2MP} PRIVATE "V2MP_PRODUCER")
 

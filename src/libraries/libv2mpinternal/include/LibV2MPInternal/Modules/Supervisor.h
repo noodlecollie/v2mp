@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include "V2MPInternal/Defs.h"
+#include "LibV2MPInternal/Defs.h"
 
 #ifdef __cplusplus
 extern "C" {
