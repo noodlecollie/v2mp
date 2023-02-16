@@ -3,10 +3,12 @@ configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_LIBV2MPASM}/LibExport.h"
 )
 
-add_library(${TARGETNAME_LIBV2MPASM}
+set(PUBLIC_HEADERS_ALL
 	include/${TARGETNAME_LIBV2MPASM}/Assembler.h
 	include/${TARGETNAME_LIBV2MPASM}/Exception.h
+)
 
+set(SOURCES_ALL
 	src/Assembler/Assembler.h
 	src/Assembler/Assembler.cpp
 	src/Exceptions/AssemblerException.h
@@ -71,6 +73,8 @@ add_library(${TARGETNAME_LIBV2MPASM}
 	src/Interface_Exception.cpp
 )
 
+add_library(${TARGETNAME_LIBV2MPASM} SHARED ${PUBLIC_HEADERS_ALL} ${SOURCES_ALL})
+
 target_include_directories(${TARGETNAME_LIBV2MPASM} PUBLIC include)
 target_include_directories(${TARGETNAME_LIBV2MPASM} PRIVATE src)
 
@@ -81,3 +85,6 @@ target_link_libraries(${TARGETNAME_LIBV2MPASM} PRIVATE
 )
 
 target_compile_definitions(${TARGETNAME_LIBV2MPASM} PRIVATE "V2MPASM_PRODUCER")
+
+install(TARGETS ${TARGETNAME_LIBV2MPASM})
+install(FILES ${PUBLIC_HEADERS_ALL} DESTINATION include/${TARGETNAME_LIBV2MPASM})

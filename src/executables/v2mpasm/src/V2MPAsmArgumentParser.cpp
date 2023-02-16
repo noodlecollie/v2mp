@@ -32,6 +32,7 @@ public:
 	{
 		const std::vector<std::string> argsNotParsed = m_Parser.parse_known_args(argc, argv);
 		ManuallyParseRemainingArgs(argsNotParsed);
+		ValidateArgs();
 	}
 
 	void PrintHelp(std::ostream& stream)
@@ -64,6 +65,19 @@ private:
 			{
 				throw std::runtime_error("Unrecognised argument: " + arg);
 			}
+		}
+	}
+
+	void ValidateArgs()
+	{
+		if ( m_Parser.get<std::string>(CmdArgs::INPUT_FILE).empty() )
+		{
+			throw std::runtime_error("No input file specified.");
+		}
+
+		if ( m_Parser.get<std::string>(CmdArgs::OUTPUT_FILE).empty() )
+		{
+			throw std::runtime_error("No output file specified.");
 		}
 	}
 
