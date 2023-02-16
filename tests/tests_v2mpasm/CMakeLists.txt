@@ -4,6 +4,8 @@ add_executable(V2MPAsm_Tests
 	src/BitwTests.cpp
 	src/CbxTests.cpp
 	src/DivTests.cpp
+	src/ExceptionAPI.cpp
+	src/ExceptionIDs.h
 	src/Labels.cpp
 	src/LanguageFeatures.cpp
 	src/LdstTests.cpp

@@ -3,55 +3,65 @@
 
 namespace V2MPAsm
 {
-	std::string GetPublicWarningStringID(PublicWarningID id)
+	static const char* const WARNING_IDS[] =
 	{
-		static const char* const IDS[] =
-		{
 #define LIST_ITEM(value, stringID, desc) stringID,
-			PUBLICWARNINGTYPE_LIST
+		PUBLICWARNINGTYPE_LIST
 #undef LIST_ITEM
-		};
+	};
 
-		const size_t index = static_cast<size_t>(id);
-		return index < ArraySize(IDS) ? IDS[index] : "UNKNOWN";
-	}
-
-	std::string GetPublicWarningDescription(PublicWarningID id)
+	static const char* const WARNING_DESCRIPTIONS[] =
 	{
-		static const char* const DESCRIPTIONS[] =
-		{
 #define LIST_ITEM(value, stringID, desc) desc,
-			PUBLICWARNINGTYPE_LIST
+		PUBLICWARNINGTYPE_LIST
 #undef LIST_ITEM
-		};
+	};
 
-		const size_t index = static_cast<size_t>(id);
-		return index < ArraySize(DESCRIPTIONS) ? DESCRIPTIONS[index] : "UNKNOWN";
-	}
-
-	std::string GetPublicErrorStringID(PublicErrorID id)
+	static const char* const ERROR_IDS[] =
 	{
-		static const char* const IDS[] =
-		{
 #define LIST_ITEM(value, stringID, desc) stringID,
-			PUBLICERRORTYPE_LIST
+		PUBLICERRORTYPE_LIST
 #undef LIST_ITEM
-		};
+	};
 
-		const size_t index = static_cast<size_t>(id);
-		return index < ArraySize(IDS) ? IDS[index] : "UNKNOWN";
+	static const char* const ERROR_DESCRIPTIONS[] =
+	{
+#define LIST_ITEM(value, stringID, desc) desc,
+		PUBLICERRORTYPE_LIST
+#undef LIST_ITEM
+	};
+
+	size_t GetPublicWarningsListSize()
+	{
+		return ArraySize(WARNING_IDS);
 	}
 
-	std::string GetPublicErrorDescription(PublicErrorID id)
+	const char* GetPublicWarningStringID(PublicWarningID id, const char* returnedIfNotFound)
 	{
-		static const char* const DESCRIPTIONS[] =
-		{
-#define LIST_ITEM(value, stringID, desc) desc,
-			PUBLICERRORTYPE_LIST
-#undef LIST_ITEM
-		};
-
 		const size_t index = static_cast<size_t>(id);
-		return index < ArraySize(DESCRIPTIONS) ? DESCRIPTIONS[index] : "UNKNOWN";
+		return index < ArraySize(WARNING_IDS) ? WARNING_IDS[index] : returnedIfNotFound;
+	}
+
+	const char* GetPublicWarningDescription(PublicWarningID id, const char* returnedIfNotFound)
+	{
+		const size_t index = static_cast<size_t>(id);
+		return index < ArraySize(WARNING_DESCRIPTIONS) ? WARNING_DESCRIPTIONS[index] : returnedIfNotFound;
+	}
+
+	size_t GetPublicErrorsListSize()
+	{
+		return ArraySize(ERROR_IDS);
+	}
+
+	const char* GetPublicErrorStringID(PublicErrorID id, const char* returnedIfNotFound)
+	{
+		const size_t index = static_cast<size_t>(id);
+		return index < ArraySize(ERROR_IDS) ? ERROR_IDS[index] : returnedIfNotFound;
+	}
+
+	const char* GetPublicErrorDescription(PublicErrorID id, const char* returnedIfNotFound)
+	{
+		const size_t index = static_cast<size_t>(id);
+		return index < ArraySize(ERROR_DESCRIPTIONS) ? ERROR_DESCRIPTIONS[index] : returnedIfNotFound;
 	}
 }

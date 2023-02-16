@@ -39,6 +39,7 @@ set(TARGETNAME_LIBV2MPASM LibV2MPAsm)
 set(TARGETNAME_LIBBASEUTIL LibBaseUtil)
 set(TARGETNAME_LIBSHAREDCOMPONENTS LibSharedComponents)
 set(TARGETNAME_UTHASH uthash)
+set(TARGETNAME_ARGPARSE argparse)
 
 option(BUILD_TESTING "If set, builds tests and links with Catch2" NO)
 

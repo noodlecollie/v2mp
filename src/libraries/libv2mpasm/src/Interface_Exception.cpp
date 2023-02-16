@@ -97,6 +97,36 @@ API_LIBV2MPASM size_t V2MPAsm_Exception_ToString(const struct V2MPAsm_Exception*
 	return V2MPAsm::CopyStringToBuffer(exception->inner.ToString(), buffer, length);
 }
 
+API_LIBV2MPASM size_t V2MPAsm_ExceptionList_GetWarningsListSize(void)
+{
+	return V2MPAsm::GetPublicWarningsListSize();
+}
+
+API_LIBV2MPASM const char* V2MPAsm_ExceptionList_GetWarningStringID(size_t index)
+{
+	return V2MPAsm::GetPublicWarningStringID(static_cast<V2MPAsm::PublicWarningID>(index), nullptr);
+}
+
+API_LIBV2MPASM const char* V2MPAsm_ExceptionList_GetWarningDescription(size_t index)
+{
+	return V2MPAsm::GetPublicWarningDescription(static_cast<V2MPAsm::PublicWarningID>(index), nullptr);
+}
+
+API_LIBV2MPASM size_t V2MPAsm_ExceptionList_GetErrorsListSize(void)
+{
+	return V2MPAsm::GetPublicErrorsListSize();
+}
+
+API_LIBV2MPASM const char* V2MPAsm_ExceptionList_GetErrorStringID(size_t index)
+{
+	return V2MPAsm::GetPublicErrorStringID(static_cast<V2MPAsm::PublicErrorID>(index), nullptr);
+}
+
+API_LIBV2MPASM const char* V2MPAsm_ExceptionList_GetErrorDescription(size_t index)
+{
+	return V2MPAsm::GetPublicErrorDescription(static_cast<V2MPAsm::PublicErrorID>(index), nullptr);
+}
+
 #ifdef __cplusplus
 } // extern "C"
 #endif
