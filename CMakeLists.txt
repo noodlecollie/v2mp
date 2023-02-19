@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.12)
 
-include (TestBigEndian)
+include(TestBigEndian)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(target_versions)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 	message(STATUS "Setting build type to 'Release' as none was specified.")

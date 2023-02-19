@@ -1,5 +1,5 @@
-#ifndef V2MPASM_PARSER_H
-#define V2MPASM_PARSER_H
+#ifndef V2MPASM_ASSEMBLER_H
+#define V2MPASM_ASSEMBLER_H
 
 #include <stddef.h>
 #include <stdbool.h>
@@ -46,4 +46,4 @@ API_LIBV2MPASM size_t V2MPAsm_Assembler_TakeInMemoryOutputBuffer(struct V2MPAsm_
 } // extern "C"
 #endif
 
-#endif // V2MPASM_PARSER_H
+#endif // V2MPASM_ASSEMBLER_H

@@ -1,5 +1,5 @@
-#ifndef V2MPASM_PARSEEXCEPTION_H
-#define V2MPASM_PARSEEXCEPTION_H
+#ifndef V2MPASM_EXCEPTION_H
+#define V2MPASM_EXCEPTION_H
 
 #include <stddef.h>
 #include "LibV2MPAsm/LibExport.h"
@@ -32,4 +32,4 @@ API_LIBV2MPASM const char* V2MPAsm_ExceptionList_GetErrorDescription(size_t inde
 } // extern "C"
 #endif
 
-#endif // V2MPASM_PARSEEXCEPTION_H
+#endif // V2MPASM_EXCEPTION_H

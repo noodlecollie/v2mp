@@ -1,0 +1,10 @@
+#pragma once
+
+#include <cstdint>
+
+namespace V2MPAsm
+{
+	static constexpr int32_t VERSION_MAJOR = @LIBV2MPASM_VERSION_MAJOR@;
+	static constexpr int32_t VERSION_MINOR = @LIBV2MPASM_VERSION_MINOR@;
+	static constexpr int32_t VERSION_PATCH = @LIBV2MPASM_VERSION_PATCH@;
+}

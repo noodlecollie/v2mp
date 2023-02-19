@@ -3,9 +3,16 @@ configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_LIBV2MPASM}/LibExport.h"
 )
 
+configure_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/configure/Interface_Version.h.in"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/Interface_Version.h"
+)
+
 set(PUBLIC_HEADERS_ALL
 	include/${TARGETNAME_LIBV2MPASM}/Assembler.h
 	include/${TARGETNAME_LIBV2MPASM}/Exception.h
+	include/${TARGETNAME_LIBV2MPASM}/LibExport.h
+	include/${TARGETNAME_LIBV2MPASM}/Version.h
 )
 
 set(SOURCES_ALL
@@ -71,6 +78,7 @@ set(SOURCES_ALL
 	src/Interface_Assembler.cpp
 	src/Interface_Exception.h
 	src/Interface_Exception.cpp
+	src/Interface_Version.cpp
 )
 
 add_library(${TARGETNAME_LIBV2MPASM} SHARED ${PUBLIC_HEADERS_ALL} ${SOURCES_ALL})
