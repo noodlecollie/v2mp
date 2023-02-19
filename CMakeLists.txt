@@ -17,6 +17,8 @@ cmake_policy(SET CMP0092 NEW)
 
 project(V2MP)
 
+find_package(Git QUIET REQUIRED)
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
@@ -59,9 +61,8 @@ endif()
 
 # Store Git hash in VCS_COMMIT_ID
 execute_process(
-	COMMAND "${GIT_EXECUTABLE}" describe --always HEAD
+	COMMAND "${GIT_EXECUTABLE}" rev-parse --short HEAD
 	WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-	RESULT_VARIABLE res
 	OUTPUT_VARIABLE VCS_COMMIT_ID
 	ERROR_QUIET
 	OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -72,8 +73,6 @@ set_property(GLOBAL APPEND
 	PROPERTY CMAKE_CONFIGURE_DEPENDS
 	"${CMAKE_SOURCE_DIR}/.git/index"
 )
-
-add_compile_definitions("GIT_COMMIT_HASH=\"${VCS_COMMIT_ID}\"")
 
 # Turn up warning levels as high as is feasible, and treat warnings as errors.
 # Correct code should be warning-free at all times, no exceptions.

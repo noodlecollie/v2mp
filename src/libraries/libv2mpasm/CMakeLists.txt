@@ -4,8 +4,8 @@ configure_file(
 )
 
 configure_file(
-	"${CMAKE_CURRENT_SOURCE_DIR}/configure/Interface_Version.h.in"
-	"${CMAKE_CURRENT_SOURCE_DIR}/src/Interface_Version.h"
+	"${CMAKE_CURRENT_SOURCE_DIR}/configure/Interface_Version.cpp.in"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/Interface_Version.cpp"
 )
 
 set(PUBLIC_HEADERS_ALL
