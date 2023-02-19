@@ -3,9 +3,15 @@ configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_LIBV2MP}/LibExport.h"
 )
 
+configure_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/configure/Interface_Version.c.in"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/Interface_Version.c"
+)
+
 set(PUBLIC_HEADERS_ALL
 	include/${TARGETNAME_LIBV2MP}/Dummy.h
 	include/${TARGETNAME_LIBV2MP}/LibExport.h
+	include/${TARGETNAME_LIBV2MP}/Version.h
 )
 
 set(SOURCES_ALL
