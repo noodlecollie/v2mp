@@ -16,6 +16,7 @@ set(PUBLIC_HEADERS_ALL
 
 set(SOURCES_ALL
 	src/Dummy.c
+	src/Interface_Version.c
 )
 
 add_library(${TARGETNAME_LIBV2MP} SHARED ${PUBLIC_HEADERS_ALL} ${SOURCES_ALL})

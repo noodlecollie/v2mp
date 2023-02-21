@@ -3,27 +3,27 @@
 #include "LibV2MP/Version.h"
 #include "Interface_Version.gen.h"
 
-API_LIBV2MPASM int32_t V2MP_Version_GetMajor(void)
+API_LIBV2MP int32_t V2MP_Version_GetMajor(void)
 {
 	return V2MP_VERSION_MAJOR;
 }
 
-API_LIBV2MPASM int32_t V2MP_Version_GetMinor(void)
+API_LIBV2MP int32_t V2MP_Version_GetMinor(void)
 {
 	return V2MP_VERSION_MINOR;
 }
 
-API_LIBV2MPASM int32_t V2MP_Version_GetPatch(void)
+API_LIBV2MP int32_t V2MP_Version_GetPatch(void)
 {
 	return V2MP_VERSION_PATCH;
 }
 
-API_LIBV2MPASM const char* V2MP_Version_GetVersionString(void)
+API_LIBV2MP const char* V2MP_Version_GetVersionString(void)
 {
 	return V2MP_VERSION_STRING;
 }
 
-API_LIBV2MPASM const char* V2MP_Version_GetBuildIdentifier(void)
+API_LIBV2MP const char* V2MP_Version_GetBuildIdentifier(void)
 {
 	return V2MP_BUILD_IDENTIFIER_STRING;
 }
