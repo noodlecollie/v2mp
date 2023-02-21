@@ -19,7 +19,10 @@ set(SOURCES_ALL
 	src/Interface_Version.c
 )
 
-add_library(${TARGETNAME_LIBV2MP} SHARED ${PUBLIC_HEADERS_ALL} ${SOURCES_ALL})
+add_library(${TARGETNAME_LIBV2MP} SHARED
+	${PUBLIC_HEADERS_ALL}
+	${SOURCES_ALL}
+)
 
 target_include_directories(${TARGETNAME_LIBV2MP} PUBLIC include)
 target_include_directories(${TARGETNAME_LIBV2MP} PRIVATE src)

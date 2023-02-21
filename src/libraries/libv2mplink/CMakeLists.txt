@@ -12,7 +12,10 @@ set(SOURCES_ALL
 	src/Dummy.cpp
 )
 
-add_library(${TARGETNAME_LIBV2MPLINK} SHARED ${PUBLIC_HEADERS_ALL} ${SOURCES_ALL})
+add_library(${TARGETNAME_LIBV2MPLINK} SHARED
+	${PUBLIC_HEADERS_ALL}
+	${SOURCES_ALL}
+)
 
 target_include_directories(${TARGETNAME_LIBV2MPLINK} PUBLIC include)
 target_include_directories(${TARGETNAME_LIBV2MPLINK} PRIVATE src)

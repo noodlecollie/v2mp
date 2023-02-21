@@ -53,13 +53,6 @@ if(BUILD_TESTING)
 	enable_testing()
 endif()
 
-# Used for generated headers:
-if(BUILD_SHARED_LIBS)
-	set(V2MP_IS_SHARED_BUILD YES)
-else()
-	set(V2MP_IS_SHARED_BUILD NO)
-endif()
-
 # Store Git hash in VCS_COMMIT_ID
 execute_process(
 	COMMAND "${GIT_EXECUTABLE}" rev-parse --short HEAD

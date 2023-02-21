@@ -81,7 +81,10 @@ set(SOURCES_ALL
 	src/Interface_Version.cpp
 )
 
-add_library(${TARGETNAME_LIBV2MPASM} SHARED ${PUBLIC_HEADERS_ALL} ${SOURCES_ALL})
+add_library(${TARGETNAME_LIBV2MPASM} SHARED
+	${PUBLIC_HEADERS_ALL}
+	${SOURCES_ALL}
+)
 
 target_include_directories(${TARGETNAME_LIBV2MPASM} PUBLIC include)
 target_include_directories(${TARGETNAME_LIBV2MPASM} PRIVATE src)
