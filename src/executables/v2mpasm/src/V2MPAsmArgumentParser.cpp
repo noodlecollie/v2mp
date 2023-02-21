@@ -3,6 +3,8 @@
 #include "V2MPAsmArgumentParser.h"
 #include "argparse/argparse.hpp"
 #include "CommandLineArgs.h"
+#include "Version.gen.h"
+#include "LibV2MPAsm/Version.h"
 
 static std::string RemovePrefix(const std::string& str, const char* prefix)
 {
@@ -13,8 +15,13 @@ class V2MPAsmArgumentParser::Impl
 {
 public:
 	Impl() :
-		m_Parser("V2MPAsm")
+		m_Parser("V2MPAsm", VERSION_STRING)
 	{
+		m_Parser.add_description(
+			"Frontend " + std::string(VERSION_STRING) +
+			", Lib: " + std::string(V2MPAsm_Version_GetVersionString())
+		);
+
 		AddCommandLineArgs();
 	}
 
