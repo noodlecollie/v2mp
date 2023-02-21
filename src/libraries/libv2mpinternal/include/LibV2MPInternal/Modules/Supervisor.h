@@ -1,5 +1,5 @@
-#ifndef V2MP_MODULES_SUPERVISOR_H
-#define V2MP_MODULES_SUPERVISOR_H
+#ifndef V2MPINTERNAL_MODULES_SUPERVISOR_H
+#define V2MPINTERNAL_MODULES_SUPERVISOR_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -65,4 +65,4 @@ bool V2MP_Supervisor_ReadSSRange(
 } // extern "C"
 #endif
 
-#endif // V2MP_MODULES_SUPERVISOR_H
+#endif // V2MPINTERNAL_MODULES_SUPERVISOR_H

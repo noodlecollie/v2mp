@@ -1,5 +1,5 @@
-#ifndef V2MPASM_LIBEXPORT_H
-#define V2MPASM_LIBEXPORT_H
+#ifndef V2MPASM_LIBEXPORT_GEN_H
+#define V2MPASM_LIBEXPORT_GEN_H
 
 // Defined if building shared libraries.
 #cmakedefine V2MP_IS_SHARED_BUILD
@@ -23,4 +23,4 @@
 #define API_LIBV2MPASM
 
 #endif // defined(V2MP_IS_SHARED_BUILD) && (defined(WIN32) || defined(WIN64))
-#endif // V2MPASM_LIBEXPORT_H
+#endif // V2MPASM_LIBEXPORT_GEN_H

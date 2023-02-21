@@ -1,5 +1,5 @@
-#ifndef V2MP_MODULES_MAINBOARD_H
-#define V2MP_MODULES_MAINBOARD_H
+#ifndef V2MPINTERNAL_MODULES_MAINBOARD_H
+#define V2MPINTERNAL_MODULES_MAINBOARD_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,4 +19,4 @@ struct V2MP_MemoryStore* V2MP_Mainboard_GetMemoryStore(const V2MP_Mainboard* boa
 } // extern "C"
 #endif
 
-#endif // V2MP_MODULES_MAINBOARD_H
+#endif // V2MPINTERNAL_MODULES_MAINBOARD_H

@@ -1,5 +1,5 @@
-#ifndef V2MP_MODULES_CPU_INTERNAL_H
-#define V2MP_MODULES_CPU_INTERNAL_H
+#ifndef V2MPINTERNAL_MODULES_CPU_INTERNAL_H
+#define V2MPINTERNAL_MODULES_CPU_INTERNAL_H
 
 #include "LibV2MPInternal/Modules/CPU.h"
 
@@ -20,4 +20,4 @@ struct V2MP_CPU
 V2MP_Word* V2MP_CPU_GetRegisterPtr(V2MP_CPU* cpu, V2MP_Word regIndex);
 const V2MP_Word* V2MP_CPU_GetRegisterConstPtr(const V2MP_CPU* cpu, V2MP_Word regIndex);
 
-#endif // V2MP_MODULES_CPU_INTERNAL_H
+#endif // V2MPINTERNAL_MODULES_CPU_INTERNAL_H

@@ -1,5 +1,5 @@
-#ifndef V2MP_MODULES_CPU_H
-#define V2MP_MODULES_CPU_H
+#ifndef V2MPINTERNAL_MODULES_CPU_H
+#define V2MPINTERNAL_MODULES_CPU_H
 
 #include <stdbool.h>
 #include "LibV2MPInternal/Defs.h"
@@ -74,4 +74,4 @@ void V2MP_CPU_SetStackPointer(V2MP_CPU* cpu, V2MP_Word value);
 } // extern "C"
 #endif
 
-#endif // V2MP_MODULES_CPU_H
+#endif // V2MPINTERNAL_MODULES_CPU_H

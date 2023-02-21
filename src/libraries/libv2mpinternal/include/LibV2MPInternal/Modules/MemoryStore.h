@@ -1,5 +1,5 @@
-#ifndef V2MP_MODULES_MEMORYSTORE_H
-#define V2MP_MODULES_MEMORYSTORE_H
+#ifndef V2MPINTERNAL_MODULES_MEMORYSTORE_H
+#define V2MPINTERNAL_MODULES_MEMORYSTORE_H
 
 #include <stddef.h>
 #include <stdbool.h>
@@ -52,4 +52,4 @@ const V2MP_Byte* V2MP_MemoryStore_GetConstPtrToRange(
 } // extern "C"
 #endif
 
-#endif // V2MP_MODULES_MEMORYSTORE_H
+#endif // V2MPINTERNAL_MODULES_MEMORYSTORE_H
