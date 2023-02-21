@@ -1,7 +1,7 @@
 #ifndef V2MPLINK_DUMMY_H
 #define V2MPLINK_DUMMY_H
 
-#include "LibV2MPLink/LibExport.h"
+#include "LibV2MPLink/LibExport.gen.h"
 
 #ifdef __cplusplus
 extern "C" {

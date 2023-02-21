@@ -1,10 +1,11 @@
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/configure/LibExport.h.in"
-	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_LIBV2MPLINK}/LibExport.h"
+	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_LIBV2MPLINK}/LibExport.gen.h"
 )
 
 set(PUBLIC_HEADERS_ALL
-	include/${TARGETNAME_LIBV2MPLINK}/LibExport.h
+	include/${TARGETNAME_LIBV2MPLINK}/Dummy.h
+	include/${TARGETNAME_LIBV2MPLINK}/LibExport.gen.h
 )
 
 set(SOURCES_ALL

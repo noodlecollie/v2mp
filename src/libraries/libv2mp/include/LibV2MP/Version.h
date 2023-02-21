@@ -2,7 +2,7 @@
 #define V2MP_VERSION_H
 
 #include <stdint.h>
-#include "LibV2MP/LibExport.h"
+#include "LibV2MP/LibExport.gen.h"
 
 #ifdef __cplusplus
 extern "C" {

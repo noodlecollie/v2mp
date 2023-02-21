@@ -2,7 +2,7 @@
 #define V2MPASM_VERSION_H
 
 #include <stdint.h>
-#include "LibV2MPAsm/LibExport.h"
+#include "LibV2MPAsm/LibExport.gen.h"
 
 #ifdef __cplusplus
 extern "C" {

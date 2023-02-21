@@ -2,7 +2,7 @@
 #define V2MPASM_EXCEPTION_H
 
 #include <stddef.h>
-#include "LibV2MPAsm/LibExport.h"
+#include "LibV2MPAsm/LibExport.gen.h"
 
 #ifdef __cplusplus
 extern "C" {

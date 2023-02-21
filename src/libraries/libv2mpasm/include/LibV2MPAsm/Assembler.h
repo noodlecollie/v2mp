@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
-#include "LibV2MPAsm/LibExport.h"
+#include "LibV2MPAsm/LibExport.gen.h"
 
 #ifdef __cplusplus
 extern "C" {

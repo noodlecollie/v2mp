@@ -1,17 +1,17 @@
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/configure/LibExport.h.in"
-	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_LIBV2MPASM}/LibExport.h"
+	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_LIBV2MPASM}/LibExport.gen.h"
 )
 
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/configure/Interface_Version.h.in"
-	"${CMAKE_CURRENT_SOURCE_DIR}/src/Interface_Version.h"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/Interface_Version.gen.h"
 )
 
 set(PUBLIC_HEADERS_ALL
 	include/${TARGETNAME_LIBV2MPASM}/Assembler.h
 	include/${TARGETNAME_LIBV2MPASM}/Exception.h
-	include/${TARGETNAME_LIBV2MPASM}/LibExport.h
+	include/${TARGETNAME_LIBV2MPASM}/LibExport.gen.h
 	include/${TARGETNAME_LIBV2MPASM}/Version.h
 )
 
