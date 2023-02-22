@@ -3,13 +3,21 @@ configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_LIBV2MPLINK}/LibExport.gen.h"
 )
 
+configure_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/configure/Interface_Version.h.in"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/Interface_Version.gen.h"
+)
+
 set(PUBLIC_HEADERS_ALL
-	include/${TARGETNAME_LIBV2MPLINK}/Dummy.h
 	include/${TARGETNAME_LIBV2MPLINK}/LibExport.gen.h
+	include/${TARGETNAME_LIBV2MPLINK}/Linker.h
 )
 
 set(SOURCES_ALL
-	src/Dummy.cpp
+	src/Interface_Linker.h
+	src/Interface_Linker.cpp
+	src/Interface_Version.gen.h
+	src/Interface_Version.cpp
 )
 
 add_library(${TARGETNAME_LIBV2MPLINK} SHARED

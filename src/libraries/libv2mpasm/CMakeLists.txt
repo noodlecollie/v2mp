@@ -78,6 +78,7 @@ set(SOURCES_ALL
 	src/Interface_Assembler.cpp
 	src/Interface_Exception.h
 	src/Interface_Exception.cpp
+	src/Interface_Version.gen.h
 	src/Interface_Version.cpp
 )
 

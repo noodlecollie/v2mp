@@ -16,6 +16,7 @@ set(PUBLIC_HEADERS_ALL
 
 set(SOURCES_ALL
 	src/Dummy.c
+	src/Interface_Version.gen.h
 	src/Interface_Version.c
 )
 
