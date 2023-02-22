@@ -35,6 +35,7 @@ int BaseUtil_String_GetBaseFromNumberPrefix(const char* str);
 
 #ifdef __cplusplus
 #include <string>
+#include <cstring>
 
 namespace BaseUtil
 {
