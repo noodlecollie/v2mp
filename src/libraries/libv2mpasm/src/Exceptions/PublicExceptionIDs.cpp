@@ -1,5 +1,5 @@
 #include "Exceptions/PublicExceptionIDs.h"
-#include "Utils/ArrayUtils.h"
+#include "LibBaseUtil/Array.h"
 
 namespace V2MPAsm
 {
@@ -33,35 +33,35 @@ namespace V2MPAsm
 
 	size_t GetPublicWarningsListSize()
 	{
-		return ArraySize(WARNING_IDS);
+		return BaseUtil::ArraySize(WARNING_IDS);
 	}
 
 	const char* GetPublicWarningStringID(PublicWarningID id, const char* returnedIfNotFound)
 	{
 		const size_t index = static_cast<size_t>(id);
-		return index < ArraySize(WARNING_IDS) ? WARNING_IDS[index] : returnedIfNotFound;
+		return index < BaseUtil::ArraySize(WARNING_IDS) ? WARNING_IDS[index] : returnedIfNotFound;
 	}
 
 	const char* GetPublicWarningDescription(PublicWarningID id, const char* returnedIfNotFound)
 	{
 		const size_t index = static_cast<size_t>(id);
-		return index < ArraySize(WARNING_DESCRIPTIONS) ? WARNING_DESCRIPTIONS[index] : returnedIfNotFound;
+		return index < BaseUtil::ArraySize(WARNING_DESCRIPTIONS) ? WARNING_DESCRIPTIONS[index] : returnedIfNotFound;
 	}
 
 	size_t GetPublicErrorsListSize()
 	{
-		return ArraySize(ERROR_IDS);
+		return BaseUtil::ArraySize(ERROR_IDS);
 	}
 
 	const char* GetPublicErrorStringID(PublicErrorID id, const char* returnedIfNotFound)
 	{
 		const size_t index = static_cast<size_t>(id);
-		return index < ArraySize(ERROR_IDS) ? ERROR_IDS[index] : returnedIfNotFound;
+		return index < BaseUtil::ArraySize(ERROR_IDS) ? ERROR_IDS[index] : returnedIfNotFound;
 	}
 
 	const char* GetPublicErrorDescription(PublicErrorID id, const char* returnedIfNotFound)
 	{
 		const size_t index = static_cast<size_t>(id);
-		return index < ArraySize(ERROR_DESCRIPTIONS) ? ERROR_DESCRIPTIONS[index] : returnedIfNotFound;
+		return index < BaseUtil::ArraySize(ERROR_DESCRIPTIONS) ? ERROR_DESCRIPTIONS[index] : returnedIfNotFound;
 	}
 }

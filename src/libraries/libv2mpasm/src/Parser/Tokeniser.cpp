@@ -5,7 +5,7 @@
 #include "Exceptions/PublicExceptionIDs.h"
 #include "Parser/Tokeniser.h"
 #include "Files/InputReader.h"
-#include "Utils/ArrayUtils.h"
+#include "LibBaseUtil/Array.h"
 
 namespace V2MPAsm
 {
@@ -82,7 +82,7 @@ namespace V2MPAsm
 #undef LIST_ITEM
 		};
 
-		for ( size_t index = 0; index < ArraySize(TOKEN_NAMES); ++index )
+		for ( size_t index = 0; index < BaseUtil::ArraySize(TOKEN_NAMES); ++index )
 		{
 			if ( TOKEN_NAMES[index].first == tokenType )
 			{
@@ -102,7 +102,7 @@ namespace V2MPAsm
 #undef LIST_ITEM
 		};
 
-		for ( size_t index = 0; index < ArraySize(TOKEN_DESCS); ++index )
+		for ( size_t index = 0; index < BaseUtil::ArraySize(TOKEN_DESCS); ++index )
 		{
 			if ( TOKEN_DESCS[index].first == tokenType )
 			{
@@ -122,7 +122,7 @@ namespace V2MPAsm
 #undef LIST_ITEM
 		};
 
-		for ( size_t index = 0; index < ArraySize(TOKEN_PRINTABLE); ++index )
+		for ( size_t index = 0; index < BaseUtil::ArraySize(TOKEN_PRINTABLE); ++index )
 		{
 			if ( TOKEN_PRINTABLE[index].first == tokenType )
 			{

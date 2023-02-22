@@ -10,7 +10,7 @@
 #include "ProgramModel/CodeWord.h"
 #include "ProgramModel/ProgramModel.h"
 #include "Utils/ParsingUtils.h"
-#include "Utils/ArrayUtils.h"
+#include "LibBaseUtil/Array.h"
 #include "Parser/Tokeniser.h"
 #include "ProgramModel/InstructionMeta.h"
 #include "Utils/StringUtils.h"
@@ -712,6 +712,6 @@ namespace V2MPAsm
 		};
 
 		const size_t index = static_cast<size_t>(state);
-		return index < ArraySize(STATE_STRINGS) ? STATE_STRINGS[index] : "Unknown";
+		return index < BaseUtil::ArraySize(STATE_STRINGS) ? STATE_STRINGS[index] : "Unknown";
 	}
 }

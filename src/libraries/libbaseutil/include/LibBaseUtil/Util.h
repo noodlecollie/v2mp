@@ -1,11 +1,11 @@
 #ifndef BASEUTIL_UTIL_H
 #define BASEUTIL_UTIL_H
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stddef.h>
 
 void* BaseUtil_MemSet(void* ptr, int value, size_t numBytes);
 

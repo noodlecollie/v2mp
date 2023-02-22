@@ -31,6 +31,9 @@ set(SOURCES_ALL
 	src/Files/InputReader.cpp
 	src/Files/OutputFile.h
 	src/Files/OutputFile.cpp
+	src/Utils/BitUtils.h
+	src/Utils/ParsingUtils.h
+	src/Utils/StringUtils.h
 	src/Utils/StringUtils.cpp
 	src/Parser/Parser.h
 	src/Parser/Parser.cpp
