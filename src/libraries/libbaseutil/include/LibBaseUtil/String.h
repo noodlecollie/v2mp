@@ -33,4 +33,30 @@ int BaseUtil_String_GetBaseFromNumberPrefix(const char* str);
 } // extern "C"
 #endif
 
+#ifdef __cplusplus
+#include <string>
+
+namespace BaseUtil
+{
+	static inline size_t CopyStringToBuffer(const std::string& str, char* buffer, size_t length) noexcept
+	{
+		const size_t strLength = str.length();
+
+		if ( buffer && length > 0 )
+		{
+			const size_t numChars = std::min<size_t>(length - 1, strLength);
+
+			if ( numChars > 0 )
+			{
+				std::memcpy(buffer, str.data(), numChars);
+			}
+
+			buffer[numChars] = '\0';
+		}
+
+		return strLength;
+	}
+}
+#endif // __cplusplus
+
 #endif // BASEUTIL_STRING_H

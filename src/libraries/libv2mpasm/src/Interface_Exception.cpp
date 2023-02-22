@@ -3,6 +3,7 @@
 #include "Exceptions/PublicExceptionIDs.h"
 #include "Interface_Exception.h"
 #include "Utils/StringUtils.h"
+#include "LibBaseUtil/String.h"
 
 namespace V2MPAsm
 {
@@ -91,7 +92,7 @@ extern "C"
 			return 0;
 		}
 
-		return V2MPAsm::CopyStringToBuffer(exception->inner.ToString(), buffer, length);
+		return BaseUtil::CopyStringToBuffer(exception->inner.ToString(), buffer, length);
 	}
 
 	API_LIBV2MPASM size_t V2MPAsm_ExceptionList_GetWarningsListSize(void)
