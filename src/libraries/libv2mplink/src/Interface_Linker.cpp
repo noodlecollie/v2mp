@@ -1,6 +1,7 @@
 #include <memory>
 #include "LibV2MPLink/Linker.h"
 #include "Interface_Linker.h"
+#include "Interface_Exception.h"
 
 extern "C"
 {
@@ -29,5 +30,32 @@ extern "C"
 		}
 
 		delete linker;
+	}
+
+	API_LIBV2MPLINK size_t V2MPLink_Linker_GetExceptionCount(const struct V2MPLink_Linker* linker)
+	{
+		if ( !linker )
+		{
+			return 0;
+		}
+
+		return linker->inner.GetExceptions().size();
+	}
+
+	API_LIBV2MPLINK const struct V2MPLink_Exception* V2MPLink_Linker_GetException(const struct V2MPLink_Linker* linker, size_t index)
+	{
+		if ( !linker )
+		{
+			return nullptr;
+		}
+
+		const V2MPLink::ExceptionList& list = linker->inner.GetExceptions();
+
+		if ( index >= list.size() )
+		{
+			return nullptr;
+		}
+
+		return list[index].get();
 	}
 } // extern "C"

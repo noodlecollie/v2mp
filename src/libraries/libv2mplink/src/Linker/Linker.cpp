@@ -21,4 +21,9 @@ namespace V2MPLink
 	{
 		m_OutputPath = outputPath;
 	}
+
+	const ExceptionList& Linker::GetExceptions() const noexcept
+	{
+		return m_ExceptionList;
+	}
 }
