@@ -14,8 +14,14 @@ set(PUBLIC_HEADERS_ALL
 )
 
 set(SOURCES_ALL
+	src/Exceptions/PublicException.h
+	src/Exceptions/PublicException.cpp
+	src/Exceptions/PublicExceptionIDs.h
+	src/Exceptions/PublicExceptionIDs.cpp
 	src/Linker/Linker.h
 	src/Linker/Linker.cpp
+	src/Interface_Exception.h
+	src/Interface_Exception.cpp
 	src/Interface_Linker.h
 	src/Interface_Linker.cpp
 	src/Interface_Version.gen.h
@@ -30,7 +36,8 @@ add_library(${TARGETNAME_LIBV2MPLINK} SHARED
 target_include_directories(${TARGETNAME_LIBV2MPLINK} PUBLIC include)
 target_include_directories(${TARGETNAME_LIBV2MPLINK} PRIVATE src)
 
-target_link_libraries(${TARGETNAME_LIBV2MPLINK} PRIVATE ${TARGETNAME_LIBV2MPINTERNAL})
+target_link_libraries(${TARGETNAME_LIBV2MPLINK} PRIVATE
+	${TARGETNAME_LIBBASEUTIL})
 
 target_compile_definitions(${TARGETNAME_LIBV2MPLINK} PRIVATE "V2MPLINK_PRODUCER")
 
