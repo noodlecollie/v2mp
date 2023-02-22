@@ -1,6 +1,8 @@
 #pragma once
 
+#include "Linker/Linker.h"
+
 struct V2MPLink_Linker
 {
-	int dummy;
+	V2MPLink::Linker inner;
 };

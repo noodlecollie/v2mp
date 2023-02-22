@@ -26,14 +26,14 @@ static V2MPAsm_AssemblerResult ToExternalResult(V2MPAsm::Assembler::Result inRes
 
 extern "C"
 {
-	API_LIBV2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromFiles(const char* inputFile, const char* outputFile)
+	API_LIBV2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromFiles(const char* inputFilePath, const char* outputFilePath)
 	{
 		try
 		{
 			std::unique_ptr<struct V2MPAsm_Assembler> assembler = std::make_unique<struct V2MPAsm_Assembler>();
 
-			assembler->inner.SetInputFileName(inputFile);
-			assembler->inner.SetOutputToFile(outputFile);
+			assembler->inner.SetInputFileName(inputFilePath ? inputFilePath : "");
+			assembler->inner.SetOutputToFile(outputFilePath ? outputFilePath : "");
 
 			return assembler.release();
 		}

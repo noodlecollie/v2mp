@@ -9,7 +9,7 @@ extern "C" {
 
 struct V2MPLink_Linker;
 
-API_LIBV2MPLINK V2MPLink_Linker* V2MPLink_Linker_Create(void);
+API_LIBV2MPLINK V2MPLink_Linker* V2MPLink_Linker_Create(const char* objectFilePath, const char* outputFilePath);
 API_LIBV2MPLINK void V2MPLink_Linker_Destroy(V2MPLink_Linker* linker);
 
 #ifdef __cplusplus

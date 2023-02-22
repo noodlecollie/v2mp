@@ -44,6 +44,7 @@ set(TARGETNAME_LIBBASEUTIL LibBaseUtil)
 set(TARGETNAME_LIBSHAREDCOMPONENTS LibSharedComponents)
 set(TARGETNAME_UTHASH uthash)
 set(TARGETNAME_ARGPARSE argparse)
+set(TARGETNAME_CWALK cwalk)
 
 include(target_versions)
 

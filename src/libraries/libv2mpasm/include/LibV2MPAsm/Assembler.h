@@ -19,7 +19,7 @@ typedef enum V2MPAsm_AssemblerResult
 	V2MPASM_FAILED
 } V2MPAsm_AssemblerResult;
 
-API_LIBV2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromFiles(const char* inputFile, const char* outputFile);
+API_LIBV2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromFiles(const char* inputFilePath, const char* outputFilePath);
 API_LIBV2MPASM struct V2MPAsm_Assembler* V2MPAsm_Assembler_CreateFromMemory(const char* inputFileName, const char* inputBuffer);
 API_LIBV2MPASM void V2MPAsm_Assembler_Destroy(struct V2MPAsm_Assembler* assembler);
 

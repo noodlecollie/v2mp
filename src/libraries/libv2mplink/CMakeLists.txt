@@ -14,6 +14,8 @@ set(PUBLIC_HEADERS_ALL
 )
 
 set(SOURCES_ALL
+	src/Linker/Linker.h
+	src/Linker/Linker.cpp
 	src/Interface_Linker.h
 	src/Interface_Linker.cpp
 	src/Interface_Version.gen.h
