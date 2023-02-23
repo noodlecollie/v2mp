@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "Interface_Exception.h"
+#include "LibV2MPLink/Linker.h"
 
 namespace V2MPLink
 {
@@ -16,6 +17,8 @@ namespace V2MPLink
 		void SetOutputPath(const std::string& outputPath);
 
 		const ExceptionList& GetExceptions() const noexcept;
+
+		V2MPLinker_LinkerResult Run() noexcept;
 
 	private:
 		ExceptionList m_ExceptionList;
