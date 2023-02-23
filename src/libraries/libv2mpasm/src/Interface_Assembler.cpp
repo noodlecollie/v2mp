@@ -79,6 +79,7 @@ extern "C"
 
 		try
 		{
+			// TODO: Just swap assembler class to use external enum?
 			return ToExternalResult(assembler->inner.Run());
 		}
 		catch (...)

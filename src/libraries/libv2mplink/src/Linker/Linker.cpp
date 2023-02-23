@@ -26,4 +26,10 @@ namespace V2MPLink
 	{
 		return m_ExceptionList;
 	}
+
+	V2MPLinker_LinkerResult Linker::Run() noexcept
+	{
+		m_ExceptionList = { std::make_shared<V2MPLink_Exception>(V2MPLink_Exception{PublicException(PublicErrorID::INTERNAL, m_ObjectFilePath, "Not implemented")}) };
+		return V2MPLINK_FAILED;
+	}
 }

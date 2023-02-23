@@ -32,6 +32,16 @@ extern "C"
 		delete linker;
 	}
 
+	API_LIBV2MPLINK V2MPLinker_LinkerResult V2MPLink_Linker_Run(struct V2MPLink_Linker* linker)
+	{
+		if ( !linker )
+		{
+			return V2MPLINK_FAILED;
+		}
+
+		return linker->inner.Run();
+	}
+
 	API_LIBV2MPLINK size_t V2MPLink_Linker_GetExceptionCount(const struct V2MPLink_Linker* linker)
 	{
 		if ( !linker )
