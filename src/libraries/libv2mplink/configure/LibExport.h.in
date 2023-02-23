@@ -1,0 +1,23 @@
+#ifndef V2MPLINK_LIBEXPORT_GEN_H
+#define V2MPLINK_LIBEXPORT_GEN_H
+
+#if defined(WIN32) || defined(WIN64)
+
+#if defined(V2MPLINK_PRODUCER)
+// This build is producing a library for another application to use.
+// Mark symbols as being exported.
+#define API_LIBV2MPLINK __declspec(dllexport)
+#else // defined(V2MPLINK_PRODUCER)
+// This library is being used by some application.
+// Mark symbols as being imported.
+#define API_LIBV2MPLINK __declspec(dllimport)
+#endif // defined(V2MPLINK_PRODUCER)
+
+#else // defined(WIN32) || defined(WIN64)
+
+// We're not using shared libraries, or we're not building under Windows.
+// No need to use __declspec, so define this to nothing.
+#define API_LIBV2MPLINK
+
+#endif // defined(WIN32) || defined(WIN64)
+#endif // V2MPLINK_LIBEXPORT_GEN_H

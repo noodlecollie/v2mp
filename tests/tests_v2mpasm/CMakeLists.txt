@@ -4,6 +4,8 @@ add_executable(V2MPAsm_Tests
 	src/BitwTests.cpp
 	src/CbxTests.cpp
 	src/DivTests.cpp
+	src/ExceptionAPI.cpp
+	src/ExceptionIDs.h
 	src/Labels.cpp
 	src/LanguageFeatures.cpp
 	src/LdstTests.cpp
@@ -21,9 +23,9 @@ add_executable(V2MPAsm_Tests
 
 target_link_libraries(V2MPAsm_Tests PRIVATE
 	Catch2::Catch2
-	${TARGETNAME_V2MP_ASM}
+	${TARGETNAME_LIBV2MPASM}
 	${TARGETNAME_TESTUTIL}
-	${TARGETNAME_V2MP_INTERNAL}
+	${TARGETNAME_LIBV2MPINTERNAL}
 )
 
 target_include_directories(V2MPAsm_Tests PRIVATE src)
@@ -31,7 +33,7 @@ target_include_directories(V2MPAsm_Tests PRIVATE src)
 if(WIN32)
 	add_custom_command(TARGET V2MPAsm_Tests POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different
-		$<TARGET_FILE:${TARGETNAME_V2MP_ASM}>
+		$<TARGET_FILE:${TARGETNAME_LIBV2MPASM}>
 		$<TARGET_FILE_DIR:V2MPAsm_Tests>
 	)
 endif()

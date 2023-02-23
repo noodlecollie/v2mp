@@ -1,6 +1,6 @@
 #include <cstring>
 #include "catch2/catch.hpp"
-#include "SharedComponents/CircularBuffer.h"
+#include "LibSharedComponents/CircularBuffer.h"
 
 static constexpr size_t DEFAULT_CAPACITY = 32;
 

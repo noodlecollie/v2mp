@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-include (TestBigEndian)
+include(TestBigEndian)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -15,6 +15,8 @@ endif()
 cmake_policy(SET CMP0092 NEW)
 
 project(V2MP)
+
+find_package(Git QUIET REQUIRED)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -32,33 +34,30 @@ if(HOST_IS_BIG_ENDIAN)
 	message(FATAL "Compilation is not currently supported for big-endian systems.")
 endif()
 
-set(TARGETNAME_V2MP V2MP)
-set(TARGETNAME_V2MP_INTERNAL V2MPInternal)
-set(TARGETNAME_V2MP_ASM V2MPAsm)
-set(TARGETNAME_ASSEMBLER Assembler)
-set(TARGETNAME_BASEUTIL BaseUtil)
-set(TARGETNAME_SHARED_COMPONENTS SharedComponents)
+set(TARGETNAME_V2MPASM V2MPAsm)
+set(TARGETNAME_V2MPLINK V2MPLink)
+set(TARGETNAME_LIBV2MP LibV2MP)
+set(TARGETNAME_LIBV2MPINTERNAL LibV2MPInternal)
+set(TARGETNAME_LIBV2MPASM LibV2MPAsm)
+set(TARGETNAME_LIBV2MPLINK LibV2MPLink)
+set(TARGETNAME_LIBBASEUTIL LibBaseUtil)
+set(TARGETNAME_LIBSHAREDCOMPONENTS LibSharedComponents)
 set(TARGETNAME_UTHASH uthash)
+set(TARGETNAME_ARGPARSE argparse)
+set(TARGETNAME_CWALK cwalk)
 
-option(BUILD_SHARED_LIBS "If set, builds shared libraries; otherwise, builds static libraries." YES)
+include(target_versions)
+
 option(BUILD_TESTING "If set, builds tests and links with Catch2" NO)
 
 if(BUILD_TESTING)
 	enable_testing()
 endif()
 
-# Used for generated headers:
-if(BUILD_SHARED_LIBS)
-	set(V2MP_IS_SHARED_BUILD YES)
-else()
-	set(V2MP_IS_SHARED_BUILD NO)
-endif()
-
 # Store Git hash in VCS_COMMIT_ID
 execute_process(
-	COMMAND "${GIT_EXECUTABLE}" describe --always HEAD
+	COMMAND "${GIT_EXECUTABLE}" rev-parse --short HEAD
 	WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-	RESULT_VARIABLE res
 	OUTPUT_VARIABLE VCS_COMMIT_ID
 	ERROR_QUIET
 	OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -69,8 +68,6 @@ set_property(GLOBAL APPEND
 	PROPERTY CMAKE_CONFIGURE_DEPENDS
 	"${CMAKE_SOURCE_DIR}/.git/index"
 )
-
-add_compile_definitions("GIT_COMMIT_HASH=\"${VCS_COMMIT_ID}\"")
 
 # Turn up warning levels as high as is feasible, and treat warnings as errors.
 # Correct code should be warning-free at all times, no exceptions.

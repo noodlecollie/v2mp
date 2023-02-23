@@ -5,12 +5,12 @@
 #include <memory>
 #include <type_traits>
 #include <unordered_map>
-#include "V2MPInternal/Defs.h"
-#include "V2MPInternal/Modules/VirtualMachine.h"
-#include "V2MPInternal/Modules/Mainboard.h"
-#include "V2MPInternal/Modules/Supervisor.h"
-#include "V2MPInternal/Modules/CPU.h"
-#include "V2MPInternal/Modules/MemoryStore.h"
+#include "LibV2MPInternal/Defs.h"
+#include "LibV2MPInternal/Modules/VirtualMachine.h"
+#include "LibV2MPInternal/Modules/Mainboard.h"
+#include "LibV2MPInternal/Modules/Supervisor.h"
+#include "LibV2MPInternal/Modules/CPU.h"
+#include "LibV2MPInternal/Modules/MemoryStore.h"
 
 class TestHarnessVM
 {
