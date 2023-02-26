@@ -20,7 +20,7 @@ An assembly file is parsed one line at a time, and whitespace is used for delimi
 <instruction name> [instruction args ...]
 ```
 
-The first token is the mnemonic for the instruction in lowercase, and subsequent tokens are arguments for this instruction.
+The first token is the mnemonic for the instruction **in lowercase**, and subsequent tokens are arguments for this instruction.
 
 At the most basic level, an instruction's arguments are expected to be numerical values that correspond to the arguments for the instruction, as defined in `V2MP.md`. This means that for an instruction like `ADD`, it must be invoked with exactly three arguments:
 
@@ -52,7 +52,7 @@ A token that begins with a digit `0-9` or a plus or minus sign (`+` or `-`) is t
 
 ## Labels
 
-A token that begins with `:` is considered a label. A label defines a point in code to which the processor may branch later.
+A token that begins with `:` is considered a label. A label defines a point in code to which the processor may branch later. The address of a label is the address of the instruction immediately following the label.
 
 The name of a label, formed by the string after the `:`, may only contain alphanumeric characters `A-Z a-z 0-9` and underscores `_`, and may not begin with a number.
 
@@ -98,9 +98,9 @@ asgn 2 3 0         // Assign the value to PC
 
 ## Preprocessor
 
-The following preprocessor commands are supported:
+Before a file is assembled, a preprocessing pass is run. This preprocessor pass supports a number of different features, which are detailed below.
 
-### Include
+### Including Files
 
 `#include` includes another source file as part of the current file. Files may only be included once - subsequent includes of the same file are silently ignored.
 
@@ -108,60 +108,98 @@ The following preprocessor commands are supported:
 #include "defs.inc"
 ```
 
----
+### Constants
 
-Original notes (outdated):
+`#const` defines a numerical constant. Any valid number may be used as a constant, including decimal, hexadecimal, and binary numbers.
+
+By convention, constant names are defined in uppercase, with underscores separating words. Constant names may only contain alphanumeric characters `A-Z a-z 0-9` and underscores `_`, and may not begin with a number.
+
+Constants are different to [aliases](#aliases), in that they are intended solely to represent numbers. This means that they may be used unambiguously in mathematical expressions.
 
 ```
-// Other files can be included for extra definitions:
-#include "some_other_file.inc"
+// Defines a constant for a "success" exit code.
+#const EXIT_SUCCESS 0
 
-// Whitespace is used to delimit tokens,
-// and newlines are used to terminate lines.
+// Defines a negative decimal constant.
+#const NEGATIVE_FIVE -5
 
-// By default, instructions are specified as:
-// <mnemonic> <arg1> <arg2> ...
-// For as many arguments as are present in the instruction word.
-// For example:
+// Defines a constant specified in hexadecimal.
+#const MAX_VAL_OF_UNSIGNED_BYTE 0xFF
 
-ADD 0 1 0
+// Defines a constant specified in binary.
+#const MY_FLAG 0b100
+```
 
-// For a base instruction, all possible arguments must be provided.
-// On top of this, aliases can be defined that make it easier to
-// use the base instruction. For example:
+### Macros
 
-#alias ADDL ADD $0 $0 $1
+`#macro` defines a single-instruction macro, and `#begin_macro` and `#end_macro` define a macro over one or more instructions. At the point when a macro is defined, its name must be globally unique within the file being assembled.
 
-// Here, numbered arguments are prefixed with a '$'.
-// Aliases are recursively evaluated.
-// So:
+By convention, macro names are defined in uppercase, with underscores separating words. Macro names may only contain alphanumeric characters `A-Z a-z 0-9` and underscores `_`, and may not begin with a number.
 
-#alias NOP ADD 0 0
+Arguments to macros are defined within `()` brackets. Multiple arguments in the macro definition are delimited by commas. If a macro takes no arguments, the empty pair of `()` brackets must still be provided on both defintion and invocation.
 
-// Evaluates to:
+Argument names may only contain alphanumeric characters `A-Z a-z 0-9` and underscores `_`, and may not begin with a number.
 
-ADD 0 0 0
+Within a macro, an argument may be referred to by placing its name into a set of curly braces `{}`. The argument is pasted verbatim into the macro, so it is possible to generate invalid tokens if insufficient care is taken.
 
-// Macros can define multiple instructions.
-// For example:
+Macros are evaluated recursively when invoked, so one macro may be provided as an argument to another.
 
-#begin_macro BX_IF_R0_EQ_R1
-ASGN 2 $0
-SUB 0 1 0
-CBX 1 0 0
+```
+// A macro for adding a literal value to a register.
+// Eg: ADD_LITERAL(0, 13) would add 13 to R0.
+#macro ADD_LITERAL(reg, val) add {reg} {reg} {val}
+
+// A macro intended for either an add or a sub
+// to be performed on R0. Note that it is not
+// generally recommended to use instructions this
+// way, but this example demonstrates the
+// flexibility of how arguments can be passed to macros.
+// Eg: PERFORM_ON_R0(add, 1)
+#macro PERFORM_ON_R0(operation, value) {operation} 0 0 {value}
+
+// A macro for performing an unconditional jump,
+// as per the earlier example given for labels.
+// Eg: JUMP(:my_label) would jump to :my_label.
+#begin_macro JUMP(dest_label)
+asgn 2 2 <{dest_label}
+shft 2 2 8
+add 2 2 >{dest_label}
+asgn 2 3 0
 #end_macro
 
-// This macro defines a set of three instructions, where:
-//   - LR is loaded with a target address
-//   - R1 is subtracted from R0
-//   - If the result was zero, PC is set to the address in LR
-// It can then be used like so:
+// An empty macro for performing a nop operation.
+// Eg: DO_NOP()
+#macro DO_NOP() nop
+```
 
-BX_IF_R0_EQ_R1 0x1000
+### Aliases
 
-// Macros are also recursively evaluated.
+`#alias` defines an alias. Aliases are used to create a new user-defined name for an existing token. The existing token that an alias refers to may be:
 
-// Numerical literals can either be decimal (default),
-// hex (prefixed by 0x), or binary (prefixed by 0b).
+* A numeric literal (eg. `0x12`).
+* A label (eg. `:my_label`).
+* A label reference (eg. `~+:my_label`).
+* A previously-defined preprocessor token (eg. `MY_CONSTANT`). This includes other previously-defined constants, macros, and aliases.
+
+An attempt to alias a preprocessor token that has not been encountered yet, or an attempt to alias any other kind of token not included in the list above, will produce an error. This is to ensure that an alias always represents a well-defined language token.
+
+The syntax for defining an alias is `#alias name token`.
+
+By convention, aliases are defined in uppercase, with underscores separating words. Aliases may only contain alphanumeric characters `A-Z a-z 0-9` and underscores `_`, and may not begin with a number.
 
 ```
+// Defines an alias for a number.
+#alias ZERO 0
+
+// Defines an alias for an existing constant.
+#const MY_CONSTANT 123
+#alias MAGIC_NUMBER MY_CONSTANT
+
+// Defines an alias for a label.
+#alias END_OF_PROGRAM :end
+
+// Defines an alias for the distance to the label.
+#alias DIST_TO_END +~END_OF_PROGRAM
+```
+
+TODO: Would `#alias` be better implemented as simply a `#define`?
