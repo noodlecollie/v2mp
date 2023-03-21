@@ -57,7 +57,7 @@ If the binary file represents a shared library, the second item in the header's 
 | `type` | String | (required) | Type of this descriptor object: must be `"shared_library"`. |
 | `code_pages` | Array of [code page descriptor objects](#code-page-descriptor-object) | (required) | Array of objects defining the internal code pages usable by the shared library. At least one code page must be present in this array. |
 | `data_pages` | Array of [data page descriptor objects](#data-page-descriptor-object) | `[]` | Array of objects defining the internal data pages usable by the shared library. |
-| `exported_symbols` | Array of exported symbol descriptor objects (TODO: Link) | (required) | Array of objects defining the addresses of different exported symbols in the shared library. If any user of the library requests a symbol that is not exported here, an error is raised at runtime. (TODO: What error?) |
+| `exported_symbols` | Array of [exported symbol descriptor objects](#exported-symbol-descriptor-object)| (required) | Array of objects defining the addresses of different exported symbols in the shared library. If any user of the library requests a symbol that is not exported here, an error is raised at runtime. (TODO: What error?) |
 
 ### Code Page Descriptor Object
 
@@ -88,12 +88,11 @@ A data page has a pre-determined size, and may or may not have initialisation da
 
 An entry point descriptor object describes the code entry point for an executable. The program begins executing from this entry point.
 
-TODO: We need to define a data page here too.
-
 | Key | Value Type | Default If Not Specified | Description |
 |-----|------------|--------------------------|-------------|
 | `type` | String | (required) | Type of this descriptor object: must be `"entry_point"`. |
 | `code_page_index` | Number | (required) | Index of the code page containing the `code_address` where execution starts. This is expected to refer to the index of one of the code pages defined in the binary file. |
+| `data_page_index` | Number | (required) | Index of the data page that should be loaded alongside the initial code page. This is expected to refer to the index of one of the data pages defined in the binary file.
 | `code_address` | Number | (required) | Address within the specified code page where the first executable instruction resides. Code execution begins from this address. This address is expected to be aligned to the size of a word. |
 
 ### Exported Symbol Descriptor Object
@@ -104,4 +103,7 @@ An exported symbol descriptor object describes a symbol that is available to be 
 |-----|------------|--------------------------|-------------|
 | `type` | String | (required) | Type of this descriptor object: must be `"exported_symbol"`. |
 | `symbol_name` | String | (required) | Name of the symbol. This is expected to be unique among all exported symbol descriptor objects. |
-| `symbol_type` | String | (required) | Type of the symbol. This may be one of: `"code_address"`, or `"data_buffer"`.
+| `symbol_type` | String | (required) | Type of the symbol. This may be either `"code_address"`, or `"data_buffer"`.
+| `symbol_page_index` | Number | (required) | Index of the code page (if `symbol_type` is `"code_address"`), or data page (if `symbol_type` is `"data_buffer"`), where the symbol can be found. This is expected to refer to the index of one of the respective code or data pages defined in the binary file. |
+| `symbol_address` | Number | (required) | Address within the specified page at which the symbol can be found. |
+| `symbol_data_length_bytes` | Number | `0` | Length of the symbol's data in bytes, if `symbol_type` is `"data_buffer"`. If the length of the data exceeds the available space in the data page after the symbol's address, an error is raised at runtime. (TODO: What error?) If `symbol_type` is `"code_address"`, this property **must** be omitted. |
