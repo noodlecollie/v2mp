@@ -3,7 +3,7 @@
 #include <fstream>
 #include <string>
 
-namespace V2MPAsm
+namespace LibToolchainComponents
 {
 	class InputFile
 	{

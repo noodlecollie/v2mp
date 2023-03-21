@@ -1,10 +1,9 @@
 #include <filesystem>
 #include <fstream>
-#include "Files/InputFile.h"
-#include "Exceptions/AssemblerException.h"
-#include "Exceptions/PublicExceptionIDs.h"
+#include <stdexcept>
+#include "LibToolchainComponents/InputFile.h"
 
-namespace V2MPAsm
+namespace LibToolchainComponents
 {
 	InputFile::InputFile(const std::string& path) :
 		m_Path(path),
@@ -12,7 +11,7 @@ namespace V2MPAsm
 	{
 		if ( !m_Stream.good() )
 		{
-			throw AssemblerException(PublicErrorID::ERROR_OPENING_FILE, m_Path);
+			throw std::runtime_error("Failed to open input file");
 		}
 	}
 

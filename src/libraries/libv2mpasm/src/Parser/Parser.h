@@ -4,13 +4,13 @@
 #include <memory>
 #include <optional>
 #include <cstdint>
-#include "Files/InputFile.h"
 #include "Files/InputReader.h"
 #include "Interface_Exception.h"
 #include "Exceptions/AssemblerException.h"
 #include "Parser/Tokeniser.h"
 #include "ProgramModel/ProgramBuilder.h"
 #include "ProgramModel/ProgramModel.h"
+#include "LibToolchainComponents/InputFile.h"
 
 namespace V2MPAsm
 {
@@ -33,7 +33,7 @@ namespace V2MPAsm
 			ParseResult& operator =(ParseResult&& other) = default;
 		};
 
-		ParseResult ParseFile(const std::shared_ptr<InputFile>& inputFile) noexcept;
+		ParseResult ParseFile(const std::shared_ptr<LibToolchainComponents::InputFile>& inputFile) noexcept;
 		ParseResult ParseData(const std::string& inputPath, std::vector<char>&& inputData) noexcept;
 
 	private:
@@ -108,7 +108,7 @@ namespace V2MPAsm
 			size_t recordedErrors = 0;
 			ProgramBuilder programBuilder;
 
-			ParserData(const std::shared_ptr<InputFile>& inputFile) :
+			ParserData(const std::shared_ptr<LibToolchainComponents::InputFile>& inputFile) :
 				inputReader(inputFile)
 			{
 			}

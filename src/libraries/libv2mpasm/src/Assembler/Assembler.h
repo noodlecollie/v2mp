@@ -6,9 +6,15 @@
 #include <variant>
 #include "Interface_Exception.h"
 
+namespace LibToolchainComponents
+{
+	class FilePool;
+	class InputFile;
+	class OutputFile;
+}
+
 namespace V2MPAsm
 {
-	class OutputFile;
 	class ProgramModel;
 
 	class Assembler
@@ -46,12 +52,18 @@ namespace V2MPAsm
 		using InputVariant = std::variant<std::string, InputRawData>;
 		using OutputVariant = std::variant<std::string, std::vector<uint16_t>>;
 
+		using FilePool = LibToolchainComponents::FilePool;
+		using InputFile = LibToolchainComponents::InputFile;
+		using OutputFile = LibToolchainComponents::OutputFile;
+
 		static std::vector<char> CopyInput(const char* input);
 
 		std::string GetInputPath() const;
 		ExceptionList ParseInputAndCompileExceptionList(std::unique_ptr<ProgramModel>& model) noexcept;
 		ExceptionList ParseInput(std::unique_ptr<ProgramModel>& model);
 
+		std::shared_ptr<InputFile> TryOpenInputFile(FilePool& filePool, const std::string& path);
+		std::shared_ptr<OutputFile> TryOpenOutputFile(const std::string& path);
 		ExceptionList TryWriteOutputFile(std::unique_ptr<ProgramModel> model);
 		ExceptionList TryWriteRawOutput(std::unique_ptr<ProgramModel> model);
 		void WriteOutput(const std::unique_ptr<ProgramModel>& model, const std::string& outPath, std::ostream& outStream);

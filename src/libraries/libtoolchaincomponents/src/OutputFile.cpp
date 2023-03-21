@@ -1,10 +1,8 @@
 #include <filesystem>
 #include <fstream>
-#include "Files/OutputFile.h"
-#include "Exceptions/AssemblerException.h"
-#include "Exceptions/PublicExceptionIDs.h"
+#include "LibToolchainComponents/OutputFile.h"
 
-namespace V2MPAsm
+namespace LibToolchainComponents
 {
 	OutputFile::OutputFile(const std::string& path) :
 		m_Path(path),
@@ -12,7 +10,7 @@ namespace V2MPAsm
 	{
 		if ( !m_Stream.good() )
 		{
-			throw AssemblerException(PublicErrorID::ERROR_OPENING_FILE, m_Path);
+			throw std::runtime_error("Failed to open output file");
 		}
 	}
 

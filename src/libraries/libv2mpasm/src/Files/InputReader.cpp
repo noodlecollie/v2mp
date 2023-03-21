@@ -3,6 +3,7 @@
 #include "Exceptions/AssemblerException.h"
 #include "Exceptions/PublicExceptionIDs.h"
 #include "Utils/ParsingUtils.h"
+#include "LibToolchainComponents/InputFile.h"
 
 namespace V2MPAsm
 {
@@ -11,7 +12,7 @@ namespace V2MPAsm
 		return str.find(ch) != std::string::npos;
 	}
 
-	InputReader::InputReader(const std::shared_ptr<InputFile>& file) :
+	InputReader::InputReader(const std::shared_ptr<LibToolchainComponents::InputFile>& file) :
 		m_IsRawData(false)
 	{
 		if ( !file )

@@ -1,16 +1,15 @@
 #include <filesystem>
 #include <memory>
-#include "Exceptions/AssemblerException.h"
-#include "Exceptions/PublicExceptionIDs.h"
-#include "Files/FilePool.h"
+#include <stdexcept>
+#include "LibToolchainComponents/FilePool.h"
 
-namespace V2MPAsm
+namespace LibToolchainComponents
 {
 	std::shared_ptr<InputFile> FilePool::OpenInputFile(const std::string& path)
 	{
 		if ( !std::filesystem::exists(path) )
 		{
-			throw AssemblerException(PublicErrorID::NON_EXISTENT_FILE, path);
+			throw std::runtime_error("Input file does not exist");
 		}
 
 		const std::string canonicalPath = std::filesystem::canonical(path).string();
@@ -23,9 +22,12 @@ namespace V2MPAsm
 
 		std::shared_ptr<InputFile> filePtr = std::make_shared<InputFile>(path);
 
+		// If the file itself could not be opened, an exception will already
+		// have been thrown. If instead the pointer is null, something more
+		// serious has happened.
 		if ( !filePtr )
 		{
-			throw AssemblerException(PublicErrorID::ERROR_OPENING_FILE, path);
+			throw std::runtime_error("Internal error opening input file");
 		}
 
 		m_InputFileMap.insert({canonicalPath, filePtr});

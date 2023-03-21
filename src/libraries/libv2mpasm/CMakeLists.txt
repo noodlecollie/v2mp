@@ -23,14 +23,8 @@ set(SOURCES_ALL
 	src/Exceptions/PublicException.cpp
 	src/Exceptions/PublicExceptionIDs.h
 	src/Exceptions/PublicExceptionIDs.cpp
-	src/Files/FilePool.h
-	src/Files/FilePool.cpp
-	src/Files/InputFile.h
-	src/Files/InputFile.cpp
 	src/Files/InputReader.h
 	src/Files/InputReader.cpp
-	src/Files/OutputFile.h
-	src/Files/OutputFile.cpp
 	src/Utils/BitUtils.h
 	src/Utils/ParsingUtils.h
 	src/Utils/StringUtils.h
@@ -95,8 +89,7 @@ target_include_directories(${TARGETNAME_LIBV2MPASM} PRIVATE src)
 
 target_link_libraries(${TARGETNAME_LIBV2MPASM} PRIVATE
 	${TARGETNAME_LIBBASEUTIL}
-	${TARGETNAME_LIBSHAREDCOMPONENTS}
-	${TARGETNAME_CWALK}
+	${TARGETNAME_LIBTOOLCHAINCOMPONENTS}
 )
 
 target_compile_definitions(${TARGETNAME_LIBV2MPASM} PRIVATE "V2MPASM_PRODUCER")

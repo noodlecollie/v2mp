@@ -3,9 +3,9 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include "Files/InputFile.h"
+#include "LibToolchainComponents/InputFile.h"
 
-namespace V2MPAsm
+namespace LibToolchainComponents
 {
 	class FilePool
 	{

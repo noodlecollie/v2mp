@@ -7,9 +7,10 @@
 #include "Exceptions/PublicExceptionIDs.h"
 #include "Interface_Exception.h"
 #include "Parser/Parser.h"
-#include "Files/FilePool.h"
-#include "Files/OutputFile.h"
 #include "ProgramModel/CodeWordOutput.h"
+#include "LibToolchainComponents/InputFile.h"
+#include "LibToolchainComponents/OutputFile.h"
+#include "LibToolchainComponents/FilePool.h"
 
 namespace V2MPAsm
 {
@@ -137,7 +138,7 @@ namespace V2MPAsm
 		}
 		else
 		{
-			result = parser.ParseFile(filePool.OpenInputFile(GetInputPath()));
+			result = parser.ParseFile(TryOpenInputFile(filePool, GetInputPath()));
 		}
 
 		if ( result.exceptions.size() < 1 )
@@ -148,6 +149,37 @@ namespace V2MPAsm
 		return result.exceptions;
 	}
 
+	std::shared_ptr<Assembler::InputFile> Assembler::TryOpenInputFile(FilePool& filePool, const std::string& path)
+	{
+		try
+		{
+			return filePool.OpenInputFile(path);
+		}
+		catch ( const std::runtime_error& )
+		{
+			throw AssemblerException(PublicErrorID::NON_EXISTENT_FILE, path);
+		}
+	}
+
+	std::shared_ptr<Assembler::OutputFile> Assembler::TryOpenOutputFile(const std::string& path)
+	{
+		try
+		{
+			std::shared_ptr<Assembler::OutputFile> ptr = std::make_shared<Assembler::OutputFile>(path);
+
+			if ( !ptr )
+			{
+				throw std::runtime_error("Internal error opening output file");
+			}
+
+			return ptr;
+		}
+		catch ( const std::runtime_error& )
+		{
+			throw AssemblerException(PublicErrorID::ERROR_OPENING_FILE, path);
+		}
+	}
+
 	ExceptionList Assembler::TryWriteOutputFile(std::unique_ptr<ProgramModel> model)
 	{
 		std::string outPath;
@@ -155,7 +187,7 @@ namespace V2MPAsm
 		try
 		{
 			outPath = std::get<std::string>(m_Output);
-			std::shared_ptr<OutputFile> outFile = std::make_shared<OutputFile>(outPath);
+			std::shared_ptr<OutputFile> outFile = TryOpenOutputFile(outPath);
 
 			WriteOutput(model, outPath, outFile->GetStream());
 		}

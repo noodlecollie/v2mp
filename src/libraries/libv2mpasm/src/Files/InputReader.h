@@ -3,15 +3,19 @@
 #include <memory>
 #include <vector>
 #include <functional>
-#include "Files/InputFile.h"
 #include "Utils/ParsingUtils.h"
+
+namespace LibToolchainComponents
+{
+	class InputFile;
+}
 
 namespace V2MPAsm
 {
 	class InputReader
 	{
 	public:
-		explicit InputReader(const std::shared_ptr<InputFile>& file);
+		explicit InputReader(const std::shared_ptr<LibToolchainComponents::InputFile>& file);
 		InputReader(const std::string& path, std::vector<char>&& rawData);
 
 		std::string GetPath() const;
