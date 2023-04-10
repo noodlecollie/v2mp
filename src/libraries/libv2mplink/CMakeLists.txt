@@ -14,6 +14,8 @@ set(PUBLIC_HEADERS_ALL
 )
 
 set(SOURCES_ALL
+	src/Exceptions/LinkerException.h
+	src/Exceptions/LinkerException.cpp
 	src/Exceptions/PublicException.h
 	src/Exceptions/PublicException.cpp
 	src/Exceptions/PublicExceptionIDs.h
@@ -37,7 +39,9 @@ target_include_directories(${TARGETNAME_LIBV2MPLINK} PUBLIC include)
 target_include_directories(${TARGETNAME_LIBV2MPLINK} PRIVATE src)
 
 target_link_libraries(${TARGETNAME_LIBV2MPLINK} PRIVATE
-	${TARGETNAME_LIBBASEUTIL})
+	${TARGETNAME_LIBBASEUTIL}
+	${TARGETNAME_LIBTOOLCHAINCOMPONENTS}
+)
 
 target_compile_definitions(${TARGETNAME_LIBV2MPLINK} PRIVATE "V2MPLINK_PRODUCER")
 

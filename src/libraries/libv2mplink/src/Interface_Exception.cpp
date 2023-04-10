@@ -1,6 +1,64 @@
 #include "Interface_Exception.h"
 #include "LibBaseUtil/String.h"
 
+namespace V2MPLink
+{
+	std::shared_ptr<V2MPLink_Exception> CreateException(const PublicException& other)
+	{
+		return std::shared_ptr<V2MPLink_Exception>(new V2MPLink_Exception{other});
+	}
+
+	std::shared_ptr<V2MPLink_Exception> CreateErrorException(
+		PublicErrorID id,
+		const std::string& file,
+		const std::string& message
+	)
+	{
+		return std::shared_ptr<V2MPLink_Exception>(new V2MPLink_Exception
+			{
+				PublicException(id, file, message)
+			}
+		);
+	}
+
+	std::shared_ptr<V2MPLink_Exception> CreateWarningException(
+		PublicWarningID id,
+		const std::string& file,
+		const std::string& message
+	)
+	{
+		return std::shared_ptr<V2MPLink_Exception>(new V2MPLink_Exception
+			{
+				PublicException(id, file, message)
+			}
+		);
+	}
+
+	std::shared_ptr<V2MPLink_Exception> CreateInternalErrorException(
+		const std::string& file,
+		const std::string& message
+	)
+	{
+		return CreateErrorException(PublicErrorID::INTERNAL, file, message);
+	}
+
+	std::shared_ptr<V2MPLink_Exception> CreateInternalWarningException(
+		const std::string& file,
+		const std::string& message
+	)
+	{
+		return CreateWarningException(PublicWarningID::INTERNAL, file, message);
+	}
+
+	std::shared_ptr<V2MPLink_Exception> CreateUnimplementedException(
+		const std::string& file,
+		const std::string& message
+	)
+	{
+		return CreateErrorException(PublicErrorID::UNIMPLEMENTED, file, message);
+	}
+}
+
 extern "C"
 {
 	API_LIBV2MPLINK V2MPLink_Exception_Type V2MPLink_Exception_GetType(const struct V2MPLink_Exception* exception)

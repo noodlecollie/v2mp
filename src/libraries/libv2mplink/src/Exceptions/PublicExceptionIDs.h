@@ -11,7 +11,10 @@ namespace V2MPLink
 #define PUBLICERRORTYPE_LIST \
 	/* General: */ \
 	LIST_ITEM(UNSPECIFIED = 0, "unspecified-error", "Unspecified error.") \
-	LIST_ITEM(INTERNAL, "internal-error", "An unexpected internal error occurred.")
+	LIST_ITEM(INTERNAL, "internal-error", "An unexpected internal error occurred.") \
+	LIST_ITEM(UNIMPLEMENTED, "unimplemented", "Some behaviour or feature is not yet unimplemented.") \
+	LIST_ITEM(NON_EXISTENT_FILE, "non-existent-file", "File was not found on disk.") \
+	LIST_ITEM(ERROR_OPENING_FILE, "error-opening-file", "File could not be opened.")
 
 	enum class PublicWarningID
 	{

@@ -163,21 +163,14 @@ namespace V2MPAsm
 
 	std::shared_ptr<Assembler::OutputFile> Assembler::TryOpenOutputFile(const std::string& path)
 	{
-		try
-		{
-			std::shared_ptr<Assembler::OutputFile> ptr = std::make_shared<Assembler::OutputFile>(path);
+		std::shared_ptr<Assembler::OutputFile> ptr = std::make_shared<Assembler::OutputFile>(path);
 
-			if ( !ptr )
-			{
-				throw std::runtime_error("Internal error opening output file");
-			}
-
-			return ptr;
-		}
-		catch ( const std::runtime_error& )
+		if ( !ptr )
 		{
 			throw AssemblerException(PublicErrorID::ERROR_OPENING_FILE, path);
 		}
+
+		return ptr;
 	}
 
 	ExceptionList Assembler::TryWriteOutputFile(std::unique_ptr<ProgramModel> model)
