@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <functional>
+#include <string>
 #include "Utils/ParsingUtils.h"
 
 namespace LibToolchainComponents
