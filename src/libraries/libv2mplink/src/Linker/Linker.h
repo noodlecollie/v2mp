@@ -35,6 +35,7 @@ namespace V2MPLink
 		ExceptionList RunLinkProcess();
 		std::shared_ptr<InputFile> TryOpenInputFile(FilePool& filePool, const std::string& path);
 		std::shared_ptr<OutputFile> TryOpenOutputFile(const std::string& path);
+		void WriteDummyJSONHeader(const std::shared_ptr<OutputFile>& outputFile, size_t pageSize);
 
 		ExceptionList m_ExceptionList;
 

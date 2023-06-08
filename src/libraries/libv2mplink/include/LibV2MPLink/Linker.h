@@ -2,6 +2,7 @@
 #define V2MPLINK_LINKER_H
 
 #include "LibV2MPLink/LibExport.gen.h"
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C" {

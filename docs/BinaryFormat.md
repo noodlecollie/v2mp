@@ -23,6 +23,8 @@ The V2MP binary header is specified as a UTF-8 encoded, null-terminated JSON str
 
 Subsequent array indices may be used to provide data specific to the type of the binary. Each index is expected to contain a JSON object (a *descriptor object*), and each descriptor object is expected to contain at least a `"type"` property which indicates purpose of the data specified. A descriptor object missing any required properties, or an array entry which is not a JSON object, will cause the supervisor to abort the loading of the binary file. Any superfluous descriptor object properties, or descriptor objects whose types are not recognised, are ignored by the supervisor when loading the binary file.
 
+Some items in the header specify offsets for data. Offsets are measured from the first byte after the null terminator of the header. This is because, as the header is a JSON string, its length may change depending on how it is encoded (including how the offset values are represented themselves within the string). Measuring offsets from the end of the header is therefore more robust, and easier to specify.
+
 The only currently supported binary header version number is `1`. Different object types that may be present in a version `1` header are described below.
 
 ### Version Descriptor Object
@@ -67,7 +69,7 @@ A code page descriptor object describes a section of the binary file which corre
 |-----|------------|--------------------------|-------------|
 | `type` | String | (required) | Type of this descriptor object: must be `"code_page"`. |
 | `index` | Number | (required) | Index of this code page. This is expected to be unique among all code page descriptor objects. |
-| `begin_file_offset_bytes` | Number | (required) | Offset in the file at which the code page's data may be found. This is an offset in bytes from the beginning of the binary file itself. |
+| `begin_file_offset_bytes` | Number | (required) | Offset in the file at which the code page's data may be found. This is an offset in bytes from the first byte after the null terminator of the header. |
 | `page_size_bytes` | Number | (required) | Size of the code page. This is specified in bytes, but the value expected to be a multiple of the size of a word. A section of this size is loaded by the supervisor from the binary file from the offset given by `begin_file_offset_bytes`. |
 
 ### Data Page Descriptor Object
@@ -81,7 +83,7 @@ A data page has a pre-determined size, and may or may not have initialisation da
 | `type` | String | (required) | Type of this descriptor object: must be `"data_page"`. |
 | `index` | Number | (required) | Index of this data page. This is expected to be unique among all data page descriptor objects. |
 | `page_size_bytes` | Number | (required) | Size of the data page. This is specified in bytes. This size corresponds to the size of the data page as a whole - the number of bytes of initialisation data provided in the binary file may be smaller than this, but may not be larger. |
-| `init_data_file_offset_bytes` | Number | `0` | Offset in the file at which the data page's initialisation data may be found. This is an offset in bytes from the beginning of the binary file itself. If there is no initialisation data supplied for this page, this property **must** be omitted. |
+| `init_data_file_offset_bytes` | Number | `0` | Offset in the file at which the data page's initialisation data may be found. This is an offset in bytes from the first byte after the null terminator of the header. If there is no initialisation data supplied for this page, this property **must** be omitted. |
 | `init_data_size_bytes` | Number | `0` | Number of bytes of initialisation data provided in the binary file. These bytes are loaded by the supervisor from the binary file from the offset given by `init_data_file_offset_bytes`. If there is no initialisation data supplied for this page, this property **must** be omitted. |
 
 ### Entry Point Descriptor Object
@@ -92,7 +94,7 @@ An entry point descriptor object describes the code entry point for an executabl
 |-----|------------|--------------------------|-------------|
 | `type` | String | (required) | Type of this descriptor object: must be `"entry_point"`. |
 | `code_page_index` | Number | (required) | Index of the code page containing the `code_address` where execution starts. This is expected to refer to the index of one of the code pages defined in the binary file. |
-| `data_page_index` | Number | (required) | Index of the data page that should be loaded alongside the initial code page. This is expected to refer to the index of one of the data pages defined in the binary file.
+| `data_page_index` | Number | `-1` | Index of the data page that should be loaded alongside the initial code page. This is expected to refer to the index of one of the data pages defined in the binary file. If no data pages are defined, this property **must** be omitted.
 | `code_address` | Number | (required) | Address within the specified code page where the first executable instruction resides. Code execution begins from this address. This address is expected to be aligned to the size of a word. |
 
 ### Exported Symbol Descriptor Object

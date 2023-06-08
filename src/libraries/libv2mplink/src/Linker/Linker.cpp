@@ -1,8 +1,10 @@
+#include <stdlib.h>
 #include "Linker/Linker.h"
 #include "LibToolchainComponents/InputFile.h"
 #include "LibToolchainComponents/OutputFile.h"
 #include "LibToolchainComponents/FilePool.h"
 #include "Exceptions/LinkerException.h"
+#include "cJSON.h"
 
 namespace V2MPLink
 {
@@ -63,13 +65,11 @@ namespace V2MPLink
 			std::shared_ptr<InputFile> inputFile = TryOpenInputFile(filePool, m_ObjectFilePath);
 			std::shared_ptr<OutputFile> outputFile = TryOpenOutputFile(m_OutputPath);
 
-			// TODO: For now, just copy output verbatim so we can verify this all works.
-			// This will grow more sophisticated as the implementation progresses.
 			std::vector<char> inputData;
-
 			inputData.resize(inputFile->CalculateFileSize());
 			inputFile->GetStream().read(inputData.data(), inputData.size());
 
+			WriteDummyJSONHeader(outputFile, inputData.size());
 			outputFile->GetStream().write(inputData.data(), inputData.size());
 
 			return ExceptionList();
@@ -106,5 +106,59 @@ namespace V2MPLink
 		}
 
 		return ptr;
+	}
+
+	void Linker::WriteDummyJSONHeader(const std::shared_ptr<OutputFile>& outputFile, size_t pageSize)
+	{
+		cJSON* root = cJSON_CreateArray();
+
+		cJSON* header = cJSON_CreateObject();
+		cJSON_AddStringToObject(header, "identifier", "v2mpbinf");
+		cJSON_AddNumberToObject(header, "version", 1.0);
+		cJSON_AddItemToArray(root, header);
+
+		cJSON* exe = cJSON_CreateObject();
+		cJSON_AddStringToObject(exe, "type", "executable");
+		cJSON_AddNumberToObject(exe, "stack_size", 0.0);
+		cJSON_AddItemToArray(root, exe);
+
+		cJSON* codePages = cJSON_CreateArray();
+		cJSON* codePage = cJSON_CreateObject();
+		cJSON_AddStringToObject(codePage, "type", "code_page");
+		cJSON_AddNumberToObject(codePage, "index", 0.0);
+		cJSON_AddNumberToObject(codePage, "begin_file_offset_bytes", 0.0);
+		cJSON_AddNumberToObject(codePage, "page_size_bytes", static_cast<double>(pageSize));
+		cJSON_AddItemToArray(codePages, codePage);
+		cJSON_AddItemToObject(exe, "code_pages", codePages);
+
+		cJSON* entryPoint = cJSON_CreateObject();
+		cJSON_AddStringToObject(codePage, "type", "entry_point");
+		cJSON_AddNumberToObject(codePage, "code_page_index", 0.0);
+		cJSON_AddNumberToObject(codePage, "code_address", 0.0);
+		cJSON_AddItemToObject(exe, "entry_point", entryPoint);
+
+		char* jsonString = cJSON_Print(root);
+
+		if ( jsonString )
+		{
+			char* cursor = jsonString;
+
+			while ( true )
+			{
+				outputFile->GetStream().put(*cursor);
+
+				if ( !(*cursor) )
+				{
+					break;
+				}
+				else
+				{
+					++cursor;
+				}
+			}
+		}
+
+		free(jsonString);
+		cJSON_Delete(root);
 	}
 }
