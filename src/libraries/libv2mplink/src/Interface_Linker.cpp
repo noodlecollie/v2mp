@@ -32,7 +32,7 @@ extern "C"
 		delete linker;
 	}
 
-	API_LIBV2MPLINK V2MPLinker_LinkerResult V2MPLink_Linker_Run(struct V2MPLink_Linker* linker)
+	API_LIBV2MPLINK V2MPLink_LinkerResult V2MPLink_Linker_Run(struct V2MPLink_Linker* linker)
 	{
 		if ( !linker )
 		{

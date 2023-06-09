@@ -4,7 +4,10 @@ configure_file(
 )
 
 add_executable(${TARGETNAME_V2MPLINK}
+	src/CommandLineArgs.h
 	src/Main.cpp
+	src/V2MPLinkArgumentParser.h
+	src/V2MPLinkArgumentParser.cpp
 	src/Version.gen.h
 )
 

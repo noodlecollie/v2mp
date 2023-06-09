@@ -8,7 +8,7 @@
 
 namespace V2MPLink
 {
-	static V2MPLinker_LinkerResult ResultFromExceptionList(const ExceptionList& list)
+	static V2MPLink_LinkerResult ResultFromExceptionList(const ExceptionList& list)
 	{
 		if ( list.empty() )
 		{
@@ -51,7 +51,7 @@ namespace V2MPLink
 		return m_ExceptionList;
 	}
 
-	V2MPLinker_LinkerResult Linker::Run() noexcept
+	V2MPLink_LinkerResult Linker::Run() noexcept
 	{
 		m_ExceptionList = RunLinkProcess();
 		return ResultFromExceptionList(m_ExceptionList);

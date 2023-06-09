@@ -25,7 +25,7 @@ namespace V2MPLink
 
 		const ExceptionList& GetExceptions() const noexcept;
 
-		V2MPLinker_LinkerResult Run() noexcept;
+		V2MPLink_LinkerResult Run() noexcept;
 
 	private:
 		using InputFile = LibToolchainComponents::InputFile;
