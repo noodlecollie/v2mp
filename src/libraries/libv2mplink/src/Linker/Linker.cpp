@@ -137,7 +137,7 @@ namespace V2MPLink
 		cJSON_AddNumberToObject(codePage, "code_address", 0.0);
 		cJSON_AddItemToObject(exe, "entry_point", entryPoint);
 
-		char* jsonString = cJSON_Print(root);
+		char* jsonString = cJSON_PrintUnformatted(root);
 
 		if ( jsonString )
 		{
