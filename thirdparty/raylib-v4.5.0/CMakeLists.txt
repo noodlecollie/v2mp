@@ -21,7 +21,7 @@ if(MSVC)
 		/wd4005
 	)
 else()
-	add_compile_definitions(
+	add_compile_options(
 		-std=gnu11
 	)
 endif()
