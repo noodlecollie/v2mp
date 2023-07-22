@@ -23,6 +23,9 @@ if(MSVC)
 else()
 	add_compile_options(
 		-std=gnu11
+		-Wno-discarded-qualifiers
+		-Wno-unused-result
+		-Wno-stringop-overflow=
 	)
 endif()
 
