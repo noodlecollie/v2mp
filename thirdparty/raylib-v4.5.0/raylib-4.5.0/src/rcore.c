@@ -169,8 +169,6 @@
     __declspec(dllimport) unsigned long __stdcall GetModuleFileNameW(void *hModule, void *lpFilename, unsigned long nSize);
     __declspec(dllimport) int __stdcall WideCharToMultiByte(unsigned int cp, unsigned long flags, void *widestr, int cchwide, void *str, int cbmb, void *defchar, int *used_default);
     #elif defined(__linux__)
-        // REMOVE ME
-        #error including unistd.h
         #include <unistd.h>
     #elif defined(__APPLE__)
         #include <sys/syslimits.h>

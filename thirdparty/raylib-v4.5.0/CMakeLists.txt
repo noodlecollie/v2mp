@@ -20,6 +20,10 @@ if(MSVC)
 		/wd4702
 		/wd4005
 	)
+else()
+	add_compile_definitions(
+		-std=gnu11
+	)
 endif()
 
 add_subdirectory(raylib-4.5.0 EXCLUDE_FROM_ALL)
