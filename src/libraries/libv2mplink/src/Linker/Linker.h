@@ -5,6 +5,13 @@
 #include "Interface_Exception.h"
 #include "LibV2MPLink/Linker.h"
 
+namespace LibToolchainComponents
+{
+	class FilePool;
+	class InputFile;
+	class OutputFile;
+}
+
 namespace V2MPLink
 {
 	class Linker
@@ -18,9 +25,18 @@ namespace V2MPLink
 
 		const ExceptionList& GetExceptions() const noexcept;
 
-		V2MPLinker_LinkerResult Run() noexcept;
+		V2MPLink_LinkerResult Run() noexcept;
 
 	private:
+		using InputFile = LibToolchainComponents::InputFile;
+		using OutputFile = LibToolchainComponents::OutputFile;
+		using FilePool = LibToolchainComponents::FilePool;
+
+		ExceptionList RunLinkProcess();
+		std::shared_ptr<InputFile> TryOpenInputFile(FilePool& filePool, const std::string& path);
+		std::shared_ptr<OutputFile> TryOpenOutputFile(const std::string& path);
+		void WriteDummyJSONHeader(const std::shared_ptr<OutputFile>& outputFile, size_t pageSize);
+
 		ExceptionList m_ExceptionList;
 
 		// TODO: We've not yet defined how to link multiple object files together.

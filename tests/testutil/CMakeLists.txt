@@ -1,3 +1,2 @@
 add_library(${TARGETNAME_TESTUTIL} INTERFACE)
 target_include_directories(${TARGETNAME_TESTUTIL} INTERFACE include)
-target_link_libraries(${TARGETNAME_TESTUTIL} INTERFACE ${TARGETNAME_LIBV2MPASM})

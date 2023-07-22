@@ -3,7 +3,7 @@
 #include "TestUtil/Assembly.h"
 #include "ProgramVerification.h"
 
-static constexpr V2MP_Word INVALID_WORD = static_cast<V2MP_Word>(~0);
+static constexpr Asm::Word INVALID_WORD = static_cast<Asm::Word>(~0);
 
 SCENARIO("Assembling a single NOP instruction produces a valid program binary", "[nop]")
 {

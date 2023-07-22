@@ -16,6 +16,9 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Install dependencies
+      run: sudo apt-get install -y libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev mesa-utils freeglut3-dev
+
     - name: Build and run unit tests
       uses: ashutoshvarma/action-cmake-build@master
       with:

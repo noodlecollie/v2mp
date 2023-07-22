@@ -21,9 +21,9 @@ namespace V2MPAsm
 	LIST_ITEM(UNSPECIFIED = 0, "unspecified-error", "Unspecified error.") \
 	LIST_ITEM(INTERNAL, "internal-error", "An unexpected internal error occurred.") \
 	LIST_ITEM(UNIMPLEMENTED, "unimplemented", "Some behaviour or feature is not yet unimplemented.") \
-	LIST_ITEM(NON_EXISTENT_FILE, "non-existent-file", "A file was not found on disk.") \
+	LIST_ITEM(NON_EXISTENT_FILE, "non-existent-file", "File was not found on disk.") \
 	LIST_ITEM(EMPTY_INPUT, "empty-input", "The input data to the parser was empty.") \
-	LIST_ITEM(ERROR_OPENING_FILE, "error-opening-file", "A file could not be opened.") \
+	LIST_ITEM(ERROR_OPENING_FILE, "error-opening-file", "File could not be opened.") \
 	LIST_ITEM(EXCEEDED_ERROR_COUNT, "exceeded-error-count", "Parsing was terminated due to the number of errors encountered.") \
 	/* Tokenising stage: */ \
 	LIST_ITEM(UNRECOGNISED_TOKEN, "unrecognised-token", "An unrecognised token was encountered.") \

@@ -1,3 +1,5 @@
+include(compiler_settings)
+
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/configure/Version.h.in"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/Version.gen.h"
@@ -19,5 +21,7 @@ target_link_libraries(${TARGETNAME_V2MPASM} PRIVATE
 	${TARGETNAME_LIBV2MPASM}
 	${TARGETNAME_ARGPARSE}
 )
+
+set_strict_compile_settings(${TARGETNAME_V2MPASM})
 
 install(TARGETS ${TARGETNAME_V2MPASM})

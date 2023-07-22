@@ -104,7 +104,7 @@ namespace V2MPAsm
 		return *this;
 	}
 
-	Parser::ParseResult Parser::ParseFile(const std::shared_ptr<InputFile>& inputFile) noexcept
+	Parser::ParseResult Parser::ParseFile(const std::shared_ptr<LibToolchainComponents::InputFile>& inputFile) noexcept
 	{
 		if ( !inputFile )
 		{
