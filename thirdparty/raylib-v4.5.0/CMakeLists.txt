@@ -25,7 +25,7 @@ else()
 		-std=gnu11
 		-Wno-discarded-qualifiers
 		-Wno-unused-result
-		-Wno-stringop-overflow=
+		-Wno-stringop-overflow
 	)
 endif()
 
