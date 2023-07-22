@@ -15,9 +15,9 @@
 
 #else // defined(WIN32) || defined(WIN64)
 
-// We're not using shared libraries, or we're not building under Windows.
-// No need to use __declspec, so define this to nothing.
-#define API_LIBV2MPLINK
+// Set visibility to default (the linker will otherwise
+// treat the function as hidden).
+#define API_LIBV2MPLINK __attribute__((visibility("default")))
 
 #endif // defined(WIN32) || defined(WIN64)
 #endif // V2MPLINK_LIBEXPORT_GEN_H
