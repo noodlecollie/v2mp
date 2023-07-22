@@ -1,3 +1,5 @@
+include(compiler_settings)
+
 add_library(${TARGETNAME_LIBSHAREDCOMPONENTS} STATIC
 	include/${TARGETNAME_LIBSHAREDCOMPONENTS}/CircularBuffer.h
 	include/${TARGETNAME_LIBSHAREDCOMPONENTS}/DoubleLinkedList.h
@@ -14,3 +16,5 @@ target_include_directories(${TARGETNAME_LIBSHAREDCOMPONENTS} PRIVATE src)
 target_link_libraries(${TARGETNAME_LIBSHAREDCOMPONENTS} PRIVATE
 	${TARGETNAME_LIBBASEUTIL}
 )
+
+set_strict_compile_settings(${TARGETNAME_LIBSHAREDCOMPONENTS})

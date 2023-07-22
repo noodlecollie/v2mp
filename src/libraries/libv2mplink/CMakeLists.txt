@@ -1,3 +1,5 @@
+include(compiler_settings)
+
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/configure/LibExport.h.in"
 	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_LIBV2MPLINK}/LibExport.gen.h"
@@ -45,6 +47,8 @@ target_link_libraries(${TARGETNAME_LIBV2MPLINK} PRIVATE
 )
 
 target_compile_definitions(${TARGETNAME_LIBV2MPLINK} PRIVATE "V2MPLINK_PRODUCER")
+
+set_strict_compile_settings(${TARGETNAME_LIBV2MPLINK})
 
 install(TARGETS ${TARGETNAME_LIBV2MPLINK})
 install(FILES ${PUBLIC_HEADERS_ALL} DESTINATION include/${TARGETNAME_LIBV2MPLINK})

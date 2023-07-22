@@ -1,3 +1,5 @@
+include(compiler_settings)
+
 add_library(${TARGETNAME_LIBV2MPINTERNAL} STATIC
 	include/${TARGETNAME_LIBV2MPINTERNAL}/Modules/CPU.h
 	include/${TARGETNAME_LIBV2MPINTERNAL}/Modules/Mainboard.h
@@ -35,3 +37,5 @@ target_link_libraries(${TARGETNAME_LIBV2MPINTERNAL} PUBLIC
 target_link_libraries(${TARGETNAME_LIBV2MPINTERNAL} PRIVATE
 	${TARGETNAME_LIBBASEUTIL}
 )
+
+set_strict_compile_settings(${TARGETNAME_LIBV2MPINTERNAL})

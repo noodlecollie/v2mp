@@ -1,3 +1,5 @@
+include(compiler_settings)
+
 add_library(${TARGETNAME_LIBBASEUTIL} STATIC
 	include/${TARGETNAME_LIBBASEUTIL}/Array.h
 	include/${TARGETNAME_LIBBASEUTIL}/Filesystem.h
@@ -17,3 +19,5 @@ target_include_directories(${TARGETNAME_LIBBASEUTIL} PRIVATE src)
 target_link_libraries(${TARGETNAME_LIBBASEUTIL} PUBLIC
 	${TARGETNAME_UTHASH}
 )
+
+set_strict_compile_settings(${TARGETNAME_LIBBASEUTIL})

@@ -1,3 +1,5 @@
+include(compiler_settings)
+
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/configure/LibExport.h.in"
 	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_LIBV2MPASM}/LibExport.gen.h"
@@ -93,6 +95,8 @@ target_link_libraries(${TARGETNAME_LIBV2MPASM} PRIVATE
 )
 
 target_compile_definitions(${TARGETNAME_LIBV2MPASM} PRIVATE "V2MPASM_PRODUCER")
+
+set_strict_compile_settings(${TARGETNAME_LIBV2MPASM})
 
 install(TARGETS ${TARGETNAME_LIBV2MPASM})
 install(FILES ${PUBLIC_HEADERS_ALL} DESTINATION include/${TARGETNAME_LIBV2MPASM})

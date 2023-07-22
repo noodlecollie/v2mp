@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
 
-include(TestBigEndian)
-
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -27,29 +25,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
+set(CMAKE_COMPILE_WARNING_AS_ERROR YES)
 
+include(TestBigEndian)
 TEST_BIG_ENDIAN(HOST_IS_BIG_ENDIAN)
 
 if(HOST_IS_BIG_ENDIAN)
 	message(FATAL "Compilation is not currently supported for big-endian systems.")
 endif()
 
-set(TARGETNAME_V2MPASM V2MPAsm)
-set(TARGETNAME_V2MPLINK V2MPLink)
-set(TARGETNAME_V2MPEXPLORER V2MPExplorer)
-set(TARGETNAME_LIBV2MP LibV2MP)
-set(TARGETNAME_LIBV2MPINTERNAL LibV2MPInternal)
-set(TARGETNAME_LIBV2MPASM LibV2MPAsm)
-set(TARGETNAME_LIBV2MPLINK LibV2MPLink)
-set(TARGETNAME_LIBBASEUTIL LibBaseUtil)
-set(TARGETNAME_LIBSHAREDCOMPONENTS LibSharedComponents)
-set(TARGETNAME_LIBTOOLCHAINCOMPONENTS LibToolchainComponents)
-set(TARGETNAME_UTHASH uthash)
-set(TARGETNAME_CJSON cJSON)
-set(TARGETNAME_ARGPARSE argparse)
-set(TARGETNAME_CWALK cwalk)
-set(TARGETNAME_RAYLIB raylib)
-
+include(project_definitions)
 include(target_versions)
 
 option(BUILD_TESTING "If set, builds tests and links with Catch2" NO)
@@ -72,16 +59,6 @@ set_property(GLOBAL APPEND
 	PROPERTY CMAKE_CONFIGURE_DEPENDS
 	"${CMAKE_SOURCE_DIR}/.git/index"
 )
-
-# Turn up warning levels as high as is feasible, and treat warnings as errors.
-# Correct code should be warning-free at all times, no exceptions.
-if(MSVC)
-	add_compile_options(/W4 /WX)
-	add_link_options(/WX)
-else()
-	add_compile_options(-Wall -Wextra -pedantic -Werror)
-	add_link_options(-Wl,--fatal-warnings)
-endif()
 
 add_subdirectory(src)
 add_subdirectory(tests)
