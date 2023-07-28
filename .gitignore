@@ -58,6 +58,7 @@ docs/Working Data/
 
 # Don't track any generated headers
 *.gen.h
+*.gen.in
 
 # Convenience folder for placing Natural Docs binaries
 .naturaldocs

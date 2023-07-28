@@ -4,18 +4,10 @@
 #include <stdint.h>
 #include "LibV2MPAsm/LibExport.gen.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-API_LIBV2MPASM int32_t V2MPAsm_Version_GetMajor(void);
-API_LIBV2MPASM int32_t V2MPAsm_Version_GetMinor(void);
-API_LIBV2MPASM int32_t V2MPAsm_Version_GetPatch(void);
-API_LIBV2MPASM const char* V2MPAsm_Version_GetVersionString(void);
-API_LIBV2MPASM const char* V2MPAsm_Version_GetBuildIdentifier(void);
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
+LIBV2MPASM_PUBLIC(int32_t) V2MPAsm_Version_GetMajor(void);
+LIBV2MPASM_PUBLIC(int32_t) V2MPAsm_Version_GetMinor(void);
+LIBV2MPASM_PUBLIC(int32_t) V2MPAsm_Version_GetPatch(void);
+LIBV2MPASM_PUBLIC(const char*) V2MPAsm_Version_GetVersionString(void);
+LIBV2MPASM_PUBLIC(const char*) V2MPAsm_Version_GetBuildIdentifier(void);
 
 #endif // V2MPASM_VERSION_H

@@ -73,55 +73,52 @@ namespace V2MPAsm
 	}
 }
 
-extern "C"
+LIBV2MPASM_PUBLIC(V2MPAsm_Exception_Type) V2MPAsm_Exception_GetType(const struct V2MPAsm_Exception* exception)
 {
-	API_LIBV2MPASM V2MPAsm_Exception_Type V2MPAsm_Exception_GetType(const struct V2MPAsm_Exception* exception)
+	return exception ? exception->inner.GetType() : V2MPASM_EXCEPTION_WARNING;
+}
+
+LIBV2MPASM_PUBLIC(const char*) V2MPAsm_Exception_GetID(const struct V2MPAsm_Exception* exception)
+{
+	return exception ? exception->inner.GetIDString() : nullptr;
+}
+
+LIBV2MPASM_PUBLIC(size_t) V2MPAsm_Exception_ToString(const struct V2MPAsm_Exception* exception, char* buffer, size_t length)
+{
+	if ( !exception )
 	{
-		return exception ? exception->inner.GetType() : V2MPASM_EXCEPTION_WARNING;
+		return 0;
 	}
 
-	API_LIBV2MPASM const char* V2MPAsm_Exception_GetID(const struct V2MPAsm_Exception* exception)
-	{
-		return exception ? exception->inner.GetIDString() : nullptr;
-	}
+	return BaseUtil::CopyStringToBuffer(exception->inner.ToString(), buffer, length);
+}
 
-	API_LIBV2MPASM size_t V2MPAsm_Exception_ToString(const struct V2MPAsm_Exception* exception, char* buffer, size_t length)
-	{
-		if ( !exception )
-		{
-			return 0;
-		}
+LIBV2MPASM_PUBLIC(size_t) V2MPAsm_ExceptionList_GetWarningsListSize(void)
+{
+	return V2MPAsm::GetPublicWarningsListSize();
+}
 
-		return BaseUtil::CopyStringToBuffer(exception->inner.ToString(), buffer, length);
-	}
+LIBV2MPASM_PUBLIC(const char*) V2MPAsm_ExceptionList_GetWarningStringID(size_t index)
+{
+	return V2MPAsm::GetPublicWarningStringID(static_cast<V2MPAsm::PublicWarningID>(index), nullptr);
+}
 
-	API_LIBV2MPASM size_t V2MPAsm_ExceptionList_GetWarningsListSize(void)
-	{
-		return V2MPAsm::GetPublicWarningsListSize();
-	}
+LIBV2MPASM_PUBLIC(const char*) V2MPAsm_ExceptionList_GetWarningDescription(size_t index)
+{
+	return V2MPAsm::GetPublicWarningDescription(static_cast<V2MPAsm::PublicWarningID>(index), nullptr);
+}
 
-	API_LIBV2MPASM const char* V2MPAsm_ExceptionList_GetWarningStringID(size_t index)
-	{
-		return V2MPAsm::GetPublicWarningStringID(static_cast<V2MPAsm::PublicWarningID>(index), nullptr);
-	}
+LIBV2MPASM_PUBLIC(size_t) V2MPAsm_ExceptionList_GetErrorsListSize(void)
+{
+	return V2MPAsm::GetPublicErrorsListSize();
+}
 
-	API_LIBV2MPASM const char* V2MPAsm_ExceptionList_GetWarningDescription(size_t index)
-	{
-		return V2MPAsm::GetPublicWarningDescription(static_cast<V2MPAsm::PublicWarningID>(index), nullptr);
-	}
+LIBV2MPASM_PUBLIC(const char*) V2MPAsm_ExceptionList_GetErrorStringID(size_t index)
+{
+	return V2MPAsm::GetPublicErrorStringID(static_cast<V2MPAsm::PublicErrorID>(index), nullptr);
+}
 
-	API_LIBV2MPASM size_t V2MPAsm_ExceptionList_GetErrorsListSize(void)
-	{
-		return V2MPAsm::GetPublicErrorsListSize();
-	}
-
-	API_LIBV2MPASM const char* V2MPAsm_ExceptionList_GetErrorStringID(size_t index)
-	{
-		return V2MPAsm::GetPublicErrorStringID(static_cast<V2MPAsm::PublicErrorID>(index), nullptr);
-	}
-
-	API_LIBV2MPASM const char* V2MPAsm_ExceptionList_GetErrorDescription(size_t index)
-	{
-		return V2MPAsm::GetPublicErrorDescription(static_cast<V2MPAsm::PublicErrorID>(index), nullptr);
-	}
-} // extern "C"
+LIBV2MPASM_PUBLIC(const char*) V2MPAsm_ExceptionList_GetErrorDescription(size_t index)
+{
+	return V2MPAsm::GetPublicErrorDescription(static_cast<V2MPAsm::PublicErrorID>(index), nullptr);
+}

@@ -21,8 +21,11 @@ if(MSVC)
 		/wd4005
 	)
 else()
+	# This enables GNU extensions so that readlink is accessible.
+	# -std=gnu11 seems to work for Clang but not, weirdly, for GCC >:c
+	add_compile_definitions(_POSIX_C_SOURCE=200809L)
+
 	add_compile_options(
-		-std=gnu11
 		-Wno-discarded-qualifiers
 		-Wno-unused-result
 		-Wno-stringop-overflow
