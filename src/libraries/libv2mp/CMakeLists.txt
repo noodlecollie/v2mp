@@ -14,6 +14,12 @@ configure_file(
 )
 
 set(PUBLIC_HEADERS_ALL
+	include/${TARGETNAME_LIBV2MP}/Modules/CPU.h
+	include/${TARGETNAME_LIBV2MP}/Modules/Mainboard.h
+	include/${TARGETNAME_LIBV2MP}/Modules/MemoryStore.h
+	include/${TARGETNAME_LIBV2MP}/Modules/Supervisor.h
+	include/${TARGETNAME_LIBV2MP}/Modules/VirtualMachine.h
+	include/${TARGETNAME_LIBV2MP}/Defs.h
 	include/${TARGETNAME_LIBV2MP}/Dummy.h
 	include/${TARGETNAME_LIBV2MP}/LibExport.gen.h
 	include/${TARGETNAME_LIBV2MP}/Version.h
