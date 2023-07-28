@@ -10,16 +10,16 @@ typedef struct V2MP_VirtualMachine V2MP_VirtualMachine;
 struct V2MP_Supervisor;
 struct V2MP_Mainboard;
 
-V2MP_VirtualMachine* V2MP_VirtualMachine_AllocateAndInit(void);
-void V2MP_VirtualMachine_DeinitAndFree(V2MP_VirtualMachine* vm);
+LIBV2MP_PUBLIC(V2MP_VirtualMachine*) V2MP_VirtualMachine_AllocateAndInit(void);
+LIBV2MP_PUBLIC(void) V2MP_VirtualMachine_DeinitAndFree(V2MP_VirtualMachine* vm);
 
-struct V2MP_Mainboard* V2MP_VirtualMachine_GetMainboard(V2MP_VirtualMachine* vm);
-struct V2MP_Supervisor* V2MP_VirtualMachine_GetSupervisor(V2MP_VirtualMachine* vm);
+LIBV2MP_PUBLIC(struct V2MP_Mainboard*) V2MP_VirtualMachine_GetMainboard(V2MP_VirtualMachine* vm);
+LIBV2MP_PUBLIC(struct V2MP_Supervisor*) V2MP_VirtualMachine_GetSupervisor(V2MP_VirtualMachine* vm);
 
-size_t V2MP_VirtualMachine_GetTotalMemoryBytes(V2MP_VirtualMachine* vm);
-bool V2MP_VirtualMachine_AllocateTotalMemory(V2MP_VirtualMachine* vm, size_t sizeInBytes);
+LIBV2MP_PUBLIC(size_t) V2MP_VirtualMachine_GetTotalMemoryBytes(V2MP_VirtualMachine* vm);
+LIBV2MP_PUBLIC(bool) V2MP_VirtualMachine_AllocateTotalMemory(V2MP_VirtualMachine* vm, size_t sizeInBytes);
 
-bool V2MP_VirtualMachine_LoadProgram(
+LIBV2MP_PUBLIC(bool) V2MP_VirtualMachine_LoadProgram(
 	V2MP_VirtualMachine* vm,
 	const V2MP_Word* cs,
 	size_t csLengthInWords,
@@ -28,9 +28,9 @@ bool V2MP_VirtualMachine_LoadProgram(
 	size_t ssLengthInWords
 );
 
-void V2MP_VirtualMachine_ClearProgram(V2MP_VirtualMachine* vm);
-bool V2MP_VirtualMachine_IsProgramLoaded(const V2MP_VirtualMachine* vm);
+LIBV2MP_PUBLIC(void) V2MP_VirtualMachine_ClearProgram(V2MP_VirtualMachine* vm);
+LIBV2MP_PUBLIC(bool) V2MP_VirtualMachine_IsProgramLoaded(const V2MP_VirtualMachine* vm);
 
-bool V2MP_VirtualMachine_ExecuteClockCycle(V2MP_VirtualMachine* vm);
+LIBV2MP_PUBLIC(bool) V2MP_VirtualMachine_ExecuteClockCycle(V2MP_VirtualMachine* vm);
 
 #endif // V2MPINTERNAL_MODULES_VIRTUALMACHINE_H
