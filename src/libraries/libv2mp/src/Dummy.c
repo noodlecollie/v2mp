@@ -1,6 +1,6 @@
 #include "LibV2MP/Dummy.h"
 
-int V2MP_Dummy(void)
+LIBV2MP_PUBLIC(int) V2MP_Dummy(void)
 {
 	return 0;
 }

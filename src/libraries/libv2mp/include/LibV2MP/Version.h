@@ -4,18 +4,10 @@
 #include <stdint.h>
 #include "LibV2MP/LibExport.gen.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-API_LIBV2MP int32_t V2MP_Version_GetMajor(void);
-API_LIBV2MP int32_t V2MP_Version_GetMinor(void);
-API_LIBV2MP int32_t V2MP_Version_GetPatch(void);
-API_LIBV2MP const char* V2MP_Version_GetVersionString(void);
-API_LIBV2MP const char* V2MP_Version_GetBuildIdentifier(void);
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
+LIBV2MP_PUBLIC(int32_t) V2MP_Version_GetMajor(void);
+LIBV2MP_PUBLIC(int32_t) V2MP_Version_GetMinor(void);
+LIBV2MP_PUBLIC(int32_t) V2MP_Version_GetPatch(void);
+LIBV2MP_PUBLIC(const char*) V2MP_Version_GetVersionString(void);
+LIBV2MP_PUBLIC(const char*) V2MP_Version_GetBuildIdentifier(void);
 
 #endif // V2MP_VERSION_H
