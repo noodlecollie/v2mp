@@ -3,30 +3,27 @@
 #include "LibV2MPLink/Version.h"
 #include "Interface_Version.gen.h"
 
-extern "C"
+LIBV2MPLINK_PUBLIC(int32_t) V2MPLink_Version_GetMajor(void)
 {
-	API_LIBV2MPLINK int32_t V2MPLink_Version_GetMajor(void)
-	{
-		return V2MPLink::VERSION_MAJOR;
-	}
+	return V2MPLink::VERSION_MAJOR;
+}
 
-	API_LIBV2MPLINK int32_t V2MPLink_Version_GetMinor(void)
-	{
-		return V2MPLink::VERSION_MINOR;
-	}
+LIBV2MPLINK_PUBLIC(int32_t) V2MPLink_Version_GetMinor(void)
+{
+	return V2MPLink::VERSION_MINOR;
+}
 
-	API_LIBV2MPLINK int32_t V2MPLink_Version_GetPatch(void)
-	{
-		return V2MPLink::VERSION_PATCH;
-	}
+LIBV2MPLINK_PUBLIC(int32_t) V2MPLink_Version_GetPatch(void)
+{
+	return V2MPLink::VERSION_PATCH;
+}
 
-	API_LIBV2MPLINK const char* V2MPLink_Version_GetVersionString(void)
-	{
-		return V2MPLink::VERSION_STRING;
-	}
+LIBV2MPLINK_PUBLIC(const char*) V2MPLink_Version_GetVersionString(void)
+{
+	return V2MPLink::VERSION_STRING;
+}
 
-	API_LIBV2MPLINK const char* V2MPLink_Version_GetBuildIdentifier(void)
-	{
-		return V2MPLink::BUILD_IDENTIFIER_STRING;
-	}
-} // extern "C"
+LIBV2MPLINK_PUBLIC(const char*) V2MPLink_Version_GetBuildIdentifier(void)
+{
+	return V2MPLink::BUILD_IDENTIFIER_STRING;
+}

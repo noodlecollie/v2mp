@@ -1,7 +1,10 @@
 include(compiler_settings)
+include(shared_lib_utils)
+
+generate_export_header_template(${TARGETNAME_LIBV2MPLINK} "${CMAKE_CURRENT_SOURCE_DIR}/configure/LibExport.h.gen.in")
 
 configure_file(
-	"${CMAKE_CURRENT_SOURCE_DIR}/configure/LibExport.h.in"
+	"${CMAKE_CURRENT_SOURCE_DIR}/configure/LibExport.h.gen.in"
 	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_LIBV2MPLINK}/LibExport.gen.h"
 )
 
