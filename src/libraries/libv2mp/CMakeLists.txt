@@ -59,6 +59,8 @@ target_link_libraries(${TARGETNAME_LIBV2MP} PRIVATE
 	${TARGETNAME_LIBSHAREDCOMPONENTS}
 )
 
+target_compile_definitions(${TARGETNAME_LIBV2MP} PRIVATE "LIBV2MP_PRODUCER")
+
 set_strict_compile_settings(${TARGETNAME_LIBV2MP})
 
 install(TARGETS ${TARGETNAME_LIBV2MP})

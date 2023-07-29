@@ -49,7 +49,7 @@ target_link_libraries(${TARGETNAME_LIBV2MPLINK} PRIVATE
 	${TARGETNAME_CJSON}
 )
 
-target_compile_definitions(${TARGETNAME_LIBV2MPLINK} PRIVATE "V2MPLINK_PRODUCER")
+target_compile_definitions(${TARGETNAME_LIBV2MPLINK} PRIVATE "LIBV2MPLINK_PRODUCER")
 
 set_strict_compile_settings(${TARGETNAME_LIBV2MPLINK})
 
