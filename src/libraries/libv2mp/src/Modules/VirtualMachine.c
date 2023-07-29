@@ -1,7 +1,7 @@
-#include "LibV2MPInternal/Modules/VirtualMachine.h"
-#include "LibV2MPInternal/Modules/Mainboard.h"
-#include "LibV2MPInternal/Modules/Supervisor.h"
-#include "LibV2MPInternal/Modules/MemoryStore.h"
+#include "LibV2MP/Modules/VirtualMachine.h"
+#include "LibV2MP/Modules/Mainboard.h"
+#include "LibV2MP/Modules/Supervisor.h"
+#include "LibV2MP/Modules/MemoryStore.h"
 #include "LibBaseUtil/Heap.h"
 
 struct V2MP_VirtualMachine

@@ -3,30 +3,27 @@
 #include "LibV2MPAsm/Version.h"
 #include "Interface_Version.gen.h"
 
-extern "C"
+LIBV2MPASM_PUBLIC(int32_t) V2MPAsm_Version_GetMajor(void)
 {
-	API_LIBV2MPASM int32_t V2MPAsm_Version_GetMajor(void)
-	{
-		return V2MPAsm::VERSION_MAJOR;
-	}
+	return V2MPAsm::VERSION_MAJOR;
+}
 
-	API_LIBV2MPASM int32_t V2MPAsm_Version_GetMinor(void)
-	{
-		return V2MPAsm::VERSION_MINOR;
-	}
+LIBV2MPASM_PUBLIC(int32_t) V2MPAsm_Version_GetMinor(void)
+{
+	return V2MPAsm::VERSION_MINOR;
+}
 
-	API_LIBV2MPASM int32_t V2MPAsm_Version_GetPatch(void)
-	{
-		return V2MPAsm::VERSION_PATCH;
-	}
+LIBV2MPASM_PUBLIC(int32_t) V2MPAsm_Version_GetPatch(void)
+{
+	return V2MPAsm::VERSION_PATCH;
+}
 
-	API_LIBV2MPASM const char* V2MPAsm_Version_GetVersionString(void)
-	{
-		return V2MPAsm::VERSION_STRING;
-	}
+LIBV2MPASM_PUBLIC(const char*) V2MPAsm_Version_GetVersionString(void)
+{
+	return V2MPAsm::VERSION_STRING;
+}
 
-	API_LIBV2MPASM const char* V2MPAsm_Version_GetBuildIdentifier(void)
-	{
-		return V2MPAsm::BUILD_IDENTIFIER_STRING;
-	}
-} // extern "C"
+LIBV2MPASM_PUBLIC(const char*) V2MPAsm_Version_GetBuildIdentifier(void)
+{
+	return V2MPAsm::BUILD_IDENTIFIER_STRING;
+}

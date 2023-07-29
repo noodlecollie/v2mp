@@ -59,55 +59,52 @@ namespace V2MPLink
 	}
 }
 
-extern "C"
+LIBV2MPLINK_PUBLIC(V2MPLink_Exception_Type) V2MPLink_Exception_GetType(const struct V2MPLink_Exception* exception)
 {
-	API_LIBV2MPLINK V2MPLink_Exception_Type V2MPLink_Exception_GetType(const struct V2MPLink_Exception* exception)
+	return exception ? exception->inner.GetType() : V2MPLINK_EXCEPTION_WARNING;
+}
+
+LIBV2MPLINK_PUBLIC(const char*) V2MPLink_Exception_GetID(const struct V2MPLink_Exception* exception)
+{
+	return exception ? exception->inner.GetIDString() : nullptr;
+}
+
+LIBV2MPLINK_PUBLIC(size_t) V2MPLink_Exception_ToString(const struct V2MPLink_Exception* exception, char* buffer, size_t length)
+{
+	if ( !exception )
 	{
-		return exception ? exception->inner.GetType() : V2MPLINK_EXCEPTION_WARNING;
+		return 0;
 	}
 
-	API_LIBV2MPLINK const char* V2MPLink_Exception_GetID(const struct V2MPLink_Exception* exception)
-	{
-		return exception ? exception->inner.GetIDString() : nullptr;
-	}
+	return BaseUtil::CopyStringToBuffer(exception->inner.ToString(), buffer, length);
+}
 
-	API_LIBV2MPLINK size_t V2MPLink_Exception_ToString(const struct V2MPLink_Exception* exception, char* buffer, size_t length)
-	{
-		if ( !exception )
-		{
-			return 0;
-		}
+LIBV2MPLINK_PUBLIC(size_t) V2MPLink_ExceptionList_GetWarningsListSize(void)
+{
+	return V2MPLink::GetPublicWarningsListSize();
+}
 
-		return BaseUtil::CopyStringToBuffer(exception->inner.ToString(), buffer, length);
-	}
+LIBV2MPLINK_PUBLIC(const char*) V2MPLink_ExceptionList_GetWarningStringID(size_t index)
+{
+	return V2MPLink::GetPublicWarningStringID(static_cast<V2MPLink::PublicWarningID>(index), nullptr);
+}
 
-	API_LIBV2MPLINK size_t V2MPLink_ExceptionList_GetWarningsListSize(void)
-	{
-		return V2MPLink::GetPublicWarningsListSize();
-	}
+LIBV2MPLINK_PUBLIC(const char*) V2MPLink_ExceptionList_GetWarningDescription(size_t index)
+{
+	return V2MPLink::GetPublicWarningDescription(static_cast<V2MPLink::PublicWarningID>(index), nullptr);
+}
 
-	API_LIBV2MPLINK const char* V2MPLink_ExceptionList_GetWarningStringID(size_t index)
-	{
-		return V2MPLink::GetPublicWarningStringID(static_cast<V2MPLink::PublicWarningID>(index), nullptr);
-	}
+LIBV2MPLINK_PUBLIC(size_t) V2MPLink_ExceptionList_GetErrorsListSize(void)
+{
+	return V2MPLink::GetPublicErrorsListSize();
+}
 
-	API_LIBV2MPLINK const char* V2MPLink_ExceptionList_GetWarningDescription(size_t index)
-	{
-		return V2MPLink::GetPublicWarningDescription(static_cast<V2MPLink::PublicWarningID>(index), nullptr);
-	}
+LIBV2MPLINK_PUBLIC(const char*) V2MPLink_ExceptionList_GetErrorStringID(size_t index)
+{
+	return V2MPLink::GetPublicErrorStringID(static_cast<V2MPLink::PublicErrorID>(index), nullptr);
+}
 
-	API_LIBV2MPLINK size_t V2MPLink_ExceptionList_GetErrorsListSize(void)
-	{
-		return V2MPLink::GetPublicErrorsListSize();
-	}
-
-	API_LIBV2MPLINK const char* V2MPLink_ExceptionList_GetErrorStringID(size_t index)
-	{
-		return V2MPLink::GetPublicErrorStringID(static_cast<V2MPLink::PublicErrorID>(index), nullptr);
-	}
-
-	API_LIBV2MPLINK const char* V2MPLink_ExceptionList_GetErrorDescription(size_t index)
-	{
-		return V2MPLink::GetPublicErrorDescription(static_cast<V2MPLink::PublicErrorID>(index), nullptr);
-	}
-} // extern "C"
+LIBV2MPLINK_PUBLIC(const char*) V2MPLink_ExceptionList_GetErrorDescription(size_t index)
+{
+	return V2MPLink::GetPublicErrorDescription(static_cast<V2MPLink::PublicErrorID>(index), nullptr);
+}

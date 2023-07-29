@@ -1,9 +1,9 @@
-#ifndef V2MPINTERNAL_MODULES_CPU_INSTRUCTIONS_H
-#define V2MPINTERNAL_MODULES_CPU_INSTRUCTIONS_H
+#ifndef V2MP_MODULES_CPU_INSTRUCTIONS_H
+#define V2MP_MODULES_CPU_INSTRUCTIONS_H
 
 #include <stdbool.h>
-#include "LibV2MPInternal/Defs.h"
-#include "LibV2MPInternal/Modules/CPU.h"
+#include "LibV2MP/Defs.h"
+#include "LibV2MP/Modules/CPU.h"
 
 #define V2MP_OPCODE(instr) ((instr) >> 12)
 
@@ -56,4 +56,4 @@
 
 bool V2MP_CPU_ExecuteInstructionInternal(V2MP_CPU* cpu);
 
-#endif // V2MPINTERNAL_MODULES_CPU_INSTRUCTIONS_H
+#endif // V2MP_MODULES_CPU_INSTRUCTIONS_H

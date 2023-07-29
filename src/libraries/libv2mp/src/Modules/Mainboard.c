@@ -1,6 +1,6 @@
-#include "LibV2MPInternal/Modules/Mainboard.h"
-#include "LibV2MPInternal/Modules/CPU.h"
-#include "LibV2MPInternal/Modules/MemoryStore.h"
+#include "LibV2MP/Modules/Mainboard.h"
+#include "LibV2MP/Modules/CPU.h"
+#include "LibV2MP/Modules/MemoryStore.h"
 #include "LibBaseUtil/Heap.h"
 
 struct V2MP_Mainboard

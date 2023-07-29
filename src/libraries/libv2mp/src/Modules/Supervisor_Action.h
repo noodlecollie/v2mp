@@ -1,8 +1,8 @@
-#ifndef V2MPINTERNAL_MODULES_SUPERVISOR_ACTION_H
-#define V2MPINTERNAL_MODULES_SUPERVISOR_ACTION_H
+#ifndef V2MP_MODULES_SUPERVISOR_ACTION_H
+#define V2MP_MODULES_SUPERVISOR_ACTION_H
 
-#include "LibV2MPInternal/Defs.h"
-#include "LibV2MPInternal/Modules/Supervisor.h"
+#include "LibV2MP/Defs.h"
+#include "LibV2MP/Modules/Supervisor.h"
 #include "LibSharedComponents/DoubleLinkedList.h"
 
 #define V2MP_SUPERVISOR_ACTION_LIST \
@@ -38,4 +38,4 @@ V2MP_Supervisor_Action* V2MP_Supervisor_CreateNewAction(V2MP_Supervisor* supervi
 V2MPSC_DoubleLL_Node* V2MP_Supervisor_CloneToOngoingAction(V2MP_Supervisor* supervisor, V2MPSC_DoubleLL_Node* createAfter, V2MP_Supervisor_Action* template);
 bool V2MP_Supervisor_ResolveOutstandingActions(V2MP_Supervisor* supervisor);
 
-#endif // V2MPINTERNAL_MODULES_SUPERVISOR_POSTINSTRUCTIONACTION_H
+#endif // V2MP_MODULES_SUPERVISOR_POSTINSTRUCTIONACTION_H

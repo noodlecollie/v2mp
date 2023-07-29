@@ -1,9 +1,9 @@
-#ifndef V2MPINTERNAL_MODULES_SUPERVISOR_INTERNAL_H
-#define V2MPINTERNAL_MODULES_SUPERVISOR_INTERNAL_H
+#ifndef V2MP_MODULES_SUPERVISOR_INTERNAL_H
+#define V2MP_MODULES_SUPERVISOR_INTERNAL_H
 
-#include "LibV2MPInternal/Defs.h"
-#include "LibV2MPInternal/Modules/Supervisor.h"
-#include "LibV2MPInternal/Modules/Mainboard.h"
+#include "LibV2MP/Defs.h"
+#include "LibV2MP/Modules/Supervisor.h"
+#include "LibV2MP/Modules/Mainboard.h"
 #include "Modules/Supervisor_Action.h"
 #include "LibSharedComponents/DoubleLinkedList.h"
 
@@ -85,4 +85,4 @@ void V2MP_Supervisor_RequestStackPop(V2MP_Supervisor* supervisor, V2MP_Word regF
 
 void V2MP_Supervisor_RaiseSignal(V2MP_Supervisor* supervisor, V2MP_Word signal, V2MP_Word r1, V2MP_Word lr, V2MP_Word sp);
 
-#endif // V2MPINTERNAL_MODULES_SUPERVISOR_INTERNAL_H
+#endif // V2MP_MODULES_SUPERVISOR_INTERNAL_H

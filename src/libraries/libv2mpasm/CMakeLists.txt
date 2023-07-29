@@ -1,7 +1,10 @@
 include(compiler_settings)
+include(shared_lib_utils)
+
+generate_export_header_template(${TARGETNAME_LIBV2MPASM} "${CMAKE_CURRENT_SOURCE_DIR}/configure/LibExport.h.gen.in")
 
 configure_file(
-	"${CMAKE_CURRENT_SOURCE_DIR}/configure/LibExport.h.in"
+	"${CMAKE_CURRENT_SOURCE_DIR}/configure/LibExport.h.gen.in"
 	"${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGETNAME_LIBV2MPASM}/LibExport.gen.h"
 )
 
@@ -94,7 +97,7 @@ target_link_libraries(${TARGETNAME_LIBV2MPASM} PRIVATE
 	${TARGETNAME_LIBTOOLCHAINCOMPONENTS}
 )
 
-target_compile_definitions(${TARGETNAME_LIBV2MPASM} PRIVATE "V2MPASM_PRODUCER")
+target_compile_definitions(${TARGETNAME_LIBV2MPASM} PRIVATE "LIBV2MPASM_PRODUCER")
 
 set_strict_compile_settings(${TARGETNAME_LIBV2MPASM})
 

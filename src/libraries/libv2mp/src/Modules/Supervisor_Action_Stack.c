@@ -1,8 +1,8 @@
 #include <string.h>
 #include "Modules/Supervisor_Action_Stack.h"
 #include "Modules/Supervisor_Internal.h"
-#include "LibV2MPInternal/Modules/Mainboard.h"
-#include "LibV2MPInternal/Modules/CPU.h"
+#include "LibV2MP/Modules/Mainboard.h"
+#include "LibV2MP/Modules/CPU.h"
 
 bool V2MP_Supervisor_PerformStackPush(V2MP_Supervisor* supervisor, const V2MP_Word* inWords, size_t numWords)
 {

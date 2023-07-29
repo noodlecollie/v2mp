@@ -3,10 +3,6 @@
 
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef uint16_t V2MP_Word;
 typedef uint8_t V2MP_Byte;
 
@@ -73,9 +69,5 @@ typedef enum V2MP_BitwiseOp
 #define V2MP_CPU_MAKE_FAULT_WORD(fault, args) ( (V2MP_Word)(((fault) << 12) | ((args) & 0x0FFF)) )
 #define V2MP_CPU_FAULT_CODE(faultWord) (((faultWord) & 0xF000) >> 12)
 #define V2MP_CPU_FAULT_ARGS(faultWord) ((faultWord) & 0x0FFF)
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
 
 #endif // V2MPINTERNAL_DEFS_H
