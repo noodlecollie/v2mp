@@ -25,7 +25,7 @@ target_link_libraries(V2MPAsm_Tests PRIVATE
 	Catch2::Catch2
 	${TARGETNAME_LIBV2MPASM}
 	${TARGETNAME_TESTUTIL}
-	${TARGETNAME_LIBV2MPINTERNAL}
+	${TARGETNAME_LIBV2MP}
 )
 
 target_include_directories(V2MPAsm_Tests PRIVATE src)

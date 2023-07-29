@@ -1,4 +1,4 @@
-#include "LibV2MPInternal/Defs.h"
+#include "LibV2MP/Defs.h"
 #include "catch2/catch.hpp"
 #include "Helpers/TestHarnessVM.h"
 #include "TestUtil/Assembly.h"

@@ -1,7 +1,6 @@
 add_subdirectory(libbaseutil)
 add_subdirectory(libsharedcomponents)
 add_subdirectory(libtoolchaincomponents)
-add_subdirectory(libv2mpinternal)
 add_subdirectory(libv2mp)
 add_subdirectory(libv2mpasm)
 add_subdirectory(libv2mplink)
