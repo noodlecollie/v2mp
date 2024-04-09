@@ -1,5 +1,5 @@
-#ifndef V2MPINTERNAL_MODULES_SUPERVISOR_H
-#define V2MPINTERNAL_MODULES_SUPERVISOR_H
+#ifndef V2MP_MODULES_SUPERVISOR_H
+#define V2MP_MODULES_SUPERVISOR_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -58,4 +58,4 @@ LIBV2MP_PUBLIC(bool) V2MP_Supervisor_ReadSSRange(
 	size_t numBytes
 );
 
-#endif // V2MPINTERNAL_MODULES_SUPERVISOR_H
+#endif // V2MP_MODULES_SUPERVISOR_H

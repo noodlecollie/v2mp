@@ -1,5 +1,5 @@
-#ifndef V2MPINTERNAL_DEFS_H
-#define V2MPINTERNAL_DEFS_H
+#ifndef V2MP_DEFS_H
+#define V2MP_DEFS_H
 
 #include <stdint.h>
 
@@ -70,4 +70,4 @@ typedef enum V2MP_BitwiseOp
 #define V2MP_CPU_FAULT_CODE(faultWord) (((faultWord) & 0xF000) >> 12)
 #define V2MP_CPU_FAULT_ARGS(faultWord) ((faultWord) & 0x0FFF)
 
-#endif // V2MPINTERNAL_DEFS_H
+#endif // V2MP_DEFS_H

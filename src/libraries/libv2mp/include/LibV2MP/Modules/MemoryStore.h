@@ -1,5 +1,5 @@
-#ifndef V2MPINTERNAL_MODULES_MEMORYSTORE_H
-#define V2MPINTERNAL_MODULES_MEMORYSTORE_H
+#ifndef V2MP_MODULES_MEMORYSTORE_H
+#define V2MP_MODULES_MEMORYSTORE_H
 
 #include <stddef.h>
 #include <stdbool.h>
@@ -45,4 +45,4 @@ LIBV2MP_PUBLIC(const V2MP_Byte*) V2MP_MemoryStore_GetConstPtrToRange(
 	size_t length
 );
 
-#endif // V2MPINTERNAL_MODULES_MEMORYSTORE_H
+#endif // V2MP_MODULES_MEMORYSTORE_H

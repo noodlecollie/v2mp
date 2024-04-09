@@ -1,5 +1,5 @@
-#ifndef V2MPINTERNAL_MODULES_CPU_H
-#define V2MPINTERNAL_MODULES_CPU_H
+#ifndef V2MP_MODULES_CPU_H
+#define V2MP_MODULES_CPU_H
 
 #include <stdbool.h>
 #include "LibV2MP/LibExport.gen.h"
@@ -67,4 +67,4 @@ LIBV2MP_PUBLIC(void) V2MP_CPU_SetInstructionRegister(V2MP_CPU* cpu, V2MP_Word va
 LIBV2MP_PUBLIC(V2MP_Word) V2MP_CPU_GetStackPointer(const V2MP_CPU* cpu);
 LIBV2MP_PUBLIC(void) V2MP_CPU_SetStackPointer(V2MP_CPU* cpu, V2MP_Word value);
 
-#endif // V2MPINTERNAL_MODULES_CPU_H
+#endif // V2MP_MODULES_CPU_H

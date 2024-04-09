@@ -1,5 +1,5 @@
-#ifndef V2MPINTERNAL_MODULES_VIRTUALMACHINE_H
-#define V2MPINTERNAL_MODULES_VIRTUALMACHINE_H
+#ifndef V2MP_MODULES_VIRTUALMACHINE_H
+#define V2MP_MODULES_VIRTUALMACHINE_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -33,4 +33,4 @@ LIBV2MP_PUBLIC(bool) V2MP_VirtualMachine_IsProgramLoaded(const V2MP_VirtualMachi
 
 LIBV2MP_PUBLIC(bool) V2MP_VirtualMachine_ExecuteClockCycle(V2MP_VirtualMachine* vm);
 
-#endif // V2MPINTERNAL_MODULES_VIRTUALMACHINE_H
+#endif // V2MP_MODULES_VIRTUALMACHINE_H
