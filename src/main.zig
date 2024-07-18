@@ -1,24 +1,61 @@
+// Taken from https://github.com/capy-ui/capy/blob/master/examples/notepad.zig
+
 const std = @import("std");
+const capy = @import("capy");
+
+pub usingnamespace capy.cross_platform;
 
 pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+    try capy.init();
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    const stdout_file = std.io.getStdOut().writer();
-    var bw = std.io.bufferedWriter(stdout_file);
-    const stdout = bw.writer();
+    var window = try capy.Window.init();
 
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
+    var monospace = capy.Atom(bool).of(false);
+    var text = capy.Atom([]const u8).of("");
 
-    try bw.flush(); // don't forget to flush!
-}
+    const text_length = try capy.Atom(usize).derived(.{&text}, &struct {
+        fn callback(txt: []const u8) usize {
+            return txt.len;
+        }
+    }.callback);
 
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+    var label_text = try capy.FormattedAtom(capy.internal.lasting_allocator, "Text length: {d}", .{text_length});
+    defer label_text.deinit();
+
+    try window.set(capy.column(.{ .spacing = 0 }, .{
+        capy.expanded(capy.textArea(.{})
+            .bind("monospace", &monospace)
+            .bind("text", &text)),
+        capy.label(.{ .text = "TODO: cursor info" })
+            .bind("text", label_text),
+        // TODO: move into menu
+        capy.checkBox(.{ .label = "Monospaced" })
+            .bind("checked", &monospace),
+    }));
+
+    // TODO: hotkeys for actions (Ctrl+S, Ctrl+C) plus corresponding Cmd+C on macOS
+    window.setMenuBar(capy.menuBar(.{
+        capy.menu(.{ .label = "File" }, .{
+            capy.menuItem(.{ .label = "New File" }),
+            capy.menuItem(.{ .label = "Open File.." }),
+            capy.menuItem(.{ .label = "Save" }),
+            // TODO: capy.menuSeperator ?
+            capy.menuItem(.{ .label = "Quit" }),
+        }),
+        capy.menu(.{ .label = "Edit" }, .{
+            capy.menuItem(.{ .label = "Find" }),
+            capy.menuItem(.{ .label = "Copy" }),
+            capy.menuItem(.{ .label = "Paste" }),
+        }),
+        capy.menu(.{ .label = "View" }, .{
+            // TODO: togglemenuitem ?
+            capy.menuItem(.{ .label = "Monospace" }),
+        }),
+    }));
+
+    window.setTitle("Notepad");
+    window.setPreferredSize(800, 600);
+    window.show();
+
+    capy.runEventLoop();
 }
