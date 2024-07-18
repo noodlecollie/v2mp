@@ -13,7 +13,7 @@
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/zig-out/bin",
 			"environment": [],
-			"console": "internalConsole",
+			"console": "integratedTerminal",
 			"preLaunchTask": "Build"
 		}
 	]
