@@ -5,10 +5,10 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Debug V2MP (Windows)",
+			"name": "V2MP Debugger (Windows)",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/zig-out/bin/v2mp.exe",
+			"program": "${workspaceFolder}/zig-out/bin/v2mp_debugger.exe",
 			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/zig-out/bin",
