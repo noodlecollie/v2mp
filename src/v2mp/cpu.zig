@@ -2,7 +2,7 @@ const std = @import("std");
 const v2mp = @import("v2mp.zig");
 
 pub const Cpu = struct {
-    const _InstructionResult = struct {
+    const InstructionResult = struct {
         pc: ?v2mp.Word = null,
         sr: ?v2mp.Word = null,
         lr: ?v2mp.Word = null,
@@ -11,7 +11,7 @@ pub const Cpu = struct {
         sp: ?v2mp.Word = null,
         fault: ?v2mp.Fault = null,
 
-        fn setRegisterValue(this: *_InstructionResult, reg: v2mp.RegisterIndex, value: v2mp.Word) void {
+        pub fn setRegisterValue(this: *InstructionResult, reg: v2mp.RegisterIndex, value: v2mp.Word) void {
             switch (reg) {
                 .r0 => this.r0 = value,
                 .r1 => this.r1 = value,
@@ -22,7 +22,7 @@ pub const Cpu = struct {
     };
 
     const FetchInstructionFn = *const fn (address: v2mp.Word) v2mp.InstructionFetchError!v2mp.Word;
-    const _ExecInstructionFn = *const fn (this: *Cpu) _InstructionResult;
+    const ExecInstructionFn = *const fn (this: *Cpu) InstructionResult;
 
     fetch_callback: FetchInstructionFn,
 
@@ -35,26 +35,26 @@ pub const Cpu = struct {
     _sp: v2mp.Word = 0,
     _fault: v2mp.Word = @intFromEnum(v2mp.Fault.none),
 
-    _exec_callbacks: [v2mp.max_instruction_opcodes]_ExecInstructionFn = .{
-        &_executeNop, // 0x00
-        &_executeAdd, // 0x01
-        &_executeSub, // 0x02
-        &_executeUnassigned,
-        &_executeUnassigned,
-        &_executeUnassigned,
-        &_executeUnassigned,
-        &_executeUnassigned,
-        &_executeUnassigned,
-        &_executeUnassigned,
-        &_executeUnassigned,
-        &_executeUnassigned,
-        &_executeUnassigned,
-        &_executeUnassigned,
-        &_executeUnassigned,
-        &_executeUnassigned,
+    _exec_callbacks: [v2mp.max_instruction_opcodes]ExecInstructionFn = .{
+        &executeNop, // 0x00
+        &executeAdd, // 0x01
+        &executeSub, // 0x02
+        &executeUnassigned,
+        &executeUnassigned,
+        &executeUnassigned,
+        &executeUnassigned,
+        &executeUnassigned,
+        &executeUnassigned,
+        &executeUnassigned,
+        &executeUnassigned,
+        &executeUnassigned,
+        &executeUnassigned,
+        &executeUnassigned,
+        &executeUnassigned,
+        &executeUnassigned,
     },
 
-    fn getRegisterValue(this: *const Cpu, reg: v2mp.RegisterIndex) v2mp.Word {
+    pub fn getRegisterValue(this: *const Cpu, reg: v2mp.RegisterIndex) v2mp.Word {
         return switch (reg) {
             .r0 => this._r0,
             .r1 => this._r1,
@@ -81,10 +81,10 @@ pub const Cpu = struct {
         std.debug.assert(instruction_op <= this._exec_callbacks.len);
 
         const result = this._exec_callbacks[instruction_op](this);
-        this._acceptResult(result);
+        this.acceptResult(result);
     }
 
-    fn _acceptResult(this: *Cpu, result: _InstructionResult) void {
+    fn acceptResult(this: *Cpu, result: InstructionResult) void {
         const fault: v2mp.Fault = choose_fault: {
             if (result.fault) |res_fault| {
                 // If the instruction caused a fault, this should take precedence.
@@ -107,22 +107,20 @@ pub const Cpu = struct {
         this._fault = @intFromEnum(fault);
     }
 
-    fn _executeNop(this: *Cpu) _InstructionResult {
+    fn executeNop(this: *Cpu) InstructionResult {
         // NOP - Do nothing
-        return .{
-            .fault = if (v2mp.reservedBitsSet(this._ir, v2mp.instruction_arg_field_mask)) .res else .none,
-        };
+        return .{ .fault = this.faultIfReservedBitsSet(v2mp.instruction_arg_field_mask) };
     }
 
-    fn _executeAdd(this: *Cpu) _InstructionResult {
-        return _executeAddOrSub(this, true);
+    fn executeAdd(this: *Cpu) InstructionResult {
+        return executeAddOrSub(this, true);
     }
 
-    fn _executeSub(this: *Cpu) _InstructionResult {
-        return _executeAddOrSub(this, false);
+    fn executeSub(this: *Cpu) InstructionResult {
+        return executeAddOrSub(this, false);
     }
 
-    fn _executeAddOrSub(this: *Cpu, is_add: bool) _InstructionResult {
+    fn executeAddOrSub(this: *Cpu, is_add: bool) InstructionResult {
         const Layout = struct {
             fn sourceRegIndex(instr: v2mp.Word) v2mp.RegisterIndex {
                 return @enumFromInt((instr & 0x0C00) >> 10);
@@ -174,13 +172,17 @@ pub const Cpu = struct {
             sr |= v2mp.StatusRegFlag.z;
         }
 
-        var result: _InstructionResult = .{ .sr = sr };
+        var result: InstructionResult = .{ .sr = sr };
         result.setRegisterValue(dest_reg, op_result.value);
 
         return result;
     }
 
-    fn _executeUnassigned(_: *Cpu) _InstructionResult {
+    fn executeUnassigned(_: *Cpu) InstructionResult {
         return .{ .fault = .ini };
+    }
+
+    fn faultIfReservedBitsSet(this: *const Cpu, reserved_mask: v2mp.Word) v2mp.Fault {
+        return if (v2mp.reservedBitsSet(this._ir, reserved_mask)) .res else .none;
     }
 };
