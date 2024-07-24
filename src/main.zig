@@ -16,6 +16,7 @@ const Model = struct {
     sr: TextAtom = TextAtom.of(""),
     ir: TextAtom = TextAtom.of(""),
     fault: TextAtom = TextAtom.of(""),
+    fault_label: TextAtom = TextAtom.of(""),
 
     pub fn updateFromWord(field: *TextAtom, value: v2mp.Word) void {
         var text_buffer: [8]u8 = undefined;
@@ -67,6 +68,8 @@ fn updateModel() void {
     Model.updateFromWord(&model.sr, cpu.getSr());
     Model.updateFromWord(&model.ir, cpu.getIr());
     Model.updateFromWord(&model.fault, cpu.getFault());
+
+    model.fault_label.set(v2mp.faultNameFromWord(cpu.getFault()));
 }
 
 pub fn main() !void {
@@ -76,62 +79,63 @@ pub fn main() !void {
 
     try window.set(capy.column(.{}, .{
         capy.row(
-            .{ .expand = .Fill },
+            .{},
             .{
                 capy.label(.{ .text = "IR" }),
                 capy.textField(.{ .readOnly = true, .name = "ir_field" }).bind("text", &model.ir),
             },
         ),
         capy.row(
-            .{ .expand = .Fill },
+            .{},
             .{
                 capy.label(.{ .text = "R0" }),
                 capy.textField(.{ .readOnly = true, .name = "r0_field" }).bind("text", &model.r0),
             },
         ),
         capy.row(
-            .{ .expand = .Fill },
+            .{},
             .{
                 capy.label(.{ .text = "R1" }),
                 capy.textField(.{ .readOnly = true, .name = "r1_field" }).bind("text", &model.r1),
             },
         ),
         capy.row(
-            .{ .expand = .Fill },
+            .{},
             .{
                 capy.label(.{ .text = "LR" }),
                 capy.textField(.{ .readOnly = true, .name = "lr_field" }).bind("text", &model.lr),
             },
         ),
         capy.row(
-            .{ .expand = .Fill },
+            .{},
             .{
                 capy.label(.{ .text = "PC" }),
                 capy.textField(.{ .readOnly = true, .name = "pc_field" }).bind("text", &model.pc),
             },
         ),
         capy.row(
-            .{ .expand = .Fill },
+            .{},
             .{
                 capy.label(.{ .text = "SP" }),
                 capy.textField(.{ .readOnly = true, .name = "sp_field" }).bind("text", &model.sp),
             },
         ),
         capy.row(
-            .{ .expand = .Fill },
+            .{},
             .{
                 capy.label(.{ .text = "SR" }),
                 capy.textField(.{ .readOnly = true, .name = "sr_field" }).bind("text", &model.sr),
             },
         ),
         capy.row(
-            .{ .expand = .Fill },
+            .{},
             .{
                 capy.label(.{ .text = "Fault" }),
                 capy.textField(.{ .readOnly = true, .name = "fault_field" }).bind("text", &model.fault),
+                capy.label(.{ .name = "fault_label" }).bind("text", &model.fault_label),
             },
         ),
-        capy.row(.{ .expand = .Fill }, .{
+        capy.row(.{}, .{
             capy.button(.{ .label = "Execute", .onclick = executeInstruction }),
             capy.button(.{ .label = "Reset", .onclick = reset }),
         }),

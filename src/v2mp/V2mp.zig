@@ -110,6 +110,10 @@ pub fn faultArgsFromWord(fault_word: Word) InstructionArgField {
     return fault_word & instruction_arg_field_mask;
 }
 
+pub fn faultNameFromWord(fault_word: Word) [:0]const u8 {
+    return @tagName(faultCodeFromWord(fault_word));
+}
+
 pub fn instructionOpCodeFromWord(instruction: Word) Instruction {
     return @enumFromInt((instruction & instruction_opcode_field_mask) >> @bitSizeOf(InstructionArgField));
 }
