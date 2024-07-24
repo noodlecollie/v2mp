@@ -110,5 +110,7 @@ pub fn build(b: *std.Build) void {
     const v2mp_lib = addLibV2mp(builder_data);
     const debugger_exe = addV2mpDebugger(builder_data, v2mp_lib);
     addExecutableRunStep(builder_data, debugger_exe);
-    addUnitTestStep(builder_data);
+
+    // Don't need this yet:
+    //addUnitTestStep(builder_data);
 }

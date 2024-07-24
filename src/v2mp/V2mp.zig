@@ -7,9 +7,19 @@ pub const Byte = u8;
 
 // Because @sizeOf() may contain padding depending on the target being compiled for,
 // we do compile-time checks that our assumption is correct. I can't see any better
-// way right now. See tests/comptime.zig
+// way right now.
 pub const size_of_word: usize = 2;
 pub const size_of_byte: usize = 1;
+
+comptime {
+    if (@sizeOf(Word) != size_of_word) {
+        @compileError("Unexpected Word size on target platform");
+    }
+
+    if (@sizeOf(Byte) != size_of_byte) {
+        @compileError("Unexpected Byte size on target platform");
+    }
+}
 
 pub const InstructionField = u4;
 pub const InstructionArgField = u12;
