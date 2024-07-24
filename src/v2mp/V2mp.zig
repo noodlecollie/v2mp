@@ -1,8 +1,6 @@
 const std = @import("std");
-const cpu = @import("cpu.zig");
 
-// TODO: Move these defs into a different file so we can export them more logically.
-pub const Cpu = cpu.Cpu;
+pub const Cpu = @import("cpu.zig");
 
 pub const Word = u16;
 pub const Byte = u8;
