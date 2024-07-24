@@ -26,13 +26,13 @@ const ExecInstructionFn = *const fn (this: *Cpu) InstructionResult;
 
 fetch_callback: FetchInstructionFn,
 
-_pc: v2mp.Word = 0,
-_sr: v2mp.Word = 0,
-_lr: v2mp.Word = 0,
 _r0: v2mp.Word = 0,
 _r1: v2mp.Word = 0,
-_ir: v2mp.Word = 0,
+_lr: v2mp.Word = 0,
+_pc: v2mp.Word = 0,
 _sp: v2mp.Word = 0,
+_sr: v2mp.Word = 0,
+_ir: v2mp.Word = 0,
 _fault: v2mp.Word = @intFromEnum(v2mp.Fault.none),
 
 _exec_callbacks: [v2mp.max_instruction_opcodes]ExecInstructionFn = .{
@@ -63,12 +63,56 @@ pub fn getRegisterValue(this: *const Cpu, reg: v2mp.RegisterIndex) v2mp.Word {
     };
 }
 
+pub fn getR0(this: *const Cpu) v2mp.Word {
+    return this._r0;
+}
+
+pub fn getR1(this: *const Cpu) v2mp.Word {
+    return this._r1;
+}
+
+pub fn getLr(this: *const Cpu) v2mp.Word {
+    return this._lr;
+}
+
+pub fn getPc(this: *const Cpu) v2mp.Word {
+    return this._pc;
+}
+
+pub fn getSr(this: *const Cpu) v2mp.Word {
+    return this._sr;
+}
+
+pub fn getSp(this: *const Cpu) v2mp.Word {
+    return this._sp;
+}
+
+pub fn getIr(this: *const Cpu) v2mp.Word {
+    return this._ir;
+}
+
+pub fn getFault(this: *const Cpu) v2mp.Word {
+    return this._fault;
+}
+
+pub fn reset(this: *Cpu) void {
+    this._r0 = 0;
+    this._r1 = 0;
+    this._lr = 0;
+    this._pc = 0;
+    this._sp = 0;
+    this._sr = 0;
+    this._ir = 0;
+    this._fault = 0;
+}
+
 pub fn fetchDecodeExecute(this: *Cpu) void {
     if (this.fetch_callback(this._pc)) |instruction| {
         this._ir = instruction;
     } else |err| {
         this._fault = switch (err) {
             v2mp.InstructionFetchError.UnalignedMemoryAccess => v2mp.makeFaultWord(v2mp.Fault.algn, 0),
+            v2mp.InstructionFetchError.SegmentationFault => v2mp.makeFaultWord(v2mp.Fault.seg, 0),
         };
 
         return;

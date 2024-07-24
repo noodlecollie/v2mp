@@ -95,6 +95,7 @@ pub const StatusRegFlag = struct {
 
 pub const InstructionFetchError = error{
     UnalignedMemoryAccess,
+    SegmentationFault,
 };
 
 pub fn makeFaultWord(fault: Fault, args: InstructionArgField) Word {
