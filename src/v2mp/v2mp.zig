@@ -1,12 +1,17 @@
 const std = @import("std");
+const cpu = @import("cpu.zig");
+
+// TODO: Move these defs into a different file so we can export them more logically.
+pub const Cpu = cpu.Cpu;
 
 pub const Word = u16;
 pub const Byte = u8;
 
 // Because @sizeOf() may contain padding depending on the target being compiled for,
-// we don't use it here. Instead, this is an alias for a tedious builtin to have to
-// type out all the time.
-pub const size_of_word: usize = @TypeOf(Word).Int.bits / 8;
+// we do compile-time checks that our assumption is correct. I can't see any better
+// way right now. See tests/comptime.zig
+pub const size_of_word: usize = 2;
+pub const size_of_byte: usize = 1;
 
 pub const InstructionField = u4;
 pub const InstructionArgField = u12;
@@ -15,8 +20,9 @@ pub const SignalField = Word;
 pub const RegisterIndexField = u2;
 pub const BitwiseOpField = u2;
 
-pub const instruction_opcode_field_mask: Word = std.math.maxInt(Word) << @bitSizeOf(InstructionArgField);
+pub const instruction_opcode_field_mask: Word = @as(Word, std.math.maxInt(Word)) << @bitSizeOf(InstructionArgField);
 pub const instruction_arg_field_mask: Word = std.math.maxInt(Word) >> (@bitSizeOf(Word) - @bitSizeOf(InstructionArgField));
+pub const max_instruction_opcodes: usize = 1 << @bitSizeOf(InstructionField);
 
 pub const Instruction = enum(InstructionField) {
     nop = 0x0,
@@ -75,12 +81,16 @@ pub const BitwiseOp = enum(BitwiseOpField) {
 };
 
 pub const StatusRegFlag = struct {
-    const z: Word = 1 << 0;
-    const c: Word = 1 << 1;
+    pub const z: Word = 1 << 0;
+    pub const c: Word = 1 << 1;
+};
+
+pub const InstructionFetchError = error{
+    UnalignedMemoryAccess,
 };
 
 pub fn makeFaultWord(fault: Fault, args: InstructionArgField) Word {
-    return (@intFromEnum(fault) << @bitSizeOf(InstructionArgField)) | @intFromEnum(args);
+    return (@as(Word, @intFromEnum(fault)) << @bitSizeOf(InstructionArgField)) | @as(Word, args);
 }
 
 pub fn faultCodeFromWord(fault_word: Word) Fault {
@@ -97,4 +107,8 @@ pub fn instructionOpCodeFromWord(instruction: Word) Instruction {
 
 pub fn instructionArgsFromWord(instruction: Word) InstructionArgField {
     return instruction & instruction_arg_field_mask;
+}
+
+pub fn reservedBitsSet(instruction: Word, reserved_mask: Word) bool {
+    return instruction & (instruction_arg_field_mask & reserved_mask) != 0;
 }

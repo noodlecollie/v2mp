@@ -221,7 +221,7 @@ If instead the source `A` and destination `B` register identifiers are the same,
 
 Note that if the destination register is `PC`, the increment (either as a literal or from a register) is treated as the number of **words** to increment by, rather than the number of bytes. This is to avoid causing an address mis-alignment by setting `PC` to an odd value.
 
-If the add operation overflows the destination register, `SR[C]` is set; otherwise, it is cleared.
+If the add operation overflows the destination register, the value wraps around and `SR[C]` is set; otherwise, `SR[C]` is cleared.
 
 If the add operation results in a value of `0` in the destination register, `SR[Z]` is set; otherwise, it is cleared.
 
@@ -245,7 +245,7 @@ If instead the source `A` and destination `B` register identifiers are the same,
 
 Note that if the destination register is `PC`, the decrement (either as a literal or from a register) is treated as the number of **words** to decrement by, rather than the number of bytes. This is to avoid causing an address mis-alignment by setting `PC` to an odd value.
 
-If the subtraction operation underflows the destination register, `SR[C]` is set; otherwise, it is cleared.
+If the subtraction operation underflows the destination register, the value wraps around and `SR[C]` is set; otherwise, `SR[C]` is cleared.
 
 If the subtraction operation results in a value of `0` in the destination register, `SR[Z]` is set; otherwise, it is cleared.
 

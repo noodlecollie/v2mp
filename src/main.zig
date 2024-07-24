@@ -2,11 +2,31 @@
 
 const std = @import("std");
 const capy = @import("capy");
+const v2mp = @import("v2mp");
 
 pub usingnamespace capy.cross_platform;
 
+var cpu: v2mp.Cpu = .{ .fetch_callback = fetchInstruction };
+var instruction_text = capy.Atom([]const u8).of("unset");
+
+fn fetchInstruction(_: v2mp.Word) v2mp.InstructionFetchError!v2mp.Word {
+    const Static = struct {
+        var index: usize = 0;
+        const instructions: [3]v2mp.Word =
+            .{
+            0x0000,
+            0x1001,
+            0x2001,
+        };
+    };
+
+    const out = Static.instructions[Static.index];
+    Static.index = (Static.index + 1) % Static.instructions.len;
+    return out;
+}
+
 fn executeInstruction(_: *anyopaque) !void {
-    std.debug.print("Execute button pressed\n", .{});
+    cpu.fetchDecodeExecute();
 }
 
 pub fn main() !void {
@@ -54,11 +74,15 @@ pub fn main() !void {
             .{ .expand = .Fill },
             .{
                 capy.label(.{ .text = "Instruction" }),
-                capy.textField(.{ .name = "instruction_field" }),
+                capy.textField(.{ .name = "instruction_field" }).bind("text", &instruction_text),
             },
         ),
         capy.button(.{ .label = "Execute", .onclick = executeInstruction }),
     }));
+
+    var instruction_text_buffer: [8]u8 = undefined;
+    const printed = std.fmt.bufPrint(&instruction_text_buffer, "0x{X:0<4}", .{cpu._ir}) catch unreachable;
+    instruction_text.set(printed);
 
     window.setTitle("V2MP");
     window.setPreferredSize(800, 600);
