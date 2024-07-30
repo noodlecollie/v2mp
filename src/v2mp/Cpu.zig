@@ -1,17 +1,18 @@
 const std = @import("std");
-const v2mp = @import("v2mp.zig");
+const defs = @import("defs.zig");
+const utils = @import("utils.zig");
 const Cpu = @This();
 
 const InstructionResult = struct {
-    pc: ?v2mp.Word = null,
-    sr: ?v2mp.Word = null,
-    lr: ?v2mp.Word = null,
-    r0: ?v2mp.Word = null,
-    r1: ?v2mp.Word = null,
-    sp: ?v2mp.Word = null,
-    fault: ?v2mp.Fault = null,
+    pc: ?defs.Word = null,
+    sr: ?defs.Word = null,
+    lr: ?defs.Word = null,
+    r0: ?defs.Word = null,
+    r1: ?defs.Word = null,
+    sp: ?defs.Word = null,
+    fault: ?defs.Fault = null,
 
-    pub fn setRegisterValue(this: *InstructionResult, reg: v2mp.RegisterIndex, value: v2mp.Word) void {
+    pub fn setRegisterValue(this: *InstructionResult, reg: defs.RegisterIndex, value: defs.Word) void {
         switch (reg) {
             .r0 => this.r0 = value,
             .r1 => this.r1 = value,
@@ -21,21 +22,21 @@ const InstructionResult = struct {
     }
 };
 
-const FetchInstructionFn = *const fn (address: v2mp.Word) v2mp.InstructionFetchError!v2mp.Word;
+const FetchInstructionFn = *const fn (address: defs.Word) defs.InstructionFetchError!defs.Word;
 const ExecInstructionFn = *const fn (this: *Cpu) InstructionResult;
 
 fetch_callback: FetchInstructionFn,
 
-_r0: v2mp.Word = 0,
-_r1: v2mp.Word = 0,
-_lr: v2mp.Word = 0,
-_pc: v2mp.Word = 0,
-_sp: v2mp.Word = 0,
-_sr: v2mp.Word = 0,
-_ir: v2mp.Word = 0,
-_fault: v2mp.Word = @intFromEnum(v2mp.Fault.none),
+_r0: defs.Word = 0,
+_r1: defs.Word = 0,
+_lr: defs.Word = 0,
+_pc: defs.Word = 0,
+_sp: defs.Word = 0,
+_sr: defs.Word = 0,
+_ir: defs.Word = 0,
+_fault: defs.Word = @intFromEnum(defs.Fault.none),
 
-_exec_callbacks: [v2mp.max_instruction_opcodes]ExecInstructionFn = .{
+_exec_callbacks: [defs.max_instruction_opcodes]ExecInstructionFn = .{
     &executeNop, // 0x00
     &executeAdd, // 0x01
     &executeSub, // 0x02
@@ -54,7 +55,7 @@ _exec_callbacks: [v2mp.max_instruction_opcodes]ExecInstructionFn = .{
     &executeUnassigned,
 },
 
-pub fn getRegisterValue(this: *const Cpu, reg: v2mp.RegisterIndex) v2mp.Word {
+pub fn getRegisterValue(this: *const Cpu, reg: v2mp.RegisterIndex) defs.Word {
     return switch (reg) {
         .r0 => this._r0,
         .r1 => this._r1,
@@ -63,35 +64,35 @@ pub fn getRegisterValue(this: *const Cpu, reg: v2mp.RegisterIndex) v2mp.Word {
     };
 }
 
-pub fn getR0(this: *const Cpu) v2mp.Word {
+pub fn getR0(this: *const Cpu) defs.Word {
     return this._r0;
 }
 
-pub fn getR1(this: *const Cpu) v2mp.Word {
+pub fn getR1(this: *const Cpu) defs.Word {
     return this._r1;
 }
 
-pub fn getLr(this: *const Cpu) v2mp.Word {
+pub fn getLr(this: *const Cpu) defs.Word {
     return this._lr;
 }
 
-pub fn getPc(this: *const Cpu) v2mp.Word {
+pub fn getPc(this: *const Cpu) defs.Word {
     return this._pc;
 }
 
-pub fn getSr(this: *const Cpu) v2mp.Word {
+pub fn getSr(this: *const Cpu) defs.Word {
     return this._sr;
 }
 
-pub fn getSp(this: *const Cpu) v2mp.Word {
+pub fn getSp(this: *const Cpu) defs.Word {
     return this._sp;
 }
 
-pub fn getIr(this: *const Cpu) v2mp.Word {
+pub fn getIr(this: *const Cpu) defs.Word {
     return this._ir;
 }
 
-pub fn getFault(this: *const Cpu) v2mp.Word {
+pub fn getFault(this: *const Cpu) defs.Word {
     return this._fault;
 }
 
@@ -111,17 +112,17 @@ pub fn fetchDecodeExecute(this: *Cpu) void {
         this._ir = instruction;
     } else |err| {
         this._fault = switch (err) {
-            v2mp.InstructionFetchError.UnalignedMemoryAccess => v2mp.makeFaultWord(v2mp.Fault.algn, 0),
-            v2mp.InstructionFetchError.SegmentationFault => v2mp.makeFaultWord(v2mp.Fault.seg, 0),
+            defs.InstructionFetchError.UnalignedMemoryAccess => utils.makeFaultWord(defs.Fault.algn, 0),
+            defs.InstructionFetchError.SegmentationFault => utils.makeFaultWord(defs.Fault.seg, 0),
         };
 
         return;
     }
 
     // Increment PC now, as some instructions rely on it holding the next address
-    this._pc +%= @as(v2mp.Word, v2mp.size_of_word);
+    this._pc +%= @as(defs.Word, v2mp.size_of_word);
 
-    const instruction_op: usize = @intFromEnum(v2mp.instructionOpCodeFromWord(this._ir));
+    const instruction_op: usize = @intFromEnum(instructionOpCodeFromWord(this._ir));
     std.debug.assert(instruction_op <= this._exec_callbacks.len);
 
     const result = this._exec_callbacks[instruction_op](this);
@@ -129,11 +130,11 @@ pub fn fetchDecodeExecute(this: *Cpu) void {
 }
 
 fn acceptResult(this: *Cpu, result: InstructionResult) void {
-    const fault: v2mp.Fault = choose_fault: {
+    const fault: defs.Fault = choose_fault: {
         if (result.fault) |res_fault| {
             // If the instruction caused a fault, this should take precedence.
             break :choose_fault res_fault;
-        } else if (result.pc == null and this._pc -% @as(v2mp.Word, v2mp.size_of_word) > this._pc) {
+        } else if (result.pc == null and this._pc -% @as(defs.Word, defs.size_of_word) > this._pc) {
             // The instruction did not set the program counter, and the increment
             // that happened earlier caused an overflow. We should catch this case.
             break :choose_fault .seg;
@@ -153,7 +154,7 @@ fn acceptResult(this: *Cpu, result: InstructionResult) void {
 
 fn executeNop(this: *Cpu) InstructionResult {
     // NOP - Do nothing
-    return .{ .fault = this.faultIfReservedBitsSet(v2mp.instruction_arg_field_mask) };
+    return .{ .fault = this.faultIfReservedBitsSet(defs.instruction_arg_field_mask) };
 }
 
 fn executeAdd(this: *Cpu) InstructionResult {
@@ -166,21 +167,21 @@ fn executeSub(this: *Cpu) InstructionResult {
 
 fn executeAddOrSub(this: *Cpu, is_add: bool) InstructionResult {
     const Layout = struct {
-        pub fn sourceRegIndex(instr: v2mp.Word) v2mp.RegisterIndex {
+        pub fn sourceRegIndex(instr: defs.Word) defs.RegisterIndex {
             return @enumFromInt((instr & 0x0C00) >> 10);
         }
 
-        pub fn destRegIndex(instr: v2mp.Word) v2mp.RegisterIndex {
+        pub fn destRegIndex(instr: defs.Word) defs.RegisterIndex {
             return @enumFromInt((instr & 0x0300) >> 8);
         }
 
-        pub fn value(instr: v2mp.Word) v2mp.Word {
+        pub fn value(instr: defs.Word) defs.Word {
             return instr & 0x00FF;
         }
     };
 
     const Result = struct {
-        value: v2mp.Word,
+        value: defs.Word,
         overflowed: bool,
     };
 
@@ -193,27 +194,27 @@ fn executeAddOrSub(this: *Cpu, is_add: bool) InstructionResult {
         return .{ .fault = .res };
     }
 
-    const stride: v2mp.Word = if (dest_reg == .pc) v2mp.size_of_word else v2mp.size_of_byte;
-    const value: v2mp.Word = if (src_reg != dest_reg) this.getRegisterValue(src_reg) else Layout.value(this._ir);
+    const stride: defs.Word = if (dest_reg == .pc) defs.size_of_word else defs.size_of_byte;
+    const value: defs.Word = if (src_reg != dest_reg) this.getRegisterValue(src_reg) else Layout.value(this._ir);
 
     const op_result: Result = compute: {
         if (is_add) {
-            const result_value: v2mp.Word = value +% (stride * value);
+            const result_value: defs.Word = value +% (stride * value);
             break :compute .{ .value = result_value, .overflowed = result_value < this.getRegisterValue(dest_reg) };
         } else {
-            const result_value: v2mp.Word = value -% (stride * value);
+            const result_value: defs.Word = value -% (stride * value);
             break :compute .{ .value = result_value, .overflowed = result_value > this.getRegisterValue(dest_reg) };
         }
     };
 
-    var sr: v2mp.Word = 0;
+    var sr: defs.Word = 0;
 
     if (op_result.overflowed) {
-        sr |= v2mp.StatusRegFlag.c;
+        sr |= defs.StatusRegFlag.c;
     }
 
     if (op_result.value == 0) {
-        sr |= v2mp.StatusRegFlag.z;
+        sr |= defs.StatusRegFlag.z;
     }
 
     var result: InstructionResult = .{ .sr = sr };
@@ -226,6 +227,6 @@ fn executeUnassigned(_: *Cpu) InstructionResult {
     return .{ .fault = .ini };
 }
 
-fn faultIfReservedBitsSet(this: *const Cpu, reserved_mask: v2mp.Word) v2mp.Fault {
-    return if (v2mp.reservedBitsSet(this._ir, reserved_mask)) .res else .none;
+fn faultIfReservedBitsSet(this: *const Cpu, reserved_mask: defs.Word) defs.Fault {
+    return if (utils.reservedBitsSet(this._ir, reserved_mask)) .res else .none;
 }
