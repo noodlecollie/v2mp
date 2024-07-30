@@ -55,7 +55,7 @@ _exec_callbacks: [defs.max_instruction_opcodes]ExecInstructionFn = .{
     &executeUnassigned,
 },
 
-pub fn getRegisterValue(this: *const Cpu, reg: v2mp.RegisterIndex) defs.Word {
+pub fn getRegisterValue(this: *const Cpu, reg: defs.RegisterIndex) defs.Word {
     return switch (reg) {
         .r0 => this._r0,
         .r1 => this._r1,
@@ -120,9 +120,9 @@ pub fn fetchDecodeExecute(this: *Cpu) void {
     }
 
     // Increment PC now, as some instructions rely on it holding the next address
-    this._pc +%= @as(defs.Word, v2mp.size_of_word);
+    this._pc +%= @as(defs.Word, defs.size_of_word);
 
-    const instruction_op: usize = @intFromEnum(instructionOpCodeFromWord(this._ir));
+    const instruction_op: usize = @intFromEnum(utils.instructionOpCodeFromWord(this._ir));
     std.debug.assert(instruction_op <= this._exec_callbacks.len);
 
     const result = this._exec_callbacks[instruction_op](this);

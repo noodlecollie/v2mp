@@ -18,7 +18,7 @@ const Model = struct {
     fault: TextAtom = TextAtom.of(""),
     fault_label: TextAtom = TextAtom.of(""),
 
-    pub fn updateFromWord(field: *TextAtom, value: v2mp.Word) void {
+    pub fn updateFromWord(field: *TextAtom, value: v2mp.defs.Word) void {
         var text_buffer: [8]u8 = undefined;
         const printed = std.fmt.bufPrint(&text_buffer, "0x{X:0<4}", .{value}) catch unreachable;
         field.set(printed);
@@ -28,22 +28,22 @@ const Model = struct {
 var cpu: v2mp.Cpu = .{ .fetch_callback = fetchInstruction };
 var model: Model = .{};
 
-fn fetchInstruction(address: v2mp.Word) v2mp.InstructionFetchError!v2mp.Word {
-    const instructions: [3]v2mp.Word =
+fn fetchInstruction(address: v2mp.defs.Word) v2mp.defs.InstructionFetchError!v2mp.defs.Word {
+    const instructions: [3]v2mp.defs.Word =
         .{
         0x0000,
         0x1001,
         0x2001,
     };
 
-    if (address % v2mp.size_of_word != 0) {
-        return v2mp.InstructionFetchError.UnalignedMemoryAccess;
+    if (address % v2mp.defs.size_of_word != 0) {
+        return v2mp.defs.InstructionFetchError.UnalignedMemoryAccess;
     }
 
-    const index = address / v2mp.size_of_word;
+    const index = address / v2mp.defs.size_of_word;
 
     if (index >= instructions.len) {
-        return v2mp.InstructionFetchError.SegmentationFault;
+        return v2mp.defs.InstructionFetchError.SegmentationFault;
     }
 
     return instructions[index];
@@ -69,7 +69,7 @@ fn updateModel() void {
     Model.updateFromWord(&model.ir, cpu.getIr());
     Model.updateFromWord(&model.fault, cpu.getFault());
 
-    model.fault_label.set(v2mp.faultNameFromWord(cpu.getFault()));
+    model.fault_label.set(v2mp.utils.faultNameFromWord(cpu.getFault()));
 }
 
 pub fn main() !void {
