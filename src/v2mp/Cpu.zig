@@ -22,6 +22,34 @@ const InstructionResult = struct {
     }
 };
 
+const MulDivLayout = struct {
+    pub const mask_resbits: defs.Word = 0x0100;
+
+    pub fn destRegIndex(instr: defs.Word) defs.RegisterIndex {
+        const mask_dest_reg_is_r1: defs.Word = 0x0800;
+        return if ((instr & mask_dest_reg_is_r1) != 0) .r1 else .r0;
+    }
+
+    pub fn sourceIsStatic(instr: defs.Word) bool {
+        const mask_static: defs.Word = 0x0400;
+        return (instr & mask_static) != 0;
+    }
+
+    pub fn isSigned(instr: defs.Word) bool {
+        const mask_signed: defs.Word = 0x0200;
+        return (instr & mask_signed) != 0;
+    }
+
+    pub fn unsignedValue(instr: defs.Word) u8 {
+        const mask_value: defs.Word = 0x00FF;
+        return @truncate(instr & mask_value);
+    }
+
+    pub fn signedValue(instr: defs.Word) i8 {
+        return @bitCast(unsignedValue(instr));
+    }
+};
+
 const FetchInstructionFn = *const fn (address: defs.Word) defs.InstructionFetchError!defs.Word;
 const ExecInstructionFn = *const fn (this: *const Cpu) InstructionResult;
 
@@ -40,8 +68,8 @@ _exec_callbacks: [defs.max_instruction_opcodes]ExecInstructionFn = .{
     &executeNop, // 0x00
     &executeAdd, // 0x01
     &executeSub, // 0x02
-    &executeUnassigned,
-    &executeUnassigned,
+    &executeMul, // 0x03
+    &executeDiv, // 0x04
     &executeUnassigned,
     &executeUnassigned,
     &executeUnassigned,
@@ -227,77 +255,32 @@ fn executeAddOrSub(this: *const Cpu, is_add: bool) InstructionResult {
 }
 
 fn executeMul(this: *const Cpu) InstructionResult {
-    const Layout = struct {
-        pub const mask_resbits: defs.Word = 0x0100;
-
-        pub fn destRegIndex(instr: defs.Word) defs.RegisterIndex {
-            const mask_dest_reg_is_r1: defs.Word = 0x0800;
-            return if ((instr & mask_dest_reg_is_r1) != 0) .r1 else .r0;
-        }
-
-        pub fn sourceIsStatic(instr: defs.Word) bool {
-            const mask_static: defs.Word = 0x0400;
-            return (instr & mask_static) != 0;
-        }
-
-        pub fn isSigned(instr: defs.Word) bool {
-            const mask_signed: defs.Word = 0x0200;
-            return (instr & mask_signed) != 0;
-        }
-
-        pub fn unsignedValue(instr: defs.Word) u8 {
-            const mask_value: defs.Word = 0x00FF;
-            return @as(u8, instr & mask_value);
-        }
-
-        pub fn signedValue(instr: defs.Word) i8 {
-            return @bitCast(unsignedValue(instr));
-        }
-    };
-
     const Result = struct {
         upper: defs.Word,
         lower: defs.Word,
         overflowed: bool,
     };
 
-    if (utils.reservedBitsSet(this._ir, Layout.mask_resbits)) {
+    if (utils.reservedBitsSet(this._ir, MulDivLayout.mask_resbits)) {
         return .{ .fault = .res };
     }
 
-    const dest_reg: defs.RegisterIndex = Layout.destRegIndex(this._ir);
-
-    const src_value: defs.Word = choose_value: {
-        if (!Layout.sourceIsStatic(this._ir)) {
-            // We take the value from a register.
-            break :choose_value this.getRegisterValue(if (dest_reg == .r1) .r0 else .r1);
-        }
-
-        // Otherwise, we take the value from the instruction word.
-        if (Layout.isSigned(this._ir)) {
-            // Make absolutely sure that the value is a 16-bit signed
-            // type, then cast it back to an opaque word.
-            const signed_value: i8 = Layout.signedValue(this._ir);
-            const wide_signed_value: i16 = signed_value;
-            break :choose_value @bitCast(wide_signed_value);
-        } else {
-            break :choose_value @as(defs.Word, Layout.unsignedValue(this._ir));
-        }
-    };
+    const dest_reg: defs.RegisterIndex = MulDivLayout.destRegIndex(this._ir);
+    const src_value: defs.Word = this.getMulDivSourceValue(dest_reg);
 
     const op_result: Result = compute: {
-        if (Layout.isSigned(this._ir)) {
+        if (MulDivLayout.isSigned(this._ir)) {
             const result: i32 = @as(i32, src_value) * @as(i32, this.getRegisterValue(dest_reg));
             const unsigned_result: u32 = @bitCast(result);
             const overflowed: bool = if (result > 0) result > std.math.maxInt(i16) else result < std.math.minInt(i16);
-            const upper: defs.Word = @bitCast((unsigned_result & 0xFFFF0000) >> 16);
-            const lower: defs.Word = @bitCast(unsigned_result & 0x0000FFFF);
+            const upper: defs.Word = @truncate((unsigned_result & 0xFFFF0000) >> 16);
+            const lower: defs.Word = @truncate(unsigned_result & 0x0000FFFF);
 
             break :compute .{ .upper = upper, .lower = lower, .overflowed = overflowed };
         } else {
             const result: u32 = @as(u32, src_value) * @as(u32, this.getRegisterValue(dest_reg));
-            const upper: defs.Word = @bitCast((result & 0xFFFF0000) >> 16);
-            const lower: defs.Word = @bitCast(result & 0x0000FFFF);
+            const upper: defs.Word = @truncate((result & 0xFFFF0000) >> 16);
+            const lower: defs.Word = @truncate(result & 0x0000FFFF);
             const overflowed = upper != 0;
 
             break :compute .{ .upper = upper, .lower = lower, .overflowed = overflowed };
@@ -320,10 +303,76 @@ fn executeMul(this: *const Cpu) InstructionResult {
     return result;
 }
 
+fn executeDiv(this: *const Cpu) InstructionResult {
+    const Result = struct {
+        upper: defs.Word,
+        lower: defs.Word,
+    };
+
+    if (utils.reservedBitsSet(this._ir, MulDivLayout.mask_resbits)) {
+        return .{ .fault = .res };
+    }
+
+    const dest_reg: defs.RegisterIndex = MulDivLayout.destRegIndex(this._ir);
+    const src_value: defs.Word = this.getMulDivSourceValue(dest_reg);
+
+    // Make sure we don't divide by zero!
+    if (src_value == 0) {
+        return .{ .fault = .div };
+    }
+
+    const op_result: Result = compute: {
+        if (MulDivLayout.isSigned(this._ir)) {
+            const signed_dest_value: i16 = @bitCast(this.getRegisterValue(dest_reg));
+            const signed_src_value: i16 = @bitCast(src_value);
+            const lower: defs.Word = @bitCast(@rem(signed_dest_value, signed_src_value));
+            const upper: defs.Word = @bitCast(@divTrunc(signed_dest_value, signed_src_value));
+
+            break :compute .{ .upper = upper, .lower = lower };
+        } else {
+            const dest_value: defs.Word = this.getRegisterValue(dest_reg);
+            break :compute .{ .upper = dest_value % src_value, .lower = dest_value / src_value };
+        }
+    };
+
+    var sr: defs.Word = 0;
+
+    if (op_result.upper != 0) {
+        sr |= defs.StatusRegFlag.c;
+    }
+
+    if (op_result.lower == 0) {
+        sr |= defs.StatusRegFlag.z;
+    }
+
+    var result: InstructionResult = .{ .sr = sr, .lr = op_result.upper };
+    result.setRegisterValue(dest_reg, op_result.lower);
+
+    return result;
+}
+
 fn executeUnassigned(_: *const Cpu) InstructionResult {
     return .{ .fault = .ini };
 }
 
 fn faultIfReservedBitsSet(this: *const Cpu, reserved_mask: defs.Word) defs.Fault {
     return if (utils.reservedBitsSet(this._ir, reserved_mask)) .res else .none;
+}
+
+fn getMulDivSourceValue(this: *const Cpu, dest_reg: defs.RegisterIndex) defs.Word {
+    if (!MulDivLayout.sourceIsStatic(this._ir)) {
+        // We take the value from a register.
+        return this.getRegisterValue(if (dest_reg == .r1) .r0 else .r1);
+    }
+
+    // Otherwise, we take the value from the instruction word.
+    if (MulDivLayout.isSigned(this._ir)) {
+        // Make absolutely sure that the value is a 16-bit signed
+        // type, then cast it back to an opaque word.
+        const signed_value: i8 = MulDivLayout.signedValue(this._ir);
+        const wide_signed_value: i16 = signed_value;
+        return @bitCast(wide_signed_value);
+    } else {
+        return @as(defs.Word, MulDivLayout.unsignedValue(this._ir));
+    }
 }
