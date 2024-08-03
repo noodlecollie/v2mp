@@ -23,7 +23,7 @@ const InstructionResult = struct {
 };
 
 const FetchInstructionFn = *const fn (address: defs.Word) defs.InstructionFetchError!defs.Word;
-const ExecInstructionFn = *const fn (this: *Cpu) InstructionResult;
+const ExecInstructionFn = *const fn (this: *const Cpu) InstructionResult;
 
 fetch_callback: FetchInstructionFn,
 
@@ -152,31 +152,34 @@ fn acceptResult(this: *Cpu, result: InstructionResult) void {
     this._fault = @intFromEnum(fault);
 }
 
-fn executeNop(this: *Cpu) InstructionResult {
+fn executeNop(this: *const Cpu) InstructionResult {
     // NOP - Do nothing
     return .{ .fault = this.faultIfReservedBitsSet(defs.instruction_arg_field_mask) };
 }
 
-fn executeAdd(this: *Cpu) InstructionResult {
+fn executeAdd(this: *const Cpu) InstructionResult {
     return executeAddOrSub(this, true);
 }
 
-fn executeSub(this: *Cpu) InstructionResult {
+fn executeSub(this: *const Cpu) InstructionResult {
     return executeAddOrSub(this, false);
 }
 
-fn executeAddOrSub(this: *Cpu, is_add: bool) InstructionResult {
+fn executeAddOrSub(this: *const Cpu, is_add: bool) InstructionResult {
     const Layout = struct {
         pub fn sourceRegIndex(instr: defs.Word) defs.RegisterIndex {
-            return @enumFromInt((instr & 0x0C00) >> 10);
+            const mask_source_reg_index: defs.Word = 0x0C00;
+            return @enumFromInt((instr & mask_source_reg_index) >> 10);
         }
 
         pub fn destRegIndex(instr: defs.Word) defs.RegisterIndex {
-            return @enumFromInt((instr & 0x0300) >> 8);
+            const mask_dest_reg_index: defs.Word = 0x0300;
+            return @enumFromInt((instr & mask_dest_reg_index) >> 8);
         }
 
         pub fn value(instr: defs.Word) defs.Word {
-            return instr & 0x00FF;
+            const mask_value: defs.Word = 0x00FF;
+            return instr & mask_value;
         }
     };
 
@@ -223,7 +226,101 @@ fn executeAddOrSub(this: *Cpu, is_add: bool) InstructionResult {
     return result;
 }
 
-fn executeUnassigned(_: *Cpu) InstructionResult {
+fn executeMul(this: *const Cpu) InstructionResult {
+    const Layout = struct {
+        pub const mask_resbits: defs.Word = 0x0100;
+
+        pub fn destRegIndex(instr: defs.Word) defs.RegisterIndex {
+            const mask_dest_reg_is_r1: defs.Word = 0x0800;
+            return if ((instr & mask_dest_reg_is_r1) != 0) .r1 else .r0;
+        }
+
+        pub fn sourceIsStatic(instr: defs.Word) bool {
+            const mask_static: defs.Word = 0x0400;
+            return (instr & mask_static) != 0;
+        }
+
+        pub fn isSigned(instr: defs.Word) bool {
+            const mask_signed: defs.Word = 0x0200;
+            return (instr & mask_signed) != 0;
+        }
+
+        pub fn unsignedValue(instr: defs.Word) u8 {
+            const mask_value: defs.Word = 0x00FF;
+            return @as(u8, instr & mask_value);
+        }
+
+        pub fn signedValue(instr: defs.Word) i8 {
+            return @bitCast(unsignedValue(instr));
+        }
+    };
+
+    const Result = struct {
+        upper: defs.Word,
+        lower: defs.Word,
+        overflowed: bool,
+    };
+
+    if (utils.reservedBitsSet(this._ir, Layout.mask_resbits)) {
+        return .{ .fault = .res };
+    }
+
+    const dest_reg: defs.RegisterIndex = Layout.destRegIndex(this._ir);
+
+    const src_value: defs.Word = choose_value: {
+        if (!Layout.sourceIsStatic(this._ir)) {
+            // We take the value from a register.
+            break :choose_value this.getRegisterValue(if (dest_reg == .r1) .r0 else .r1);
+        }
+
+        // Otherwise, we take the value from the instruction word.
+        if (Layout.isSigned(this._ir)) {
+            // Make absolutely sure that the value is a 16-bit signed
+            // type, then cast it back to an opaque word.
+            const signed_value: i8 = Layout.signedValue(this._ir);
+            const wide_signed_value: i16 = signed_value;
+            break :choose_value @bitCast(wide_signed_value);
+        } else {
+            break :choose_value @as(defs.Word, Layout.unsignedValue(this._ir));
+        }
+    };
+
+    const op_result: Result = compute: {
+        if (Layout.isSigned(this._ir)) {
+            const result: i32 = @as(i32, src_value) * @as(i32, this.getRegisterValue(dest_reg));
+            const unsigned_result: u32 = @bitCast(result);
+            const overflowed: bool = if (result > 0) result > std.math.maxInt(i16) else result < std.math.minInt(i16);
+            const upper: defs.Word = @bitCast((unsigned_result & 0xFFFF0000) >> 16);
+            const lower: defs.Word = @bitCast(unsigned_result & 0x0000FFFF);
+
+            break :compute .{ .upper = upper, .lower = lower, .overflowed = overflowed };
+        } else {
+            const result: u32 = @as(u32, src_value) * @as(u32, this.getRegisterValue(dest_reg));
+            const upper: defs.Word = @bitCast((result & 0xFFFF0000) >> 16);
+            const lower: defs.Word = @bitCast(result & 0x0000FFFF);
+            const overflowed = upper != 0;
+
+            break :compute .{ .upper = upper, .lower = lower, .overflowed = overflowed };
+        }
+    };
+
+    var sr: defs.Word = 0;
+
+    if (op_result.overflowed) {
+        sr |= defs.StatusRegFlag.c;
+    }
+
+    if (op_result.upper == 0 and op_result.lower == 0) {
+        sr |= defs.StatusRegFlag.z;
+    }
+
+    var result: InstructionResult = .{ .sr = sr, .lr = op_result.upper };
+    result.setRegisterValue(dest_reg, op_result.lower);
+
+    return result;
+}
+
+fn executeUnassigned(_: *const Cpu) InstructionResult {
     return .{ .fault = .ini };
 }
 
