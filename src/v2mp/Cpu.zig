@@ -71,7 +71,7 @@ _exec_callbacks: [defs.max_instruction_opcodes]ExecInstructionFn = .{
     &executeMul, // 0x03
     &executeDiv, // 0x04
     &executeAsgn, // 0x05
-    &executeUnassigned, // 0x06
+    &executeShft, // 0x06
     &executeUnassigned, // 0x07
     &executeUnassigned, // 0x08
     &executeUnassigned, // 0x09
@@ -391,6 +391,102 @@ fn executeAsgn(this: *const Cpu) InstructionResult {
 
     var result: InstructionResult = .{ .sr = sr };
     result.setRegisterValue(dest_reg, value);
+
+    return result;
+}
+
+fn executeShft(this: *const Cpu) InstructionResult {
+    const Layout = struct {
+        pub const mask_resbits: defs.Word = 0x00E0;
+
+        pub fn sourceRegIndex(instr: defs.Word) defs.RegisterIndex {
+            const mask_source_reg_index: defs.Word = 0x0C00;
+            return @enumFromInt((instr & mask_source_reg_index) >> 10);
+        }
+
+        pub fn destRegIndex(instr: defs.Word) defs.RegisterIndex {
+            const mask_dest_reg_index: defs.Word = 0x0300;
+            return @enumFromInt((instr & mask_dest_reg_index) >> 8);
+        }
+
+        pub fn value(instr: defs.Word) i5 {
+            const masked_value: u5 = @truncate(instr & 0x001F);
+            return @bitCast(masked_value);
+        }
+    };
+
+    if (utils.reservedBitsSet(this._ir, Layout.mask_resbits)) {
+        return .{ .fault = .res };
+    }
+
+    const src_reg = Layout.sourceRegIndex(this._ir);
+    const dest_reg = Layout.destRegIndex(this._ir);
+
+    const signed_shift_value: i5 = get_signed_shift_value: {
+        if (src_reg == dest_reg) {
+            break :get_signed_shift_value Layout.value(this._ir);
+        } else {
+            const reg_value: u5 = @truncate(this.getRegisterValue(src_reg));
+            break :get_signed_shift_value @bitCast(reg_value);
+        }
+    };
+
+    if (src_reg != dest_reg and signed_shift_value != 0) {
+        return .{ .fault = .res };
+    }
+
+    const dest_reg_value: defs.Word = this.getRegisterValue(dest_reg);
+
+    const shifted_value: defs.Word = do_shift: {
+        if (signed_shift_value > 0) {
+            const truncated_signed_shift_value: i4 = @truncate(signed_shift_value);
+            const unsigned_shift_value: u4 = @bitCast(truncated_signed_shift_value);
+            break :do_shift dest_reg_value << unsigned_shift_value;
+        } else if (signed_shift_value < 0) {
+            const truncated_signed_shift_value: i4 = @truncate(-1 * signed_shift_value);
+            const unsigned_shift_value: u4 = @bitCast(truncated_signed_shift_value);
+            break :do_shift dest_reg_value >> unsigned_shift_value;
+        } else {
+            break :do_shift dest_reg_value;
+        }
+    };
+
+    // To check whether any bits got shifted off the end,
+    // we can mask the original value with the span of bits
+    // that did get shifted off the end. If the intersection
+    // of these two values is not zero, bits in the register
+    // were shifted off the end.
+    // This block is done in very specific steps because
+    // the Zig compiler is incredibly pedantic about bit
+    // casts and the magnitude of shift operations.
+    const shifted_off_end: bool = check_shift: {
+        if (signed_shift_value > 0) {
+            const magnitude: u5 = @bitCast(signed_shift_value);
+            const all_ones: defs.Word = 0xFFFF;
+            const check_mask: defs.Word = all_ones << @truncate(16 - magnitude);
+            break :check_shift (dest_reg_value & check_mask) != 0;
+        } else if (signed_shift_value < 0) {
+            const magnitude: u5 = @bitCast(-1 * signed_shift_value);
+            const all_ones: defs.Word = 0xFFFF;
+            const check_mask = all_ones >> @truncate(16 - magnitude);
+            break :check_shift (dest_reg_value & check_mask) != 0;
+        } else {
+            break :check_shift false;
+        }
+    };
+
+    var sr: defs.Word = 0;
+
+    if (shifted_off_end) {
+        sr |= defs.StatusRegFlag.c;
+    }
+
+    if (shifted_value == 0) {
+        sr |= defs.StatusRegFlag.z;
+    }
+
+    var result: InstructionResult = .{ .sr = sr };
+    result.setRegisterValue(dest_reg, shifted_value);
 
     return result;
 }
