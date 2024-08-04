@@ -70,17 +70,17 @@ _exec_callbacks: [defs.max_instruction_opcodes]ExecInstructionFn = .{
     &executeSub, // 0x02
     &executeMul, // 0x03
     &executeDiv, // 0x04
-    &executeUnassigned,
-    &executeUnassigned,
-    &executeUnassigned,
-    &executeUnassigned,
-    &executeUnassigned,
-    &executeUnassigned,
-    &executeUnassigned,
-    &executeUnassigned,
-    &executeUnassigned,
-    &executeUnassigned,
-    &executeUnassigned,
+    &executeAsgn, // 0x05
+    &executeUnassigned, // 0x06
+    &executeUnassigned, // 0x07
+    &executeUnassigned, // 0x08
+    &executeUnassigned, // 0x09
+    &executeUnassigned, // 0x0a
+    &executeUnassigned, // 0x0b
+    &executeUnassigned, // 0x0c
+    &executeUnassigned, // 0x0d
+    &executeUnassigned, // 0x0e
+    &executeUnassigned, // 0x0f
 },
 
 pub fn getRegisterValue(this: *const Cpu, reg: defs.RegisterIndex) defs.Word {
@@ -347,6 +347,50 @@ fn executeDiv(this: *const Cpu) InstructionResult {
 
     var result: InstructionResult = .{ .sr = sr, .lr = op_result.upper };
     result.setRegisterValue(dest_reg, op_result.lower);
+
+    return result;
+}
+
+fn executeAsgn(this: *const Cpu) InstructionResult {
+    const Layout = struct {
+        pub fn sourceRegIndex(instr: defs.Word) defs.RegisterIndex {
+            const mask_source_reg_index: defs.Word = 0x0C00;
+            return @enumFromInt((instr & mask_source_reg_index) >> 10);
+        }
+
+        pub fn destRegIndex(instr: defs.Word) defs.RegisterIndex {
+            const mask_dest_reg_index: defs.Word = 0x0300;
+            return @enumFromInt((instr & mask_dest_reg_index) >> 8);
+        }
+
+        pub fn value(instr: defs.Word) defs.Word {
+            const mask_value: defs.Word = 0x00FF;
+            return instr & mask_value;
+        }
+    };
+
+    const src_reg = Layout.sourceRegIndex(this._ir);
+    const dest_reg = Layout.destRegIndex(this._ir);
+    const value = if (src_reg == dest_reg) Layout.value(this._ir) else this.getRegisterValue(src_reg);
+
+    if (src_reg != dest_reg and value != 0) {
+        return .{ .fault = .res };
+    }
+
+    // Don't allow assigning to PC via an instruction literal,
+    // since the range of the literal is too small to be useful.
+    // We return a RES fault here since this combination of bits
+    // could potentially be useful in the future for some other
+    // operation, so we don't want to allow people to rely
+    // on it for anything right now.
+    if (src_reg == dest_reg and dest_reg == .pc) {
+        return .{ .fault = .res };
+    }
+
+    const sr: defs.Word = if (value == 0) defs.StatusRegFlag.z else 0;
+
+    var result: InstructionResult = .{ .sr = sr };
+    result.setRegisterValue(dest_reg, value);
 
     return result;
 }
