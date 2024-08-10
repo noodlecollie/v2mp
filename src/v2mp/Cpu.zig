@@ -73,7 +73,7 @@ _exec_callbacks: [defs.max_instruction_opcodes]ExecInstructionFn = .{
     &executeAsgn, // 0x05
     &executeShft, // 0x06
     &executeBitw, // 0x07
-    &executeUnassigned, // 0x08
+    &executeCbx, // 0x08
     &executeUnassigned, // 0x09
     &executeUnassigned, // 0x0a
     &executeUnassigned, // 0x0b
@@ -574,6 +574,57 @@ fn executeBitw(this: *const Cpu) InstructionResult {
     result.setRegisterValue(dest_reg, op_result);
 
     return result;
+}
+
+fn executeCbx(this: *const Cpu) InstructionResult {
+    const Layout = struct {
+        pub const mask_resbits: defs.Word = 0x0300;
+
+        pub fn lrIsTarget(instr: defs.Word) bool {
+            const mask_lr_is_target: defs.Word = 0x0800;
+            return (instr & mask_lr_is_target) != 0;
+        }
+
+        pub fn branchOnSrZ(instr: defs.Word) bool {
+            const mask_branch_on_sr_z: defs.Word = 0x0400;
+            return (instr & mask_branch_on_sr_z) == 0;
+        }
+
+        pub fn branchOnSrC(instr: defs.Word) bool {
+            return !branchOnSrZ(instr);
+        }
+
+        pub fn offset(instr: defs.Word) u8 {
+            // Masking is technically redundant here since we
+            // just truncate the high bits, but it makes the
+            // intent clearer.
+            const mask_offset: defs.Word = 0x00FF;
+            return @truncate(instr & mask_offset);
+        }
+    };
+
+    if (utils.reservedBitsSet(this._ir, Layout.mask_resbits)) {
+        return .{ .fault = .res };
+    }
+
+    if (Layout.lrIsTarget(this._ir) and Layout.offset(this._ir) != 0) {
+        return .{ .fault = .res };
+    }
+
+    const should_branch: bool = //
+        (Layout.branchOnSrZ(this._ir) and (this._sr & defs.StatusRegFlag.z) != 0) or //
+        (Layout.branchOnSrC(this._ir) and (this._sr & defs.StatusRegFlag.c) != 0);
+
+    if (should_branch) {
+        if (Layout.lrIsTarget(this._ir)) {
+            return .{ .sr = 0, .pc = this.getLr() };
+        } else {
+            const pc_offset: defs.Word = @as(u8, defs.size_of_word) * Layout.offset(this._ir);
+            return .{ .sr = 0, .pc = this.getPc() +% pc_offset };
+        }
+    }
+
+    return .{ .sr = defs.StatusRegFlag.z };
 }
 
 fn executeUnassigned(_: *const Cpu) InstructionResult {
