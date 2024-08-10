@@ -72,7 +72,7 @@ _exec_callbacks: [defs.max_instruction_opcodes]ExecInstructionFn = .{
     &executeDiv, // 0x04
     &executeAsgn, // 0x05
     &executeShft, // 0x06
-    &executeUnassigned, // 0x07
+    &executeBitw, // 0x07
     &executeUnassigned, // 0x08
     &executeUnassigned, // 0x09
     &executeUnassigned, // 0x0a
@@ -487,6 +487,91 @@ fn executeShft(this: *const Cpu) InstructionResult {
 
     var result: InstructionResult = .{ .sr = sr };
     result.setRegisterValue(dest_reg, shifted_value);
+
+    return result;
+}
+
+fn executeBitw(this: *const Cpu) InstructionResult {
+    const Layout = struct {
+        pub const mask_resbits: defs.Word = 0x0010;
+
+        pub fn sourceRegIndex(instr: defs.Word) defs.RegisterIndex {
+            const mask_source_reg_index: defs.Word = 0x0C00;
+            return @enumFromInt((instr & mask_source_reg_index) >> 10);
+        }
+
+        pub fn destRegIndex(instr: defs.Word) defs.RegisterIndex {
+            const mask_dest_reg_index: defs.Word = 0x0300;
+            return @enumFromInt((instr & mask_dest_reg_index) >> 8);
+        }
+
+        pub fn operationType(instr: defs.Word) defs.BitwiseOp {
+            const mask_operation_type: defs.Word = 0x00C0;
+            return @enumFromInt((instr & mask_operation_type) >> 6);
+        }
+
+        pub fn shouldFlipMask(instr: defs.Word) bool {
+            const mask_flip: defs.Word = 0x0020;
+            return (instr & mask_flip) != 0;
+        }
+
+        pub fn maskShift(instr: defs.Word) u4 {
+            // Masking is technically redundant here since we
+            // just truncate the high bits, but it makes the
+            // intent clearer.
+            const mask_shift: defs.Word = 0x000F;
+            return @truncate(instr & mask_shift);
+        }
+    };
+
+    if (utils.reservedBitsSet(this._ir, Layout.mask_resbits)) {
+        return .{ .fault = .res };
+    }
+
+    const src_reg: defs.RegisterIndex = Layout.sourceRegIndex(this._ir);
+    const dest_reg: defs.RegisterIndex = Layout.destRegIndex(this._ir);
+    const flip_or_shift_set: bool = Layout.maskShift(this._ir) != 0 or Layout.shouldFlipMask(this._ir);
+
+    const reserved_bits_set: bool = //
+        (src_reg != dest_reg and flip_or_shift_set) or //
+        (src_reg == dest_reg and Layout.operationType(this._ir) == .bit_not and flip_or_shift_set);
+
+    if (reserved_bits_set) {
+        return .{ .fault = .res };
+    }
+
+    const bitmask: defs.Word = create_bitmask: {
+        if (src_reg != dest_reg) {
+            break :create_bitmask this.getRegisterValue(src_reg);
+        } else {
+            const mask_shift: u4 = Layout.maskShift(this._ir);
+            const initial_bit: defs.Word = 1;
+
+            if (Layout.shouldFlipMask(this._ir)) {
+                break :create_bitmask ~(initial_bit << mask_shift);
+            } else {
+                break :create_bitmask (initial_bit << mask_shift);
+            }
+        }
+    };
+
+    const dest_reg_value: defs.Word = this.getRegisterValue(dest_reg);
+
+    const op_result = switch (Layout.operationType(this._ir)) {
+        .bit_and => dest_reg_value & bitmask,
+        .bit_or => dest_reg_value | bitmask,
+        .bit_xor => dest_reg_value ^ bitmask,
+        .bit_not => ~dest_reg_value,
+    };
+
+    var sr: defs.Word = 0;
+
+    if (op_result == 0) {
+        sr |= defs.StatusRegFlag.z;
+    }
+
+    var result: InstructionResult = .{ .sr = sr };
+    result.setRegisterValue(dest_reg, op_result);
 
     return result;
 }
