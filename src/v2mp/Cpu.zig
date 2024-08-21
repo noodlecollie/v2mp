@@ -50,18 +50,24 @@ const MulDivLayout = struct {
     }
 };
 
-const FetchInstructionFn = *const fn (address: defs.Word) defs.InstructionFetchError!defs.Word;
-const ExecInstructionFn = *const fn (this: *const Cpu) InstructionResult;
-const RequestLoadWordFromDsFn = *const fn (address: defs.Word, dest_reg: defs.RegisterIndex) void;
-const RequestStoreWordToDsFn = *const fn (address: defs.Word, word_to_store: defs.Word) void;
-const RequestStackPushFn = *const fn (reg_flags: u4) void;
-const RequestStackPopFn = *const fn (reg_flags: u4) void;
+const Callbacks = struct {
+    const FetchInstructionFn = *const fn (address: defs.Word) defs.InstructionFetchError!defs.Word;
+    const ExecInstructionFn = *const fn (this: *const Cpu) InstructionResult;
+    const RequestLoadWordFromDsFn = *const fn (address: defs.Word, dest_reg: defs.RegisterIndex) void;
+    const RequestStoreWordToDsFn = *const fn (address: defs.Word, word_to_store: defs.Word) void;
+    const RequestStackPushFn = *const fn (reg_flags: u4) void;
+    const RequestStackPopFn = *const fn (reg_flags: u4) void;
+    const RaiseSignalFn = *const fn (signal: defs.Word, r1: defs.Word, lr: defs.Word, sp: defs.Word) void;
 
-fetch_callback: FetchInstructionFn,
-request_load_word_from_ds_callback: RequestLoadWordFromDsFn,
-request_store_word_to_ds_callback: RequestStoreWordToDsFn,
-request_stack_push_callback: RequestStackPushFn,
-request_stack_pop_callback: RequestStackPopFn,
+    fetch: FetchInstructionFn,
+    request_load_word_from_ds: RequestLoadWordFromDsFn,
+    request_store_word_to_ds: RequestStoreWordToDsFn,
+    request_stack_push: RequestStackPushFn,
+    request_stack_pop: RequestStackPopFn,
+    raise_signal: RaiseSignalFn,
+};
+
+callbacks: Callbacks,
 
 _r0: defs.Word = 0,
 _r1: defs.Word = 0,
@@ -72,7 +78,7 @@ _sr: defs.Word = 0,
 _ir: defs.Word = 0,
 _fault: defs.Word = @intFromEnum(defs.Fault.none),
 
-_exec_callbacks: [defs.max_instruction_opcodes]ExecInstructionFn = .{
+_exec_callbacks: [defs.max_instruction_opcodes]Callbacks.ExecInstructionFn = .{
     &executeNop, // 0x00
     &executeAdd, // 0x01
     &executeSub, // 0x02
@@ -84,7 +90,7 @@ _exec_callbacks: [defs.max_instruction_opcodes]ExecInstructionFn = .{
     &executeCbx, // 0x08
     &executeLdst, // 0x09
     &executeStk, // 0x0a
-    &executeUnassigned, // 0x0b
+    &executeSig, // 0x0b
     &executeUnassigned, // 0x0c
     &executeUnassigned, // 0x0d
     &executeUnassigned, // 0x0e
@@ -144,7 +150,7 @@ pub fn reset(this: *Cpu) void {
 }
 
 pub fn fetchDecodeExecute(this: *Cpu) void {
-    if (this.fetch_callback(this._pc)) |instruction| {
+    if (this.callbacks.fetch(this._pc)) |instruction| {
         this._ir = instruction;
     } else |err| {
         this._fault = switch (err) {
@@ -659,11 +665,11 @@ fn executeLdst(this: *const Cpu) InstructionResult {
     return result: {
         if (Layout.operationIsStore(this._ir)) {
             const value: defs.Word = this.getRegisterValue(target_reg);
-            this.request_store_word_to_ds_callback(this._lr, value);
+            this.callbacks.request_store_word_to_ds(this._lr, value);
 
             break :result .{ .sr = if (value == 0) defs.StatusRegFlag.z else 0 };
         } else {
-            this.request_load_word_from_ds_callback(this._lr, Layout.registerIndex(this._ir));
+            this.callbacks.request_load_word_from_ds(this._lr, Layout.registerIndex(this._ir));
 
             // The status register will be updated later.
             break :result .{};
@@ -724,11 +730,24 @@ fn executeStk(this: *const Cpu) InstructionResult {
     }
 
     if (Layout.operationIsPush(this._ir)) {
-        this.request_stack_push_callback(reg_flags);
+        this.callbacks.request_stack_push(reg_flags);
     } else {
-        this.request_stack_pop_callback(reg_flags);
+        this.callbacks.request_stack_pop(reg_flags);
     }
 
+    return .{};
+}
+
+fn executeSig(this: *const Cpu) InstructionResult {
+    const Layout = struct {
+        const mask_resbits: defs.Word = 0x0FFF;
+    };
+
+    if (utils.reservedBitsSet(this._ir, Layout.mask_resbits)) {
+        return .{ .fault = .res };
+    }
+
+    this.callbacks.raise_signal(this._r0, this._r1, this._lr, this._sp);
     return .{};
 }
 

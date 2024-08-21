@@ -26,11 +26,14 @@ const Model = struct {
 };
 
 var cpu: v2mp.Cpu = .{
-    .fetch_callback = fetchInstruction,
-    .request_load_word_from_ds_callback = requestLoadWordFromDs,
-    .request_store_word_to_ds_callback = requestStoreWordToDs,
-    .request_stack_push_callback = requestStackPush,
-    .request_stack_pop_callback = requestStackPop,
+    .callbacks = .{
+        .fetch = fetchInstruction,
+        .request_load_word_from_ds = requestLoadWordFromDs,
+        .request_store_word_to_ds = requestStoreWordToDs,
+        .request_stack_push = requestStackPush,
+        .request_stack_pop = requestStackPop,
+        .raise_signal = raiseSignal,
+    },
 };
 
 var model: Model = .{};
@@ -69,6 +72,10 @@ fn requestStackPush(_: u4) void {
 }
 
 fn requestStackPop(_: u4) void {
+    // TODO
+}
+
+fn raiseSignal(_: v2mp.defs.Word, _: v2mp.defs.Word, _: v2mp.defs.Word, _: v2mp.defs.Word) void {
     // TODO
 }
 
