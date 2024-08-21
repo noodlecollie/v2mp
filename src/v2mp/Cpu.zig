@@ -52,8 +52,12 @@ const MulDivLayout = struct {
 
 const FetchInstructionFn = *const fn (address: defs.Word) defs.InstructionFetchError!defs.Word;
 const ExecInstructionFn = *const fn (this: *const Cpu) InstructionResult;
+const RequestLoadWordFromDsFn = *const fn (address: defs.Word, dest_reg: defs.RegisterIndex) void;
+const RequestStoreWordToDsFn = *const fn (address: defs.Word, word_to_store: defs.Word) void;
 
 fetch_callback: FetchInstructionFn,
+request_load_word_from_ds_callback: RequestLoadWordFromDsFn,
+request_store_word_to_ds_callback: RequestStoreWordToDsFn,
 
 _r0: defs.Word = 0,
 _r1: defs.Word = 0,
@@ -74,7 +78,7 @@ _exec_callbacks: [defs.max_instruction_opcodes]ExecInstructionFn = .{
     &executeShft, // 0x06
     &executeBitw, // 0x07
     &executeCbx, // 0x08
-    &executeUnassigned, // 0x09
+    &executeLdst, // 0x09
     &executeUnassigned, // 0x0a
     &executeUnassigned, // 0x0b
     &executeUnassigned, // 0x0c
@@ -625,6 +629,42 @@ fn executeCbx(this: *const Cpu) InstructionResult {
     }
 
     return .{ .sr = defs.StatusRegFlag.z };
+}
+
+fn executeLdst(this: *const Cpu) InstructionResult {
+    const Layout = struct {
+        pub const mask_resbits: defs.Word = 0x01FF;
+
+        pub fn operationIsStore(instr: defs.Word) bool {
+            const mask_operation_is_store: defs.Word = 0x0800;
+            return (instr & mask_operation_is_store) != 0;
+        }
+
+        pub fn registerIndex(instr: defs.Word) defs.RegisterIndex {
+            const mask_register_index: defs.Word = 0x0600;
+            return @enumFromInt((instr & mask_register_index) >> 9);
+        }
+    };
+
+    if (utils.reservedBitsSet(this._ir, Layout.mask_resbits)) {
+        return .{ .fault = .res };
+    }
+
+    const target_reg: defs.RegisterIndex = Layout.registerIndex(this._ir);
+
+    return result: {
+        if (Layout.operationIsStore(this._ir)) {
+            const value: defs.Word = this.getRegisterValue(target_reg);
+            this.request_store_word_to_ds_callback(this._lr, value);
+
+            break :result .{ .sr = if (value == 0) defs.StatusRegFlag.z else 0 };
+        } else {
+            this.request_load_word_from_ds_callback(this._lr, Layout.registerIndex(this._ir));
+
+            // The status register will be updated later.
+            break :result .{};
+        }
+    };
 }
 
 fn executeUnassigned(_: *const Cpu) InstructionResult {

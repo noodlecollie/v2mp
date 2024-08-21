@@ -25,7 +25,12 @@ const Model = struct {
     }
 };
 
-var cpu: v2mp.Cpu = .{ .fetch_callback = fetchInstruction };
+var cpu: v2mp.Cpu = .{
+    .fetch_callback = fetchInstruction,
+    .request_load_word_from_ds_callback = requestLoadWordFromDs,
+    .request_store_word_to_ds_callback = requestStoreWordToDs,
+};
+
 var model: Model = .{};
 
 fn fetchInstruction(address: v2mp.defs.Word) v2mp.defs.InstructionFetchError!v2mp.defs.Word {
@@ -47,6 +52,14 @@ fn fetchInstruction(address: v2mp.defs.Word) v2mp.defs.InstructionFetchError!v2m
     }
 
     return instructions[index];
+}
+
+fn requestLoadWordFromDs(_: v2mp.defs.Word, _: v2mp.defs.RegisterIndex) void {
+    // TODO
+}
+
+fn requestStoreWordToDs(_: v2mp.defs.Word, _: v2mp.defs.Word) void {
+    // TODO
 }
 
 fn executeInstruction(_: *anyopaque) !void {
