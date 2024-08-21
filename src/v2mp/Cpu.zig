@@ -54,10 +54,14 @@ const FetchInstructionFn = *const fn (address: defs.Word) defs.InstructionFetchE
 const ExecInstructionFn = *const fn (this: *const Cpu) InstructionResult;
 const RequestLoadWordFromDsFn = *const fn (address: defs.Word, dest_reg: defs.RegisterIndex) void;
 const RequestStoreWordToDsFn = *const fn (address: defs.Word, word_to_store: defs.Word) void;
+const RequestStackPushFn = *const fn (reg_flags: u4) void;
+const RequestStackPopFn = *const fn (reg_flags: u4) void;
 
 fetch_callback: FetchInstructionFn,
 request_load_word_from_ds_callback: RequestLoadWordFromDsFn,
 request_store_word_to_ds_callback: RequestStoreWordToDsFn,
+request_stack_push_callback: RequestStackPushFn,
+request_stack_pop_callback: RequestStackPopFn,
 
 _r0: defs.Word = 0,
 _r1: defs.Word = 0,
@@ -79,7 +83,7 @@ _exec_callbacks: [defs.max_instruction_opcodes]ExecInstructionFn = .{
     &executeBitw, // 0x07
     &executeCbx, // 0x08
     &executeLdst, // 0x09
-    &executeUnassigned, // 0x0a
+    &executeStk, // 0x0a
     &executeUnassigned, // 0x0b
     &executeUnassigned, // 0x0c
     &executeUnassigned, // 0x0d
@@ -665,6 +669,67 @@ fn executeLdst(this: *const Cpu) InstructionResult {
             break :result .{};
         }
     };
+}
+
+fn executeStk(this: *const Cpu) InstructionResult {
+    const Layout = struct {
+        pub const mask_resbits: defs.Word = 0x07F0;
+
+        pub fn operationIsPush(instr: defs.Word) bool {
+            const mask_operation_is_push: defs.Word = 0x0800;
+            return (instr & mask_operation_is_push) != 0;
+        }
+
+        pub fn includesR0(instr: defs.Word) bool {
+            const mask: defs.Word = 0x0001;
+            return (instr & mask) != 0;
+        }
+
+        pub fn includesR1(instr: defs.Word) bool {
+            const mask: defs.Word = 0x0002;
+            return (instr & mask) != 0;
+        }
+
+        pub fn includesLr(instr: defs.Word) bool {
+            const mask: defs.Word = 0x0004;
+            return (instr & mask) != 0;
+        }
+
+        pub fn includesPc(instr: defs.Word) bool {
+            const mask: defs.Word = 0x0008;
+            return (instr & mask) != 0;
+        }
+    };
+
+    if (utils.reservedBitsSet(this._ir, Layout.mask_resbits)) {
+        return .{ .fault = .res };
+    }
+
+    var reg_flags: u4 = 0;
+
+    if (Layout.includesR0(this._ir)) {
+        reg_flags |= 1 << @intFromEnum(defs.RegisterIndex.r0);
+    }
+
+    if (Layout.includesR1(this._ir)) {
+        reg_flags |= 1 << @intFromEnum(defs.RegisterIndex.r1);
+    }
+
+    if (Layout.includesLr(this._ir)) {
+        reg_flags |= 1 << @intFromEnum(defs.RegisterIndex.lr);
+    }
+
+    if (Layout.includesPc(this._ir)) {
+        reg_flags |= 1 << @intFromEnum(defs.RegisterIndex.pc);
+    }
+
+    if (Layout.operationIsPush(this._ir)) {
+        this.request_stack_push_callback(reg_flags);
+    } else {
+        this.request_stack_pop_callback(reg_flags);
+    }
+
+    return .{};
 }
 
 fn executeUnassigned(_: *const Cpu) InstructionResult {

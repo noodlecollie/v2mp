@@ -29,6 +29,8 @@ var cpu: v2mp.Cpu = .{
     .fetch_callback = fetchInstruction,
     .request_load_word_from_ds_callback = requestLoadWordFromDs,
     .request_store_word_to_ds_callback = requestStoreWordToDs,
+    .request_stack_push_callback = requestStackPush,
+    .request_stack_pop_callback = requestStackPop,
 };
 
 var model: Model = .{};
@@ -59,6 +61,14 @@ fn requestLoadWordFromDs(_: v2mp.defs.Word, _: v2mp.defs.RegisterIndex) void {
 }
 
 fn requestStoreWordToDs(_: v2mp.defs.Word, _: v2mp.defs.Word) void {
+    // TODO
+}
+
+fn requestStackPush(_: u4) void {
+    // TODO
+}
+
+fn requestStackPop(_: u4) void {
     // TODO
 }
 
