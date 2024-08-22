@@ -46,11 +46,11 @@ fn fetchInstruction(address: v2mp.defs.Word) v2mp.defs.InstructionFetchError!v2m
         0x2001,
     };
 
-    if (address % v2mp.defs.size_of_word != 0) {
+    if (address % @sizeOf(v2mp.defs.Word) != 0) {
         return v2mp.defs.InstructionFetchError.UnalignedMemoryAccess;
     }
 
-    const index = address / v2mp.defs.size_of_word;
+    const index = address / @sizeOf(v2mp.defs.Word);
 
     if (index >= instructions.len) {
         return v2mp.defs.InstructionFetchError.SegmentationFault;

@@ -5,16 +5,13 @@ pub const Byte = u8;
 
 // Because @sizeOf() may contain padding depending on the target being compiled for,
 // we do compile-time checks that our assumption is correct. I can't see any better
-// way right now.
-pub const size_of_word: usize = 2;
-pub const size_of_byte: usize = 1;
-
+// way right now, but I'd be very surprised if the following isn't true on any platform.
 comptime {
-    if (@sizeOf(Word) != size_of_word) {
+    if (@sizeOf(Word) != 2) {
         @compileError("Unexpected Word size on target platform");
     }
 
-    if (@sizeOf(Byte) != size_of_byte) {
+    if (@sizeOf(Byte) != 1) {
         @compileError("Unexpected Byte size on target platform");
     }
 }

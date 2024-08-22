@@ -162,7 +162,7 @@ pub fn fetchDecodeExecute(this: *Cpu) void {
     }
 
     // Increment PC now, as some instructions rely on it holding the next address
-    this._pc +%= @as(defs.Word, defs.size_of_word);
+    this._pc +%= @as(defs.Word, @sizeOf(defs.Word));
 
     const instruction_op: usize = @intFromEnum(utils.instructionOpCodeFromWord(this._ir));
     std.debug.assert(instruction_op <= this._exec_callbacks.len);
@@ -176,7 +176,7 @@ fn acceptResult(this: *Cpu, result: InstructionResult) void {
         if (result.fault) |res_fault| {
             // If the instruction caused a fault, this should take precedence.
             break :choose_fault res_fault;
-        } else if (result.pc == null and this._pc -% @as(defs.Word, defs.size_of_word) > this._pc) {
+        } else if (result.pc == null and this._pc -% @as(defs.Word, @sizeOf(defs.Word)) > this._pc) {
             // The instruction did not set the program counter, and the increment
             // that happened earlier caused an overflow. We should catch this case.
             break :choose_fault .seg;
@@ -239,7 +239,7 @@ fn executeAddOrSub(this: *const Cpu, is_add: bool) InstructionResult {
         return .{ .fault = .res };
     }
 
-    const stride: defs.Word = if (dest_reg == .pc) defs.size_of_word else defs.size_of_byte;
+    const stride: defs.Word = if (dest_reg == .pc) @sizeOf(defs.Word) else @sizeOf(defs.Byte);
     const value: defs.Word = if (src_reg != dest_reg) this.getRegisterValue(src_reg) else Layout.value(this._ir);
 
     const op_result: Result = compute: {
@@ -633,7 +633,7 @@ fn executeCbx(this: *const Cpu) InstructionResult {
         if (Layout.lrIsTarget(this._ir)) {
             return .{ .sr = 0, .pc = this.getLr() };
         } else {
-            const pc_offset: defs.Word = @as(u8, defs.size_of_word) * Layout.offset(this._ir);
+            const pc_offset: defs.Word = @as(u8, @sizeOf(defs.Word)) * Layout.offset(this._ir);
             return .{ .sr = 0, .pc = this.getPc() +% pc_offset };
         }
     }
