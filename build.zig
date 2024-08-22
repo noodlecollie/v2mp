@@ -33,6 +33,7 @@ fn addLibV2mp(data: BuilderData) *CompileStep {
         .root_source_file = data.b.path("src/v2mp/v2mp.zig"),
         .target = data.target,
         .optimize = data.optimize,
+        .version = .{ .major = 0, .minor = 1, .patch = 0 },
     });
 
     data.b.installArtifact(v2mplib);
