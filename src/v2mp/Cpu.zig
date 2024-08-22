@@ -3,56 +3,87 @@ const defs = @import("defs.zig");
 const utils = @import("utils.zig");
 const Cpu = @This();
 
-const InstructionResult = struct {
-    pc: ?defs.Word = null,
-    sr: ?defs.Word = null,
-    lr: ?defs.Word = null,
-    r0: ?defs.Word = null,
-    r1: ?defs.Word = null,
-    sp: ?defs.Word = null,
-    fault: ?defs.Fault = null,
+const Internal = struct {
+    const InstructionResult = struct {
+        pc: ?defs.Word = null,
+        sr: ?defs.Word = null,
+        lr: ?defs.Word = null,
+        r0: ?defs.Word = null,
+        r1: ?defs.Word = null,
+        sp: ?defs.Word = null,
+        fault: ?defs.Fault = null,
 
-    pub fn setRegisterValue(this: *InstructionResult, reg: defs.RegisterIndex, value: defs.Word) void {
-        switch (reg) {
-            .r0 => this.r0 = value,
-            .r1 => this.r1 = value,
-            .lr => this.lr = value,
-            .pc => this.pc = value,
+        pub fn setRegisterValue(this: *InstructionResult, reg: defs.RegisterIndex, value: defs.Word) void {
+            switch (reg) {
+                .r0 => this.r0 = value,
+                .r1 => this.r1 = value,
+                .lr => this.lr = value,
+                .pc => this.pc = value,
+            }
         }
-    }
-};
+    };
 
-const MulDivLayout = struct {
-    pub const mask_resbits: defs.Word = 0x0100;
+    const MulDivLayout = struct {
+        pub const mask_resbits: defs.Word = 0x0100;
 
-    pub fn destRegIndex(instr: defs.Word) defs.RegisterIndex {
-        const mask_dest_reg_is_r1: defs.Word = 0x0800;
-        return if ((instr & mask_dest_reg_is_r1) != 0) .r1 else .r0;
-    }
+        pub fn destRegIndex(instr: defs.Word) defs.RegisterIndex {
+            const mask_dest_reg_is_r1: defs.Word = 0x0800;
+            return if ((instr & mask_dest_reg_is_r1) != 0) .r1 else .r0;
+        }
 
-    pub fn sourceIsStatic(instr: defs.Word) bool {
-        const mask_static: defs.Word = 0x0400;
-        return (instr & mask_static) != 0;
-    }
+        pub fn sourceIsStatic(instr: defs.Word) bool {
+            const mask_static: defs.Word = 0x0400;
+            return (instr & mask_static) != 0;
+        }
 
-    pub fn isSigned(instr: defs.Word) bool {
-        const mask_signed: defs.Word = 0x0200;
-        return (instr & mask_signed) != 0;
-    }
+        pub fn isSigned(instr: defs.Word) bool {
+            const mask_signed: defs.Word = 0x0200;
+            return (instr & mask_signed) != 0;
+        }
 
-    pub fn unsignedValue(instr: defs.Word) u8 {
-        const mask_value: defs.Word = 0x00FF;
-        return @truncate(instr & mask_value);
-    }
+        pub fn unsignedValue(instr: defs.Word) u8 {
+            const mask_value: defs.Word = 0x00FF;
+            return @truncate(instr & mask_value);
+        }
 
-    pub fn signedValue(instr: defs.Word) i8 {
-        return @bitCast(unsignedValue(instr));
-    }
+        pub fn signedValue(instr: defs.Word) i8 {
+            return @bitCast(unsignedValue(instr));
+        }
+    };
+
+    const ExecInstructionFn = *const fn (this: *const Cpu) Internal.InstructionResult;
+
+    r0: defs.Word = 0,
+    r1: defs.Word = 0,
+    lr: defs.Word = 0,
+    pc: defs.Word = 0,
+    sp: defs.Word = 0,
+    sr: defs.Word = 0,
+    ir: defs.Word = 0,
+    fault: defs.Word = @intFromEnum(defs.Fault.none),
+
+    exec_callbacks: [defs.max_instruction_opcodes]Internal.ExecInstructionFn = .{
+        &executeNop, // 0x00
+        &executeAdd, // 0x01
+        &executeSub, // 0x02
+        &executeMul, // 0x03
+        &executeDiv, // 0x04
+        &executeAsgn, // 0x05
+        &executeShft, // 0x06
+        &executeBitw, // 0x07
+        &executeCbx, // 0x08
+        &executeLdst, // 0x09
+        &executeStk, // 0x0a
+        &executeSig, // 0x0b
+        &executeUnassigned, // 0x0c
+        &executeUnassigned, // 0x0d
+        &executeUnassigned, // 0x0e
+        &executeUnassigned, // 0x0f
+    },
 };
 
 const Callbacks = struct {
     const FetchInstructionFn = *const fn (address: defs.Word) defs.InstructionFetchError!defs.Word;
-    const ExecInstructionFn = *const fn (this: *const Cpu) InstructionResult;
     const RequestLoadWordFromDsFn = *const fn (address: defs.Word, dest_reg: defs.RegisterIndex) void;
     const RequestStoreWordToDsFn = *const fn (address: defs.Word, word_to_store: defs.Word) void;
     const RequestStackPushFn = *const fn (reg_flags: u4) void;
@@ -68,92 +99,65 @@ const Callbacks = struct {
 };
 
 callbacks: Callbacks,
-
-_r0: defs.Word = 0,
-_r1: defs.Word = 0,
-_lr: defs.Word = 0,
-_pc: defs.Word = 0,
-_sp: defs.Word = 0,
-_sr: defs.Word = 0,
-_ir: defs.Word = 0,
-_fault: defs.Word = @intFromEnum(defs.Fault.none),
-
-_exec_callbacks: [defs.max_instruction_opcodes]Callbacks.ExecInstructionFn = .{
-    &executeNop, // 0x00
-    &executeAdd, // 0x01
-    &executeSub, // 0x02
-    &executeMul, // 0x03
-    &executeDiv, // 0x04
-    &executeAsgn, // 0x05
-    &executeShft, // 0x06
-    &executeBitw, // 0x07
-    &executeCbx, // 0x08
-    &executeLdst, // 0x09
-    &executeStk, // 0x0a
-    &executeSig, // 0x0b
-    &executeUnassigned, // 0x0c
-    &executeUnassigned, // 0x0d
-    &executeUnassigned, // 0x0e
-    &executeUnassigned, // 0x0f
-},
+priv: Internal = .{},
 
 pub fn getRegisterValue(this: *const Cpu, reg: defs.RegisterIndex) defs.Word {
     return switch (reg) {
-        .r0 => this._r0,
-        .r1 => this._r1,
-        .lr => this._lr,
-        .pc => this._pc,
+        .r0 => this.priv.r0,
+        .r1 => this.priv.r1,
+        .lr => this.priv.lr,
+        .pc => this.priv.pc,
     };
 }
 
 pub fn getR0(this: *const Cpu) defs.Word {
-    return this._r0;
+    return this.priv.r0;
 }
 
 pub fn getR1(this: *const Cpu) defs.Word {
-    return this._r1;
+    return this.priv.r1;
 }
 
 pub fn getLr(this: *const Cpu) defs.Word {
-    return this._lr;
+    return this.priv.lr;
 }
 
 pub fn getPc(this: *const Cpu) defs.Word {
-    return this._pc;
+    return this.priv.pc;
 }
 
 pub fn getSr(this: *const Cpu) defs.Word {
-    return this._sr;
+    return this.priv.sr;
 }
 
 pub fn getSp(this: *const Cpu) defs.Word {
-    return this._sp;
+    return this.priv.sp;
 }
 
 pub fn getIr(this: *const Cpu) defs.Word {
-    return this._ir;
+    return this.priv.ir;
 }
 
 pub fn getFault(this: *const Cpu) defs.Word {
-    return this._fault;
+    return this.priv.fault;
 }
 
 pub fn reset(this: *Cpu) void {
-    this._r0 = 0;
-    this._r1 = 0;
-    this._lr = 0;
-    this._pc = 0;
-    this._sp = 0;
-    this._sr = 0;
-    this._ir = 0;
-    this._fault = 0;
+    this.priv.r0 = 0;
+    this.priv.r1 = 0;
+    this.priv.lr = 0;
+    this.priv.pc = 0;
+    this.priv.sp = 0;
+    this.priv.sr = 0;
+    this.priv.ir = 0;
+    this.priv.fault = 0;
 }
 
 pub fn fetchDecodeExecute(this: *Cpu) void {
-    if (this.callbacks.fetch(this._pc)) |instruction| {
-        this._ir = instruction;
+    if (this.callbacks.fetch(this.priv.pc)) |instruction| {
+        this.priv.ir = instruction;
     } else |err| {
-        this._fault = switch (err) {
+        this.priv.fault = switch (err) {
             defs.InstructionFetchError.UnalignedMemoryAccess => utils.makeFaultWord(defs.Fault.algn, 0),
             defs.InstructionFetchError.SegmentationFault => utils.makeFaultWord(defs.Fault.seg, 0),
         };
@@ -162,21 +166,21 @@ pub fn fetchDecodeExecute(this: *Cpu) void {
     }
 
     // Increment PC now, as some instructions rely on it holding the next address
-    this._pc +%= @as(defs.Word, @sizeOf(defs.Word));
+    this.priv.pc +%= @as(defs.Word, @sizeOf(defs.Word));
 
-    const instruction_op: usize = @intFromEnum(utils.instructionOpCodeFromWord(this._ir));
-    std.debug.assert(instruction_op <= this._exec_callbacks.len);
+    const instruction_op: usize = @intFromEnum(utils.instructionOpCodeFromWord(this.priv.ir));
+    std.debug.assert(instruction_op <= this.priv.exec_callbacks.len);
 
-    const result = this._exec_callbacks[instruction_op](this);
+    const result = this.priv.exec_callbacks[instruction_op](this);
     this.acceptResult(result);
 }
 
-fn acceptResult(this: *Cpu, result: InstructionResult) void {
+fn acceptResult(this: *Cpu, result: Internal.InstructionResult) void {
     const fault: defs.Fault = choose_fault: {
         if (result.fault) |res_fault| {
             // If the instruction caused a fault, this should take precedence.
             break :choose_fault res_fault;
-        } else if (result.pc == null and this._pc -% @as(defs.Word, @sizeOf(defs.Word)) > this._pc) {
+        } else if (result.pc == null and this.priv.pc -% @as(defs.Word, @sizeOf(defs.Word)) > this.priv.pc) {
             // The instruction did not set the program counter, and the increment
             // that happened earlier caused an overflow. We should catch this case.
             break :choose_fault .seg;
@@ -186,28 +190,28 @@ fn acceptResult(this: *Cpu, result: InstructionResult) void {
         }
     };
 
-    this._sr = result.sr orelse this._sr;
-    this._lr = result.lr orelse this._lr;
-    this._r0 = result.r0 orelse this._r0;
-    this._r1 = result.r1 orelse this._r1;
-    this._sp = result.sp orelse this._sp;
-    this._fault = @intFromEnum(fault);
+    this.priv.sr = result.sr orelse this.priv.sr;
+    this.priv.lr = result.lr orelse this.priv.lr;
+    this.priv.r0 = result.r0 orelse this.priv.r0;
+    this.priv.r1 = result.r1 orelse this.priv.r1;
+    this.priv.sp = result.sp orelse this.priv.sp;
+    this.priv.fault = @intFromEnum(fault);
 }
 
-fn executeNop(this: *const Cpu) InstructionResult {
+fn executeNop(this: *const Cpu) Internal.InstructionResult {
     // NOP - Do nothing
     return .{ .fault = this.faultIfReservedBitsSet(defs.instruction_arg_field_mask) };
 }
 
-fn executeAdd(this: *const Cpu) InstructionResult {
+fn executeAdd(this: *const Cpu) Internal.InstructionResult {
     return executeAddOrSub(this, true);
 }
 
-fn executeSub(this: *const Cpu) InstructionResult {
+fn executeSub(this: *const Cpu) Internal.InstructionResult {
     return executeAddOrSub(this, false);
 }
 
-fn executeAddOrSub(this: *const Cpu, is_add: bool) InstructionResult {
+fn executeAddOrSub(this: *const Cpu, is_add: bool) Internal.InstructionResult {
     const Layout = struct {
         pub fn sourceRegIndex(instr: defs.Word) defs.RegisterIndex {
             const mask_source_reg_index: defs.Word = 0x0C00;
@@ -230,17 +234,17 @@ fn executeAddOrSub(this: *const Cpu, is_add: bool) InstructionResult {
         overflowed: bool,
     };
 
-    const src_reg = Layout.sourceRegIndex(this._ir);
-    const dest_reg = Layout.destRegIndex(this._ir);
+    const src_reg = Layout.sourceRegIndex(this.priv.ir);
+    const dest_reg = Layout.destRegIndex(this.priv.ir);
 
-    if (src_reg != dest_reg and Layout.value(this._ir) != 0) {
+    if (src_reg != dest_reg and Layout.value(this.priv.ir) != 0) {
         // Should not have a literal value here, since
         // the source register is being used as a value.
         return .{ .fault = .res };
     }
 
     const stride: defs.Word = if (dest_reg == .pc) @sizeOf(defs.Word) else @sizeOf(defs.Byte);
-    const value: defs.Word = if (src_reg != dest_reg) this.getRegisterValue(src_reg) else Layout.value(this._ir);
+    const value: defs.Word = if (src_reg != dest_reg) this.getRegisterValue(src_reg) else Layout.value(this.priv.ir);
 
     const op_result: Result = compute: {
         if (is_add) {
@@ -262,28 +266,28 @@ fn executeAddOrSub(this: *const Cpu, is_add: bool) InstructionResult {
         sr |= defs.StatusRegFlag.z;
     }
 
-    var result: InstructionResult = .{ .sr = sr };
+    var result: Internal.InstructionResult = .{ .sr = sr };
     result.setRegisterValue(dest_reg, op_result.value);
 
     return result;
 }
 
-fn executeMul(this: *const Cpu) InstructionResult {
+fn executeMul(this: *const Cpu) Internal.InstructionResult {
     const Result = struct {
         upper: defs.Word,
         lower: defs.Word,
         overflowed: bool,
     };
 
-    if (utils.reservedBitsSet(this._ir, MulDivLayout.mask_resbits)) {
+    if (utils.reservedBitsSet(this.priv.ir, Internal.MulDivLayout.mask_resbits)) {
         return .{ .fault = .res };
     }
 
-    const dest_reg: defs.RegisterIndex = MulDivLayout.destRegIndex(this._ir);
+    const dest_reg: defs.RegisterIndex = Internal.MulDivLayout.destRegIndex(this.priv.ir);
     const src_value: defs.Word = this.getMulDivSourceValue(dest_reg);
 
     const op_result: Result = compute: {
-        if (MulDivLayout.isSigned(this._ir)) {
+        if (Internal.MulDivLayout.isSigned(this.priv.ir)) {
             const result: i32 = @as(i32, src_value) * @as(i32, this.getRegisterValue(dest_reg));
             const unsigned_result: u32 = @bitCast(result);
             const overflowed: bool = if (result > 0) result > std.math.maxInt(i16) else result < std.math.minInt(i16);
@@ -311,23 +315,23 @@ fn executeMul(this: *const Cpu) InstructionResult {
         sr |= defs.StatusRegFlag.z;
     }
 
-    var result: InstructionResult = .{ .sr = sr, .lr = op_result.upper };
+    var result: Internal.InstructionResult = .{ .sr = sr, .lr = op_result.upper };
     result.setRegisterValue(dest_reg, op_result.lower);
 
     return result;
 }
 
-fn executeDiv(this: *const Cpu) InstructionResult {
+fn executeDiv(this: *const Cpu) Internal.InstructionResult {
     const Result = struct {
         upper: defs.Word,
         lower: defs.Word,
     };
 
-    if (utils.reservedBitsSet(this._ir, MulDivLayout.mask_resbits)) {
+    if (utils.reservedBitsSet(this.priv.ir, Internal.MulDivLayout.mask_resbits)) {
         return .{ .fault = .res };
     }
 
-    const dest_reg: defs.RegisterIndex = MulDivLayout.destRegIndex(this._ir);
+    const dest_reg: defs.RegisterIndex = Internal.MulDivLayout.destRegIndex(this.priv.ir);
     const src_value: defs.Word = this.getMulDivSourceValue(dest_reg);
 
     // Make sure we don't divide by zero!
@@ -336,7 +340,7 @@ fn executeDiv(this: *const Cpu) InstructionResult {
     }
 
     const op_result: Result = compute: {
-        if (MulDivLayout.isSigned(this._ir)) {
+        if (Internal.MulDivLayout.isSigned(this.priv.ir)) {
             const signed_dest_value: i16 = @bitCast(this.getRegisterValue(dest_reg));
             const signed_src_value: i16 = @bitCast(src_value);
             const lower: defs.Word = @bitCast(@rem(signed_dest_value, signed_src_value));
@@ -359,13 +363,13 @@ fn executeDiv(this: *const Cpu) InstructionResult {
         sr |= defs.StatusRegFlag.z;
     }
 
-    var result: InstructionResult = .{ .sr = sr, .lr = op_result.upper };
+    var result: Internal.InstructionResult = .{ .sr = sr, .lr = op_result.upper };
     result.setRegisterValue(dest_reg, op_result.lower);
 
     return result;
 }
 
-fn executeAsgn(this: *const Cpu) InstructionResult {
+fn executeAsgn(this: *const Cpu) Internal.InstructionResult {
     const Layout = struct {
         pub fn sourceRegIndex(instr: defs.Word) defs.RegisterIndex {
             const mask_source_reg_index: defs.Word = 0x0C00;
@@ -383,9 +387,9 @@ fn executeAsgn(this: *const Cpu) InstructionResult {
         }
     };
 
-    const src_reg = Layout.sourceRegIndex(this._ir);
-    const dest_reg = Layout.destRegIndex(this._ir);
-    const value = if (src_reg == dest_reg) Layout.value(this._ir) else this.getRegisterValue(src_reg);
+    const src_reg = Layout.sourceRegIndex(this.priv.ir);
+    const dest_reg = Layout.destRegIndex(this.priv.ir);
+    const value = if (src_reg == dest_reg) Layout.value(this.priv.ir) else this.getRegisterValue(src_reg);
 
     if (src_reg != dest_reg and value != 0) {
         return .{ .fault = .res };
@@ -403,13 +407,13 @@ fn executeAsgn(this: *const Cpu) InstructionResult {
 
     const sr: defs.Word = if (value == 0) defs.StatusRegFlag.z else 0;
 
-    var result: InstructionResult = .{ .sr = sr };
+    var result: Internal.InstructionResult = .{ .sr = sr };
     result.setRegisterValue(dest_reg, value);
 
     return result;
 }
 
-fn executeShft(this: *const Cpu) InstructionResult {
+fn executeShft(this: *const Cpu) Internal.InstructionResult {
     const Layout = struct {
         pub const mask_resbits: defs.Word = 0x00E0;
 
@@ -429,16 +433,16 @@ fn executeShft(this: *const Cpu) InstructionResult {
         }
     };
 
-    if (utils.reservedBitsSet(this._ir, Layout.mask_resbits)) {
+    if (utils.reservedBitsSet(this.priv.ir, Layout.mask_resbits)) {
         return .{ .fault = .res };
     }
 
-    const src_reg = Layout.sourceRegIndex(this._ir);
-    const dest_reg = Layout.destRegIndex(this._ir);
+    const src_reg = Layout.sourceRegIndex(this.priv.ir);
+    const dest_reg = Layout.destRegIndex(this.priv.ir);
 
     const signed_shift_value: i5 = get_signed_shift_value: {
         if (src_reg == dest_reg) {
-            break :get_signed_shift_value Layout.value(this._ir);
+            break :get_signed_shift_value Layout.value(this.priv.ir);
         } else {
             const reg_value: u5 = @truncate(this.getRegisterValue(src_reg));
             break :get_signed_shift_value @bitCast(reg_value);
@@ -499,13 +503,13 @@ fn executeShft(this: *const Cpu) InstructionResult {
         sr |= defs.StatusRegFlag.z;
     }
 
-    var result: InstructionResult = .{ .sr = sr };
+    var result: Internal.InstructionResult = .{ .sr = sr };
     result.setRegisterValue(dest_reg, shifted_value);
 
     return result;
 }
 
-fn executeBitw(this: *const Cpu) InstructionResult {
+fn executeBitw(this: *const Cpu) Internal.InstructionResult {
     const Layout = struct {
         pub const mask_resbits: defs.Word = 0x0010;
 
@@ -538,17 +542,17 @@ fn executeBitw(this: *const Cpu) InstructionResult {
         }
     };
 
-    if (utils.reservedBitsSet(this._ir, Layout.mask_resbits)) {
+    if (utils.reservedBitsSet(this.priv.ir, Layout.mask_resbits)) {
         return .{ .fault = .res };
     }
 
-    const src_reg: defs.RegisterIndex = Layout.sourceRegIndex(this._ir);
-    const dest_reg: defs.RegisterIndex = Layout.destRegIndex(this._ir);
-    const flip_or_shift_set: bool = Layout.maskShift(this._ir) != 0 or Layout.shouldFlipMask(this._ir);
+    const src_reg: defs.RegisterIndex = Layout.sourceRegIndex(this.priv.ir);
+    const dest_reg: defs.RegisterIndex = Layout.destRegIndex(this.priv.ir);
+    const flip_or_shift_set: bool = Layout.maskShift(this.priv.ir) != 0 or Layout.shouldFlipMask(this.priv.ir);
 
     const reserved_bits_set: bool = //
         (src_reg != dest_reg and flip_or_shift_set) or //
-        (src_reg == dest_reg and Layout.operationType(this._ir) == .bit_not and flip_or_shift_set);
+        (src_reg == dest_reg and Layout.operationType(this.priv.ir) == .bit_not and flip_or_shift_set);
 
     if (reserved_bits_set) {
         return .{ .fault = .res };
@@ -558,10 +562,10 @@ fn executeBitw(this: *const Cpu) InstructionResult {
         if (src_reg != dest_reg) {
             break :create_bitmask this.getRegisterValue(src_reg);
         } else {
-            const mask_shift: u4 = Layout.maskShift(this._ir);
+            const mask_shift: u4 = Layout.maskShift(this.priv.ir);
             const initial_bit: defs.Word = 1;
 
-            if (Layout.shouldFlipMask(this._ir)) {
+            if (Layout.shouldFlipMask(this.priv.ir)) {
                 break :create_bitmask ~(initial_bit << mask_shift);
             } else {
                 break :create_bitmask (initial_bit << mask_shift);
@@ -571,7 +575,7 @@ fn executeBitw(this: *const Cpu) InstructionResult {
 
     const dest_reg_value: defs.Word = this.getRegisterValue(dest_reg);
 
-    const op_result = switch (Layout.operationType(this._ir)) {
+    const op_result = switch (Layout.operationType(this.priv.ir)) {
         .bit_and => dest_reg_value & bitmask,
         .bit_or => dest_reg_value | bitmask,
         .bit_xor => dest_reg_value ^ bitmask,
@@ -584,13 +588,13 @@ fn executeBitw(this: *const Cpu) InstructionResult {
         sr |= defs.StatusRegFlag.z;
     }
 
-    var result: InstructionResult = .{ .sr = sr };
+    var result: Internal.InstructionResult = .{ .sr = sr };
     result.setRegisterValue(dest_reg, op_result);
 
     return result;
 }
 
-fn executeCbx(this: *const Cpu) InstructionResult {
+fn executeCbx(this: *const Cpu) Internal.InstructionResult {
     const Layout = struct {
         pub const mask_resbits: defs.Word = 0x0300;
 
@@ -617,23 +621,23 @@ fn executeCbx(this: *const Cpu) InstructionResult {
         }
     };
 
-    if (utils.reservedBitsSet(this._ir, Layout.mask_resbits)) {
+    if (utils.reservedBitsSet(this.priv.ir, Layout.mask_resbits)) {
         return .{ .fault = .res };
     }
 
-    if (Layout.lrIsTarget(this._ir) and Layout.offset(this._ir) != 0) {
+    if (Layout.lrIsTarget(this.priv.ir) and Layout.offset(this.priv.ir) != 0) {
         return .{ .fault = .res };
     }
 
     const should_branch: bool = //
-        (Layout.branchOnSrZ(this._ir) and (this._sr & defs.StatusRegFlag.z) != 0) or //
-        (Layout.branchOnSrC(this._ir) and (this._sr & defs.StatusRegFlag.c) != 0);
+        (Layout.branchOnSrZ(this.priv.ir) and (this.priv.sr & defs.StatusRegFlag.z) != 0) or //
+        (Layout.branchOnSrC(this.priv.ir) and (this.priv.sr & defs.StatusRegFlag.c) != 0);
 
     if (should_branch) {
-        if (Layout.lrIsTarget(this._ir)) {
+        if (Layout.lrIsTarget(this.priv.ir)) {
             return .{ .sr = 0, .pc = this.getLr() };
         } else {
-            const pc_offset: defs.Word = @as(u8, @sizeOf(defs.Word)) * Layout.offset(this._ir);
+            const pc_offset: defs.Word = @as(u8, @sizeOf(defs.Word)) * Layout.offset(this.priv.ir);
             return .{ .sr = 0, .pc = this.getPc() +% pc_offset };
         }
     }
@@ -641,7 +645,7 @@ fn executeCbx(this: *const Cpu) InstructionResult {
     return .{ .sr = defs.StatusRegFlag.z };
 }
 
-fn executeLdst(this: *const Cpu) InstructionResult {
+fn executeLdst(this: *const Cpu) Internal.InstructionResult {
     const Layout = struct {
         pub const mask_resbits: defs.Word = 0x01FF;
 
@@ -656,20 +660,20 @@ fn executeLdst(this: *const Cpu) InstructionResult {
         }
     };
 
-    if (utils.reservedBitsSet(this._ir, Layout.mask_resbits)) {
+    if (utils.reservedBitsSet(this.priv.ir, Layout.mask_resbits)) {
         return .{ .fault = .res };
     }
 
-    const target_reg: defs.RegisterIndex = Layout.registerIndex(this._ir);
+    const target_reg: defs.RegisterIndex = Layout.registerIndex(this.priv.ir);
 
     return result: {
-        if (Layout.operationIsStore(this._ir)) {
+        if (Layout.operationIsStore(this.priv.ir)) {
             const value: defs.Word = this.getRegisterValue(target_reg);
-            this.callbacks.request_store_word_to_ds(this._lr, value);
+            this.callbacks.request_store_word_to_ds(this.priv.lr, value);
 
             break :result .{ .sr = if (value == 0) defs.StatusRegFlag.z else 0 };
         } else {
-            this.callbacks.request_load_word_from_ds(this._lr, Layout.registerIndex(this._ir));
+            this.callbacks.request_load_word_from_ds(this.priv.lr, Layout.registerIndex(this.priv.ir));
 
             // The status register will be updated later.
             break :result .{};
@@ -677,7 +681,7 @@ fn executeLdst(this: *const Cpu) InstructionResult {
     };
 }
 
-fn executeStk(this: *const Cpu) InstructionResult {
+fn executeStk(this: *const Cpu) Internal.InstructionResult {
     const Layout = struct {
         pub const mask_resbits: defs.Word = 0x07F0;
 
@@ -707,29 +711,29 @@ fn executeStk(this: *const Cpu) InstructionResult {
         }
     };
 
-    if (utils.reservedBitsSet(this._ir, Layout.mask_resbits)) {
+    if (utils.reservedBitsSet(this.priv.ir, Layout.mask_resbits)) {
         return .{ .fault = .res };
     }
 
     var reg_flags: u4 = 0;
 
-    if (Layout.includesR0(this._ir)) {
+    if (Layout.includesR0(this.priv.ir)) {
         reg_flags |= 1 << @intFromEnum(defs.RegisterIndex.r0);
     }
 
-    if (Layout.includesR1(this._ir)) {
+    if (Layout.includesR1(this.priv.ir)) {
         reg_flags |= 1 << @intFromEnum(defs.RegisterIndex.r1);
     }
 
-    if (Layout.includesLr(this._ir)) {
+    if (Layout.includesLr(this.priv.ir)) {
         reg_flags |= 1 << @intFromEnum(defs.RegisterIndex.lr);
     }
 
-    if (Layout.includesPc(this._ir)) {
+    if (Layout.includesPc(this.priv.ir)) {
         reg_flags |= 1 << @intFromEnum(defs.RegisterIndex.pc);
     }
 
-    if (Layout.operationIsPush(this._ir)) {
+    if (Layout.operationIsPush(this.priv.ir)) {
         this.callbacks.request_stack_push(reg_flags);
     } else {
         this.callbacks.request_stack_pop(reg_flags);
@@ -738,41 +742,41 @@ fn executeStk(this: *const Cpu) InstructionResult {
     return .{};
 }
 
-fn executeSig(this: *const Cpu) InstructionResult {
+fn executeSig(this: *const Cpu) Internal.InstructionResult {
     const Layout = struct {
         const mask_resbits: defs.Word = 0x0FFF;
     };
 
-    if (utils.reservedBitsSet(this._ir, Layout.mask_resbits)) {
+    if (utils.reservedBitsSet(this.priv.ir, Layout.mask_resbits)) {
         return .{ .fault = .res };
     }
 
-    this.callbacks.raise_signal(this._r0, this._r1, this._lr, this._sp);
+    this.callbacks.raise_signal(this.priv.r0, this.priv.r1, this.priv.lr, this.priv.sp);
     return .{};
 }
 
-fn executeUnassigned(_: *const Cpu) InstructionResult {
+fn executeUnassigned(_: *const Cpu) Internal.InstructionResult {
     return .{ .fault = .ini };
 }
 
 fn faultIfReservedBitsSet(this: *const Cpu, reserved_mask: defs.Word) defs.Fault {
-    return if (utils.reservedBitsSet(this._ir, reserved_mask)) .res else .none;
+    return if (utils.reservedBitsSet(this.priv.ir, reserved_mask)) .res else .none;
 }
 
 fn getMulDivSourceValue(this: *const Cpu, dest_reg: defs.RegisterIndex) defs.Word {
-    if (!MulDivLayout.sourceIsStatic(this._ir)) {
+    if (!Internal.MulDivLayout.sourceIsStatic(this.priv.ir)) {
         // We take the value from a register.
         return this.getRegisterValue(if (dest_reg == .r1) .r0 else .r1);
     }
 
     // Otherwise, we take the value from the instruction word.
-    if (MulDivLayout.isSigned(this._ir)) {
+    if (Internal.MulDivLayout.isSigned(this.priv.ir)) {
         // Make absolutely sure that the value is a 16-bit signed
         // type, then cast it back to an opaque word.
-        const signed_value: i8 = MulDivLayout.signedValue(this._ir);
+        const signed_value: i8 = Internal.MulDivLayout.signedValue(this.priv.ir);
         const wide_signed_value: i16 = signed_value;
         return @bitCast(wide_signed_value);
     } else {
-        return @as(defs.Word, MulDivLayout.unsignedValue(this._ir));
+        return @as(defs.Word, Internal.MulDivLayout.unsignedValue(this.priv.ir));
     }
 }
