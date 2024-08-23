@@ -5,6 +5,14 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"name": "V2MP Debugger (Linux)",
+			"type": "lldb",
+			"request": "launch",
+			"program": "${workspaceFolder}/zig-out/bin/v2mp_debugger",
+			"args": [],
+			"cwd": "${workspaceFolder}/zig-out/bin"
+		},
+		{
 			"name": "V2MP Debugger (Windows)",
 			"type": "cppvsdbg",
 			"request": "launch",
