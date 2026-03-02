@@ -1,12 +1,18 @@
 use super::arch::*;
 use super::cpu::Registers;
 
-pub fn execute(instruction: Word, registers: Registers) -> Registers
+pub fn execute(instruction: InstructionWord, registers: Registers) -> Registers
 {
-	let index: usize = OpCode::from_word(instruction).as_value() as usize;
+	let index: usize = OpCode::from_instruction(instruction).as_value() as usize;
 	debug_assert!(index < NUM_OPCODES);
 
 	return INSTRUCTION_CALLBACKS[index](instruction, &registers).apply(registers);
+}
+
+enum AddOrSub
+{
+	Add,
+	Sub,
 }
 
 struct InstructionResult
@@ -21,12 +27,29 @@ struct InstructionResult
 	pub fault: Option<Word>,
 }
 
-type InstructionCallback = fn(instruction: Word, registers: &Registers) -> InstructionResult;
+impl InstructionResult
+{
+	pub fn set_register(mut self, index: RegisterIndex, value: Word) -> Self
+	{
+		match index
+		{
+			RegisterIndex::R0 => self.r0 = Some(value),
+			RegisterIndex::R1 => self.r1 = Some(value),
+			RegisterIndex::Lr => self.lr = Some(value),
+			RegisterIndex::Pc => self.pc = Some(value),
+		};
+
+		return self;
+	}
+}
+
+type InstructionCallback =
+	fn(instruction: InstructionWord, registers: &Registers) -> InstructionResult;
 
 static INSTRUCTION_CALLBACKS: [InstructionCallback; NUM_OPCODES] = [
 	executeNop,        // 0x00 Nop
-	executeUnassigned, // 0x01 Add
-	executeUnassigned, // 0x02 Sub
+	executeAdd,        // 0x01 Add
+	executeSub,        // 0x02 Sub
 	executeUnassigned, // 0x03 Mul
 	executeUnassigned, // 0x04 Div
 	executeUnassigned, // 0x05 Asgn
@@ -76,15 +99,15 @@ impl Default for InstructionResult
 	}
 }
 
-fn executeUnassigned(_: Word, _: &Registers) -> InstructionResult
+fn executeUnassigned(_: InstructionWord, _: &Registers) -> InstructionResult
 {
 	return InstructionResult {
-		fault: Some(FaultCode::Ini.as_word(0)),
+		fault: Some(FaultCode::Ini.as_register_value(0)),
 		..Default::default()
 	};
 }
 
-fn executeNop(instruction: Word, _: &Registers) -> InstructionResult
+fn executeNop(instruction: InstructionWord, _: &Registers) -> InstructionResult
 {
 	return InstructionResult {
 		// Fault if any of the arg bits are set
@@ -93,11 +116,90 @@ fn executeNop(instruction: Word, _: &Registers) -> InstructionResult
 	};
 }
 
-fn faultRegisterIfReservedBitsSet(instruction: Word, reserved_mask: u16) -> Option<Word>
+fn executeAdd(instruction: InstructionWord, registers: &Registers) -> InstructionResult
+{
+	return executeAddOrSub(instruction, registers, AddOrSub::Add);
+}
+
+fn executeSub(instruction: InstructionWord, registers: &Registers) -> InstructionResult
+{
+	return executeAddOrSub(instruction, registers, AddOrSub::Add);
+}
+
+fn executeAddOrSub(
+	instruction: InstructionWord,
+	registers: &Registers,
+	operation: AddOrSub,
+) -> InstructionResult
+{
+	const SRC_REG_IDX_OFFSET: u8 = 10;
+	const DEST_REG_IDX_OFFSET: u8 = 8;
+	const LITERAL_MASK: Word = 0x00FF;
+	const LITERAL_OFFSET: u8 = 0;
+
+	let src_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, SRC_REG_IDX_OFFSET);
+	let dest_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, DEST_REG_IDX_OFFSET);
+	let literal: Word = instruction.bits(LITERAL_MASK, 0, LITERAL_OFFSET);
+
+	if src_reg != dest_reg && literal != 0
+	{
+		// Should not have a literal value here, since
+		// the source register is being used as a value.
+		return InstructionResult {
+			fault: Some(FaultCode::Res.as_register_value(0)),
+			..Default::default()
+		};
+	}
+
+	let stride: Word = (if dest_reg == RegisterIndex::Pc
+	{
+		SIZE_OF_WORD
+	}
+	else
+	{
+		SIZE_OF_BYTE
+	}) as Word;
+
+	let rhs: Word = if src_reg != dest_reg
+	{
+		registers.get_register_value(src_reg)
+	}
+	else
+	{
+		literal
+	};
+
+	let lhs: Word = registers.get_register_value(dest_reg);
+
+	let op_result: Word = match operation
+	{
+		AddOrSub::Add => lhs.wrapping_add(stride * rhs),
+		AddOrSub::Sub => lhs.wrapping_sub(stride * rhs),
+	};
+
+	let overflowed: bool = match operation
+	{
+		AddOrSub::Add => op_result < lhs,
+		AddOrSub::Sub => op_result > lhs,
+	};
+
+	let status_result: Word = 0;
+	let status_result: Word = StatusRegisterFlag::C.set_if(status_result, overflowed);
+	let status_result: Word = StatusRegisterFlag::Z.set_if(status_result, op_result == 0);
+
+	return InstructionResult {
+		sr: Some(status_result),
+		..Default::default()
+	}
+	.set_register(dest_reg, op_result);
+}
+
+fn faultRegisterIfReservedBitsSet(instruction: InstructionWord, reserved_mask: Word)
+-> Option<Word>
 {
 	return if instruction.any_bits_set(reserved_mask)
 	{
-		Some(FaultCode::Res.as_word(0))
+		Some(FaultCode::Res.as_register_value(0))
 	}
 	else
 	{

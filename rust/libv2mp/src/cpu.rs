@@ -32,14 +32,25 @@ impl Registers
 	pub fn new() -> Self
 	{
 		return Self {
-			pc: Word(0),
-			sr: Word(0),
-			lr: Word(0),
-			r0: Word(0),
-			r1: Word(0),
-			ir: Word(0),
-			sp: Word(0),
-			fault: Word(0),
+			pc: 0,
+			sr: 0,
+			lr: 0,
+			r0: 0,
+			r1: 0,
+			ir: 0,
+			sp: 0,
+			fault: 0,
+		};
+	}
+
+	pub fn get_register_value(&self, index: RegisterIndex) -> Word
+	{
+		return match index
+		{
+			RegisterIndex::R0 => self.r0,
+			RegisterIndex::R1 => self.r1,
+			RegisterIndex::Lr => self.lr,
+			RegisterIndex::Pc => self.pc,
 		};
 	}
 }
