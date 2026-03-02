@@ -62,7 +62,7 @@ The name of a label, formed by the string after the `:`, may only contain alphan
 // ... further instructions below ...
 ```
 
-Labels may be used as arguments to instructions. Since a label is a code memory address, and an there is not enough space to provide a full 16-bit address as an operand to an instruction, the following syntax is supported when referring to labels:
+Labels may be used as arguments to instructions. Since a label is a code memory address, and there is not enough space to provide a full 16-bit address as an operand to an instruction, the following syntax is supported when referring to labels:
 
 * Prefixing a label name with `~` evaluates to a **signed** byte representing the distance **in words** between the address of the next instruction and the label.
 * Prefixing a label name with `~+` evaluates to an **unsigned** byte representing the distance **in words** between the address of the next instruction and the label.
@@ -73,26 +73,26 @@ This allows for the following methods of jumping to a new address. Note that in 
 
 ```
 // Loop by subtracting from PC:
-:label1
-add 0 0 1          // Add 1 to R0
-add 1 1 2          // Add 2 to R1
-sub 3 3 ~+:label1  // Subtract 3 words from PC, to begin executing from :label1 again
-nop                // This is the next instruction that PC would otherwise be pointing to
+:begin
+add 0 0 1         // Add 1 to R0
+add 1 1 2         // Add 2 to R1
+sub 3 3 ~+:begin  // Subtract 3 words from PC, to begin executing from :begin again
+nop               // This is the next instruction that PC would otherwise be pointing to
 
 // Jump by adding to PC:
-add 3 3 ~:label2  // Add 3 words to PC, to continue execution from :label2
-add 0 0 1         // +------------------------------------+
-add 0 0 1         // | These instructions will be skipped |
-add 0 0 1         // +------------------------------------+
-:label2
-nop               // No adds will have taken place by the time execution resumes from here
+add 3 3 ~:target  // Add 3 words to PC, to continue execution from :target
+add 0 0 1       // +------------------------------------+
+add 0 0 1       // | These instructions will be skipped |
+add 0 0 1       // +------------------------------------+
+:target
+nop             // No adds will have taken place by the time execution resumes from here
 
 // Jump by bit shifting and assigning to PC:
-:label3
-asgn 2 2 <:label3  // Assign upper byte of label address to LR
-shft 2 2 8         // Shift the value in LR left by 8 bits
-add 2 2 >:label3   // Add lower byte of label address to LR
-asgn 2 3 0         // Assign the value to PC
+:begin
+asgn 2 2 <:begin  // Assign upper byte of label address to LR
+shft 2 2 8        // Shift the value in LR left by 8 bits
+add 2 2 >:begin   // Add lower byte of label address to LR
+asgn 2 3 0        // Assign the value to PC
 
 ```
 
