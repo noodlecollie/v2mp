@@ -1,0 +1,12 @@
+[workspace]
+resolver = "3"
+
+members = [
+	"rust/libv2mp"
+]
+
+[workspace.package]
+version = "0.1.0"
+authors = ["NoodleCollie <noodle.collie@protonmail.com>"]
+documentation = "https://example.com/bar"
+edition = "2024"
