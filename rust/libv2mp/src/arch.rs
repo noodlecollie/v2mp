@@ -26,6 +26,12 @@ impl Word
 	{
 		return (self.0 & mask) >> offset;
 	}
+
+	#[inline]
+	pub const fn any_bits_set(&self, mask: u16) -> bool
+	{
+		return (self.0 & mask) != 0;
+	}
 }
 
 pub const NUM_OPCODES: usize = 16;
@@ -89,13 +95,6 @@ pub enum OpCode
 
 impl OpCode
 {
-	pub const fn to_value(&self) -> u16
-	{
-		// SAFETY: Matches the repr type specified for the enum,
-		// so we can always convert to this type.
-		return unsafe { *(self as *const Self as *const u16) };
-	}
-
 	pub const fn from_value(value: u16) -> Option<Self>
 	{
 		if (value as usize) < NUM_OPCODES
@@ -105,6 +104,13 @@ impl OpCode
 		}
 
 		return None;
+	}
+
+	pub const fn as_value(&self) -> u16
+	{
+		// SAFETY: Matches the repr type specified for the enum,
+		// so we can always convert to this type.
+		return unsafe { *(self as *const Self as *const u16) };
 	}
 
 	pub const fn from_word(word: Word) -> Self
@@ -177,13 +183,6 @@ pub enum FaultCode
 
 impl FaultCode
 {
-	pub const fn to_value(&self) -> u16
-	{
-		// SAFETY: Matches the repr type specified for the enum,
-		// so we can always convert to this type.
-		return unsafe { *(self as *const Self as *const u16) };
-	}
-
 	pub const fn from_value(value: u16) -> Option<Self>
 	{
 		if (value as usize) < NUM_FAULTS
@@ -195,6 +194,13 @@ impl FaultCode
 		return None;
 	}
 
+	pub const fn as_value(&self) -> u16
+	{
+		// SAFETY: Matches the repr type specified for the enum,
+		// so we can always convert to this type.
+		return unsafe { *(self as *const Self as *const u16) };
+	}
+
 	pub const fn from_word(word: Word) -> Self
 	{
 		// This should never fail, as the FaultCode enum completely
@@ -203,9 +209,9 @@ impl FaultCode
 			.expect("Failed to interpret fault type from instruction word");
 	}
 
-	pub const fn to_word(&self, args: u16) -> Word
+	pub const fn as_word(&self, args: u16) -> Word
 	{
-		return Word((self.to_value() << FAULT_ARG_BITS) | (args & FAULT_ARG_MASK));
+		return Word((self.as_value() << FAULT_ARG_BITS) | (args & FAULT_ARG_MASK));
 	}
 }
 
