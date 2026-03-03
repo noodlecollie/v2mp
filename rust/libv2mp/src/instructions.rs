@@ -118,7 +118,7 @@ static INSTRUCTION_CALLBACKS: [InstructionCallback; NUM_OPCODES] = [
 	executeDiv,        // 0x04 Div
 	executeAsgn,       // 0x05 Asgn
 	executeShft,       // 0x06 Shft
-	executeUnassigned, // 0x07 Bitw
+	executeBitw,       // 0x07 Bitw
 	executeUnassigned, // 0x08 Cbx
 	executeUnassigned, // 0x09 Ldst
 	executeUnassigned, // 0x0A Stk
@@ -325,7 +325,7 @@ fn executeAsgn(instruction: InstructionWord, registers: &Registers) -> Instructi
 
 	let value: Word = if src_reg == dest_reg
 	{
-		instruction.bits(MASK_LITERAL, LITERAL_OFFSET, LITERAL_OFFSET)
+		instruction.bits(MASK_LITERAL, LITERAL_OFFSET)
 	}
 	else
 	{
@@ -382,7 +382,7 @@ fn executeShft(instruction: InstructionWord, registers: &Registers) -> Instructi
 
 	let raw_shift_arg: Word = if src_reg == dest_reg
 	{
-		instruction.bits(MASK_LITERAL, LITERAL_OFFSET, LITERAL_OFFSET)
+		instruction.bits(MASK_LITERAL, LITERAL_OFFSET)
 	}
 	else
 	{
@@ -445,6 +445,79 @@ fn executeShft(instruction: InstructionWord, registers: &Registers) -> Instructi
 	.set_register(dest_reg, shifted_value);
 }
 
+fn executeBitw(instruction: InstructionWord, registers: &Registers) -> InstructionResult
+{
+	const MASK_RESBITS: Word = 0x0010;
+	const MASK_FLIP: Word = 0x0020;
+	const FLIP_MASK_OFFSET: u8 = 5;
+	const MASK_SHIFT: Word = 0x000F;
+	const SHIFT_MASK_OFFSET: u8 = 0;
+	const SRC_REG_IDX_OFFSET: u8 = 10;
+	const DEST_REG_IDX_OFFSET: u8 = 8;
+	const BITWISE_OP_OFFSET: u8 = 6;
+
+	if instruction.any_bits_set(MASK_RESBITS)
+	{
+		return InstructionResult {
+			fault: Some(REG_VAL_FAULT_RES),
+			..Default::default()
+		};
+	}
+
+	let src_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, SRC_REG_IDX_OFFSET);
+	let dest_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, DEST_REG_IDX_OFFSET);
+	let bitwise_op: BitwiseOp = BitwiseOp::from_instruction(instruction, BITWISE_OP_OFFSET);
+	let shift: Word = instruction.bits(MASK_SHIFT, SHIFT_MASK_OFFSET);
+	let flip: bool = instruction.bits(MASK_FLIP, FLIP_MASK_OFFSET) != 0;
+	let shift_or_flip: bool = shift != 0 || flip;
+
+	let reserved_bits_set: bool = (src_reg != dest_reg && shift_or_flip)
+		|| (src_reg == dest_reg && bitwise_op == BitwiseOp::Not && shift_or_flip);
+
+	if reserved_bits_set
+	{
+		return InstructionResult {
+			fault: Some(REG_VAL_FAULT_RES),
+			..Default::default()
+		};
+	}
+
+	// A lambda which we can call only if we need the mask.
+	let get_bitmask = || {
+		if src_reg != dest_reg
+		{
+			registers.get_register_value(src_reg)
+		}
+		else if flip
+		{
+			!(1u16 << shift)
+		}
+		else
+		{
+			1u16 << shift
+		}
+	};
+
+	let dest_reg_value: Word = registers.get_register_value(dest_reg);
+
+	let op_result: Word = match bitwise_op
+	{
+		BitwiseOp::And => dest_reg_value & get_bitmask(),
+		BitwiseOp::Or => dest_reg_value | get_bitmask(),
+		BitwiseOp::Xor => dest_reg_value ^ get_bitmask(),
+		BitwiseOp::Not => !dest_reg_value,
+	};
+
+	let status_result: Word = 0;
+	let status_result: Word = StatusRegisterFlag::Z.set_if(status_result, op_result == 0);
+
+	return InstructionResult {
+		sr: Some(status_result),
+		..Default::default()
+	}
+	.set_register(dest_reg, op_result);
+}
+
 fn executeAddOrSub(
 	instruction: InstructionWord,
 	registers: &Registers,
@@ -458,7 +531,7 @@ fn executeAddOrSub(
 
 	let src_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, SRC_REG_IDX_OFFSET);
 	let dest_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, DEST_REG_IDX_OFFSET);
-	let literal: Word = instruction.bits(LITERAL_MASK, 0, LITERAL_OFFSET);
+	let literal: Word = instruction.bits(LITERAL_MASK, LITERAL_OFFSET);
 
 	if src_reg != dest_reg && literal != 0
 	{

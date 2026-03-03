@@ -28,10 +28,19 @@ impl InstructionWord
 		return ((self.0 & 0xFF00) >> 4) as Byte;
 	}
 
-	#[inline]
-	pub const fn bits(&self, mask: Word, mask_offset: u8, return_offset: u8) -> Word
+	/// Takes a mask, applies it, and shifts the resulting bits down by the
+	/// specified amount.
+	pub const fn bits(&self, mask: Word, return_shift: u8) -> Word
 	{
-		return (self.0 & (mask << mask_offset)) >> return_offset;
+		return (self.0 & mask) >> return_shift;
+	}
+
+	/// Takes a mask in the least significant bits, shifts it up, applies it,
+	/// and shifts the value back down by the same amount.
+	#[inline]
+	pub const fn little_bits(&self, mask: Word, bit_offset: u8) -> Word
+	{
+		return (self.0 & (mask << bit_offset)) >> bit_offset;
 	}
 
 	#[inline]
@@ -124,7 +133,7 @@ impl OpCode
 	{
 		// This should never fail, as the OpCode enum completely
 		// fills the bit width of the mask.
-		return Self::from_value(word.bits(OPCODE_MASK, 0, INSTRUCTION_ARG_BITS))
+		return Self::from_value(word.bits(OPCODE_MASK, INSTRUCTION_ARG_BITS))
 			.expect("Failed to interpret opcode from instruction word");
 	}
 }
@@ -215,7 +224,7 @@ impl FaultCode
 	{
 		// This should never fail, as the FaultCode enum completely
 		// fills the bit width of the mask.
-		return Self::from_value(word.bits(FAULT_MASK, 0, FAULT_ARG_BITS))
+		return Self::from_value(word.bits(FAULT_MASK, FAULT_ARG_BITS))
 			.expect("Failed to interpret fault type from instruction word");
 	}
 
@@ -272,7 +281,7 @@ impl RegisterIndex
 
 		// This should never fail, as the RegisterIndex enum completely
 		// fills the bit width of the mask.
-		return Self::from_value(word.bits(REGISTER_INDEX_MASK, mask_offset, mask_offset))
+		return Self::from_value(word.little_bits(REGISTER_INDEX_MASK, mask_offset))
 			.expect("Failed to interpret register index from instruction word");
 	}
 }
@@ -342,6 +351,57 @@ impl StatusRegisterFlag
 		{
 			word
 		};
+	}
+}
+
+pub const NUM_BITWISE_OPS: usize = 4;
+pub const BITWISE_OP_MASK: Word = 0x3;
+pub const BITWISE_OP_MASK_BITS: u8 = 2;
+
+#[repr(u16)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum BitwiseOp
+{
+	And = 0x0,
+	Or = 0x1,
+	Xor = 0x2,
+	Not = 0x3,
+}
+
+impl BitwiseOp
+{
+	#[inline]
+	pub const fn from_value(value: Word) -> Option<Self>
+	{
+		if (value as usize) < NUM_BITWISE_OPS
+		{
+			// SAFETY: Indices are contiguous, so any value in this range will be valid.
+			return unsafe { Some(*(&value as *const Word as *const Self)) };
+		}
+
+		return None;
+	}
+
+	#[inline]
+	pub const fn as_value(&self) -> Word
+	{
+		// SAFETY: Matches the repr type specified for the enum,
+		// so we can always convert to this type.
+		return unsafe { *(self as *const Self as *const Word) };
+	}
+
+	#[inline]
+	pub const fn from_instruction(word: InstructionWord, mask_offset: u8) -> Self
+	{
+		debug_assert!(
+			mask_offset <= REGISTER_WIDTH - BITWISE_OP_MASK_BITS,
+			"Mask offset exceeds width of register"
+		);
+
+		// This should never fail, as the BitwiseOp enum completely
+		// fills the bit width of the mask.
+		return Self::from_value(word.little_bits(BITWISE_OP_MASK, mask_offset))
+			.expect("Failed to interpret bitwise operation from instruction word");
 	}
 }
 
@@ -537,5 +597,35 @@ mod tests
 				words.3
 			);
 		}
+	}
+
+	#[test]
+	fn status_register_flags()
+	{
+		assert!(StatusRegisterFlag::Z.is_set(0x0001));
+		assert!(!StatusRegisterFlag::Z.is_set(0x0002));
+		assert_eq!(StatusRegisterFlag::Z.set(0x0000), 0x0001);
+		assert_eq!(StatusRegisterFlag::Z.set_if(0x0000, true), 0x0001);
+		assert_eq!(StatusRegisterFlag::Z.set_if(0x0000, false), 0x0000);
+		assert_eq!(StatusRegisterFlag::Z.clear(0xFFFF), 0xFFFE);
+		assert_eq!(StatusRegisterFlag::Z.clear_if(0xFFFF, true), 0xFFFE);
+		assert_eq!(StatusRegisterFlag::Z.clear_if(0xFFFF, false), 0xFFFF);
+		assert_eq!(StatusRegisterFlag::Z.toggle(0x0000), 0x0001);
+		assert_eq!(StatusRegisterFlag::Z.toggle(0xFFFF), 0xFFFE);
+		assert_eq!(StatusRegisterFlag::Z.toggle_if(0x0000, true), 0x0001);
+		assert_eq!(StatusRegisterFlag::Z.toggle_if(0x0000, false), 0x0000);
+
+		assert!(StatusRegisterFlag::C.is_set(0x0002));
+		assert!(!StatusRegisterFlag::C.is_set(0x0001));
+		assert_eq!(StatusRegisterFlag::C.set(0x0000), 0x0002);
+		assert_eq!(StatusRegisterFlag::C.set_if(0x0000, true), 0x0002);
+		assert_eq!(StatusRegisterFlag::C.set_if(0x0000, false), 0x0000);
+		assert_eq!(StatusRegisterFlag::C.clear(0xFFFF), 0xFFFD);
+		assert_eq!(StatusRegisterFlag::C.clear_if(0xFFFF, true), 0xFFFD);
+		assert_eq!(StatusRegisterFlag::C.clear_if(0xFFFF, false), 0xFFFF);
+		assert_eq!(StatusRegisterFlag::C.toggle(0x0000), 0x0002);
+		assert_eq!(StatusRegisterFlag::C.toggle(0xFFFF), 0xFFFD);
+		assert_eq!(StatusRegisterFlag::C.toggle_if(0x0000, true), 0x0002);
+		assert_eq!(StatusRegisterFlag::C.toggle_if(0x0000, false), 0x0000);
 	}
 }
