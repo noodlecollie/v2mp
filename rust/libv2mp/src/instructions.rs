@@ -117,7 +117,7 @@ static INSTRUCTION_CALLBACKS: [InstructionCallback; NUM_OPCODES] = [
 	executeMul,        // 0x03 Mul
 	executeDiv,        // 0x04 Div
 	executeAsgn,       // 0x05 Asgn
-	executeUnassigned, // 0x06 Shft
+	executeShft,       // 0x06 Shft
 	executeUnassigned, // 0x07 Bitw
 	executeUnassigned, // 0x08 Cbx
 	executeUnassigned, // 0x09 Ldst
@@ -359,6 +359,90 @@ fn executeAsgn(instruction: InstructionWord, registers: &Registers) -> Instructi
 		..Default::default()
 	}
 	.set_register(dest_reg, value);
+}
+
+fn executeShft(instruction: InstructionWord, registers: &Registers) -> InstructionResult
+{
+	const MASK_RESBITS: Word = 0x00E0;
+	const SRC_REG_IDX_OFFSET: u8 = 10;
+	const DEST_REG_IDX_OFFSET: u8 = 8;
+	const MASK_LITERAL: Word = 0x001F;
+	const LITERAL_OFFSET: u8 = 0;
+
+	if instruction.any_bits_set(MASK_RESBITS)
+	{
+		return InstructionResult {
+			fault: Some(REG_VAL_FAULT_RES),
+			..Default::default()
+		};
+	}
+
+	let src_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, SRC_REG_IDX_OFFSET);
+	let dest_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, DEST_REG_IDX_OFFSET);
+
+	let raw_shift_arg: Word = if src_reg == dest_reg
+	{
+		instruction.bits(MASK_LITERAL, LITERAL_OFFSET, LITERAL_OFFSET)
+	}
+	else
+	{
+		registers.get_register_value(src_reg) & MASK_LITERAL
+	};
+
+	if src_reg == dest_reg && raw_shift_arg != 0
+	{
+		return InstructionResult {
+			fault: Some(REG_VAL_FAULT_RES),
+			..Default::default()
+		};
+	}
+
+	// To convert to signed: add 1s in bits above our masked value.
+	let signed_shift_value: i8 = (raw_shift_arg | (!MASK_LITERAL)) as i8;
+	let shift_magnitude: u8 = signed_shift_value.abs() as u8;
+
+	let original_value: Word = registers.get_register_value(dest_reg);
+
+	let shifted_value: Word = if signed_shift_value > 0
+	{
+		original_value << shift_magnitude
+	}
+	else
+	{
+		original_value >> shift_magnitude
+	};
+
+	// To check whether any '1' bits got shifted off the end,
+	// we can mask the original value with the span of bits
+	// that *did* get shifted off the end. If the intersection
+	// of these two values is not zero, bits in the register
+	// were shifted off the end.
+
+	// This mask represents the locations of bits in the original
+	// value that ended up being shifted out of the register.
+	// For example, with a shift of +4, 0xFFFF gets shifted up
+	// by 12 bits to become 0xF000. The most significant bits here
+	// are the bits that were shifted out of the register.
+	let check_mask: Word = if signed_shift_value > 0
+	{
+		0xFFFFu16 << (16 - shift_magnitude)
+	}
+	else
+	{
+		0xFFFFu16 >> (16 - shift_magnitude)
+	};
+
+	let shifted_off_end: bool = (original_value & check_mask) != 0;
+
+	let status_result: Word = 0;
+	let status_result: Word = StatusRegisterFlag::C.set_if(status_result, shifted_off_end);
+	let status_result: Word = StatusRegisterFlag::Z.set_if(status_result, shifted_value == 0);
+
+	return InstructionResult {
+		sr: Some(status_result),
+		..Default::default()
+	}
+	.set_register(dest_reg, shifted_value);
 }
 
 fn executeAddOrSub(
