@@ -116,7 +116,7 @@ static INSTRUCTION_CALLBACKS: [InstructionCallback; NUM_OPCODES] = [
 	executeSub,        // 0x02 Sub
 	executeMul,        // 0x03 Mul
 	executeDiv,        // 0x04 Div
-	executeUnassigned, // 0x05 Asgn
+	executeAsgn,       // 0x05 Asgn
 	executeUnassigned, // 0x06 Shft
 	executeUnassigned, // 0x07 Bitw
 	executeUnassigned, // 0x08 Cbx
@@ -311,6 +311,54 @@ fn executeDiv(instruction: InstructionWord, registers: &Registers) -> Instructio
 	}
 	.set_register(RegisterIndex::Lr, op_result.0)
 	.set_register(params.dest_reg, op_result.1);
+}
+
+fn executeAsgn(instruction: InstructionWord, registers: &Registers) -> InstructionResult
+{
+	const SRC_REG_IDX_OFFSET: u8 = 10;
+	const DEST_REG_IDX_OFFSET: u8 = 8;
+	const MASK_LITERAL: Word = 0x00FF;
+	const LITERAL_OFFSET: u8 = 0;
+
+	let src_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, SRC_REG_IDX_OFFSET);
+	let dest_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, DEST_REG_IDX_OFFSET);
+
+	let value: Word = if src_reg == dest_reg
+	{
+		instruction.bits(MASK_LITERAL, LITERAL_OFFSET, LITERAL_OFFSET)
+	}
+	else
+	{
+		registers.get_register_value(src_reg)
+	};
+
+	if src_reg != dest_reg && value != 0
+	{
+		return InstructionResult {
+			fault: Some(REG_VAL_FAULT_RES),
+			..Default::default()
+		};
+	}
+
+	// Don't allow assigning to PC via an instruction literal,
+	// since the range of the literal is too small to be useful.
+	// We return a RES fault here since this combination of bits
+	// could potentially be useful in the future for some other
+	// operation, so we don't want to allow people to rely
+	// on it for anything right now.
+	if src_reg == dest_reg && dest_reg == RegisterIndex::Pc
+	{
+		return InstructionResult {
+			fault: Some(REG_VAL_FAULT_RES),
+			..Default::default()
+		};
+	}
+
+	return InstructionResult {
+		sr: Some(StatusRegisterFlag::Z.set_if(0, value == 0)),
+		..Default::default()
+	}
+	.set_register(dest_reg, value);
 }
 
 fn executeAddOrSub(
