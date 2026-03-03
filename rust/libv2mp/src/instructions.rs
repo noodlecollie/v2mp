@@ -9,6 +9,9 @@ pub fn execute(instruction: InstructionWord, registers: Registers) -> Registers
 	return INSTRUCTION_CALLBACKS[index](instruction, &registers).apply(registers);
 }
 
+const REG_VAL_FAULT_RES: Word = FaultCode::Res.as_register_value(0);
+const REG_VAL_FAULT_DIV: Word = FaultCode::Div.as_register_value(0);
+
 enum AddOrSub
 {
 	Add,
@@ -43,6 +46,67 @@ impl InstructionResult
 	}
 }
 
+struct MulDivParams
+{
+	pub source_value: Word,
+	pub dest_reg: RegisterIndex,
+	pub operation_is_signed: bool,
+}
+
+impl MulDivParams
+{
+	pub fn get(instruction: InstructionWord, registers: &Registers) -> Self
+	{
+		const MASK_STATIC: Word = 0x0400;
+		const MASK_LITERAL: Word = 0x00FF;
+		const MASK_DEST_REG_IS_R1: Word = 0x0800;
+		const MASK_SIGNED: Word = 0x0200;
+
+		let is_signed: bool = instruction.any_bits_set(MASK_SIGNED);
+
+		let dest_reg: RegisterIndex = if instruction.any_bits_set(MASK_DEST_REG_IS_R1)
+		{
+			RegisterIndex::R1
+		}
+		else
+		{
+			RegisterIndex::R0
+		};
+
+		let source_value: Word = if instruction.any_bits_set(MASK_STATIC)
+		{
+			// TODO: Does this actually make a difference?
+			if is_signed
+			{
+				(instruction.value() & MASK_LITERAL) as i8 as Word
+			}
+			else
+			{
+				(instruction.value() & MASK_LITERAL) as u8 as Word
+			}
+		}
+		else
+		{
+			registers.get_register_value(
+				if dest_reg == RegisterIndex::R0
+				{
+					RegisterIndex::R1
+				}
+				else
+				{
+					RegisterIndex::R0
+				},
+			)
+		};
+
+		return Self {
+			source_value,
+			dest_reg,
+			operation_is_signed: is_signed,
+		};
+	}
+}
+
 type InstructionCallback =
 	fn(instruction: InstructionWord, registers: &Registers) -> InstructionResult;
 
@@ -51,7 +115,7 @@ static INSTRUCTION_CALLBACKS: [InstructionCallback; NUM_OPCODES] = [
 	executeAdd,        // 0x01 Add
 	executeSub,        // 0x02 Sub
 	executeMul,        // 0x03 Mul
-	executeUnassigned, // 0x04 Div
+	executeDiv,        // 0x04 Div
 	executeUnassigned, // 0x05 Asgn
 	executeUnassigned, // 0x06 Shft
 	executeUnassigned, // 0x07 Bitw
@@ -129,10 +193,6 @@ fn executeSub(instruction: InstructionWord, registers: &Registers) -> Instructio
 fn executeMul(instruction: InstructionWord, registers: &Registers) -> InstructionResult
 {
 	const MASK_RESBITS: Word = 0x0100;
-	const MASK_DEST_REG_IS_R1: Word = 0x0800;
-	const MASK_STATIC: Word = 0x0400;
-	const MASK_SIGNED: Word = 0x0200;
-	const MASK_LITERAL: Word = 0x00FF;
 
 	struct MulResult
 	{
@@ -144,53 +204,17 @@ fn executeMul(instruction: InstructionWord, registers: &Registers) -> Instructio
 	if instruction.any_bits_set(MASK_RESBITS)
 	{
 		return InstructionResult {
-			fault: Some(FaultCode::Res.as_register_value(0)),
+			fault: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
 	}
 
-	let dest_reg: RegisterIndex = if instruction.any_bits_set(MASK_DEST_REG_IS_R1)
-	{
-		RegisterIndex::R1
-	}
-	else
-	{
-		RegisterIndex::R0
-	};
+	let params: MulDivParams = MulDivParams::get(instruction, registers);
+	let dest_value: Word = registers.get_register_value(params.dest_reg);
 
-	let is_signed: bool = instruction.any_bits_set(MASK_SIGNED);
-
-	let src_value: Word = if instruction.any_bits_set(MASK_STATIC)
+	let op_result: MulResult = if params.operation_is_signed
 	{
-		// TODO: Does this actually make a difference?
-		if is_signed
-		{
-			(instruction.value() & MASK_LITERAL) as i8 as Word
-		}
-		else
-		{
-			(instruction.value() & MASK_LITERAL) as u8 as Word
-		}
-	}
-	else
-	{
-		registers.get_register_value(
-			if dest_reg == RegisterIndex::R0
-			{
-				RegisterIndex::R1
-			}
-			else
-			{
-				RegisterIndex::R0
-			},
-		)
-	};
-
-	let dest_value: Word = registers.get_register_value(dest_reg);
-
-	let op_result: MulResult = if is_signed
-	{
-		let signed_result: i32 = (src_value as i32) * (dest_value as i32);
+		let signed_result: i32 = (params.source_value as i32) * (dest_value as i32);
 		let unsigned_result: u32 = signed_result as u32;
 		let upper: Word = ((unsigned_result & 0xFFFF0000) >> 16) as Word;
 		let lower: Word = (unsigned_result & 0x0000FFFF) as Word;
@@ -211,7 +235,7 @@ fn executeMul(instruction: InstructionWord, registers: &Registers) -> Instructio
 	}
 	else
 	{
-		let unsigned_result: u32 = (src_value as u32) * (dest_value as u32);
+		let unsigned_result: u32 = (params.source_value as u32) * (dest_value as u32);
 		let upper: Word = ((unsigned_result & 0xFFFF0000) >> 16) as Word;
 		let lower: Word = (unsigned_result & 0x0000FFFF) as Word;
 		let overflowed: bool = upper != 0;
@@ -233,7 +257,60 @@ fn executeMul(instruction: InstructionWord, registers: &Registers) -> Instructio
 		..Default::default()
 	}
 	.set_register(RegisterIndex::Lr, op_result.upper)
-	.set_register(dest_reg, op_result.lower);
+	.set_register(params.dest_reg, op_result.lower);
+}
+
+fn executeDiv(instruction: InstructionWord, registers: &Registers) -> InstructionResult
+{
+	const MASK_RESBITS: Word = 0x0100;
+
+	if instruction.any_bits_set(MASK_RESBITS)
+	{
+		return InstructionResult {
+			fault: Some(REG_VAL_FAULT_RES),
+			..Default::default()
+		};
+	}
+
+	let params: MulDivParams = MulDivParams::get(instruction, registers);
+
+	if params.source_value == 0
+	{
+		return InstructionResult {
+			fault: Some(REG_VAL_FAULT_DIV),
+			..Default::default()
+		};
+	}
+
+	let op_result: (Word, Word) = if params.operation_is_signed
+	{
+		let numerator: i16 = registers.get_register_value(params.dest_reg) as i16;
+		let denominator: i16 = params.source_value as i16;
+		let upper: i16 = numerator / denominator;
+		let lower: i16 = numerator % denominator;
+
+		(upper as Word, lower as Word)
+	}
+	else
+	{
+		let numerator: Word = registers.get_register_value(params.dest_reg);
+		let denominator: &Word = &params.source_value;
+		let upper: Word = numerator / denominator;
+		let lower: Word = numerator % denominator;
+
+		(upper, lower)
+	};
+
+	let status_result: Word = 0;
+	let status_result: Word = StatusRegisterFlag::C.set_if(status_result, op_result.0 != 0);
+	let status_result: Word = StatusRegisterFlag::Z.set_if(status_result, op_result.1 == 0);
+
+	return InstructionResult {
+		sr: Some(status_result),
+		..Default::default()
+	}
+	.set_register(RegisterIndex::Lr, op_result.0)
+	.set_register(params.dest_reg, op_result.1);
 }
 
 fn executeAddOrSub(
@@ -256,7 +333,7 @@ fn executeAddOrSub(
 		// Should not have a literal value here, since
 		// the source register is being used as a value.
 		return InstructionResult {
-			fault: Some(FaultCode::Res.as_register_value(0)),
+			fault: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
 	}
@@ -309,7 +386,7 @@ fn faultRegisterIfReservedBitsSet(instruction: InstructionWord, reserved_mask: W
 {
 	return if instruction.any_bits_set(reserved_mask)
 	{
-		Some(FaultCode::Res.as_register_value(0))
+		Some(REG_VAL_FAULT_RES)
 	}
 	else
 	{
