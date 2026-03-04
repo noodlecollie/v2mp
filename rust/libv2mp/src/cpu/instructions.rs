@@ -1,12 +1,15 @@
-use super::arch::*;
-use super::cpu::Registers;
+use crate::arch::*;
+use crate::cpu::{Cpu, Registers};
 
-pub fn execute(instruction: InstructionWord, registers: Registers) -> Registers
+pub fn execute(mut cpu: Cpu) -> Cpu
 {
+	let instruction: InstructionWord = InstructionWord(cpu.registers.ir);
+
 	let index: usize = OpCode::from_instruction(instruction).as_value() as usize;
 	debug_assert!(index < NUM_OPCODES);
 
-	return INSTRUCTION_CALLBACKS[index](instruction, &registers).apply(registers);
+	cpu.registers = INSTRUCTION_CALLBACKS[index](instruction, &cpu).apply(cpu.registers);
+	return cpu;
 }
 
 const REG_VAL_FAULT_RES: Word = FaultCode::Res.as_register_value(0);
@@ -107,8 +110,7 @@ impl MulDivParams
 	}
 }
 
-type InstructionCallback =
-	fn(instruction: InstructionWord, registers: &Registers) -> InstructionResult;
+type InstructionCallback = fn(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult;
 
 static INSTRUCTION_CALLBACKS: [InstructionCallback; NUM_OPCODES] = [
 	executeNop,        // 0x00 Nop
@@ -163,7 +165,7 @@ impl Default for InstructionResult
 	}
 }
 
-fn executeUnassigned(_: InstructionWord, _: &Registers) -> InstructionResult
+fn executeUnassigned(_: InstructionWord, _: &Cpu) -> InstructionResult
 {
 	return InstructionResult {
 		fault: Some(FaultCode::Ini.as_register_value(0)),
@@ -171,7 +173,7 @@ fn executeUnassigned(_: InstructionWord, _: &Registers) -> InstructionResult
 	};
 }
 
-fn executeNop(instruction: InstructionWord, _: &Registers) -> InstructionResult
+fn executeNop(instruction: InstructionWord, _: &Cpu) -> InstructionResult
 {
 	return InstructionResult {
 		// Fault if any of the arg bits are set
@@ -180,17 +182,17 @@ fn executeNop(instruction: InstructionWord, _: &Registers) -> InstructionResult
 	};
 }
 
-fn executeAdd(instruction: InstructionWord, registers: &Registers) -> InstructionResult
+fn executeAdd(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
 {
-	return executeAddOrSub(instruction, registers, AddOrSub::Add);
+	return executeAddOrSub(instruction, &cpu.registers, AddOrSub::Add);
 }
 
-fn executeSub(instruction: InstructionWord, registers: &Registers) -> InstructionResult
+fn executeSub(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
 {
-	return executeAddOrSub(instruction, registers, AddOrSub::Add);
+	return executeAddOrSub(instruction, &cpu.registers, AddOrSub::Add);
 }
 
-fn executeMul(instruction: InstructionWord, registers: &Registers) -> InstructionResult
+fn executeMul(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
 {
 	const MASK_RESBITS: Word = 0x0100;
 
@@ -209,8 +211,8 @@ fn executeMul(instruction: InstructionWord, registers: &Registers) -> Instructio
 		};
 	}
 
-	let params: MulDivParams = MulDivParams::get(instruction, registers);
-	let dest_value: Word = registers.get_register_value(params.dest_reg);
+	let params: MulDivParams = MulDivParams::get(instruction, &cpu.registers);
+	let dest_value: Word = cpu.registers.get_register_value(params.dest_reg);
 
 	let op_result: MulResult = if params.operation_is_signed
 	{
@@ -260,7 +262,7 @@ fn executeMul(instruction: InstructionWord, registers: &Registers) -> Instructio
 	.set_register(params.dest_reg, op_result.lower);
 }
 
-fn executeDiv(instruction: InstructionWord, registers: &Registers) -> InstructionResult
+fn executeDiv(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
 {
 	const MASK_RESBITS: Word = 0x0100;
 
@@ -272,7 +274,7 @@ fn executeDiv(instruction: InstructionWord, registers: &Registers) -> Instructio
 		};
 	}
 
-	let params: MulDivParams = MulDivParams::get(instruction, registers);
+	let params: MulDivParams = MulDivParams::get(instruction, &cpu.registers);
 
 	if params.source_value == 0
 	{
@@ -284,7 +286,7 @@ fn executeDiv(instruction: InstructionWord, registers: &Registers) -> Instructio
 
 	let op_result: (Word, Word) = if params.operation_is_signed
 	{
-		let numerator: i16 = registers.get_register_value(params.dest_reg) as i16;
+		let numerator: i16 = cpu.registers.get_register_value(params.dest_reg) as i16;
 		let denominator: i16 = params.source_value as i16;
 		let upper: i16 = numerator / denominator;
 		let lower: i16 = numerator % denominator;
@@ -293,7 +295,7 @@ fn executeDiv(instruction: InstructionWord, registers: &Registers) -> Instructio
 	}
 	else
 	{
-		let numerator: Word = registers.get_register_value(params.dest_reg);
+		let numerator: Word = cpu.registers.get_register_value(params.dest_reg);
 		let denominator: &Word = &params.source_value;
 		let upper: Word = numerator / denominator;
 		let lower: Word = numerator % denominator;
@@ -313,7 +315,7 @@ fn executeDiv(instruction: InstructionWord, registers: &Registers) -> Instructio
 	.set_register(params.dest_reg, op_result.1);
 }
 
-fn executeAsgn(instruction: InstructionWord, registers: &Registers) -> InstructionResult
+fn executeAsgn(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
 {
 	const SRC_REG_IDX_OFFSET: u8 = 10;
 	const DEST_REG_IDX_OFFSET: u8 = 8;
@@ -329,7 +331,7 @@ fn executeAsgn(instruction: InstructionWord, registers: &Registers) -> Instructi
 	}
 	else
 	{
-		registers.get_register_value(src_reg)
+		cpu.registers.get_register_value(src_reg)
 	};
 
 	if src_reg != dest_reg && value != 0
@@ -361,7 +363,7 @@ fn executeAsgn(instruction: InstructionWord, registers: &Registers) -> Instructi
 	.set_register(dest_reg, value);
 }
 
-fn executeShft(instruction: InstructionWord, registers: &Registers) -> InstructionResult
+fn executeShft(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
 {
 	const MASK_RESBITS: Word = 0x00E0;
 	const SRC_REG_IDX_OFFSET: u8 = 10;
@@ -386,7 +388,7 @@ fn executeShft(instruction: InstructionWord, registers: &Registers) -> Instructi
 	}
 	else
 	{
-		registers.get_register_value(src_reg) & MASK_LITERAL
+		cpu.registers.get_register_value(src_reg) & MASK_LITERAL
 	};
 
 	if src_reg == dest_reg && raw_shift_arg != 0
@@ -401,7 +403,7 @@ fn executeShft(instruction: InstructionWord, registers: &Registers) -> Instructi
 	let signed_shift_value: i8 = (raw_shift_arg | (!MASK_LITERAL)) as i8;
 	let shift_magnitude: u8 = signed_shift_value.abs() as u8;
 
-	let original_value: Word = registers.get_register_value(dest_reg);
+	let original_value: Word = cpu.registers.get_register_value(dest_reg);
 
 	let shifted_value: Word = if signed_shift_value > 0
 	{
@@ -445,7 +447,7 @@ fn executeShft(instruction: InstructionWord, registers: &Registers) -> Instructi
 	.set_register(dest_reg, shifted_value);
 }
 
-fn executeBitw(instruction: InstructionWord, registers: &Registers) -> InstructionResult
+fn executeBitw(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
 {
 	const MASK_RESBITS: Word = 0x0010;
 	const MASK_FLIP: Word = 0x0020;
@@ -486,7 +488,7 @@ fn executeBitw(instruction: InstructionWord, registers: &Registers) -> Instructi
 	let get_bitmask = || {
 		if src_reg != dest_reg
 		{
-			registers.get_register_value(src_reg)
+			cpu.registers.get_register_value(src_reg)
 		}
 		else if flip
 		{
@@ -498,7 +500,7 @@ fn executeBitw(instruction: InstructionWord, registers: &Registers) -> Instructi
 		}
 	};
 
-	let dest_reg_value: Word = registers.get_register_value(dest_reg);
+	let dest_reg_value: Word = cpu.registers.get_register_value(dest_reg);
 
 	let op_result: Word = match bitwise_op
 	{

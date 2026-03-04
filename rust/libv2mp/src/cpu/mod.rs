@@ -1,3 +1,5 @@
+mod instructions;
+
 use crate::arch::*;
 
 pub struct Cpu
@@ -22,14 +24,28 @@ impl Cpu
 	pub fn new() -> Self
 	{
 		return Self {
-			registers: Registers::new(),
+			registers: Registers::default(),
 		};
 	}
 }
 
 impl Registers
 {
-	pub fn new() -> Self
+	pub fn get_register_value(&self, index: RegisterIndex) -> Word
+	{
+		return match index
+		{
+			RegisterIndex::R0 => self.r0,
+			RegisterIndex::R1 => self.r1,
+			RegisterIndex::Lr => self.lr,
+			RegisterIndex::Pc => self.pc,
+		};
+	}
+}
+
+impl Default for Registers
+{
+	fn default() -> Self
 	{
 		return Self {
 			pc: 0,
@@ -40,17 +56,6 @@ impl Registers
 			ir: 0,
 			sp: 0,
 			fault: 0,
-		};
-	}
-
-	pub fn get_register_value(&self, index: RegisterIndex) -> Word
-	{
-		return match index
-		{
-			RegisterIndex::R0 => self.r0,
-			RegisterIndex::R1 => self.r1,
-			RegisterIndex::Lr => self.lr,
-			RegisterIndex::Pc => self.pc,
 		};
 	}
 }
