@@ -2,9 +2,21 @@ mod instructions;
 
 use crate::arch::*;
 
+pub enum SupervisorRequest
+{
+	LoadWord,
+	StoreWord,
+	PushStack,
+	PopStack,
+	Signal,
+	Fault,
+}
+
 pub struct Cpu
 {
 	pub registers: Registers,
+
+	supervisor_request: Option<SupervisorRequest>,
 }
 
 pub struct Registers
@@ -25,6 +37,7 @@ impl Cpu
 	{
 		return Self {
 			registers: Registers::default(),
+			supervisor_request: None,
 		};
 	}
 }

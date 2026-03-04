@@ -1,15 +1,14 @@
 use crate::arch::*;
-use crate::cpu::{Cpu, Registers};
+use crate::cpu::{Cpu, Registers, SupervisorRequest};
 
 pub fn execute(mut cpu: Cpu) -> Cpu
 {
-	let instruction: InstructionWord = InstructionWord(cpu.registers.ir);
+	let instruction: WordBits = WordBits(cpu.registers.ir);
 
-	let index: usize = OpCode::from_instruction(instruction).as_value() as usize;
+	let index: usize = OpCode::from_word_bits(instruction).as_value() as usize;
 	debug_assert!(index < NUM_OPCODES);
 
-	cpu.registers = INSTRUCTION_CALLBACKS[index](instruction, &cpu).apply(cpu.registers);
-	return cpu;
+	return INSTRUCTION_CALLBACKS[index](instruction, &cpu).apply(cpu);
 }
 
 const REG_VAL_FAULT_RES: Word = FaultCode::Res.as_register_value(0);
@@ -31,6 +30,7 @@ struct InstructionResult
 	pub ir: Option<Word>,
 	pub sp: Option<Word>,
 	pub fault: Option<Word>,
+	pub supervisor_request: Option<SupervisorRequest>,
 }
 
 impl InstructionResult
@@ -58,7 +58,7 @@ struct MulDivParams
 
 impl MulDivParams
 {
-	pub fn get(instruction: InstructionWord, registers: &Registers) -> Self
+	pub fn get(instruction: WordBits, registers: &Registers) -> Self
 	{
 		const MASK_STATIC: Word = 0x0400;
 		const MASK_LITERAL: Word = 0x00FF;
@@ -110,7 +110,7 @@ impl MulDivParams
 	}
 }
 
-type InstructionCallback = fn(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult;
+type InstructionCallback = fn(instruction: WordBits, cpu: &Cpu) -> InstructionResult;
 
 static INSTRUCTION_CALLBACKS: [InstructionCallback; NUM_OPCODES] = [
 	executeNop,        // 0x00 Nop
@@ -133,18 +133,44 @@ static INSTRUCTION_CALLBACKS: [InstructionCallback; NUM_OPCODES] = [
 
 impl InstructionResult
 {
-	pub fn apply(self, registers: Registers) -> Registers
+	pub fn apply(self, mut cpu: Cpu) -> Cpu
 	{
-		return Registers {
-			pc: self.pc.unwrap_or(registers.pc),
-			sr: self.sr.unwrap_or(registers.sr),
-			lr: self.lr.unwrap_or(registers.lr),
-			r0: self.r0.unwrap_or(registers.r0),
-			r1: self.r1.unwrap_or(registers.r1),
-			ir: self.ir.unwrap_or(registers.ir),
-			sp: self.sp.unwrap_or(registers.sp),
-			fault: self.fault.unwrap_or(registers.fault),
+		cpu.registers = Registers {
+			pc: self.pc.unwrap_or(cpu.registers.pc),
+			sr: self.sr.unwrap_or(cpu.registers.sr),
+			lr: self.lr.unwrap_or(cpu.registers.lr),
+			r0: self.r0.unwrap_or(cpu.registers.r0),
+			r1: self.r1.unwrap_or(cpu.registers.r1),
+			ir: self.ir.unwrap_or(cpu.registers.ir),
+			sp: self.sp.unwrap_or(cpu.registers.sp),
+			fault: self.fault.unwrap_or(cpu.registers.fault),
 		};
+
+		{
+			// If there is no fault code set, but there are fault bits set,
+			// map this to a Res fault.
+			let fault_bits: WordBits = WordBits(cpu.registers.fault);
+
+			if FaultCode::from_word_bits(fault_bits) == FaultCode::None
+				&& fault_bits.any_bits_set(FAULT_ARG_MASK)
+			{
+				cpu.registers.fault =
+					FaultCode::Res.as_register_value(FAULT_ARGS_RESERVED_BITS_SET);
+			}
+		}
+
+		let fault: FaultCode = FaultCode::from_word_bits(WordBits(cpu.registers.fault));
+
+		cpu.supervisor_request = if fault != FaultCode::None
+		{
+			Some(SupervisorRequest::Fault)
+		}
+		else
+		{
+			self.supervisor_request
+		};
+
+		return cpu;
 	}
 }
 
@@ -161,11 +187,12 @@ impl Default for InstructionResult
 			ir: None,
 			sp: None,
 			fault: None,
+			supervisor_request: None,
 		};
 	}
 }
 
-fn executeUnassigned(_: InstructionWord, _: &Cpu) -> InstructionResult
+fn executeUnassigned(_: WordBits, _: &Cpu) -> InstructionResult
 {
 	return InstructionResult {
 		fault: Some(FaultCode::Ini.as_register_value(0)),
@@ -173,7 +200,7 @@ fn executeUnassigned(_: InstructionWord, _: &Cpu) -> InstructionResult
 	};
 }
 
-fn executeNop(instruction: InstructionWord, _: &Cpu) -> InstructionResult
+fn executeNop(instruction: WordBits, _: &Cpu) -> InstructionResult
 {
 	return InstructionResult {
 		// Fault if any of the arg bits are set
@@ -182,17 +209,17 @@ fn executeNop(instruction: InstructionWord, _: &Cpu) -> InstructionResult
 	};
 }
 
-fn executeAdd(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
+fn executeAdd(instruction: WordBits, cpu: &Cpu) -> InstructionResult
 {
 	return executeAddOrSub(instruction, &cpu.registers, AddOrSub::Add);
 }
 
-fn executeSub(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
+fn executeSub(instruction: WordBits, cpu: &Cpu) -> InstructionResult
 {
 	return executeAddOrSub(instruction, &cpu.registers, AddOrSub::Add);
 }
 
-fn executeMul(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
+fn executeMul(instruction: WordBits, cpu: &Cpu) -> InstructionResult
 {
 	const MASK_RESBITS: Word = 0x0100;
 
@@ -262,7 +289,7 @@ fn executeMul(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
 	.set_register(params.dest_reg, op_result.lower);
 }
 
-fn executeDiv(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
+fn executeDiv(instruction: WordBits, cpu: &Cpu) -> InstructionResult
 {
 	const MASK_RESBITS: Word = 0x0100;
 
@@ -315,15 +342,15 @@ fn executeDiv(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
 	.set_register(params.dest_reg, op_result.1);
 }
 
-fn executeAsgn(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
+fn executeAsgn(instruction: WordBits, cpu: &Cpu) -> InstructionResult
 {
 	const SRC_REG_IDX_OFFSET: u8 = 10;
 	const DEST_REG_IDX_OFFSET: u8 = 8;
 	const MASK_LITERAL: Word = 0x00FF;
 	const LITERAL_OFFSET: u8 = 0;
 
-	let src_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, SRC_REG_IDX_OFFSET);
-	let dest_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, DEST_REG_IDX_OFFSET);
+	let src_reg: RegisterIndex = RegisterIndex::from_word_bits(instruction, SRC_REG_IDX_OFFSET);
+	let dest_reg: RegisterIndex = RegisterIndex::from_word_bits(instruction, DEST_REG_IDX_OFFSET);
 
 	let value: Word = if src_reg == dest_reg
 	{
@@ -363,7 +390,7 @@ fn executeAsgn(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
 	.set_register(dest_reg, value);
 }
 
-fn executeShft(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
+fn executeShft(instruction: WordBits, cpu: &Cpu) -> InstructionResult
 {
 	const MASK_RESBITS: Word = 0x00E0;
 	const SRC_REG_IDX_OFFSET: u8 = 10;
@@ -379,8 +406,8 @@ fn executeShft(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
 		};
 	}
 
-	let src_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, SRC_REG_IDX_OFFSET);
-	let dest_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, DEST_REG_IDX_OFFSET);
+	let src_reg: RegisterIndex = RegisterIndex::from_word_bits(instruction, SRC_REG_IDX_OFFSET);
+	let dest_reg: RegisterIndex = RegisterIndex::from_word_bits(instruction, DEST_REG_IDX_OFFSET);
 
 	let raw_shift_arg: Word = if src_reg == dest_reg
 	{
@@ -447,7 +474,7 @@ fn executeShft(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
 	.set_register(dest_reg, shifted_value);
 }
 
-fn executeBitw(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
+fn executeBitw(instruction: WordBits, cpu: &Cpu) -> InstructionResult
 {
 	const MASK_RESBITS: Word = 0x0010;
 	const MASK_FLIP: Word = 0x0020;
@@ -466,9 +493,9 @@ fn executeBitw(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
 		};
 	}
 
-	let src_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, SRC_REG_IDX_OFFSET);
-	let dest_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, DEST_REG_IDX_OFFSET);
-	let bitwise_op: BitwiseOp = BitwiseOp::from_instruction(instruction, BITWISE_OP_OFFSET);
+	let src_reg: RegisterIndex = RegisterIndex::from_word_bits(instruction, SRC_REG_IDX_OFFSET);
+	let dest_reg: RegisterIndex = RegisterIndex::from_word_bits(instruction, DEST_REG_IDX_OFFSET);
+	let bitwise_op: BitwiseOp = BitwiseOp::from_word_bits(instruction, BITWISE_OP_OFFSET);
 	let shift: Word = instruction.bits(MASK_SHIFT, SHIFT_MASK_OFFSET);
 	let flip: bool = instruction.bits(MASK_FLIP, FLIP_MASK_OFFSET) != 0;
 	let shift_or_flip: bool = shift != 0 || flip;
@@ -520,28 +547,86 @@ fn executeBitw(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
 	.set_register(dest_reg, op_result);
 }
 
-fn executeCbx(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
+fn executeCbx(instruction: WordBits, cpu: &Cpu) -> InstructionResult
+{
+	const MASK_RESBITS: Word = 0x0300;
+	const MASK_LR_IS_TARGET: Word = 0x0800;
+	const MASK_BRANCH_ON_SR_Z: Word = 0x0400;
+	const MASK_LITERAL: Word = 0x00FF;
+	const LR_IS_TARGET_OFFSET: u8 = 11;
+	const BRANCH_ON_SR_Z_OFFSET: u8 = 10;
+	const LITERAL_OFFSET: u8 = 0;
+
+	if instruction.any_bits_set(MASK_RESBITS)
+	{
+		return InstructionResult {
+			fault: Some(REG_VAL_FAULT_RES),
+			..Default::default()
+		};
+	}
+
+	let lr_is_target: bool = instruction.bits(MASK_LR_IS_TARGET, LR_IS_TARGET_OFFSET) != 0;
+	let literal_offset: u8 = instruction.bits(MASK_LITERAL, LITERAL_OFFSET) as u8;
+
+	if lr_is_target && literal_offset != 0
+	{
+		return InstructionResult {
+			fault: Some(REG_VAL_FAULT_RES),
+			..Default::default()
+		};
+	}
+
+	let branch_on_sr_z: bool = instruction.bits(MASK_BRANCH_ON_SR_Z, BRANCH_ON_SR_Z_OFFSET) != 0;
+	let branch_on_sr_c: bool = !branch_on_sr_z;
+	let should_branch: bool = (branch_on_sr_z && StatusRegisterFlag::Z.is_set(cpu.registers.sr))
+		|| (branch_on_sr_c && StatusRegisterFlag::C.is_set(cpu.registers.sr));
+
+	if should_branch
+	{
+		if lr_is_target
+		{
+			return InstructionResult {
+				sr: Some(0),
+				pc: Some(cpu.registers.lr),
+				..Default::default()
+			};
+		}
+		else
+		{
+			let pc_offset: Word = ((literal_offset) as usize * SIZE_OF_WORD) as Word;
+			let pc: Word = cpu.registers.pc.wrapping_add(pc_offset);
+
+			return InstructionResult {
+				sr: Some(0),
+				pc: Some(pc),
+				..Default::default()
+			};
+		}
+	}
+
+	return InstructionResult {
+		sr: Some(StatusRegisterFlag::Z.set(0)),
+		..Default::default()
+	};
+}
+
+fn executeLdst(instruction: WordBits, cpu: &Cpu) -> InstructionResult
 {
 	todo!();
 }
 
-fn executeLdst(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
+fn executeStk(instruction: WordBits, cpu: &Cpu) -> InstructionResult
 {
 	todo!();
 }
 
-fn executeStk(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
-{
-	todo!();
-}
-
-fn executeSig(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
+fn executeSig(instruction: WordBits, cpu: &Cpu) -> InstructionResult
 {
 	todo!();
 }
 
 fn executeAddOrSub(
-	instruction: InstructionWord,
+	instruction: WordBits,
 	registers: &Registers,
 	operation: AddOrSub,
 ) -> InstructionResult
@@ -551,8 +636,8 @@ fn executeAddOrSub(
 	const LITERAL_MASK: Word = 0x00FF;
 	const LITERAL_OFFSET: u8 = 0;
 
-	let src_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, SRC_REG_IDX_OFFSET);
-	let dest_reg: RegisterIndex = RegisterIndex::from_instruction(instruction, DEST_REG_IDX_OFFSET);
+	let src_reg: RegisterIndex = RegisterIndex::from_word_bits(instruction, SRC_REG_IDX_OFFSET);
+	let dest_reg: RegisterIndex = RegisterIndex::from_word_bits(instruction, DEST_REG_IDX_OFFSET);
 	let literal: Word = instruction.bits(LITERAL_MASK, LITERAL_OFFSET);
 
 	if src_reg != dest_reg && literal != 0
@@ -608,8 +693,7 @@ fn executeAddOrSub(
 	.set_register(dest_reg, op_result);
 }
 
-fn faultRegisterIfReservedBitsSet(instruction: InstructionWord, reserved_mask: Word)
--> Option<Word>
+fn faultRegisterIfReservedBitsSet(instruction: WordBits, reserved_mask: Word) -> Option<Word>
 {
 	return if instruction.any_bits_set(reserved_mask)
 	{

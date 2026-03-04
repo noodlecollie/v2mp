@@ -6,9 +6,9 @@ pub const SIZE_OF_BYTE: usize = size_of::<Byte>();
 pub const REGISTER_WIDTH: u8 = 16;
 
 #[derive(Clone, Copy)]
-pub struct InstructionWord(pub Word);
+pub struct WordBits(pub Word);
 
-impl InstructionWord
+impl WordBits
 {
 	#[inline]
 	pub const fn value(&self) -> Word
@@ -129,7 +129,7 @@ impl OpCode
 		return unsafe { *(self as *const Self as *const Word) };
 	}
 
-	pub const fn from_instruction(word: InstructionWord) -> Self
+	pub const fn from_word_bits(word: WordBits) -> Self
 	{
 		// This should never fail, as the OpCode enum completely
 		// fills the bit width of the mask.
@@ -143,6 +143,11 @@ pub const FAULT_MASK: Word = 0xF000;
 pub const FAULT_ARG_MASK: Word = 0x0FFF;
 pub const FAULT_MASK_BITS: u8 = 4;
 pub const FAULT_ARG_BITS: u8 = REGISTER_WIDTH - FAULT_MASK_BITS;
+
+// If the fault code is None but there are fault arg bits set,
+// this is invalid. In this case, a Res fault will be generated,
+// where the fault arg bits will all be set.
+pub const FAULT_ARGS_RESERVED_BITS_SET: Word = FAULT_ARG_MASK;
 
 #[repr(u16)]
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -220,7 +225,7 @@ impl FaultCode
 	}
 
 	#[inline]
-	pub const fn from_instruction(word: InstructionWord) -> Self
+	pub const fn from_word_bits(word: WordBits) -> Self
 	{
 		// This should never fail, as the FaultCode enum completely
 		// fills the bit width of the mask.
@@ -272,7 +277,7 @@ impl RegisterIndex
 	}
 
 	#[inline]
-	pub const fn from_instruction(word: InstructionWord, mask_offset: u8) -> Self
+	pub const fn from_word_bits(word: WordBits, mask_offset: u8) -> Self
 	{
 		debug_assert!(
 			mask_offset <= REGISTER_WIDTH - REGISTER_INDEX_MASK_BITS,
@@ -391,7 +396,7 @@ impl BitwiseOp
 	}
 
 	#[inline]
-	pub const fn from_instruction(word: InstructionWord, mask_offset: u8) -> Self
+	pub const fn from_word_bits(word: WordBits, mask_offset: u8) -> Self
 	{
 		debug_assert!(
 			mask_offset <= REGISTER_WIDTH - BITWISE_OP_MASK_BITS,
@@ -413,151 +418,82 @@ mod tests
 	#[test]
 	fn all_valid_opcodes_from_instruction()
 	{
+		assert_eq!(OpCode::from_word_bits(WordBits(0x0000)), OpCode::Nop);
+		assert_eq!(OpCode::from_word_bits(WordBits(0x1000)), OpCode::Add);
+		assert_eq!(OpCode::from_word_bits(WordBits(0x2000)), OpCode::Sub);
+		assert_eq!(OpCode::from_word_bits(WordBits(0x3000)), OpCode::Mul);
+		assert_eq!(OpCode::from_word_bits(WordBits(0x4000)), OpCode::Div);
+		assert_eq!(OpCode::from_word_bits(WordBits(0x5000)), OpCode::Asgn);
+		assert_eq!(OpCode::from_word_bits(WordBits(0x6000)), OpCode::Shft);
+		assert_eq!(OpCode::from_word_bits(WordBits(0x7000)), OpCode::Bitw);
+		assert_eq!(OpCode::from_word_bits(WordBits(0x8000)), OpCode::Cbx);
+		assert_eq!(OpCode::from_word_bits(WordBits(0x9000)), OpCode::Ldst);
+		assert_eq!(OpCode::from_word_bits(WordBits(0xA000)), OpCode::Stk);
+		assert_eq!(OpCode::from_word_bits(WordBits(0xB000)), OpCode::Sig);
 		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0x0000)),
-			OpCode::Nop
-		);
-		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0x1000)),
-			OpCode::Add
-		);
-		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0x2000)),
-			OpCode::Sub
-		);
-		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0x3000)),
-			OpCode::Mul
-		);
-		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0x4000)),
-			OpCode::Div
-		);
-		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0x5000)),
-			OpCode::Asgn
-		);
-		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0x6000)),
-			OpCode::Shft
-		);
-		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0x7000)),
-			OpCode::Bitw
-		);
-		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0x8000)),
-			OpCode::Cbx
-		);
-		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0x9000)),
-			OpCode::Ldst
-		);
-		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0xA000)),
-			OpCode::Stk
-		);
-		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0xB000)),
-			OpCode::Sig
-		);
-		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0xC000)),
+			OpCode::from_word_bits(WordBits(0xC000)),
 			OpCode::Unassigned0
 		);
 		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0xD000)),
+			OpCode::from_word_bits(WordBits(0xD000)),
 			OpCode::Unassigned1
 		);
 		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0xE000)),
+			OpCode::from_word_bits(WordBits(0xE000)),
 			OpCode::Unassigned2
 		);
 		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0xF000)),
+			OpCode::from_word_bits(WordBits(0xF000)),
 			OpCode::Unassigned3
 		);
 
 		// Other bits should not affect the opcode
-		assert_eq!(
-			OpCode::from_instruction(InstructionWord(0x0BAD)),
-			OpCode::Nop
-		);
+		assert_eq!(OpCode::from_word_bits(WordBits(0x0BAD)), OpCode::Nop);
 	}
 
 	#[test]
 	fn all_valid_fault_codes_from_instruction()
 	{
+		assert_eq!(FaultCode::from_word_bits(WordBits(0x0000)), FaultCode::None);
+		assert_eq!(FaultCode::from_word_bits(WordBits(0x1000)), FaultCode::Res);
+		assert_eq!(FaultCode::from_word_bits(WordBits(0x2000)), FaultCode::Algn);
+		assert_eq!(FaultCode::from_word_bits(WordBits(0x3000)), FaultCode::Seg);
+		assert_eq!(FaultCode::from_word_bits(WordBits(0x4000)), FaultCode::Ini);
+		assert_eq!(FaultCode::from_word_bits(WordBits(0x5000)), FaultCode::Sof);
+		assert_eq!(FaultCode::from_word_bits(WordBits(0x6000)), FaultCode::Div);
+		assert_eq!(FaultCode::from_word_bits(WordBits(0x7000)), FaultCode::Ins);
+		assert_eq!(FaultCode::from_word_bits(WordBits(0x8000)), FaultCode::Spv);
 		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0x0000)),
-			FaultCode::None
-		);
-		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0x1000)),
-			FaultCode::Res
-		);
-		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0x2000)),
-			FaultCode::Algn
-		);
-		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0x3000)),
-			FaultCode::Seg
-		);
-		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0x4000)),
-			FaultCode::Ini
-		);
-		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0x5000)),
-			FaultCode::Sof
-		);
-		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0x6000)),
-			FaultCode::Div
-		);
-		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0x7000)),
-			FaultCode::Ins
-		);
-		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0x8000)),
-			FaultCode::Spv
-		);
-		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0x9000)),
+			FaultCode::from_word_bits(WordBits(0x9000)),
 			FaultCode::Unassigned0
 		);
 		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0xA000)),
+			FaultCode::from_word_bits(WordBits(0xA000)),
 			FaultCode::Unassigned1
 		);
 		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0xB000)),
+			FaultCode::from_word_bits(WordBits(0xB000)),
 			FaultCode::Unassigned2
 		);
 		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0xC000)),
+			FaultCode::from_word_bits(WordBits(0xC000)),
 			FaultCode::Unassigned3
 		);
 		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0xD000)),
+			FaultCode::from_word_bits(WordBits(0xD000)),
 			FaultCode::Unassigned4
 		);
 		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0xE000)),
+			FaultCode::from_word_bits(WordBits(0xE000)),
 			FaultCode::Unassigned5
 		);
 		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0xF000)),
+			FaultCode::from_word_bits(WordBits(0xF000)),
 			FaultCode::Unassigned6
 		);
 
 		// Other bits should not affect the fault code
-		assert_eq!(
-			FaultCode::from_instruction(InstructionWord(0x0BAD)),
-			FaultCode::None
-		);
+		assert_eq!(FaultCode::from_word_bits(WordBits(0x0BAD)), FaultCode::None);
 	}
 
 	#[test]
@@ -573,25 +509,25 @@ mod tests
 			);
 
 			assert_eq!(
-				RegisterIndex::from_instruction(InstructionWord(words.0), shift),
+				RegisterIndex::from_word_bits(WordBits(words.0), shift),
 				RegisterIndex::R0,
 				"Checking literal value {:#06X}",
 				words.0
 			);
 			assert_eq!(
-				RegisterIndex::from_instruction(InstructionWord(words.1), shift),
+				RegisterIndex::from_word_bits(WordBits(words.1), shift),
 				RegisterIndex::R1,
 				"Checking literal value {:#06X}",
 				words.1
 			);
 			assert_eq!(
-				RegisterIndex::from_instruction(InstructionWord(words.2), shift),
+				RegisterIndex::from_word_bits(WordBits(words.2), shift),
 				RegisterIndex::Lr,
 				"Checking literal value {:#06X}",
 				words.2
 			);
 			assert_eq!(
-				RegisterIndex::from_instruction(InstructionWord(words.3), shift),
+				RegisterIndex::from_word_bits(WordBits(words.3), shift),
 				RegisterIndex::Pc,
 				"Checking literal value {:#06X}",
 				words.3
