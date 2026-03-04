@@ -121,10 +121,10 @@ static INSTRUCTION_CALLBACKS: [InstructionCallback; NUM_OPCODES] = [
 	executeAsgn,       // 0x05 Asgn
 	executeShft,       // 0x06 Shft
 	executeBitw,       // 0x07 Bitw
-	executeUnassigned, // 0x08 Cbx
-	executeUnassigned, // 0x09 Ldst
-	executeUnassigned, // 0x0A Stk
-	executeUnassigned, // 0x0B Sig
+	executeCbx,        // 0x08 Cbx
+	executeLdst,       // 0x09 Ldst
+	executeStk,        // 0x0A Stk
+	executeSig,        // 0x0B Sig
 	executeUnassigned, // 0x0C Unassigned0
 	executeUnassigned, // 0x0D Unassigned1
 	executeUnassigned, // 0x0E Unassigned2
@@ -518,6 +518,26 @@ fn executeBitw(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
 		..Default::default()
 	}
 	.set_register(dest_reg, op_result);
+}
+
+fn executeCbx(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
+{
+	todo!();
+}
+
+fn executeLdst(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
+{
+	todo!();
+}
+
+fn executeStk(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
+{
+	todo!();
+}
+
+fn executeSig(instruction: InstructionWord, cpu: &Cpu) -> InstructionResult
+{
+	todo!();
 }
 
 fn executeAddOrSub(
