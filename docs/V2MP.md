@@ -81,6 +81,8 @@ The CPU is 16-bit and little-endian. It contains the following registers:
 * A status register (`SR`)
 * A link register (`LR`)
 * Two general-purpose registers (`R0` and `R1`)
+* A fault register (`FR`)
+* Three signal registers (`S0`, `S1` and `S2`)
 
 ### Instruction Register (`IR`)
 
@@ -125,6 +127,23 @@ Outside of these instructions, the link register can also be used as a general-p
 ### General-Purpose Registers (`R0` and `R1`)
 
 The general-purpose registers do not have any special significance for most instructions - they are simply used to manipulate values. Any instructions that use `R0` or `R1` in specific ways will explain the nature of their use.
+
+### Fault Register (`FR`)
+
+The fault register holds the fault code and arguments of any fault raised during operation of the CPU.
+
+### Signal Registers (`S0`, `S1` and `S2`)
+
+The signal registers hold the signal code and arguments for any signal raised by the [`SIG`](#bh-raise-signal-sig) instruction. For more information, see the sections describing the [`SIG`](#bh-raise-signal-sig) instruction, and the available [signal codes](#signals).
+
+## Register Identifiers
+
+Some instructions and signals make reference to a register in the CPU using a 2-bit identifier as an operand. Whenever one of these identifiers is used, it refers to the following register unless otherwise stated:
+
+* `00b` refers to `R0`.
+* `01b` refers to `R1`.
+* `10b` refers to `LR`.
+* `11b` refers to `PC`.
 
 ## Memory Model
 
@@ -183,13 +202,6 @@ High |CCCC|DDDDDDDDDDDD| Low
 
 Operand bits in register diagrams are assigned letters based on which operands they correspond to. Operand bits represented by `.` are not used by the instruction, and **must** be set to `0`. If this is not the case, a [`RES`](#fault) fault is raised.
 
-Some instructions make reference to a register in the CPU using a 2-bit identifier as an operand. Whenever one of these identifiers is used, it refers to the following register unless otherwise stated:
-
-* `00b` refers to `R0`.
-* `01b` refers to `R1`.
-* `10b` refers to `LR`.
-* `11b` refers to `PC`.
-
 ### `0h`: No Operation (`NOP`)
 
 Performs no operation.
@@ -212,8 +224,8 @@ Increments the value in a register.
 |0001|AABBCCCCCCCC|
 ```
 
-* Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
-* Operand bits `[9 8] (B)` specify the two-bit identifier of the register to use as the destination.
+* Operand bits `[11 10] (A)` specify the [two-bit identifier](#register-identifiers) of the register to use as the source.
+* Operand bits `[9 8] (B)` specify the [two-bit identifier](#register-identifiers) of the register to use as the destination.
 
 If the source `A` and destination `B` register identifiers are different, the source register's value is used to increment the destination register, and the source register remains unchanged. Operand bits `[7 0] (C)` must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
 
@@ -236,8 +248,8 @@ Decrements the value in a register.
 |0010|AABBCCCCCCCC|
 ```
 
-* Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
-* Operand bits `[9 8] (B)` specify the two-bit identifier of the register to use as the destination.
+* Operand bits `[11 10] (A)` specify the [two-bit identifier](#register-identifiers) of the register to use as the source.
+* Operand bits `[9 8] (B)` specify the [two-bit identifier](#register-identifiers) of the register to use as the destination.
 
 If the source `A` and destination `B` register identifiers are different, the source register's value is used to decrement the destination register, and the source register remains unchanged. Operand bits `[7 0] (C)` must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
 
@@ -304,8 +316,8 @@ Assigns a value to a register.
 |0101|AABBCCCCCCCC|
 ```
 
-* Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source.
-* Operand bits `[9 8] (B)` specify the two-bit identifier of the register to use as the destination.
+* Operand bits `[11 10] (A)` specify the [two-bit identifier](#register-identifiers) of the register to use as the source.
+* Operand bits `[9 8] (B)` specify the [two-bit identifier](#register-identifiers) of the register to use as the destination.
 
 If the source `A` and destination `B` register identifiers are different, the source register's value is copied to the destination register, and the source register remains unchanged. This behaviour is the same regardless of the destination register. Operand bits `[7 0] (C)` of the instruction must be set to `0` in this case, or a [`RES`](#faults) fault will be raised.
 
@@ -326,7 +338,7 @@ If `A` and `B` are the same and the destination register is `R0`, `R1` or `LR`, 
 |1111111110000010|
 ```
 
-If `A` and `B` are the same, `PC` may not be assigned to, since the range of values that are passed in operand bits `[7 0] (C)` is too small to be useful. If `A` and `B` are the same and the register index `11b` is specified, a [`RES`](#faults) fault is raised.
+If `A` and `B` are the same, `PC` may not be assigned to, since the range of values that are passed in operand bits `[7 0] (C)` is too small to be useful. If `A` and `B` are the same and the register index `11b` is specified in both, a [`RES`](#faults) fault is raised.
 
 In all cases described for this instruction, `SR[Z]` is set if the eventual value in the destination register is zero; otherwise, it is cleared. All other bits in `SR` are cleared.
 
@@ -339,8 +351,8 @@ Shifts the bits in a register left or right.
 |0110|AABB...CCCCC|
 ```
 
-* Operand bits `[11 10] (A)` specify the two-bit identifier of the register whose value determines the magnitude of the shift. The contents of the register are treated as a signed 16-bit value.
-* Operand bits `[9 8] (B)` specify the two-bit identifier of the register whose value will be shifted.
+* Operand bits `[11 10] (A)` specify the [two-bit identifier](#register-identifiers) of the register whose value determines the magnitude of the shift. The contents of the register are treated as a signed 16-bit value.
+* Operand bits `[9 8] (B)` specify the [two-bit identifier](#register-identifiers) of the register whose value will be shifted.
 
 If both register identifiers `A` and `B` are the same, operand bits `[4 0] (C)` are used to determine the magnitude of the shift. The magnitude is treated as a signed 5-bit number, ranging from `-16` to `15`.
 
@@ -361,8 +373,8 @@ Performs a bitwise operation between two register values.
 |0111|AABBCCD.EEEE|
 ```
 
-* Operand bits `[11 10] (A)` specify the two-bit identifier of the register to use as the source of the bit mask.
-* Operand bits `[9 8] (B)` specify the two-bit identifier of the register to use as the destination.
+* Operand bits `[11 10] (A)` specify the [two-bit identifier](#register-identifiers) of the register to use as the source of the bit mask.
+* Operand bits `[9 8] (B)` specify the [two-bit identifier](#register-identifiers) of the register to use as the destination.
 * Operand bits `[7 6] (C)` specify the type of bitwise operation to perform:
   * `00b` performs a bitwise `AND`.
   * `01b` performs a bitwise `OR`.
@@ -406,7 +418,7 @@ After this instruction, `SR[Z]` is set to `1` if the condition was not met. If t
 
 ### `9h`: Load/Store (`LDST`)
 
-Depending on the operands, either loads a value from a location in memory, or stores a value to a location in memory.
+Depending on the operands, either loads a value from a location in memory into a register, or stores a value from a register into a location in memory.
 
 ```
  LDST
@@ -416,9 +428,9 @@ Depending on the operands, either loads a value from a location in memory, or st
 * Operand bit `[11] (A)` specifies the mode of the operation:
   * `0b` means that the operation is a load.
   * `1b` means that the operation is a store.
-* Operand bits `[10 9] (B)` specify the two-bit identifier of the register whose value will be used for the operation.
+* Operand bits `[10 9] (B)` specify the [two-bit identifier](#register-identifiers) of the register that will be used to hold the result of a load, or provide the value for a store.
 
-The memory location for the load or store is always specified by the value of `LR`. This always refers to the data segment `DS`.
+The memory address for the load or store is always specified by the value of `LR`. This always refers to the data segment `DS`.
 
 Operand bits `[8 0]` of the instruction are reserved for future use. If any of these bits is not `0`, a [`RES`](#fault) fault will be raised.
 
@@ -442,7 +454,7 @@ Pushes or pops register values from the stack.
   * Operand bit `[1]` specifies whether `R1` is included in the operation: it is included if this bit is set, and is not included if this bit is not set.
   * Operand bit `[0]` specifies whether `R0` is included in the operation: it is included if this bit is set, and is not included if this bit is not set.
 
-Operand bits `[10 4]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised. Additionally, including no registers in the operation (ie. leaving operand bits `B` - `E` as `0`) will also raise a [`RES`](#faults) fault.
+Operand bits `[10 4]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised. Additionally, including no registers in the operation (ie. leaving all operand bits `B` as `0`) will also raise a [`RES`](#faults) fault.
 
 Registers are always pushed onto the stack in the following order, and are popped from the stack in reverse order:
 
@@ -468,13 +480,21 @@ Raises a signal to be handled by the supervisor.
 
 All operand bits `[11 0]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
 
-The code representing the signal being raised is specified by `R0`. See the [Signals](#signals) section for a complete list of signal codes. If the value of `R0` does not correspond to a recognised signal, a [`INS`](#faults) fault is raised.
+The code representing the signal being raised is specified by `R0`. Signal codes where bit `[15]` is set to `1` are reserved for internal use by the supervisor, and may not be requested by the [`SIG`](#bh-raise-signal-sig) instruction. If `R0` provides a signal code where bit `[15]` is set to `1`, a [`RES`](#faults) fault is raised. See the [Signals](#signals) section for a complete list of signal codes.
 
-The registers `R1` and `LR` may be treated as arguments to the signal, depending on which signal is raised. If a signal does not make use of `R1` or `LR`, the value in the register is ignored and left unchanged. If a signal does make use of `R1` and/or `LR`, the values in the registers used by the signal may be modified in response to the signal.
+The registers `R1` and `LR` may be treated as arguments to the signal, depending on which signal is raised.
 
-Additionally, memory in any of the `CS`, `DS` or `SS` segments may be modified by the supervisor in response to the signal, depending on the functionality implemented by the supervisor when responding to the signal.
+Upon executing the `SIG` instruction, the values in `R0`, `R1` and `LR` are copied conditionally to the signal registers `S0`, `S1` and `S2`:
 
-Signals which make use of any registers or memory segments will describe the nature of their use, and any side-effects that may occur in response to the signal being raised. See the [Signals](#signals) section for complete documentation on available signals.
+* The value of `R0` is copied into `S0`. `R0` itself is left unchanged.
+* If the signal accepts an argument value in `R1`, the argument value is copied from `R1` into `S1`. Otherwise, all bits in `S1` are set to `0`. `R1` itself is left unchanged.
+* If the signal accepts an argument value in `LR`, the argument value is copied from `LR` into `S2`. Otherwise, all bits in `S2` are set to `0`. `LR` itself is left unchanged.
+
+After setting `S0`, `S1` and `S2`, the supervisor immediately actions the signal based on the signal code in `S0`, and interprets the arguments in `S1` and `S2` as appropriate for the signal. If the value of `S0` does not correspond to a recognised signal code, an [`INS`](#faults) fault is raised.
+
+The `SIG` instruction is not considered to have finished executing until the supervisor has finished responding to the requested signal. This means that instruction execution is blocked during this time.
+
+The supervisor may modify any CPU registers, and any memory in any of the `CS`, `DS` or `SS` segments, when responding to a signal. Signals which make use of any registers or memory segments will describe the nature of their use, and any side-effects that may occur in response to the signal being raised. See the [Signals](#signals) section for complete documentation on available signals.
 
 ## Signals
 
@@ -482,9 +502,74 @@ Possible signals that may be raised by the [`SIG`](#bh-raise-signal-sig) instruc
 
 ### `0000h`: End Program
 
-This signal indicates that the program has finished. `R1` indicates an exit code. By convention, this should be `0` if the program completed its task successfully, and non-`0` if an error occurred. **TODO:** define common error codes?
+This signal indicates that the program has finished. `R1` indicates an exit code, and the value in `LR` is ignored. By convention, `R1` should be `0` if the program completed its task successfully, and non-`0` if an error occurred.
 
-Upon receipt of this signal, the supervisor will terminate the program and the processor will no longer be simulated.
+Upon receipt of this signal, the supervisor will terminate the program.
+
+## Reserved Signals
+
+Signal codes where bit `[15]` is set to `1` are reserved for internal use by the supervisor, and may not be requested by the [`SIG`](#bh-raise-signal-sig) instruction. If a `SIG` instruction provides a signal code where bit `[15]` is set to `1`, a [`RES`](#faults) fault is raised.
+
+### `8000h`: Load/Store Word
+
+This signal requests that the supervisor load a word from memory into a register, or store a word from a register into memory. This signal is actioned internally when executing an [`LDST`](#9h-loadstore-ldst) instruction.
+
+```
+S0 |1000000000000000|
+S1 |ABB.............|
+S2 |CCCCCCCCCCCCCCCC|
+```
+
+* `S0` denotes the signal code.
+* `S1` bit `[15] (A)` specifies the mode of the operation:
+  * `0b` means that the operation is a load.
+  * `1b` means that the operation is a store.
+* `S1` bits `[14 13] (B)` specify the [two-bit identifier](#register-identifiers) of the register that will be used to hold the result of a load, or provide the value for a store.
+* `S1` bits `[12 0]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised. 
+* `S2` holds the memory address that will be used to load data from, or store data into. This always refers to the data segment `DS`.
+
+If the memory address specified by `S2` is not aligned to a word boundary, an [`ALGN`](#faults) fault will be raised. If the address is not within the boundaries of `DS`, a [`SEG`](#faults) fault will be raised.
+
+
+If the value that is loaded or stored to or from the register is zero, `SR[Z]` is set; otherwise, it is cleared. All other bits in `SR` are always cleared.
+
+Instruction execution is blocked until the load or store operation is complete.
+
+### `8001h`: Push/Pop Stack
+
+This signal requests that the supervisor push registers onto the stack, or pop values from the stack into registers. This signal is actioned internally when executing a [`STK`](#ah-stack-operation-stk) instruction.
+
+```
+S0 |1000000000000001|
+S1 |A...........BBBB|
+S2 |................|
+```
+
+* `S0` denotes the signal code.
+* `S1` bit `[15] (A)` specifies whether the operation is a push or pop. If `A` is set then the operation is a push; if `A` is not set then the operation is a pop.
+* `S1` bits `[3 0] (B)` serve as a bitmask to specify which registers will be included in the operation:
+  * Bit `[3]` specifies whether `PC` is included in the operation: it is included if this bit is set, and is not included if this bit is not set.
+  * Bit `[2]` specifies whether `LR` is included in the operation: it is included if this bit is set, and is not included if this bit is not set.
+  * Bit `[1]` specifies whether `R1` is included in the operation: it is included if this bit is set, and is not included if this bit is not set.
+  * Bit `[0]` specifies whether `R0` is included in the operation: it is included if this bit is set, and is not included if this bit is not set.
+  * Including no registers in the operation (ie. leaving all operand bits `B` as `0`) will raise a [`RES`](#faults) fault.
+* `S1` bits `[14 4]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
+* `S2` bits `[15 0]` are reserved for future use, and must be set to `0`. If this is not the case, a [`RES`](#faults) fault will be raised.
+
+Registers are always pushed onto the stack in the following order, and are popped from the stack in reverse order:
+
+1. `R0`
+2. `R1`
+3. `LR`
+4. `PC`
+
+If a register is not specified in the instruction word, it is not included in the push or pop operation. After the operation, the stack is grown or shrunk by as many words as there were registers included in the operation.
+
+If a push operation overflows the stack, or a pop operation underflows the stack, a [`SOF`](#faults) fault is raised.
+
+The status register `SR` is unaffected by the instruction, and its existing value is maintained.
+
+Instruction execution is blocked until the push or pop operation is complete.
 
 ## Faults
 
@@ -504,3 +589,7 @@ The possible faults raised by the processor are described below.
 ## Points to Resolve
 
 * Is it a good idea to treat LR and the other register involved in a MUL instruction as being "concatenated" into a 32-bit word? Would it be better to treat one as an unsigned factor, and the other as a signed factor?
+* We should define some common exit codes for the "End Program" signal.
+* We should properly define the arguments used for each fault code.
+* We can augment `ASGN` to replace the disallowed "assign a literal to `PC`" behaviour with a more useful "assign to the upper byte of `LR`" behaviour. This means that for the special case of `LR`, a full word could be assigned using just two `ASGN` instructions, instead of needing an assign-shift-assign pattern.
+* We can add an extra bit flag to `SHFT` that enables "rotating" the shifted bits (ie. bits shifted off one end of the register are replaced at the other end).
