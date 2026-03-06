@@ -13,6 +13,8 @@ pub fn execute(registers: Registers) -> Registers
 
 const REG_VAL_FAULT_RES: Word = FaultCode::Res.as_register_value(0);
 const REG_VAL_FAULT_DIV: Word = FaultCode::Div.as_register_value(0);
+const REG_VAL_FAULT_NONE_WITH_INVALID_ARGS: Word =
+	FaultCode::Div.as_register_value(FAULT_ARGS_RESERVED_BITS_SET);
 
 enum AddOrSub
 {
@@ -151,16 +153,14 @@ impl InstructionResult
 			s2: self.fr.unwrap_or(0),
 		};
 
-		{
-			// If there is no fault code set, but there are fault bits set,
-			// map this to a Res fault.
-			let fault_bits: WordBits = WordBits(registers.fr);
+		// If there is no fault code set, but there are fault bits set,
+		// map this to a Res fault.
+		let fault_bits: WordBits = WordBits(registers.fr);
 
-			if FaultCode::from_word_bits(fault_bits) == FaultCode::None
-				&& fault_bits.any_bits_set(FAULT_ARG_MASK)
-			{
-				registers.fr = FaultCode::Res.as_register_value(FAULT_ARGS_RESERVED_BITS_SET);
-			}
+		if FaultCode::from_word_bits(fault_bits) == FaultCode::None
+			&& fault_bits.any_bits_set(FAULT_ARG_MASK)
+		{
+			registers.fr = REG_VAL_FAULT_NONE_WITH_INVALID_ARGS;
 		}
 
 		return registers;
@@ -605,9 +605,29 @@ fn executeCbx(instruction: WordBits, registers: &Registers) -> InstructionResult
 	};
 }
 
-fn executeLdst(_: WordBits, _: &Registers) -> InstructionResult
+fn executeLdst(instruction: WordBits, registers: &Registers) -> InstructionResult
 {
-	todo!();
+	const MASK_RESBITS: Word = 0x01FF;
+	const MASK_OPERATION_IS_STORE: Word = 0x0800;
+	const MASK_REGINDEX: Word = REGISTER_INDEX_MASK << 9;
+
+	if instruction.any_bits_set(MASK_RESBITS)
+	{
+		return InstructionResult {
+			fr: Some(REG_VAL_FAULT_RES),
+			..Default::default()
+		};
+	}
+
+	let signal_args: Word = instruction.bits(MASK_OPERATION_IS_STORE | MASK_REGINDEX, 0) << 4;
+
+	// Status register is not set here, only after the signal completes.
+	return InstructionResult {
+		s0: Some(SignalCode::InternalLoadStore.as_value()),
+		s1: Some(signal_args),
+		s2: Some(registers.lr),
+		..Default::default()
+	};
 }
 
 fn executeStk(_: WordBits, _: &Registers) -> InstructionResult

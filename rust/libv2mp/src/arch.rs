@@ -415,6 +415,8 @@ impl BitwiseOp
 pub enum SignalCode
 {
 	None = 0x0000,
+
+	InternalLoadStore = 0x8000,
 }
 
 impl SignalCode
