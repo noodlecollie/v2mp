@@ -500,7 +500,7 @@ The supervisor may modify any CPU registers, and any memory in any of the `CS`, 
 
 Possible signals that may be raised by the [`SIG`](#bh-raise-signal-sig) instruction are described below.
 
-### `0000h`: End Program
+### `0001h`: End Program
 
 This signal indicates that the program has finished. `R1` indicates an exit code, and the value in `LR` is ignored. By convention, `R1` should be `0` if the program completed its task successfully, and non-`0` if an error occurred.
 

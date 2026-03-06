@@ -410,6 +410,23 @@ impl BitwiseOp
 	}
 }
 
+#[repr(u16)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum SignalCode
+{
+	None = 0x0000,
+}
+
+impl SignalCode
+{
+	pub const fn as_value(&self) -> Word
+	{
+		// SAFETY: Matches the repr type specified for the enum,
+		// so we can always convert to this type.
+		return unsafe { *(self as *const Self as *const Word) };
+	}
+}
+
 #[cfg(test)]
 mod tests
 {
