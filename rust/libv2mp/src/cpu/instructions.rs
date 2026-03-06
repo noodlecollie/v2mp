@@ -630,9 +630,29 @@ fn executeLdst(instruction: WordBits, registers: &Registers) -> InstructionResul
 	};
 }
 
-fn executeStk(_: WordBits, _: &Registers) -> InstructionResult
+fn executeStk(instruction: WordBits, _: &Registers) -> InstructionResult
 {
-	todo!();
+	const MASK_RESBITS: Word = 0x07F0;
+	const MASK_OPERATION_IS_PUSH: Word = 0x0800;
+	const MASK_INCLUDED_REGISTERS: Word = 0x000F;
+
+	if instruction.any_bits_set(MASK_RESBITS)
+	{
+		return InstructionResult {
+			fr: Some(REG_VAL_FAULT_RES),
+			..Default::default()
+		};
+	}
+
+	let signal_args: Word = (instruction.bits(MASK_OPERATION_IS_PUSH, 0) << 4)
+		| (instruction.bits(MASK_INCLUDED_REGISTERS, 0));
+
+	// Status register is not set here, only after the signal completes.
+	return InstructionResult {
+		s0: Some(SignalCode::InternalLoadStore.as_value()),
+		s1: Some(signal_args),
+		..Default::default()
+	};
 }
 
 fn executeSig(_: WordBits, _: &Registers) -> InstructionResult
