@@ -1,5 +1,6 @@
 use crate::arch::*;
-use crate::cpu::Registers;
+use crate::cpu::signals::SignalRegisters;
+use crate::cpu::{InstructionResult, Registers, signals};
 
 pub fn execute(registers: Registers) -> Registers
 {
@@ -13,44 +14,11 @@ pub fn execute(registers: Registers) -> Registers
 
 const REG_VAL_FAULT_RES: Word = FaultCode::Res.as_register_value(0);
 const REG_VAL_FAULT_DIV: Word = FaultCode::Div.as_register_value(0);
-const REG_VAL_FAULT_NONE_WITH_INVALID_ARGS: Word =
-	FaultCode::Div.as_register_value(FAULT_ARGS_RESERVED_BITS_SET);
 
 enum AddOrSub
 {
 	Add,
 	Sub,
-}
-
-struct InstructionResult
-{
-	pub pc: Option<Word>,
-	pub sr: Option<Word>,
-	pub lr: Option<Word>,
-	pub r0: Option<Word>,
-	pub r1: Option<Word>,
-	pub ir: Option<Word>,
-	pub sp: Option<Word>,
-	pub fr: Option<Word>,
-	pub s0: Option<Word>,
-	pub s1: Option<Word>,
-	pub s2: Option<Word>,
-}
-
-impl InstructionResult
-{
-	pub fn set_register(mut self, index: RegisterIndex, value: Word) -> Self
-	{
-		match index
-		{
-			RegisterIndex::R0 => self.r0 = Some(value),
-			RegisterIndex::R1 => self.r1 = Some(value),
-			RegisterIndex::Lr => self.lr = Some(value),
-			RegisterIndex::Pc => self.pc = Some(value),
-		};
-
-		return self;
-	}
 }
 
 struct MulDivParams
@@ -134,38 +102,6 @@ static INSTRUCTION_CALLBACKS: [InstructionCallback; NUM_OPCODES] = [
 	executeUnassigned, // 0x0E Unassigned2
 	executeUnassigned, // 0x0F Unassigned3
 ];
-
-impl InstructionResult
-{
-	pub fn apply(self, mut registers: Registers) -> Registers
-	{
-		registers = Registers {
-			pc: self.pc.unwrap_or(registers.pc),
-			sr: self.sr.unwrap_or(registers.sr),
-			lr: self.lr.unwrap_or(registers.lr),
-			r0: self.r0.unwrap_or(registers.r0),
-			r1: self.r1.unwrap_or(registers.r1),
-			ir: self.ir.unwrap_or(registers.ir),
-			sp: self.sp.unwrap_or(registers.sp),
-			fr: self.fr.unwrap_or(registers.fr),
-			s0: self.fr.unwrap_or(SignalCode::None.as_value()),
-			s1: self.fr.unwrap_or(0),
-			s2: self.fr.unwrap_or(0),
-		};
-
-		// If there is no fault code set, but there are fault bits set,
-		// map this to a Res fault.
-		let fault_bits: WordBits = WordBits(registers.fr);
-
-		if FaultCode::from_word_bits(fault_bits) == FaultCode::None
-			&& fault_bits.any_bits_set(FAULT_ARG_MASK)
-		{
-			registers.fr = REG_VAL_FAULT_NONE_WITH_INVALID_ARGS;
-		}
-
-		return registers;
-	}
-}
 
 impl Default for InstructionResult
 {
@@ -655,9 +591,19 @@ fn executeStk(instruction: WordBits, _: &Registers) -> InstructionResult
 	};
 }
 
-fn executeSig(_: WordBits, _: &Registers) -> InstructionResult
+fn executeSig(instruction: WordBits, registers: &Registers) -> InstructionResult
 {
-	todo!();
+	const MASK_RESBITS: Word = 0x0FFF;
+
+	if instruction.any_bits_set(MASK_RESBITS)
+	{
+		return InstructionResult {
+			fr: Some(REG_VAL_FAULT_RES),
+			..Default::default()
+		};
+	}
+
+	return InstructionResult::default().set_signal_registers(signals::raise(registers));
 }
 
 fn executeAddOrSub(

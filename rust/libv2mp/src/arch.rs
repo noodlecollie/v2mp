@@ -411,12 +411,13 @@ impl BitwiseOp
 }
 
 #[repr(u16)]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum SignalCode
 {
 	None = 0x0000,
 
 	InternalLoadStore = 0x8000,
+	InternalPushPopStack = 0x8001,
 }
 
 impl SignalCode
