@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use lazy_static::lazy_static;
 
 use crate::arch::*;
-use crate::cpu::Registers;
+use crate::execution_context::Registers;
 
 #[derive(Debug)]
 pub struct SignalRegisters

@@ -1,6 +1,7 @@
 use crate::arch::*;
-use crate::cpu::signals::SignalRegisters;
-use crate::cpu::{InstructionResult, Registers, signals};
+use crate::execution_context::Registers;
+use crate::signals;
+use crate::signals::SignalRegisters;
 
 pub fn execute(registers: Registers) -> Registers
 {
@@ -14,6 +15,80 @@ pub fn execute(registers: Registers) -> Registers
 
 const REG_VAL_FAULT_RES: Word = FaultCode::Res.as_register_value(0);
 const REG_VAL_FAULT_DIV: Word = FaultCode::Div.as_register_value(0);
+
+#[derive(Debug)]
+pub struct RegisterTransform
+{
+	pub pc: Option<Word>,
+	pub sr: Option<Word>,
+	pub lr: Option<Word>,
+	pub r0: Option<Word>,
+	pub r1: Option<Word>,
+	pub ir: Option<Word>,
+	pub sp: Option<Word>,
+	pub fr: Option<Word>,
+	pub s0: Option<Word>,
+	pub s1: Option<Word>,
+	pub s2: Option<Word>,
+}
+
+impl RegisterTransform
+{
+	pub fn set_register(mut self, index: RegisterIndex, value: Word) -> Self
+	{
+		match index
+		{
+			RegisterIndex::R0 => self.r0 = Some(value),
+			RegisterIndex::R1 => self.r1 = Some(value),
+			RegisterIndex::Lr => self.lr = Some(value),
+			RegisterIndex::Pc => self.pc = Some(value),
+		};
+
+		return self;
+	}
+
+	pub fn set_signal_registers(mut self, registers: SignalRegisters) -> Self
+	{
+		self.s0 = Some(registers.s0);
+		self.s1 = Some(registers.s1);
+		self.s2 = Some(registers.s2);
+		self.fr = Some(registers.fr);
+
+		return self;
+	}
+
+	pub fn apply(self, mut registers: Registers) -> Registers
+	{
+		const REG_VAL_FAULT_NONE_WITH_INVALID_ARGS: Word =
+			FaultCode::Div.as_register_value(FAULT_ARGS_RESERVED_BITS_SET);
+
+		registers = Registers {
+			pc: self.pc.unwrap_or(registers.pc),
+			sr: self.sr.unwrap_or(registers.sr),
+			lr: self.lr.unwrap_or(registers.lr),
+			r0: self.r0.unwrap_or(registers.r0),
+			r1: self.r1.unwrap_or(registers.r1),
+			ir: self.ir.unwrap_or(registers.ir),
+			sp: self.sp.unwrap_or(registers.sp),
+			fr: self.fr.unwrap_or(registers.fr),
+			s0: self.fr.unwrap_or(SignalCode::None.as_value()),
+			s1: self.fr.unwrap_or(0),
+			s2: self.fr.unwrap_or(0),
+		};
+
+		// If there is no fault code set, but there are fault bits set,
+		// map this to a Res fault.
+		let fault_bits: WordBits = WordBits(registers.fr);
+
+		if FaultCode::from_word_bits(fault_bits) == FaultCode::None
+			&& fault_bits.any_bits_set(FAULT_ARG_MASK)
+		{
+			registers.fr = REG_VAL_FAULT_NONE_WITH_INVALID_ARGS;
+		}
+
+		return registers;
+	}
+}
 
 enum AddOrSub
 {
@@ -82,7 +157,7 @@ impl MulDivParams
 	}
 }
 
-type InstructionCallback = fn(instruction: WordBits, registers: &Registers) -> InstructionResult;
+type InstructionCallback = fn(instruction: WordBits, registers: &Registers) -> RegisterTransform;
 
 static INSTRUCTION_CALLBACKS: [InstructionCallback; NUM_OPCODES] = [
 	executeNop,        // 0x00 Nop
@@ -103,7 +178,7 @@ static INSTRUCTION_CALLBACKS: [InstructionCallback; NUM_OPCODES] = [
 	executeUnassigned, // 0x0F Unassigned3
 ];
 
-impl Default for InstructionResult
+impl Default for RegisterTransform
 {
 	fn default() -> Self
 	{
@@ -123,34 +198,34 @@ impl Default for InstructionResult
 	}
 }
 
-fn executeUnassigned(_: WordBits, _: &Registers) -> InstructionResult
+fn executeUnassigned(_: WordBits, _: &Registers) -> RegisterTransform
 {
-	return InstructionResult {
+	return RegisterTransform {
 		fr: Some(FaultCode::Ini.as_register_value(0)),
 		..Default::default()
 	};
 }
 
-fn executeNop(instruction: WordBits, _: &Registers) -> InstructionResult
+fn executeNop(instruction: WordBits, _: &Registers) -> RegisterTransform
 {
-	return InstructionResult {
+	return RegisterTransform {
 		// Fault if any of the arg bits are set
 		fr: faultRegisterIfReservedBitsSet(instruction, INSTRUCTION_ARG_MASK),
 		..Default::default()
 	};
 }
 
-fn executeAdd(instruction: WordBits, registers: &Registers) -> InstructionResult
+fn executeAdd(instruction: WordBits, registers: &Registers) -> RegisterTransform
 {
 	return executeAddOrSub(instruction, registers, AddOrSub::Add);
 }
 
-fn executeSub(instruction: WordBits, registers: &Registers) -> InstructionResult
+fn executeSub(instruction: WordBits, registers: &Registers) -> RegisterTransform
 {
 	return executeAddOrSub(instruction, registers, AddOrSub::Add);
 }
 
-fn executeMul(instruction: WordBits, registers: &Registers) -> InstructionResult
+fn executeMul(instruction: WordBits, registers: &Registers) -> RegisterTransform
 {
 	const MASK_RESBITS: Word = 0x0100;
 
@@ -163,7 +238,7 @@ fn executeMul(instruction: WordBits, registers: &Registers) -> InstructionResult
 
 	if instruction.any_bits_set(MASK_RESBITS)
 	{
-		return InstructionResult {
+		return RegisterTransform {
 			fr: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
@@ -212,7 +287,7 @@ fn executeMul(instruction: WordBits, registers: &Registers) -> InstructionResult
 	let status_result: Word =
 		StatusRegisterFlag::Z.set_if(status_result, op_result.upper == 0 && op_result.lower == 0);
 
-	return InstructionResult {
+	return RegisterTransform {
 		sr: Some(status_result),
 		..Default::default()
 	}
@@ -220,13 +295,13 @@ fn executeMul(instruction: WordBits, registers: &Registers) -> InstructionResult
 	.set_register(params.dest_reg, op_result.lower);
 }
 
-fn executeDiv(instruction: WordBits, registers: &Registers) -> InstructionResult
+fn executeDiv(instruction: WordBits, registers: &Registers) -> RegisterTransform
 {
 	const MASK_RESBITS: Word = 0x0100;
 
 	if instruction.any_bits_set(MASK_RESBITS)
 	{
-		return InstructionResult {
+		return RegisterTransform {
 			fr: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
@@ -236,7 +311,7 @@ fn executeDiv(instruction: WordBits, registers: &Registers) -> InstructionResult
 
 	if params.source_value == 0
 	{
-		return InstructionResult {
+		return RegisterTransform {
 			fr: Some(REG_VAL_FAULT_DIV),
 			..Default::default()
 		};
@@ -265,7 +340,7 @@ fn executeDiv(instruction: WordBits, registers: &Registers) -> InstructionResult
 	let status_result: Word = StatusRegisterFlag::C.set_if(status_result, op_result.0 != 0);
 	let status_result: Word = StatusRegisterFlag::Z.set_if(status_result, op_result.1 == 0);
 
-	return InstructionResult {
+	return RegisterTransform {
 		sr: Some(status_result),
 		..Default::default()
 	}
@@ -273,7 +348,7 @@ fn executeDiv(instruction: WordBits, registers: &Registers) -> InstructionResult
 	.set_register(params.dest_reg, op_result.1);
 }
 
-fn executeAsgn(instruction: WordBits, registers: &Registers) -> InstructionResult
+fn executeAsgn(instruction: WordBits, registers: &Registers) -> RegisterTransform
 {
 	const SRC_REG_IDX_OFFSET: u8 = 10;
 	const DEST_REG_IDX_OFFSET: u8 = 8;
@@ -294,7 +369,7 @@ fn executeAsgn(instruction: WordBits, registers: &Registers) -> InstructionResul
 
 	if src_reg != dest_reg && value != 0
 	{
-		return InstructionResult {
+		return RegisterTransform {
 			fr: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
@@ -308,20 +383,20 @@ fn executeAsgn(instruction: WordBits, registers: &Registers) -> InstructionResul
 	// on it for anything right now.
 	if src_reg == dest_reg && dest_reg == RegisterIndex::Pc
 	{
-		return InstructionResult {
+		return RegisterTransform {
 			fr: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
 	}
 
-	return InstructionResult {
+	return RegisterTransform {
 		sr: Some(StatusRegisterFlag::Z.set_if(0, value == 0)),
 		..Default::default()
 	}
 	.set_register(dest_reg, value);
 }
 
-fn executeShft(instruction: WordBits, registers: &Registers) -> InstructionResult
+fn executeShft(instruction: WordBits, registers: &Registers) -> RegisterTransform
 {
 	const MASK_RESBITS: Word = 0x00E0;
 	const SRC_REG_IDX_OFFSET: u8 = 10;
@@ -331,7 +406,7 @@ fn executeShft(instruction: WordBits, registers: &Registers) -> InstructionResul
 
 	if instruction.any_bits_set(MASK_RESBITS)
 	{
-		return InstructionResult {
+		return RegisterTransform {
 			fr: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
@@ -351,7 +426,7 @@ fn executeShft(instruction: WordBits, registers: &Registers) -> InstructionResul
 
 	if src_reg == dest_reg && raw_shift_arg != 0
 	{
-		return InstructionResult {
+		return RegisterTransform {
 			fr: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
@@ -398,14 +473,14 @@ fn executeShft(instruction: WordBits, registers: &Registers) -> InstructionResul
 	let status_result: Word = StatusRegisterFlag::C.set_if(status_result, shifted_off_end);
 	let status_result: Word = StatusRegisterFlag::Z.set_if(status_result, shifted_value == 0);
 
-	return InstructionResult {
+	return RegisterTransform {
 		sr: Some(status_result),
 		..Default::default()
 	}
 	.set_register(dest_reg, shifted_value);
 }
 
-fn executeBitw(instruction: WordBits, registers: &Registers) -> InstructionResult
+fn executeBitw(instruction: WordBits, registers: &Registers) -> RegisterTransform
 {
 	const MASK_RESBITS: Word = 0x0010;
 	const MASK_FLIP: Word = 0x0020;
@@ -418,7 +493,7 @@ fn executeBitw(instruction: WordBits, registers: &Registers) -> InstructionResul
 
 	if instruction.any_bits_set(MASK_RESBITS)
 	{
-		return InstructionResult {
+		return RegisterTransform {
 			fr: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
@@ -436,7 +511,7 @@ fn executeBitw(instruction: WordBits, registers: &Registers) -> InstructionResul
 
 	if reserved_bits_set
 	{
-		return InstructionResult {
+		return RegisterTransform {
 			fr: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
@@ -471,14 +546,14 @@ fn executeBitw(instruction: WordBits, registers: &Registers) -> InstructionResul
 	let status_result: Word = 0;
 	let status_result: Word = StatusRegisterFlag::Z.set_if(status_result, op_result == 0);
 
-	return InstructionResult {
+	return RegisterTransform {
 		sr: Some(status_result),
 		..Default::default()
 	}
 	.set_register(dest_reg, op_result);
 }
 
-fn executeCbx(instruction: WordBits, registers: &Registers) -> InstructionResult
+fn executeCbx(instruction: WordBits, registers: &Registers) -> RegisterTransform
 {
 	const MASK_RESBITS: Word = 0x0300;
 	const MASK_LR_IS_TARGET: Word = 0x0800;
@@ -490,7 +565,7 @@ fn executeCbx(instruction: WordBits, registers: &Registers) -> InstructionResult
 
 	if instruction.any_bits_set(MASK_RESBITS)
 	{
-		return InstructionResult {
+		return RegisterTransform {
 			fr: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
@@ -501,7 +576,7 @@ fn executeCbx(instruction: WordBits, registers: &Registers) -> InstructionResult
 
 	if lr_is_target && literal_offset != 0
 	{
-		return InstructionResult {
+		return RegisterTransform {
 			fr: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
@@ -516,7 +591,7 @@ fn executeCbx(instruction: WordBits, registers: &Registers) -> InstructionResult
 	{
 		if lr_is_target
 		{
-			return InstructionResult {
+			return RegisterTransform {
 				sr: Some(0),
 				pc: Some(registers.lr),
 				..Default::default()
@@ -527,7 +602,7 @@ fn executeCbx(instruction: WordBits, registers: &Registers) -> InstructionResult
 			let pc_offset: Word = ((literal_offset) as usize * SIZE_OF_WORD) as Word;
 			let pc: Word = registers.pc.wrapping_add(pc_offset);
 
-			return InstructionResult {
+			return RegisterTransform {
 				sr: Some(0),
 				pc: Some(pc),
 				..Default::default()
@@ -535,13 +610,13 @@ fn executeCbx(instruction: WordBits, registers: &Registers) -> InstructionResult
 		}
 	}
 
-	return InstructionResult {
+	return RegisterTransform {
 		sr: Some(StatusRegisterFlag::Z.set(0)),
 		..Default::default()
 	};
 }
 
-fn executeLdst(instruction: WordBits, registers: &Registers) -> InstructionResult
+fn executeLdst(instruction: WordBits, registers: &Registers) -> RegisterTransform
 {
 	const MASK_RESBITS: Word = 0x01FF;
 	const MASK_OPERATION_IS_STORE: Word = 0x0800;
@@ -549,7 +624,7 @@ fn executeLdst(instruction: WordBits, registers: &Registers) -> InstructionResul
 
 	if instruction.any_bits_set(MASK_RESBITS)
 	{
-		return InstructionResult {
+		return RegisterTransform {
 			fr: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
@@ -558,7 +633,7 @@ fn executeLdst(instruction: WordBits, registers: &Registers) -> InstructionResul
 	let signal_args: Word = instruction.bits(MASK_OPERATION_IS_STORE | MASK_REGINDEX, 0) << 4;
 
 	// Status register is not set here, only after the signal completes.
-	return InstructionResult {
+	return RegisterTransform {
 		s0: Some(SignalCode::InternalLoadStore.as_value()),
 		s1: Some(signal_args),
 		s2: Some(registers.lr),
@@ -566,7 +641,7 @@ fn executeLdst(instruction: WordBits, registers: &Registers) -> InstructionResul
 	};
 }
 
-fn executeStk(instruction: WordBits, _: &Registers) -> InstructionResult
+fn executeStk(instruction: WordBits, _: &Registers) -> RegisterTransform
 {
 	const MASK_RESBITS: Word = 0x07F0;
 	const MASK_OPERATION_IS_PUSH: Word = 0x0800;
@@ -574,7 +649,7 @@ fn executeStk(instruction: WordBits, _: &Registers) -> InstructionResult
 
 	if instruction.any_bits_set(MASK_RESBITS)
 	{
-		return InstructionResult {
+		return RegisterTransform {
 			fr: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
@@ -584,33 +659,33 @@ fn executeStk(instruction: WordBits, _: &Registers) -> InstructionResult
 		| (instruction.bits(MASK_INCLUDED_REGISTERS, 0));
 
 	// Status register is not set here, only after the signal completes.
-	return InstructionResult {
+	return RegisterTransform {
 		s0: Some(SignalCode::InternalLoadStore.as_value()),
 		s1: Some(signal_args),
 		..Default::default()
 	};
 }
 
-fn executeSig(instruction: WordBits, registers: &Registers) -> InstructionResult
+fn executeSig(instruction: WordBits, registers: &Registers) -> RegisterTransform
 {
 	const MASK_RESBITS: Word = 0x0FFF;
 
 	if instruction.any_bits_set(MASK_RESBITS)
 	{
-		return InstructionResult {
+		return RegisterTransform {
 			fr: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
 	}
 
-	return InstructionResult::default().set_signal_registers(signals::raise(registers));
+	return RegisterTransform::default().set_signal_registers(signals::raise(registers));
 }
 
 fn executeAddOrSub(
 	instruction: WordBits,
 	registers: &Registers,
 	operation: AddOrSub,
-) -> InstructionResult
+) -> RegisterTransform
 {
 	const SRC_REG_IDX_OFFSET: u8 = 10;
 	const DEST_REG_IDX_OFFSET: u8 = 8;
@@ -625,7 +700,7 @@ fn executeAddOrSub(
 	{
 		// Should not have a literal value here, since
 		// the source register is being used as a value.
-		return InstructionResult {
+		return RegisterTransform {
 			fr: Some(REG_VAL_FAULT_RES),
 			..Default::default()
 		};
@@ -667,7 +742,7 @@ fn executeAddOrSub(
 	let status_result: Word = StatusRegisterFlag::C.set_if(status_result, overflowed);
 	let status_result: Word = StatusRegisterFlag::Z.set_if(status_result, op_result == 0);
 
-	return InstructionResult {
+	return RegisterTransform {
 		sr: Some(status_result),
 		..Default::default()
 	}
