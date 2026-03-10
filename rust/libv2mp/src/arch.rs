@@ -410,6 +410,8 @@ impl BitwiseOp
 	}
 }
 
+pub const SIGNAL_INTERNAL_MASK: Word = 0x8000;
+
 #[repr(u16)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum SignalCode
@@ -427,6 +429,11 @@ impl SignalCode
 		// SAFETY: Matches the repr type specified for the enum,
 		// so we can always convert to this type.
 		return unsafe { *(self as *const Self as *const Word) };
+	}
+
+	pub const fn is_internal(&self) -> bool
+	{
+		return (self.as_value() & SIGNAL_INTERNAL_MASK) != 0;
 	}
 }
 

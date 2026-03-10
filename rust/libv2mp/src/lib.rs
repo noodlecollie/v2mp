@@ -1,7 +1,6 @@
 mod arch;
+mod execution_context;
 mod instructions;
 mod signals;
-
-pub mod execution_context;
 
 pub use arch::*;

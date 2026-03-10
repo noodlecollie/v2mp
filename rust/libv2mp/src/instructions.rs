@@ -1,7 +1,6 @@
 use crate::arch::*;
-use crate::execution_context::Registers;
+use crate::execution_context::{RegisterTransform, Registers};
 use crate::signals;
-use crate::signals::SignalRegisters;
 
 pub fn execute(registers: Registers) -> Registers
 {
@@ -15,80 +14,6 @@ pub fn execute(registers: Registers) -> Registers
 
 const REG_VAL_FAULT_RES: Word = FaultCode::Res.as_register_value(0);
 const REG_VAL_FAULT_DIV: Word = FaultCode::Div.as_register_value(0);
-
-#[derive(Debug)]
-pub struct RegisterTransform
-{
-	pub pc: Option<Word>,
-	pub sr: Option<Word>,
-	pub lr: Option<Word>,
-	pub r0: Option<Word>,
-	pub r1: Option<Word>,
-	pub ir: Option<Word>,
-	pub sp: Option<Word>,
-	pub fr: Option<Word>,
-	pub s0: Option<Word>,
-	pub s1: Option<Word>,
-	pub s2: Option<Word>,
-}
-
-impl RegisterTransform
-{
-	pub fn set_register(mut self, index: RegisterIndex, value: Word) -> Self
-	{
-		match index
-		{
-			RegisterIndex::R0 => self.r0 = Some(value),
-			RegisterIndex::R1 => self.r1 = Some(value),
-			RegisterIndex::Lr => self.lr = Some(value),
-			RegisterIndex::Pc => self.pc = Some(value),
-		};
-
-		return self;
-	}
-
-	pub fn set_signal_registers(mut self, registers: SignalRegisters) -> Self
-	{
-		self.s0 = Some(registers.s0);
-		self.s1 = Some(registers.s1);
-		self.s2 = Some(registers.s2);
-		self.fr = Some(registers.fr);
-
-		return self;
-	}
-
-	pub fn apply(self, mut registers: Registers) -> Registers
-	{
-		const REG_VAL_FAULT_NONE_WITH_INVALID_ARGS: Word =
-			FaultCode::Div.as_register_value(FAULT_ARGS_RESERVED_BITS_SET);
-
-		registers = Registers {
-			pc: self.pc.unwrap_or(registers.pc),
-			sr: self.sr.unwrap_or(registers.sr),
-			lr: self.lr.unwrap_or(registers.lr),
-			r0: self.r0.unwrap_or(registers.r0),
-			r1: self.r1.unwrap_or(registers.r1),
-			ir: self.ir.unwrap_or(registers.ir),
-			sp: self.sp.unwrap_or(registers.sp),
-			fr: self.fr.unwrap_or(registers.fr),
-			s0: self.fr.unwrap_or(SignalCode::None.as_value()),
-			s1: self.fr.unwrap_or(0),
-			s2: self.fr.unwrap_or(0),
-		};
-
-		// If there is no fault code set, but there are fault bits set,
-		// map this to a Res fault.
-		let fault_bits: WordBits = WordBits(registers.fr);
-
-		if FaultCode::from_word_bits(fault_bits) == FaultCode::None
-			&& fault_bits.any_bits_set(FAULT_ARG_MASK)
-		{
-			registers.fr = REG_VAL_FAULT_NONE_WITH_INVALID_ARGS;
-		}
-
-		return registers;
-	}
-}
 
 enum AddOrSub
 {
@@ -631,14 +556,16 @@ fn executeLdst(instruction: WordBits, registers: &Registers) -> RegisterTransfor
 	}
 
 	let signal_args: Word = instruction.bits(MASK_OPERATION_IS_STORE | MASK_REGINDEX, 0) << 4;
+	let target_address: Word = registers.r1;
 
-	// Status register is not set here, only after the signal completes.
-	return RegisterTransform {
-		s0: Some(SignalCode::InternalLoadStore.as_value()),
-		s1: Some(signal_args),
-		s2: Some(registers.lr),
+	// To avoid having to add a different code path into the signal table, just pass
+	// in some fake registers and let the signal raise() function use those.
+	return RegisterTransform::default().set_signal_registers(signals::raise(&Registers {
+		r0: SignalCode::InternalLoadStore.as_value(),
+		r1: signal_args,
+		lr: target_address,
 		..Default::default()
-	};
+	}));
 }
 
 fn executeStk(instruction: WordBits, _: &Registers) -> RegisterTransform
@@ -658,12 +585,13 @@ fn executeStk(instruction: WordBits, _: &Registers) -> RegisterTransform
 	let signal_args: Word = (instruction.bits(MASK_OPERATION_IS_PUSH, 0) << 4)
 		| (instruction.bits(MASK_INCLUDED_REGISTERS, 0));
 
-	// Status register is not set here, only after the signal completes.
-	return RegisterTransform {
-		s0: Some(SignalCode::InternalLoadStore.as_value()),
-		s1: Some(signal_args),
+	// To avoid having to add a different code path into the signal table, just pass
+	// in some fake registers and let the signal raise() function use those.
+	return RegisterTransform::default().set_signal_registers(signals::raise(&Registers {
+		r0: SignalCode::InternalPushPopStack.as_value(),
+		r1: signal_args,
 		..Default::default()
-	};
+	}));
 }
 
 fn executeSig(instruction: WordBits, registers: &Registers) -> RegisterTransform
