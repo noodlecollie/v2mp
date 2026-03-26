@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod tests;
+
 use crate::arch::*;
 use crate::execution_context::{RegisterTransform, Registers};
 use crate::signals;
@@ -653,11 +656,12 @@ fn executeAddOrSub(
 	};
 
 	let lhs: Word = registers.get_register_value(dest_reg);
+	let delta: Word = ((stride as usize) * (rhs as usize)) as Word;
 
 	let op_result: Word = match operation
 	{
-		AddOrSub::Add => lhs.wrapping_add(stride * rhs),
-		AddOrSub::Sub => lhs.wrapping_sub(stride * rhs),
+		AddOrSub::Add => lhs.wrapping_add(delta),
+		AddOrSub::Sub => lhs.wrapping_sub(delta),
 	};
 
 	let overflowed: bool = match operation
