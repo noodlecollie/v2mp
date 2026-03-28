@@ -89,15 +89,35 @@ fn happy_subtract_from_pc_register()
 	check_equations_for_pc_register(&EQUATIONS, asm::subr);
 }
 
+#[test]
+fn happy_add_literal_to_non_pc_register()
+{
+	// a + b = c (true if overflow)
+	const EQUATIONS: [Equation; 8] = [
+		// Simple small values
+		Equation::new_add(0x0001, 0x01, 0x0002, false),
+		Equation::new_add(0x1000, 0x01, 0x1001, false),
+		// Overflow
+		Equation::new_add(0xFFFF, 0x01, 0x0000, true),
+		Equation::new_add(0xFF01, 0xFF, 0x0000, true),
+		Equation::new_add(0xFFFF, 0xFF, 0x00FE, true),
+		// Zero
+		Equation::new_add(0x1234, 0x00, 0x1234, false),
+		Equation::new_add(0x0000, 0x78, 0x0078, false),
+		Equation::new_add(0x0000, 0x00, 0x0000, false),
+	];
+
+	check_literal_op_for_non_pc_registers(&EQUATIONS, asm::addl);
+}
+
 // TODO:
 // - Literal adds
 // - Literal subtractions
 // - Faults
 
-fn check_equations_for_non_pc_registers(
-	equations: &[Equation],
-	operation: fn(RegisterIndex, RegisterIndex) -> Word,
-)
+fn check_equations_for_non_pc_registers<Op>(equations: &[Equation], operation: Op)
+where
+	Op: Fn(RegisterIndex, RegisterIndex) -> Word,
 {
 	for equation in equations
 	{
@@ -237,6 +257,90 @@ fn check_equations_for_pc_register(
 			};
 
 			assert_register(&equation_str, "pc", equation.result, post.pc);
+			assert_register(&equation_str, "fr", 0x0000, post.fr);
+			assert_register(&equation_str, "sp", 0x0000, post.sp);
+			assert_register(&equation_str, "s0", 0x0000, post.s0);
+			assert_register(&equation_str, "s1", 0x0000, post.s1);
+			assert_register(&equation_str, "s2", 0x0000, post.s2);
+			assert_register(&equation_str, "sr", expected_sr, post.sr);
+		}
+	}
+}
+
+fn check_literal_op_for_non_pc_registers<Op>(equations: &[Equation], operation: Op)
+where
+	Op: Fn(RegisterIndex, Byte) -> Word,
+{
+	for equation in equations
+	{
+		for dest in [RegisterIndex::R0, RegisterIndex::R1, RegisterIndex::Lr]
+		{
+			let equation_str: String = equation.description(dest, dest);
+			let mut pre: Registers = Registers::default();
+
+			pre.ir = operation(dest, equation.rhs as Byte);
+
+			match dest
+			{
+				RegisterIndex::R0 => pre.r0 = equation.lhs,
+				RegisterIndex::R1 => pre.r1 = equation.lhs,
+				RegisterIndex::Lr => pre.lr = equation.lhs,
+				RegisterIndex::Pc => unreachable!(),
+			};
+
+			let post: Registers = execute(pre.clone());
+
+			assert_register(&equation_str, "ir", pre.ir, post.ir);
+
+			assert_register(
+				&equation_str,
+				"r0",
+				if dest == RegisterIndex::R0
+				{
+					equation.result
+				}
+				else
+				{
+					pre.r0
+				},
+				post.r0,
+			);
+
+			assert_register(
+				&equation_str,
+				"r1",
+				if dest == RegisterIndex::R1
+				{
+					equation.result
+				}
+				else
+				{
+					pre.r1
+				},
+				post.r1,
+			);
+
+			assert_register(
+				&equation_str,
+				"lr",
+				if dest == RegisterIndex::Lr
+				{
+					equation.result
+				}
+				else
+				{
+					pre.lr
+				},
+				post.lr,
+			);
+
+			assert_register(&equation_str, "pc", pre.pc, post.pc);
+
+			let expected_sr: Word = 0x0000;
+			let expected_sr: Word = StatusRegisterFlag::C.set_if(expected_sr, equation.overflow);
+			let expected_sr: Word =
+				StatusRegisterFlag::Z.set_if(expected_sr, equation.result == 0x0000);
+
 			assert_register(&equation_str, "fr", 0x0000, post.fr);
 			assert_register(&equation_str, "sp", 0x0000, post.sp);
 			assert_register(&equation_str, "s0", 0x0000, post.s0);
