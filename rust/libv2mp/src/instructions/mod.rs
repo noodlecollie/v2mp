@@ -655,30 +655,27 @@ fn executeAddOrSub(
 		literal
 	};
 
-	let lhs: Word = registers.get_register_value(dest_reg);
-	let delta: Word = ((stride as usize) * (rhs as usize)) as Word;
+	let lhs: usize = registers.get_register_value(dest_reg) as usize;
+	let delta: usize = (stride as usize) * (rhs as usize);
 
-	let op_result: Word = match operation
+	let op_result: usize = match operation
 	{
-		AddOrSub::Add => lhs.wrapping_add(delta),
-		AddOrSub::Sub => lhs.wrapping_sub(delta),
+		AddOrSub::Add => lhs + delta,
+		AddOrSub::Sub => lhs - delta,
 	};
 
-	let overflowed: bool = match operation
-	{
-		AddOrSub::Add => op_result < lhs,
-		AddOrSub::Sub => op_result > lhs,
-	};
+	let overflowed: bool = (op_result & !(Word::MAX as usize)) != 0;
+	let op_result_word: Word = op_result as Word;
 
 	let status_result: Word = 0;
 	let status_result: Word = StatusRegisterFlag::C.set_if(status_result, overflowed);
-	let status_result: Word = StatusRegisterFlag::Z.set_if(status_result, op_result == 0);
+	let status_result: Word = StatusRegisterFlag::Z.set_if(status_result, op_result_word == 0);
 
 	return RegisterTransform {
 		sr: Some(status_result),
 		..Default::default()
 	}
-	.set_register(dest_reg, op_result);
+	.set_register(dest_reg, op_result_word);
 }
 
 fn faultRegisterIfReservedBitsSet(instruction: WordBits, reserved_mask: Word) -> Option<Word>

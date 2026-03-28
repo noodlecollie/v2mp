@@ -289,6 +289,18 @@ impl RegisterIndex
 		return Self::from_value(word.little_bits(REGISTER_INDEX_MASK, mask_offset))
 			.expect("Failed to interpret register index from instruction word");
 	}
+
+	#[inline]
+	pub const fn name(&self) -> &'static str
+	{
+		return match self
+		{
+			RegisterIndex::R0 => "R0",
+			RegisterIndex::R1 => "R1",
+			RegisterIndex::Lr => "LR",
+			RegisterIndex::Pc => "PC",
+		};
+	}
 }
 
 #[repr(u16)]
