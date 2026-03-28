@@ -47,7 +47,7 @@ fn happy_add_to_pc_register()
 }
 
 #[test]
-fn happy_subtract_to_non_pc_register()
+fn happy_subtract_from_non_pc_register()
 {
 	// a - b = c (true if underflow)
 	const EQUATIONS: [Equation; 8] = [
@@ -110,9 +110,28 @@ fn happy_add_literal_to_non_pc_register()
 	check_literal_op_for_non_pc_registers(&EQUATIONS, asm::addl);
 }
 
+#[test]
+fn happy_subtract_literal_from_non_pc_register()
+{
+	// a - b = c (true if underflow)
+	const EQUATIONS: [Equation; 8] = [
+		// Simple small values
+		Equation::new_sub(0x0005, 0x03, 0x0002, false),
+		Equation::new_sub(0x1010, 0x10, 0x1000, false),
+		// Underflow
+		Equation::new_sub(0x0002, 0x04, 0xFFFE, true),
+		Equation::new_sub(0x00FE, 0xFF, 0xFFFF, true),
+		Equation::new_sub(0x0000, 0xFF, 0xFF01, true),
+		// Zero
+		Equation::new_sub(0x1234, 0x00, 0x1234, false),
+		Equation::new_sub(0x0078, 0x78, 0x0000, false),
+		Equation::new_sub(0x0000, 0x00, 0x0000, false),
+	];
+
+	check_literal_op_for_non_pc_registers(&EQUATIONS, asm::subl);
+}
+
 // TODO:
-// - Literal adds
-// - Literal subtractions
 // - Faults
 
 fn check_equations_for_non_pc_registers<Op>(equations: &[Equation], operation: Op)
