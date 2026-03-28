@@ -150,7 +150,7 @@ fn executeAdd(instruction: WordBits, registers: &Registers) -> RegisterTransform
 
 fn executeSub(instruction: WordBits, registers: &Registers) -> RegisterTransform
 {
-	return executeAddOrSub(instruction, registers, AddOrSub::Add);
+	return executeAddOrSub(instruction, registers, AddOrSub::Sub);
 }
 
 fn executeMul(instruction: WordBits, registers: &Registers) -> RegisterTransform
@@ -660,8 +660,8 @@ fn executeAddOrSub(
 
 	let op_result: usize = match operation
 	{
-		AddOrSub::Add => lhs + delta,
-		AddOrSub::Sub => lhs - delta,
+		AddOrSub::Add => lhs.wrapping_add(delta),
+		AddOrSub::Sub => lhs.wrapping_sub(delta),
 	};
 
 	let overflowed: bool = (op_result & !(Word::MAX as usize)) != 0;
