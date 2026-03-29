@@ -136,6 +136,11 @@ impl OpCode
 		return Self::from_value(word.bits(OPCODE_MASK, INSTRUCTION_ARG_BITS))
 			.expect("Failed to interpret opcode from instruction word");
 	}
+
+	pub const fn as_register_value(&self) -> Word
+	{
+		return self.as_value() << INSTRUCTION_ARG_BITS;
+	}
 }
 
 pub const NUM_FAULTS: usize = 16;

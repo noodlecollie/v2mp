@@ -29,6 +29,8 @@ struct MulDivParams
 	pub source_value: Word,
 	pub dest_reg: RegisterIndex,
 	pub operation_is_signed: bool,
+	pub value_is_literal: bool,
+	pub literal_value: Word,
 }
 
 impl MulDivParams
@@ -41,6 +43,8 @@ impl MulDivParams
 		const MASK_SIGNED: Word = 0x0200;
 
 		let is_signed: bool = instruction.any_bits_set(MASK_SIGNED);
+		let value_is_literal: bool = instruction.any_bits_set(MASK_STATIC);
+		let literal_value: Word = instruction.value() & MASK_LITERAL;
 
 		let dest_reg: RegisterIndex = if instruction.any_bits_set(MASK_DEST_REG_IS_R1)
 		{
@@ -51,16 +55,16 @@ impl MulDivParams
 			RegisterIndex::R0
 		};
 
-		let source_value: Word = if instruction.any_bits_set(MASK_STATIC)
+		let source_value: Word = if value_is_literal
 		{
 			// TODO: Does this actually make a difference?
 			if is_signed
 			{
-				(instruction.value() & MASK_LITERAL) as i8 as Word
+				literal_value as i8 as Word
 			}
 			else
 			{
-				(instruction.value() & MASK_LITERAL) as u8 as Word
+				literal_value as u8 as Word
 			}
 		}
 		else
@@ -81,6 +85,8 @@ impl MulDivParams
 			source_value,
 			dest_reg,
 			operation_is_signed: is_signed,
+			value_is_literal,
+			literal_value,
 		};
 	}
 }
@@ -173,11 +179,25 @@ fn executeMul(instruction: WordBits, registers: &Registers) -> RegisterTransform
 	}
 
 	let params: MulDivParams = MulDivParams::get(instruction, registers);
+
+	if !params.value_is_literal && params.literal_value != 0
+	{
+		return RegisterTransform {
+			fr: Some(REG_VAL_FAULT_RES),
+			..Default::default()
+		};
+	}
+
 	let dest_value: Word = registers.get_register_value(params.dest_reg);
 
 	let op_result: MulResult = if params.operation_is_signed
 	{
-		let signed_result: i32 = (params.source_value as i32) * (dest_value as i32);
+		// Important: we must cast to i16, in order to reinterpret the bits as signed,
+		// before we case to i32.
+		let source_i32: i32 = params.source_value as i16 as i32;
+		let dest_i32: i32 = dest_value as i16 as i32;
+
+		let signed_result: i32 = source_i32 * dest_i32;
 		let unsigned_result: u32 = signed_result as u32;
 		let upper: Word = ((unsigned_result & 0xFFFF0000) >> 16) as Word;
 		let lower: Word = (unsigned_result & 0x0000FFFF) as Word;

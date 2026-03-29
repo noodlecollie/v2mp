@@ -1,18 +1,15 @@
 use crate::arch::*;
 
-const fn instruction(opcode: OpCode) -> Word
-{
-	return opcode.as_value() << 12;
-}
-
 pub const fn addr(source_reg: RegisterIndex, dest_reg: RegisterIndex) -> Word
 {
-	return instruction(OpCode::Add) | (source_reg.as_value() << 10) | (dest_reg.as_value() << 8);
+	return OpCode::Add.as_register_value()
+		| (source_reg.as_value() << 10)
+		| (dest_reg.as_value() << 8);
 }
 
 pub const fn addl(dest_reg: RegisterIndex, literal: Byte) -> Word
 {
-	return instruction(OpCode::Add)
+	return OpCode::Add.as_register_value()
 		| (dest_reg.as_value() << 10)
 		| (dest_reg.as_value() << 8)
 		| (literal as Word);
@@ -20,13 +17,67 @@ pub const fn addl(dest_reg: RegisterIndex, literal: Byte) -> Word
 
 pub const fn subr(source_reg: RegisterIndex, dest_reg: RegisterIndex) -> Word
 {
-	return instruction(OpCode::Sub) | (source_reg.as_value() << 10) | (dest_reg.as_value() << 8);
+	return OpCode::Sub.as_register_value()
+		| (source_reg.as_value() << 10)
+		| (dest_reg.as_value() << 8);
 }
 
 pub const fn subl(dest_reg: RegisterIndex, literal: Byte) -> Word
 {
-	return instruction(OpCode::Sub)
+	return OpCode::Sub.as_register_value()
 		| (dest_reg.as_value() << 10)
 		| (dest_reg.as_value() << 8)
+		| (literal as Word);
+}
+
+pub const fn mulru(dest_reg: RegisterIndex) -> Word
+{
+	let dest_is_r1: Word = match dest_reg
+	{
+		RegisterIndex::R0 => 0,
+		RegisterIndex::R1 => 1,
+		_ => unreachable!(),
+	};
+
+	return OpCode::Mul.as_register_value() | (dest_is_r1 << 11);
+}
+
+pub const fn mulrs(dest_reg: RegisterIndex) -> Word
+{
+	let dest_is_r1: Word = match dest_reg
+	{
+		RegisterIndex::R0 => 0,
+		RegisterIndex::R1 => 1,
+		_ => unreachable!(),
+	};
+
+	return OpCode::Mul.as_register_value() | (dest_is_r1 << 11) | (1 << 9);
+}
+
+pub const fn mullu(dest_reg: RegisterIndex, literal: Byte) -> Word
+{
+	let dest_is_r1: Word = match dest_reg
+	{
+		RegisterIndex::R0 => 0,
+		RegisterIndex::R1 => 1,
+		_ => unreachable!(),
+	};
+
+	return OpCode::Mul.as_register_value() | (dest_is_r1 << 11) | (1 << 10) | (literal as Word);
+}
+
+pub const fn mulls(dest_reg: RegisterIndex, literal: Byte) -> Word
+{
+	let dest_is_r1: Word = match dest_reg
+	{
+		RegisterIndex::R0 => 0,
+		RegisterIndex::R1 => 1,
+		_ => unreachable!(),
+	};
+
+	return OpCode::Mul.as_register_value()
+		| (dest_is_r1 << 11)
+		| (1 << 10)
+		| (1 << 9)
 		| (literal as Word);
 }

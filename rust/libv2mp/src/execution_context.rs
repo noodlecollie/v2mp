@@ -34,7 +34,7 @@ impl ExecutionContext
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Registers
 {
 	pub pc: Word,
@@ -139,9 +139,9 @@ impl RegisterTransform
 			ir: self.ir.unwrap_or(registers.ir),
 			sp: self.sp.unwrap_or(registers.sp),
 			fr: self.fr.unwrap_or(registers.fr),
-			s0: self.fr.unwrap_or(SignalCode::None.as_value()),
-			s1: self.fr.unwrap_or(0),
-			s2: self.fr.unwrap_or(0),
+			s0: self.s0.unwrap_or(SignalCode::None.as_value()),
+			s1: self.s1.unwrap_or(0),
+			s2: self.s2.unwrap_or(0),
 		};
 
 		// If there is no fault code set, but there are fault bits set,

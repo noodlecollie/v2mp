@@ -1,4 +1,4 @@
-use super::utils::{Equation, assert_register};
+use super::utils::{SingleEquation, assert_register, execute_and_check_fault};
 use crate::arch::*;
 use crate::execution_context::Registers;
 use crate::instructions::execute;
@@ -8,18 +8,18 @@ use crate::instructions::tests::asm;
 fn happy_add_to_non_pc_register()
 {
 	// a + b = c (true if overflow)
-	const EQUATIONS: [Equation; 8] = [
+	const EQUATIONS: [SingleEquation; 8] = [
 		// Simple small values
-		Equation::new_add(0x0001, 0x0001, 0x0002, false),
-		Equation::new_add(0x1000, 0x0001, 0x1001, false),
+		SingleEquation::new_add(0x0001, 0x0001, 0x0002, false),
+		SingleEquation::new_add(0x1000, 0x0001, 0x1001, false),
 		// Overflow
-		Equation::new_add(0xFFFF, 0x0001, 0x0000, true),
-		Equation::new_add(0x0001, 0xFFFF, 0x0000, true),
-		Equation::new_add(0xFFFF, 0xFFFF, 0xFFFE, true),
+		SingleEquation::new_add(0xFFFF, 0x0001, 0x0000, true),
+		SingleEquation::new_add(0x0001, 0xFFFF, 0x0000, true),
+		SingleEquation::new_add(0xFFFF, 0xFFFF, 0xFFFE, true),
 		// Zero
-		Equation::new_add(0x1234, 0x0000, 0x1234, false),
-		Equation::new_add(0x0000, 0x5678, 0x5678, false),
-		Equation::new_add(0x0000, 0x0000, 0x0000, false),
+		SingleEquation::new_add(0x1234, 0x0000, 0x1234, false),
+		SingleEquation::new_add(0x0000, 0x5678, 0x5678, false),
+		SingleEquation::new_add(0x0000, 0x0000, 0x0000, false),
 	];
 
 	check_equations_for_non_pc_registers(&EQUATIONS, asm::addr);
@@ -29,18 +29,18 @@ fn happy_add_to_non_pc_register()
 fn happy_add_to_pc_register()
 {
 	// a + b = c (true if overflow)
-	const EQUATIONS: [Equation; 8] = [
+	const EQUATIONS: [SingleEquation; 8] = [
 		// Simple small values
-		Equation::new_add(0x0010, 0x0001, 0x0012, false),
-		Equation::new_add(0x1000, 0x0001, 0x1002, false),
+		SingleEquation::new_add(0x0010, 0x0001, 0x0012, false),
+		SingleEquation::new_add(0x1000, 0x0001, 0x1002, false),
 		// Overflow
-		Equation::new_add(0xFFFE, 0x0001, 0x0000, true),
-		Equation::new_add(0x0000, 0xFFFF, 0xFFFE, true),
-		Equation::new_add(0xFFFE, 0xFFFF, 0xFFFC, true),
+		SingleEquation::new_add(0xFFFE, 0x0001, 0x0000, true),
+		SingleEquation::new_add(0x0000, 0xFFFF, 0xFFFE, true),
+		SingleEquation::new_add(0xFFFE, 0xFFFF, 0xFFFC, true),
 		// Zero
-		Equation::new_add(0x1234, 0x0000, 0x1234, false),
-		Equation::new_add(0x0000, 0x0020, 0x0040, false),
-		Equation::new_add(0x0000, 0x0000, 0x0000, false),
+		SingleEquation::new_add(0x1234, 0x0000, 0x1234, false),
+		SingleEquation::new_add(0x0000, 0x0020, 0x0040, false),
+		SingleEquation::new_add(0x0000, 0x0000, 0x0000, false),
 	];
 
 	check_equations_for_pc_register(&EQUATIONS, asm::addr);
@@ -50,18 +50,18 @@ fn happy_add_to_pc_register()
 fn happy_subtract_from_non_pc_register()
 {
 	// a - b = c (true if underflow)
-	const EQUATIONS: [Equation; 8] = [
+	const EQUATIONS: [SingleEquation; 8] = [
 		// Simple small values
-		Equation::new_sub(0x0005, 0x0003, 0x0002, false),
-		Equation::new_sub(0x1010, 0x1000, 0x0010, false),
+		SingleEquation::new_sub(0x0005, 0x0003, 0x0002, false),
+		SingleEquation::new_sub(0x1010, 0x1000, 0x0010, false),
 		// Underflow
-		Equation::new_sub(0x0002, 0x0004, 0xFFFE, true),
-		Equation::new_sub(0xFFFE, 0xFFFF, 0xFFFF, true),
-		Equation::new_sub(0x0000, 0xFFFF, 0x0001, true),
+		SingleEquation::new_sub(0x0002, 0x0004, 0xFFFE, true),
+		SingleEquation::new_sub(0xFFFE, 0xFFFF, 0xFFFF, true),
+		SingleEquation::new_sub(0x0000, 0xFFFF, 0x0001, true),
 		// Zero
-		Equation::new_sub(0x1234, 0x0000, 0x1234, false),
-		Equation::new_sub(0x5678, 0x5678, 0x0000, false),
-		Equation::new_sub(0x0000, 0x0000, 0x0000, false),
+		SingleEquation::new_sub(0x1234, 0x0000, 0x1234, false),
+		SingleEquation::new_sub(0x5678, 0x5678, 0x0000, false),
+		SingleEquation::new_sub(0x0000, 0x0000, 0x0000, false),
 	];
 
 	check_equations_for_non_pc_registers(&EQUATIONS, asm::subr);
@@ -71,19 +71,19 @@ fn happy_subtract_from_non_pc_register()
 fn happy_subtract_from_pc_register()
 {
 	// a - b = c (true if underflow)
-	const EQUATIONS: [Equation; 9] = [
+	const EQUATIONS: [SingleEquation; 9] = [
 		// Simple small values
-		Equation::new_sub(0x0010, 0x0001, 0x000E, false),
-		Equation::new_sub(0x1000, 0x0002, 0x0FFC, false),
+		SingleEquation::new_sub(0x0010, 0x0001, 0x000E, false),
+		SingleEquation::new_sub(0x1000, 0x0002, 0x0FFC, false),
 		// Underflow
-		Equation::new_sub(0x0002, 0x0004, 0xFFFA, true),
-		Equation::new_sub(0xFFFF, 0xFFFF, 0x0001, true),
-		Equation::new_sub(0x0000, 0xFFFF, 0x0002, true),
+		SingleEquation::new_sub(0x0002, 0x0004, 0xFFFA, true),
+		SingleEquation::new_sub(0xFFFF, 0xFFFF, 0x0001, true),
+		SingleEquation::new_sub(0x0000, 0xFFFF, 0x0002, true),
 		// Zero
-		Equation::new_sub(0x1234, 0x0000, 0x1234, false),
-		Equation::new_sub(0x0000, 0x0020, 0xFFC0, true),
-		Equation::new_sub(0x0000, 0x0000, 0x0000, false),
-		Equation::new_sub(0xFFFE, 0xFFFF, 0x0000, true),
+		SingleEquation::new_sub(0x1234, 0x0000, 0x1234, false),
+		SingleEquation::new_sub(0x0000, 0x0020, 0xFFC0, true),
+		SingleEquation::new_sub(0x0000, 0x0000, 0x0000, false),
+		SingleEquation::new_sub(0xFFFE, 0xFFFF, 0x0000, true),
 	];
 
 	check_equations_for_pc_register(&EQUATIONS, asm::subr);
@@ -93,18 +93,18 @@ fn happy_subtract_from_pc_register()
 fn happy_add_literal_to_non_pc_register()
 {
 	// a + b = c (true if overflow)
-	const EQUATIONS: [Equation; 8] = [
+	const EQUATIONS: [SingleEquation; 8] = [
 		// Simple small values
-		Equation::new_addl(0x0001, 0x01, 0x0002, false),
-		Equation::new_addl(0x1000, 0x01, 0x1001, false),
+		SingleEquation::new_addl(0x0001, 0x01, 0x0002, false),
+		SingleEquation::new_addl(0x1000, 0x01, 0x1001, false),
 		// Overflow
-		Equation::new_addl(0xFFFF, 0x01, 0x0000, true),
-		Equation::new_addl(0xFF01, 0xFF, 0x0000, true),
-		Equation::new_addl(0xFFFF, 0xFF, 0x00FE, true),
+		SingleEquation::new_addl(0xFFFF, 0x01, 0x0000, true),
+		SingleEquation::new_addl(0xFF01, 0xFF, 0x0000, true),
+		SingleEquation::new_addl(0xFFFF, 0xFF, 0x00FE, true),
 		// Zero
-		Equation::new_addl(0x1234, 0x00, 0x1234, false),
-		Equation::new_addl(0x0000, 0x78, 0x0078, false),
-		Equation::new_addl(0x0000, 0x00, 0x0000, false),
+		SingleEquation::new_addl(0x1234, 0x00, 0x1234, false),
+		SingleEquation::new_addl(0x0000, 0x78, 0x0078, false),
+		SingleEquation::new_addl(0x0000, 0x00, 0x0000, false),
 	];
 
 	check_literal_op_for_non_pc_registers(&EQUATIONS, asm::addl);
@@ -114,18 +114,18 @@ fn happy_add_literal_to_non_pc_register()
 fn happy_add_literal_to_pc_register()
 {
 	// a + b = c (true if overflow)
-	const EQUATIONS: [Equation; 8] = [
+	const EQUATIONS: [SingleEquation; 8] = [
 		// Simple small values
-		Equation::new_addl(0x0002, 0x01, 0x0004, false),
-		Equation::new_addl(0x1000, 0x04, 0x1008, false),
+		SingleEquation::new_addl(0x0002, 0x01, 0x0004, false),
+		SingleEquation::new_addl(0x1000, 0x04, 0x1008, false),
 		// Overflow
-		Equation::new_addl(0xFFFE, 0x02, 0x0002, true),
-		Equation::new_addl(0xFE02, 0xFF, 0x0000, true),
-		Equation::new_addl(0xFFFE, 0xFF, 0x01FC, true),
+		SingleEquation::new_addl(0xFFFE, 0x02, 0x0002, true),
+		SingleEquation::new_addl(0xFE02, 0xFF, 0x0000, true),
+		SingleEquation::new_addl(0xFFFE, 0xFF, 0x01FC, true),
 		// Zero
-		Equation::new_addl(0x1234, 0x00, 0x1234, false),
-		Equation::new_addl(0x0000, 0x78, 0x00F0, false),
-		Equation::new_addl(0x0000, 0x00, 0x0000, false),
+		SingleEquation::new_addl(0x1234, 0x00, 0x1234, false),
+		SingleEquation::new_addl(0x0000, 0x78, 0x00F0, false),
+		SingleEquation::new_addl(0x0000, 0x00, 0x0000, false),
 	];
 
 	check_literal_op_for_pc_register(&EQUATIONS, asm::addl);
@@ -135,18 +135,18 @@ fn happy_add_literal_to_pc_register()
 fn happy_subtract_literal_from_non_pc_register()
 {
 	// a - b = c (true if underflow)
-	const EQUATIONS: [Equation; 8] = [
+	const EQUATIONS: [SingleEquation; 8] = [
 		// Simple small values
-		Equation::new_subl(0x0005, 0x03, 0x0002, false),
-		Equation::new_subl(0x1010, 0x10, 0x1000, false),
+		SingleEquation::new_subl(0x0005, 0x03, 0x0002, false),
+		SingleEquation::new_subl(0x1010, 0x10, 0x1000, false),
 		// Underflow
-		Equation::new_subl(0x0002, 0x04, 0xFFFE, true),
-		Equation::new_subl(0x00FE, 0xFF, 0xFFFF, true),
-		Equation::new_subl(0x0000, 0xFF, 0xFF01, true),
+		SingleEquation::new_subl(0x0002, 0x04, 0xFFFE, true),
+		SingleEquation::new_subl(0x00FE, 0xFF, 0xFFFF, true),
+		SingleEquation::new_subl(0x0000, 0xFF, 0xFF01, true),
 		// Zero
-		Equation::new_subl(0x1234, 0x00, 0x1234, false),
-		Equation::new_subl(0x0078, 0x78, 0x0000, false),
-		Equation::new_subl(0x0000, 0x00, 0x0000, false),
+		SingleEquation::new_subl(0x1234, 0x00, 0x1234, false),
+		SingleEquation::new_subl(0x0078, 0x78, 0x0000, false),
+		SingleEquation::new_subl(0x0000, 0x00, 0x0000, false),
 	];
 
 	check_literal_op_for_non_pc_registers(&EQUATIONS, asm::subl);
@@ -156,18 +156,18 @@ fn happy_subtract_literal_from_non_pc_register()
 fn happy_subtract_literal_from_pc_register()
 {
 	// a - b = c (true if underflow)
-	const EQUATIONS: [Equation; 8] = [
+	const EQUATIONS: [SingleEquation; 8] = [
 		// Simple small values
-		Equation::new_subl(0x000A, 0x03, 0x0004, false),
-		Equation::new_subl(0x1010, 0x10, 0x0FF0, false),
+		SingleEquation::new_subl(0x000A, 0x03, 0x0004, false),
+		SingleEquation::new_subl(0x1010, 0x10, 0x0FF0, false),
 		// Underflow
-		Equation::new_subl(0x0002, 0x02, 0xFFFE, true),
-		Equation::new_subl(0x01FD, 0xFF, 0xFFFF, true),
-		Equation::new_subl(0x0000, 0xFF, 0xFE02, true),
+		SingleEquation::new_subl(0x0002, 0x02, 0xFFFE, true),
+		SingleEquation::new_subl(0x01FD, 0xFF, 0xFFFF, true),
+		SingleEquation::new_subl(0x0000, 0xFF, 0xFE02, true),
 		// Zero
-		Equation::new_subl(0x1234, 0x00, 0x1234, false),
-		Equation::new_subl(0x0078, 0x3C, 0x0000, false),
-		Equation::new_subl(0x0000, 0x00, 0x0000, false),
+		SingleEquation::new_subl(0x1234, 0x00, 0x1234, false),
+		SingleEquation::new_subl(0x0078, 0x3C, 0x0000, false),
+		SingleEquation::new_subl(0x0000, 0x00, 0x0000, false),
 	];
 
 	check_literal_op_for_pc_register(&EQUATIONS, asm::subl);
@@ -204,7 +204,7 @@ fn faults()
 	);
 }
 
-fn check_equations_for_non_pc_registers<Op>(equations: &[Equation], operation: Op)
+fn check_equations_for_non_pc_registers<Op>(equations: &[SingleEquation], operation: Op)
 where
 	Op: Fn(RegisterIndex, RegisterIndex) -> Word,
 {
@@ -306,7 +306,7 @@ where
 }
 
 fn check_equations_for_pc_register(
-	equations: &[Equation],
+	equations: &[SingleEquation],
 	operation: fn(RegisterIndex, RegisterIndex) -> Word,
 )
 {
@@ -356,7 +356,7 @@ fn check_equations_for_pc_register(
 	}
 }
 
-fn check_literal_op_for_non_pc_registers<Op>(equations: &[Equation], operation: Op)
+fn check_literal_op_for_non_pc_registers<Op>(equations: &[SingleEquation], operation: Op)
 where
 	Op: Fn(RegisterIndex, Byte) -> Word,
 {
@@ -440,7 +440,7 @@ where
 	}
 }
 
-fn check_literal_op_for_pc_register<Op>(equations: &[Equation], operation: Op)
+fn check_literal_op_for_pc_register<Op>(equations: &[SingleEquation], operation: Op)
 where
 	Op: Fn(RegisterIndex, Byte) -> Word,
 {
@@ -472,15 +472,4 @@ where
 		assert_register(&equation_str, "s2", 0x0000, post.s2);
 		assert_register(&equation_str, "sr", expected_sr, post.sr);
 	}
-}
-
-fn execute_and_check_fault(name: &str, registers: Registers, fault: Word)
-{
-	let post: Registers = execute(registers);
-
-	assert_eq!(
-		fault, post.fr,
-		"{name}: Expected register fr to be {:#06x}, but it was {:#06x}",
-		fault, post.fr
-	);
 }
