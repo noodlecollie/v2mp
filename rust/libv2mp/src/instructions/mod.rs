@@ -269,31 +269,31 @@ fn executeDiv(instruction: WordBits, registers: &Registers) -> RegisterTransform
 	{
 		let numerator: i16 = registers.get_register_value(params.dest_reg) as i16;
 		let denominator: i16 = params.source_value as i16;
-		let upper: i16 = numerator / denominator;
-		let lower: i16 = numerator % denominator;
+		let quotient: i16 = numerator / denominator;
+		let remainder: i16 = numerator % denominator;
 
-		(upper as Word, lower as Word)
+		(quotient as Word, remainder as Word)
 	}
 	else
 	{
 		let numerator: Word = registers.get_register_value(params.dest_reg);
 		let denominator: &Word = &params.source_value;
-		let upper: Word = numerator / denominator;
-		let lower: Word = numerator % denominator;
+		let quotient: Word = numerator / denominator;
+		let remainder: Word = numerator % denominator;
 
-		(upper, lower)
+		(quotient, remainder)
 	};
 
 	let status_result: Word = 0;
-	let status_result: Word = StatusRegisterFlag::C.set_if(status_result, op_result.0 != 0);
-	let status_result: Word = StatusRegisterFlag::Z.set_if(status_result, op_result.1 == 0);
+	let status_result: Word = StatusRegisterFlag::C.set_if(status_result, op_result.1 != 0);
+	let status_result: Word = StatusRegisterFlag::Z.set_if(status_result, op_result.0 == 0);
 
 	return RegisterTransform {
 		sr: Some(status_result),
 		..Default::default()
 	}
-	.set_register(RegisterIndex::Lr, op_result.0)
-	.set_register(params.dest_reg, op_result.1);
+	.set_register(params.dest_reg, op_result.0)
+	.set_register(RegisterIndex::Lr, op_result.1);
 }
 
 fn executeAsgn(instruction: WordBits, registers: &Registers) -> RegisterTransform

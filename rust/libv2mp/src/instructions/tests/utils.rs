@@ -112,6 +112,30 @@ impl Equation<u32>
 		};
 	}
 
+	pub const fn new_divr(lhs: Word, rhs: Word, quotient: Word, remainder: Word) -> Self
+	{
+		return Self {
+			lhs,
+			rhs,
+			result: ((remainder as u32) << 16) | (quotient as u32),
+			overflow: remainder != 0,
+
+			op_symbol: "/",
+		};
+	}
+
+	pub const fn new_divl(lhs: Word, rhs: Byte, quotient: Word, remainder: Word) -> Self
+	{
+		return Self {
+			lhs,
+			rhs: rhs as Word,
+			result: ((remainder as u32) << 16) | (quotient as u32),
+			overflow: remainder != 0,
+
+			op_symbol: "/",
+		};
+	}
+
 	pub fn description(&self, source_reg: Option<RegisterIndex>, dest_reg: RegisterIndex)
 	-> String
 	{
