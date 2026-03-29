@@ -95,19 +95,40 @@ fn happy_add_literal_to_non_pc_register()
 	// a + b = c (true if overflow)
 	const EQUATIONS: [Equation; 8] = [
 		// Simple small values
-		Equation::new_add(0x0001, 0x01, 0x0002, false),
-		Equation::new_add(0x1000, 0x01, 0x1001, false),
+		Equation::new_addl(0x0001, 0x01, 0x0002, false),
+		Equation::new_addl(0x1000, 0x01, 0x1001, false),
 		// Overflow
-		Equation::new_add(0xFFFF, 0x01, 0x0000, true),
-		Equation::new_add(0xFF01, 0xFF, 0x0000, true),
-		Equation::new_add(0xFFFF, 0xFF, 0x00FE, true),
+		Equation::new_addl(0xFFFF, 0x01, 0x0000, true),
+		Equation::new_addl(0xFF01, 0xFF, 0x0000, true),
+		Equation::new_addl(0xFFFF, 0xFF, 0x00FE, true),
 		// Zero
-		Equation::new_add(0x1234, 0x00, 0x1234, false),
-		Equation::new_add(0x0000, 0x78, 0x0078, false),
-		Equation::new_add(0x0000, 0x00, 0x0000, false),
+		Equation::new_addl(0x1234, 0x00, 0x1234, false),
+		Equation::new_addl(0x0000, 0x78, 0x0078, false),
+		Equation::new_addl(0x0000, 0x00, 0x0000, false),
 	];
 
 	check_literal_op_for_non_pc_registers(&EQUATIONS, asm::addl);
+}
+
+#[test]
+fn happy_add_literal_to_pc_register()
+{
+	// a + b = c (true if overflow)
+	const EQUATIONS: [Equation; 8] = [
+		// Simple small values
+		Equation::new_addl(0x0002, 0x01, 0x0004, false),
+		Equation::new_addl(0x1000, 0x04, 0x1008, false),
+		// Overflow
+		Equation::new_addl(0xFFFE, 0x02, 0x0002, true),
+		Equation::new_addl(0xFE02, 0xFF, 0x0000, true),
+		Equation::new_addl(0xFFFE, 0xFF, 0x01FC, true),
+		// Zero
+		Equation::new_addl(0x1234, 0x00, 0x1234, false),
+		Equation::new_addl(0x0000, 0x78, 0x00F0, false),
+		Equation::new_addl(0x0000, 0x00, 0x0000, false),
+	];
+
+	check_literal_op_for_pc_register(&EQUATIONS, asm::addl);
 }
 
 #[test]
@@ -116,23 +137,72 @@ fn happy_subtract_literal_from_non_pc_register()
 	// a - b = c (true if underflow)
 	const EQUATIONS: [Equation; 8] = [
 		// Simple small values
-		Equation::new_sub(0x0005, 0x03, 0x0002, false),
-		Equation::new_sub(0x1010, 0x10, 0x1000, false),
+		Equation::new_subl(0x0005, 0x03, 0x0002, false),
+		Equation::new_subl(0x1010, 0x10, 0x1000, false),
 		// Underflow
-		Equation::new_sub(0x0002, 0x04, 0xFFFE, true),
-		Equation::new_sub(0x00FE, 0xFF, 0xFFFF, true),
-		Equation::new_sub(0x0000, 0xFF, 0xFF01, true),
+		Equation::new_subl(0x0002, 0x04, 0xFFFE, true),
+		Equation::new_subl(0x00FE, 0xFF, 0xFFFF, true),
+		Equation::new_subl(0x0000, 0xFF, 0xFF01, true),
 		// Zero
-		Equation::new_sub(0x1234, 0x00, 0x1234, false),
-		Equation::new_sub(0x0078, 0x78, 0x0000, false),
-		Equation::new_sub(0x0000, 0x00, 0x0000, false),
+		Equation::new_subl(0x1234, 0x00, 0x1234, false),
+		Equation::new_subl(0x0078, 0x78, 0x0000, false),
+		Equation::new_subl(0x0000, 0x00, 0x0000, false),
 	];
 
 	check_literal_op_for_non_pc_registers(&EQUATIONS, asm::subl);
 }
 
-// TODO:
-// - Faults
+#[test]
+fn happy_subtract_literal_from_pc_register()
+{
+	// a - b = c (true if underflow)
+	const EQUATIONS: [Equation; 8] = [
+		// Simple small values
+		Equation::new_subl(0x000A, 0x03, 0x0004, false),
+		Equation::new_subl(0x1010, 0x10, 0x0FF0, false),
+		// Underflow
+		Equation::new_subl(0x0002, 0x02, 0xFFFE, true),
+		Equation::new_subl(0x01FD, 0xFF, 0xFFFF, true),
+		Equation::new_subl(0x0000, 0xFF, 0xFE02, true),
+		// Zero
+		Equation::new_subl(0x1234, 0x00, 0x1234, false),
+		Equation::new_subl(0x0078, 0x3C, 0x0000, false),
+		Equation::new_subl(0x0000, 0x00, 0x0000, false),
+	];
+
+	check_literal_op_for_pc_register(&EQUATIONS, asm::subl);
+}
+
+#[test]
+fn faults()
+{
+	// Reserved bits
+	let mut registers: Registers = Registers::default();
+
+	registers.ir = (OpCode::Add.as_value() << 12)
+		| (RegisterIndex::R0.as_value() << 10)
+		| (RegisterIndex::R1.as_value() << 8)
+		| 0x0012;
+
+	execute_and_check_fault(
+		"Add reserved bits",
+		registers,
+		FaultCode::Res.as_register_value(0),
+	);
+
+	let mut registers: Registers = Registers::default();
+
+	registers.ir = (OpCode::Sub.as_value() << 12)
+		| (RegisterIndex::R0.as_value() << 10)
+		| (RegisterIndex::R1.as_value() << 8)
+		| 0x0034;
+
+	execute_and_check_fault(
+		"Sub reserved bits",
+		registers,
+		FaultCode::Res.as_register_value(0),
+	);
+}
 
 fn check_equations_for_non_pc_registers<Op>(equations: &[Equation], operation: Op)
 where
@@ -368,4 +438,49 @@ where
 			assert_register(&equation_str, "sr", expected_sr, post.sr);
 		}
 	}
+}
+
+fn check_literal_op_for_pc_register<Op>(equations: &[Equation], operation: Op)
+where
+	Op: Fn(RegisterIndex, Byte) -> Word,
+{
+	for equation in equations
+	{
+		let equation_str: String = equation.description(RegisterIndex::Pc, RegisterIndex::Pc);
+		let mut pre: Registers = Registers::default();
+
+		pre.ir = operation(RegisterIndex::Pc, equation.rhs as Byte);
+		pre.pc = equation.lhs;
+
+		let post: Registers = execute(pre.clone());
+
+		assert_register(&equation_str, "ir", pre.ir, post.ir);
+		assert_register(&equation_str, "r0", pre.r0, post.r0);
+		assert_register(&equation_str, "r1", pre.r1, post.r1);
+		assert_register(&equation_str, "lr", pre.lr, post.lr);
+		assert_register(&equation_str, "pc", equation.result, post.pc);
+
+		let expected_sr: Word = 0x0000;
+		let expected_sr: Word = StatusRegisterFlag::C.set_if(expected_sr, equation.overflow);
+		let expected_sr: Word =
+			StatusRegisterFlag::Z.set_if(expected_sr, equation.result == 0x0000);
+
+		assert_register(&equation_str, "fr", 0x0000, post.fr);
+		assert_register(&equation_str, "sp", 0x0000, post.sp);
+		assert_register(&equation_str, "s0", 0x0000, post.s0);
+		assert_register(&equation_str, "s1", 0x0000, post.s1);
+		assert_register(&equation_str, "s2", 0x0000, post.s2);
+		assert_register(&equation_str, "sr", expected_sr, post.sr);
+	}
+}
+
+fn execute_and_check_fault(name: &str, registers: Registers, fault: Word)
+{
+	let post: Registers = execute(registers);
+
+	assert_eq!(
+		fault, post.fr,
+		"{name}: Expected register fr to be {:#06x}, but it was {:#06x}",
+		fault, post.fr
+	);
 }

@@ -24,11 +24,35 @@ impl Equation
 		};
 	}
 
+	pub const fn new_addl(lhs: Word, rhs: Byte, result: Word, overflow: bool) -> Equation
+	{
+		return Equation {
+			lhs,
+			rhs: rhs as Word,
+			result,
+			overflow,
+
+			op_symbol: "+",
+		};
+	}
+
 	pub const fn new_sub(lhs: Word, rhs: Word, result: Word, underflow: bool) -> Equation
 	{
 		return Equation {
 			lhs,
 			rhs,
+			result,
+			overflow: underflow,
+
+			op_symbol: "-",
+		};
+	}
+
+	pub const fn new_subl(lhs: Word, rhs: Byte, result: Word, underflow: bool) -> Equation
+	{
+		return Equation {
+			lhs,
+			rhs: rhs as Word,
 			result,
 			overflow: underflow,
 
